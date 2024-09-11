@@ -10,4 +10,4 @@
 ## 📝 요구 사항 명세서
 <img src="./img/요구사항정의서.png" alt="요구사항정의서" width="1000" height="500"/>
 
-[요구 사항 명세 보기](https://docs.google.com/spreadsheets/d/1VqdbBtMBag14rsCLODUl4LLlspbeZv8nNFEQy_W30PI/edit?gid=0#gid=0)
+[요구 사항 명세 보기](https://docs.google.com/spreadsheets/d/e/2PACX-1vTlFIo_kJNofGCSXasOPEdu7f5SmEdWOaNs-SHv67EElouY5gG57eivaJ4rFPXX_hL8oXozfjL-9omi/pubhtml?gid=0&single=true)
