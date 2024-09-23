@@ -1,29 +1,18 @@
-import {createRouter, createWebHistory} from 'vue-router';
-import HomePage from '@/views/HomePage.vue';
-// import { memberRouter } from './memberRouter';
-// import { boardRouter } from './boardRouter';
-// import { subjectRouter } from './subjectRouter';
-// import { qnaRouter } from './qnaRouter';
-// import { reportRouter } from './reportRouter';
-// import { chatRouter } from './chatRouter'; 
+// src/router/index.js
+import { createRouter, createWebHistory } from 'vue-router';
+import HomePage from '@/views/HomePage.vue'; 
 
 const routes = [
-    {
-        path: '/',
-        name: 'HOME',
-        component: HomePage
-    },
-    // ...memberRouter,
-    // ...boardRouter,
-    // ...subjectRouter,
-    // ...qnaRouter,
-    // ...reportRouter,
-    // ...chatRouter,
-]
+  {
+    path: '/',
+    name: 'Home',
+    component: HomePage,
+  },
+];
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes
-})
+  history: createWebHistory(process.env.BASE_URL),
+  routes,
+});
 
 export default router;
