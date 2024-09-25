@@ -1,9 +1,9 @@
 function initState() {
     return {
         token: "", 
-        role: "", 
         userNum: "", 
-        email: "" 
+        departmentId: "", 
+        positionId: "", 
     };
 }
 
@@ -14,6 +14,9 @@ const user = {
             state.token = localStorage.getItem('token');
             state.role = localStorage.getItem('role');
             state.userNum = localStorage.getItem('userNum');
+            state.departmentId = localStorage.getItem('departmentId');
+            state.positionId = localStorage.getItem('positionId');
+            state.userId = localStorage.getItem('userId'); 
             console.log('User Info set in Vuex:', state);
         },
         resetUserState(state) {
@@ -32,8 +35,9 @@ const user = {
     getters: {
         getUserObj: state => state,
         getUserToken: state => state.token,
-        getUserRole: state => state.role,
         getUserNum: state => state.userNum,
+        getDepartmentId: state => state.departmentId,
+        getPositionId: state => state.positionId,
     }
 };
 

@@ -21,6 +21,10 @@
                 outlined
                 dense
               ></v-text-field>
+              <v-checkbox
+                v-model="rememberUserNum"
+                label="사번 저장하기"
+              ></v-checkbox>
               <v-btn type="submit" color="primary" class="mt-3">로그인</v-btn>
             </v-form>
           </v-card-text>
@@ -31,7 +35,7 @@
 </template>
 
 <script>
-import { jwtDecode } from 'jwt-decode'; 
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 export default {
@@ -39,49 +43,62 @@ export default {
   data() {
     return {
       userNum: '',
-      password: ''
+      password: '',
+      rememberUserNum: false, 
     };
+  },
+  mounted() {
+    const savedUserNum = localStorage.getItem('savedUserNum');
+    if (savedUserNum) {
+      this.userNum = savedUserNum;
+      this.rememberUserNum = true;
+    }
   },
   methods: {
     async doLogin() {
-    try {
+      try {
         const loginData = {
-            userNum: this.userNum,
-            password: this.password,
+          userNum: this.userNum,
+          password: this.password,
         };
-
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/user/login`, loginData);
         console.log('로그인 성공');
-        console.log('Received Response:', response.data);
+        console.log('Received Response:', response);
 
-        const token = response.data?.result;
-
+        const token = response.data.result; 
         console.log('Received Token:', token);
 
-        if (!token) {
-            throw new Error('토큰이 응답에 포함되어 있지 않습니다.');
+        if (!token || typeof token !== 'string') {
+          throw new Error('토큰이 없습니다. 로그인에 실패했습니다.');
         }
 
         const decodedToken = jwtDecode(token);
 
-        const role = decodedToken.role;
-        const userId = decodedToken.userId;
+        const userNum = decodedToken.sub; 
+        const departmentId = decodedToken.department_id; 
+        const positionId = decodedToken.position_id; 
 
         localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
-        localStorage.setItem('userId', userId);
-        localStorage.setItem('userNum', this.userNum);
+        localStorage.setItem('userNum', userNum);
+        localStorage.setItem('departmentId', departmentId);
+        localStorage.setItem('positionId', positionId);
 
-        alert('로그인 성공! 홈으로 이동합니다.');
+        if (this.rememberUserNum) {
+          localStorage.setItem('savedUserNum', this.userNum);  
+        } else {
+          localStorage.removeItem('savedUserNum'); 
+        }
+
+        alert('로그인 성공');
         this.$router.push('/');
-    } catch (e) {
+      } catch (e) {
         console.error('로그인 에러:', e.message);
         const error_message = e.response?.data?.status_message || "로그인에 실패했습니다.";
         alert(error_message);
+      }
     }
-  }
 
-}
+  },
 };
 </script>
 
