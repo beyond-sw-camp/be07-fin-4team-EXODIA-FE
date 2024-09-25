@@ -5,7 +5,6 @@ import { videoRouter } from './videoRouter';
 import { userRouter } from './userRouter'; 
 
 
-
 const routes = [
   {
     path: '/',
@@ -13,7 +12,8 @@ const routes = [
     component: HomePage,
   },
   ...videoRouter,
-  ...userRouter
+  ...userRouter,
+  ...videoRouter
 ];
 
 const router = createRouter({
