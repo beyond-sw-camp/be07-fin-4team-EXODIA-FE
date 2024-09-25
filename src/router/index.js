@@ -1,6 +1,10 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
-import HomePage from '@/views/HomePage.vue'; 
+import HomePage from '@/views/HomePage.vue';
+import LoginPage from '@/views/LoginPage.vue';
+import { videoRouter } from './videoRouter'; 
+
+
 
 const routes = [
   {
@@ -8,6 +12,12 @@ const routes = [
     name: 'Home',
     component: HomePage,
   },
+  {
+    path: '/login',
+    name: 'Login',
+    component: LoginPage,
+  },
+  ...videoRouter
 ];
 
 const router = createRouter({

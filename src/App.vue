@@ -27,7 +27,7 @@ export default {
 
 <style>
 :root {
-  --sidebar-width: 5%; 
+  --sidebar-width: 4%; 
   --header-height: 60px; 
 }
 
@@ -65,3 +65,4 @@ export default {
   overflow-y: auto; 
 }
 </style>
+
