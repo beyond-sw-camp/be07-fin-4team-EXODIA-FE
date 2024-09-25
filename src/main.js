@@ -23,7 +23,7 @@ const vuetify = createVuetify({
   },
 });
 
-axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8080/api';
+axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8080';
 
 const app = createApp(App);
 app.config.globalProperties.$axios = axios;
