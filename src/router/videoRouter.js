@@ -16,6 +16,7 @@
 
 
 import VideoRoomList from '@/views/video/VideoRoomList.vue'; 
+import CreateRoomPage from '@/views/video/CreateRoomPage.vue'; 
 
 export const videoRouter = [
 
@@ -24,4 +25,9 @@ export const videoRouter = [
     name: 'VideoRoomList',
     component: VideoRoomList,
   },
+  {
+    path: '/video/create',
+    name: 'CreateRoomPage',
+    component: CreateRoomPage,
+  },  
 ];
