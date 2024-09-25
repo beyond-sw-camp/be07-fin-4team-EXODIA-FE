@@ -35,11 +35,7 @@
 </template>
 
 <script>
-// jwt-decode를 임포트하는 다양한 방식 중 하나로 시도해 보세요.
-import jwt_decode from 'jwt-decode'; // 기본 import 방식
-// import * as jwt_decode from 'jwt-decode'; // 대체 import 방식
-// const jwt_decode = require('jwt-decode'); // require 사용
-
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 export default {
@@ -48,7 +44,7 @@ export default {
     return {
       userNum: '',
       password: '',
-      rememberUserNum: false, // 아이디 기억하기 체크박스
+      rememberUserNum: false,
     };
   },
   mounted() {
@@ -71,18 +67,10 @@ export default {
 
         // 로그인 성공 시 받은 토큰 처리
         console.log('로그인 성공');
-        const token = response.data.data; // 서버 응답에서 토큰 데이터 추출
+        const token = response.data.data; 
 
-        // jwt_decode 함수 호출 시 .default 사용 여부 확인
-        let decodedToken;
-        if (typeof jwt_decode === 'function') {
-          decodedToken = jwt_decode(token);
-        } else if (typeof jwt_decode.default === 'function') {
-          decodedToken = jwt_decode.default(token);
-        } else {
-          throw new Error('jwt_decode is not a function');
-        }
-
+        // jwtDecode 함수 호출 시 .default 사용 여부 확인
+        const decodedToken = jwtDecode(token);
         const role = decodedToken.role;
         const userId = decodedToken.userId;
 
@@ -90,16 +78,14 @@ export default {
         localStorage.setItem('token', token);
         localStorage.setItem('role', role);
         localStorage.setItem('userId', userId);  
-        localStorage.setItem('userNum', this.userNum); // userNum 저장
+        localStorage.setItem('userNum', this.userNum);
 
-        // 아이디 기억하기 기능
         if (this.rememberUserNum) {
           localStorage.setItem('savedUserNum', this.userNum);  
         } else {
           localStorage.removeItem('savedUserNum'); 
         }
 
-        // 홈 페이지로 이동
         alert('로그인 성공! 홈으로 이동합니다.');
         this.$router.push('/');
       } catch (e) {
