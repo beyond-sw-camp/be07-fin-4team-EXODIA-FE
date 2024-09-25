@@ -23,7 +23,7 @@
               ></v-text-field>
               <v-checkbox
                 v-model="rememberUserNum"
-                label="아이디 기억하기"
+                label="사번 저장하기"
               ></v-checkbox>
               <v-btn type="submit" color="primary" class="mt-3">로그인</v-btn>
             </v-form>
@@ -35,11 +35,7 @@
 </template>
 
 <script>
-// jwt-decode를 임포트하는 다양한 방식 중 하나로 시도해 보세요.
-import jwt_decode from 'jwt-decode'; // 기본 import 방식
-// import * as jwt_decode from 'jwt-decode'; // 대체 import 방식
-// const jwt_decode = require('jwt-decode'); // require 사용
-
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 export default {
@@ -48,7 +44,7 @@ export default {
     return {
       userNum: '',
       password: '',
-      rememberUserNum: false, // 아이디 기억하기 체크박스
+      rememberUserNum: false, 
     };
   },
   mounted() {
@@ -65,49 +61,43 @@ export default {
           userNum: this.userNum,
           password: this.password,
         };
-
-        // API 요청
-        const response = await axios.post('/user/login', loginData);
-
-        // 로그인 성공 시 받은 토큰 처리
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/user/login`, loginData);
         console.log('로그인 성공');
-        const token = response.data.data; // 서버 응답에서 토큰 데이터 추출
+        console.log('Received Response:', response);
 
-        // jwt_decode 함수 호출 시 .default 사용 여부 확인
-        let decodedToken;
-        if (typeof jwt_decode === 'function') {
-          decodedToken = jwt_decode(token);
-        } else if (typeof jwt_decode.default === 'function') {
-          decodedToken = jwt_decode.default(token);
-        } else {
-          throw new Error('jwt_decode is not a function');
+        const token = response.data.result; 
+        console.log('Received Token:', token);
+
+        if (!token || typeof token !== 'string') {
+          throw new Error('토큰이 없습니다. 로그인에 실패했습니다.');
         }
 
-        const role = decodedToken.role;
-        const userId = decodedToken.userId;
+        const decodedToken = jwtDecode(token);
 
-        // localStorage에 데이터 저장
+        const userNum = decodedToken.sub; 
+        const departmentId = decodedToken.department_id; 
+        const positionId = decodedToken.position_id; 
+
         localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
-        localStorage.setItem('userId', userId);  
-        localStorage.setItem('userNum', this.userNum); // userNum 저장
+        localStorage.setItem('userNum', userNum);
+        localStorage.setItem('departmentId', departmentId);
+        localStorage.setItem('positionId', positionId);
 
-        // 아이디 기억하기 기능
         if (this.rememberUserNum) {
           localStorage.setItem('savedUserNum', this.userNum);  
         } else {
           localStorage.removeItem('savedUserNum'); 
         }
 
-        // 홈 페이지로 이동
-        alert('로그인 성공! 홈으로 이동합니다.');
+        alert('로그인 성공');
         this.$router.push('/');
       } catch (e) {
-        console.error(e);
+        console.error('로그인 에러:', e.message);
         const error_message = e.response?.data?.status_message || "로그인에 실패했습니다.";
         alert(error_message);
       }
-    },
+    }
+
   },
 };
 </script>

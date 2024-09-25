@@ -1,42 +1,44 @@
-
 function initState() {
     return {
-      token: "",
-      role: "", 
-      userNum: "", 
-      email: ""
+        token: "", 
+        userNum: "", 
+        departmentId: "", 
+        positionId: "", 
     };
-  }
-  
-  const user = {
+}
+
+const user = {
     state: initState(),
     mutations: {
-      setUserAllInfo(state) {
-        state.token = localStorage.getItem('token');
-        state.role = localStorage.getItem('role');
-        state.userNum = localStorage.getItem('userNum');
-        console.log('User Info set in Vuex:', state);
-      },
-      resetUserState(state) {
-        Object.assign(state, initState());
-      }
+        setUserAllInfo(state) {
+            state.token = localStorage.getItem('token');
+            state.role = localStorage.getItem('role');
+            state.userNum = localStorage.getItem('userNum');
+            state.departmentId = localStorage.getItem('departmentId');
+            state.positionId = localStorage.getItem('positionId');
+            state.userId = localStorage.getItem('userId'); 
+            console.log('User Info set in Vuex:', state);
+        },
+        resetUserState(state) {
+            Object.assign(state, initState());
+        }
     },
     actions: {
-      setUserAllInfoActions({ commit }) {
-        commit('setUserAllInfo');
-      },
-      logout({ commit }) {
-        localStorage.clear();
-        commit('resetUserState');
-      }
+        setUserAllInfoActions({ commit }) {
+            commit('setUserAllInfo');
+        },
+        logout({ commit }) {
+            localStorage.clear();
+            commit('resetUserState');
+        }
     },
     getters: {
-      getUserObj: state => state,
-      getUserToken: state => state.token,
-      getUserRole: state => state.role,
-      getUserNum: state => state.userNum,
+        getUserObj: state => state,
+        getUserToken: state => state.token,
+        getUserNum: state => state.userNum,
+        getDepartmentId: state => state.departmentId,
+        getPositionId: state => state.positionId,
     }
-  };
-  
-  export default user;
-  
+};
+
+export default user;

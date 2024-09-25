@@ -1,5 +1,5 @@
-import { jwtDecode } from "jwt-decode";
 import Login from '@/views/Login.vue';
+import {jwtdecode} from "jwt-decode";
 
 export const userRouter = [
   {
@@ -15,7 +15,7 @@ export const userRouter = [
       const refreshToken = to.query.refreshToken;
       if (accessToken) {
         try {
-          const decoded = jwtDecode(accessToken);
+          const decoded = jwtdecode(accessToken);
           localStorage.setItem("token", accessToken);
           if (refreshToken) {
             localStorage.setItem("refreshToken", refreshToken);
