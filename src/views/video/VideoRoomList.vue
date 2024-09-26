@@ -3,7 +3,7 @@
       <v-row justify="center">
         <v-col cols="12">
           <v-card class="room-list-card">
-            <v-card-title class="headline">화상회의 방 목록</v-card-title>
+            <v-card-title class="headline">[화상회의 목록]</v-card-title>
             <v-card-text>
               <v-row>
                 <v-col
@@ -45,13 +45,19 @@
       };
     },
     mounted() {
-      this.fetchRooms();
+      this.fetchRooms(); 
     },
     methods: {
       async fetchRooms() {
         try {
           const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
-          this.rooms = response.data.data;
+          console.log("API Response:", response);
+          if (response.data && response.data.result) {
+            this.rooms = response.data.result; 
+            console.log("Fetched rooms:", this.rooms);
+          } else {
+            console.warn("No rooms found in response:", response.data);
+          }
         } catch (e) {
           console.error('방 목록을 가져오는 중 오류 발생:', e);
         }
@@ -79,24 +85,24 @@
     background-color: #f8f8f8;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 32px; 
+    padding: 32px;
   }
   
   .headline {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 16px;
-    color: #4CAF50; 
+    color: #4CAF50;
   }
   
   .room-card {
     cursor: pointer;
     transition: all 0.3s ease;
-    border-radius: 16px; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-    margin-bottom: 24px; 
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
     background-color: #fff;
-    padding: 24px; 
+    padding: 24px;
   }
   
   .room-card:hover {
@@ -105,8 +111,8 @@
   }
   
   .room-icon {
-    font-size: 28px; 
-    color: #4CAF50; 
+    font-size: 28px;
+    color: #4CAF50;
     margin-right: 12px;
   }
   
@@ -127,7 +133,7 @@
   .v-btn {
     margin-top: 16px;
     font-weight: bold;
-    background-color: #4CAF50; 
+    background-color: #4CAF50;
   }
   
   .v-btn:hover {

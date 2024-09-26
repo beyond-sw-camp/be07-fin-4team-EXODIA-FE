@@ -13,21 +13,30 @@
                   outlined
                   dense
                 ></v-text-field>
-                <v-text-field
-                  v-model="password"
-                  label="비밀번호"
-                  type="password"
-                  outlined
+                <v-checkbox
+                  v-model="usePassword"
+                  label="비밀번호 설정"
                   dense
-                ></v-text-field>
-                <v-text-field
-                  v-model="confirmPassword"
-                  label="비밀번호 확인"
-                  type="password"
-                  outlined
-                  dense
-                  :error-messages="passwordError"
-                ></v-text-field>
+                ></v-checkbox>
+                <v-slide-y-transition>
+                  <div v-if="usePassword">
+                    <v-text-field
+                      v-model="password"
+                      label="비밀번호"
+                      type="password"
+                      outlined
+                      dense
+                    ></v-text-field>
+                    <v-text-field
+                      v-model="confirmPassword"
+                      label="비밀번호 확인"
+                      type="password"
+                      outlined
+                      dense
+                      :error-messages="passwordError"
+                    ></v-text-field>
+                  </div>
+                </v-slide-y-transition>
                 <v-card-actions>
                   <v-btn color="success" @click="close">닫기</v-btn>
                   <v-btn color="error" @click="createRoom">생성</v-btn>
@@ -48,6 +57,7 @@
     data() {
       return {
         roomName: '',
+        usePassword: false, 
         password: '',
         confirmPassword: '',
         passwordError: ''
@@ -55,14 +65,14 @@
     },
     methods: {
       async createRoom() {
-        if (this.password !== this.confirmPassword) {
+        if (this.usePassword && this.password !== this.confirmPassword) {
           this.passwordError = '비밀번호가 일치하지 않습니다.';
           return;
         }
         try {
           const roomData = {
             roomName: this.roomName,
-            password: this.password
+            password: this.usePassword ? this.password : '' 
           };
           const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/create`, roomData, {
             headers: {
@@ -107,6 +117,10 @@
   
   .v-btn:hover {
     background-color: #45a049;
+  }
+  
+  .v-checkbox {
+    margin-top: 16px; 
   }
   </style>
   
