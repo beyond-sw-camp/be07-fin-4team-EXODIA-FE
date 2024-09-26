@@ -57,7 +57,7 @@ export default {
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  background-color: #5fde63;
+  background-color: #468949;
   position: fixed;
   top: 0;
   left: 0;

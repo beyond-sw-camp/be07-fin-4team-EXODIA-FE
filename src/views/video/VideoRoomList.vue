@@ -45,7 +45,7 @@
       };
     },
     mounted() {
-      this.fetchRooms(); 
+      this.fetchRooms();
     },
     methods: {
       async fetchRooms() {
@@ -53,7 +53,7 @@
           const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
           console.log("API Response:", response);
           if (response.data && response.data.result) {
-            this.rooms = response.data.result; 
+            this.rooms = response.data.result;
             console.log("Fetched rooms:", this.rooms);
           } else {
             console.warn("No rooms found in response:", response.data);
@@ -62,21 +62,28 @@
           console.error('방 목록을 가져오는 중 오류 발생:', e);
         }
       },
-      async enterRoom(roomName) {
-        const password = prompt('방 비밀번호를 입력하세요 (없으면 빈칸)');
-        try {
-          await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/join`, { roomName, password });
-          alert('방에 입장하였습니다!');
-          this.$router.push(`/video/room/${roomName}`);
-        } catch (e) {
-          console.error('방 입장 중 오류 발생:', e);
-          alert('방 입장에 실패했습니다.');
-        }
-      },
+  
       createRoom() {
         this.$router.push('/video/create');
       },
-    },
+  
+      async enterRoom(roomName) {
+        const password = prompt('방 비밀번호를 입력하세요 (없으면 빈칸)');
+        try {
+            const requestData = { roomName, password };
+            console.log('Request data:', requestData);
+            const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/join`, requestData);
+            console.log(response);
+            alert('방에 입장하였습니다!');
+            this.$router.push(`/video/room/${roomName}`);
+        } catch (e) {
+            console.error('방 입장 중 오류 발생:', e);
+            console.error('응답 데이터:', e.response?.data); 
+            alert(`방 입장에 실패했습니다. 오류: ${e.response?.data?.message || e.message}`);
+        }
+    }
+
+    }
   };
   </script>
   

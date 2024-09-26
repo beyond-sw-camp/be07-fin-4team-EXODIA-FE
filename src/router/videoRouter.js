@@ -1,5 +1,4 @@
 // import VideoCall from '@/views/video/VideoCall.vue';
-// import VideoRoom from '@/views/video/VideoRoom.vue';
 
 // export const videoRouter = [
 //     {
@@ -17,6 +16,7 @@
 
 import VideoRoomList from '@/views/video/VideoRoomList.vue'; 
 import CreateRoomPage from '@/views/video/CreateRoomPage.vue'; 
+import VideoRoom from '@/views/video/VideoRoom.vue';
 
 export const videoRouter = [
 
@@ -30,4 +30,10 @@ export const videoRouter = [
     name: 'CreateRoomPage',
     component: CreateRoomPage,
   },  
+    {
+    path: '/video/room/:roomName', 
+    name: 'VideoRoom',
+    component: VideoRoom,
+    props: true
+  }
 ];
