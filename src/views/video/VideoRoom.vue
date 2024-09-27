@@ -56,7 +56,7 @@
       connectToJanus() {
         Janus.init({ debug: "all", callback: () => {
           this.janus = new Janus({
-            server: "https://your-janus-server-address/janus",
+            server: "http://43.201.35.213:8088/janus/",
             success: this.attachToVideoRoomPlugin,
             error: (error) => {
               console.error("Janus 연결 실패:", error);

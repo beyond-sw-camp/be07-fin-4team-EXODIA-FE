@@ -71,20 +71,26 @@
         const password = prompt('방 비밀번호를 입력하세요 (없으면 빈칸)');
         try {
             const requestData = { roomName, password };
+            const token = localStorage.getItem('token');
             console.log('Request data:', requestData);
-            const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/join`, requestData);
+            const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/join`, requestData, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+            });
             console.log(response);
             alert('방에 입장하였습니다!');
             this.$router.push(`/video/room/${roomName}`);
         } catch (e) {
             console.error('방 입장 중 오류 발생:', e);
-            console.error('응답 데이터:', e.response?.data); 
+            console.error('응답 데이터:', e.response?.data);
             alert(`방 입장에 실패했습니다. 오류: ${e.response?.data?.message || e.message}`);
         }
-    }
+        }
 
     }
-  };
+};
   </script>
   
   <style scoped>
