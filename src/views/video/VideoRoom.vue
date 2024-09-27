@@ -20,8 +20,9 @@
   </template>
   
   <script>
-  import { Janus } from "janus-gateway";
-  
+//   import { Janus } from "janus-gateway";
+  import Janus from 'janus-gateway';
+
   export default {
     name: 'VideoRoom',
     props: ['roomName'],
