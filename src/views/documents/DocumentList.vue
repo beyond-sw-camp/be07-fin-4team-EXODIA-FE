@@ -3,20 +3,7 @@
         <v-row justify="center">
             <v-col cols="12" sm="8" md="6">
                 <v-card>
-                    <!-- <v-card-title class="headline">전체 문서 목록</v-card-title>
-                    <v-card-text>
-                        <v-list>
-                            <v-list-item v-for="document in documents" :key="document.id">
-                                <v-list-item-content>
-                                    <v-list-item-title>{{ document.roomName }}</v-list-item-title>
-                                    <v-list-item-subtitle>{{ document.participantCount }} 명 참여 중</v-list-item-subtitle>
-                                </v-list-item-content>
-                                <v-list-item-action>
-                                    <v-icon>mdi-arrow-right</v-icon>
-                                </v-list-item-action>
-                            </v-list-item>
-                        </v-list>
-                    </v-card-text> -->
+                    <v-select v-model="selectedType" :items="searchOptions" label="문서 타입 선택"></v-select>
                     <v-table>
                         <thead>
                             <tr>
@@ -53,17 +40,32 @@ export default {
     data() {
         return {
             documents: [],
-            token: localStorage.getItem('token') || null,  // 토큰을 저장
+            selectedType: '전체 문서',
+            searchOptions: ['전체 문서', '최근 조회 문서', '최근 수정 문서'],
+            token: localStorage.getItem('token') || null,
         };
     },
     mounted() {
         this.fetchDocuments();
     },
+    watch: {
+        selectedType() {
+            this.fetchDocuments();
+        }
+    },
     methods: {
         async fetchDocuments() {
+            let url = '';
             try {
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/all`,
-                    { headers: { Authorization: `Bearer ${this.token}` } }
+                if (this.selectedType == '전체 문서') {
+                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/all`;
+                } else if (this.selectedType == '최근 조회 문서') {
+                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewd`;
+                } else if (this.selectedType == '최근 수정 문서') {
+                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
+                }
+
+                const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } }
                 );
                 this.documents = response.data.result;
             } catch (e) {
