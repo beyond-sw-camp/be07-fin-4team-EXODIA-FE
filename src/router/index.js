@@ -1,8 +1,9 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/views/HomePage.vue';
-import { videoRouter } from './videoRouter'; 
-import { userRouter } from './userRouter'; 
+import { videoRouter } from './videoRouter';
+import { userRouter } from './userRouter';
+import { documentRouter } from './documentRouter';
 
 
 
@@ -13,7 +14,8 @@ const routes = [
     component: HomePage,
   },
   ...videoRouter,
-  ...userRouter
+  ...userRouter,
+  ...documentRouter
 ];
 
 const router = createRouter({
