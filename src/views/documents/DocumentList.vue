@@ -11,8 +11,7 @@
                     </template>
 
                     <v-list>
-                        <v-list-item v-for="option in searchDocOptions" :key="option.id"
-                            @click="fetchDocuments(option)">
+                        <v-list-item v-for="option in docOptions" :key="option.id" @click="fetchDocuments(option)">
                             <v-list-item-title>{{ option }}</v-list-item-title>
                         </v-list-item>
                     </v-list>
@@ -69,7 +68,7 @@
                         <p><strong>파일 등록일:</strong> {{ selectedDocument.updatedAt }}</p>
                         <p><strong>파일 등록자:</strong> {{ selectedDocument.updatedAt }}</p>
                         <p><strong>파일 다운로드:</strong>
-                            <v-btn color="primary" @click="fileDownload()">다운로드</v-btn>
+                            <v-btn color="primary" @click="fileDownload(selectedDocument.id)">다운로드</v-btn>
                         </p>
                         <p><strong>설명:</strong> {{ selectedDocument.description }}</p>
                     </v-card-text>
@@ -96,15 +95,16 @@ export default {
 
             documents: [],
             selectedDoc: '전체 문서',
-            searchDocOptions: ['전체 문서', '최근 조회 문서', '최근 수정 문서'],
+            docOptions: ['전체 문서', '최근 조회 문서', '최근 수정 문서'],
             selectedType: '',
-            selectedTypeOptions: [],
+            typeOptions: [],
             drawer: false,
             selectedDocument: {}
         };
     },
     mounted() {
         this.fetchDocuments(this.selectedDoc);
+        this.fetchTypes();
     },
     watch: {
         selectedType() {
@@ -132,6 +132,14 @@ export default {
                 console.error('문서 목록을 가져오는 중 오류 발생:', e);
             }
         },
+        async fetchTypes() {
+            try {
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/type`, { headers: { Authorization: `Bearer ${this.token}` } });
+                this.typeOptions = response.data.result;
+            } catch (e) {
+                console.error('문서 타입 가져오는 중 오류 발생:', e);
+            }
+        },
         // 문서 상세 조회
         async openDocumentDetail(id) {
             try {
@@ -149,8 +157,28 @@ export default {
         },
         async updateDocument(id) {
             const url = `${process.env.VUE_APP_API_BASE_URL}/document/update/${id}`;
-            const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
-            console.log(response.data.result)
+            await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
+        },
+        async fileDownload(id) {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/document/downloadFile/${id}`;
+                const response = await axios.get(url, {
+                    headers: { Authorization: `Bearer ${this.token}` },
+                    responseType: 'blob'
+                });
+
+                const blob = new Blob([response.data], { type: response.headers['content-type'] });
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.setAttribute('download', this.selectedDocument.fileName); // Set the filename
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                alert("파일 다운로드 성공");
+            } catch (e) {
+                console.error('파일 다운로드 중 오류 발생:', e);
+            }
         },
     },
 };
