@@ -58,26 +58,40 @@
 
         <!-- 상세 정보 -->
         <v-card>
+
+
             <v-navigation-drawer v-model="drawer" location="right" temporary width="400">
-                <v-card>
-                    <v-card-title>
-                        <span class="headline">{{ selectedDocument.fileName }}</span>
-                    </v-card-title>
-                    <v-card-text>
-                        <p><strong>파일 확장자:</strong> {{ selectedDocument.fileExtension }}</p>
-                        <p><strong>파일 등록일:</strong> {{ selectedDocument.updatedAt }}</p>
-                        <p><strong>파일 등록자:</strong> {{ selectedDocument.updatedAt }}</p>
-                        <p><strong>파일 다운로드:</strong>
-                            <v-btn color="primary" @click="fileDownload(selectedDocument.id)">다운로드</v-btn>
-                        </p>
-                        <p><strong>설명:</strong> {{ selectedDocument.description }}</p>
-                    </v-card-text>
-                    <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn color="primary" @click="updateDocument(selectedDocument.id)">업데이트</v-btn>
-                        <v-btn color="primary" @click="closeDrawer()">닫기</v-btn>
-                    </v-card-actions>
-                </v-card>
+                <v-tabs v-model="tab" align-tabs="center" background-color="transparent">
+                    <v-tab value="1">상세보기</v-tab>
+                    <v-tab value="2">히스토리</v-tab>
+                </v-tabs>
+
+                <v-tabs-window v-model="tab">
+                    <v-tabs-window-item value="1">
+                        <v-card-title>
+                            <span class="headline">{{ selectedDocument.fileName }}</span>
+                        </v-card-title>
+                        <v-card-text>
+                            <p><strong>파일 확장자:</strong> {{ selectedDocument.fileExtension }}</p>
+                            <p><strong>파일 등록일:</strong> {{ selectedDocument.createAt }}</p>
+                            <p><strong>파일 등록자:</strong> {{ selectedDocument.userName }}</p>
+                            <p><strong>파일 다운로드:</strong>
+                                <v-btn color="primary" @click="fileDownload(selectedDocument.id)">다운로드</v-btn>
+                            </p>
+                            <p><strong>설명:</strong> {{ selectedDocument.description }}</p>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="primary" @click="updateDocument(selectedDocument.id)">업데이트</v-btn>
+                            <v-btn color="primary" @click="closeDrawer()">닫기</v-btn>
+                        </v-card-actions>
+                    </v-tabs-window-item>
+
+                    <v-tabs-window-item value="2">
+                        <p>여기에 히스토리 내용이 표시됩니다.</p>
+                    </v-tabs-window-item>
+                </v-tabs-window>
+
             </v-navigation-drawer>
         </v-card>
 
@@ -99,7 +113,8 @@ export default {
             selectedType: '',
             typeOptions: [],
             drawer: false,
-            selectedDocument: {}
+            selectedDocument: {},
+            tab: '상세보기',
         };
     },
     mounted() {
@@ -158,6 +173,8 @@ export default {
         async updateDocument(id) {
             const url = `${process.env.VUE_APP_API_BASE_URL}/document/update/${id}`;
             await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
+
+
         },
         async fileDownload(id) {
             try {
@@ -168,9 +185,11 @@ export default {
                 });
 
                 const blob = new Blob([response.data], { type: response.headers['content-type'] });
+
+                // 다운로드를 위한 a태그 임시 추가
                 const link = document.createElement('a');
                 link.href = window.URL.createObjectURL(blob);
-                link.setAttribute('download', this.selectedDocument.fileName); // Set the filename
+                link.setAttribute('download', this.selectedDocument.fileName);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
