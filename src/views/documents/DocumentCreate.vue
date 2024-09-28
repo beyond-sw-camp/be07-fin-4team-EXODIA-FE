@@ -85,6 +85,9 @@ export default {
                     { headers: { Authorization: `Bearer ${this.token}` } }
                 );
                 console.log('업로드 성공:', response.data);
+                // 성공시 문서 리스트 화면으로 
+                this.$router.push('/documents');
+
             } catch (e) {
                 console.error('파일 업로드 중 오류 발생:', e);
             }
