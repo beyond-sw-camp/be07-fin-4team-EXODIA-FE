@@ -236,6 +236,7 @@ export default {
   justify-content: center;
   gap: 10px;
 }
+
 video {
   width: 300px;
   height: 200px;
