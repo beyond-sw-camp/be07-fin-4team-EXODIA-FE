@@ -13,7 +13,7 @@
                   sm="12"
                   md="6"
                 >
-                  <v-card class="room-card" @click="enterRoom(room.roomName)">
+                  <v-card class="room-card" @click="enterRoom(room.id)">
                     <v-card-title>
                       <v-icon class="room-icon">mdi-video</v-icon>
                       {{ room.roomName }}
@@ -67,10 +67,11 @@
         this.$router.push('/video/create');
       },
   
-      async enterRoom(roomName) {
+
+      async enterRoom(room) {
         const password = prompt('방 비밀번호를 입력하세요 (없으면 빈칸)');
         try {
-            const requestData = { roomName, password };
+            const requestData = { roomId: room.id, roomName: room.roomName, password }; // roomId와 roomName 함께 전송
             const token = localStorage.getItem('token');
             console.log('Request data:', requestData);
             const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/join`, requestData, {
@@ -81,7 +82,7 @@
             });
             console.log(response);
             alert('방에 입장하였습니다!');
-            this.$router.push(`/video/room/${roomName}`);
+            this.$router.push(`/video/room/${room.id}`); // roomId를 사용하여 방에 입장
         } catch (e) {
             console.error('방 입장 중 오류 발생:', e);
             console.error('응답 데이터:', e.response?.data);
@@ -90,7 +91,8 @@
         }
 
     }
-};
+  };
+  
   </script>
   
   <style scoped>
