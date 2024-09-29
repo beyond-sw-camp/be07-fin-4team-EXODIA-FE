@@ -96,7 +96,7 @@ export default {
     },
 
     joinRoom() {
-      let roomId = this.roomId; // roomId가 문자열일 수 있으니 숫자로 변환
+      let roomId = this.roomId; 
       console.log("Joining room with ID:", roomId);
 
       if (!roomId || isNaN(roomId)) {
