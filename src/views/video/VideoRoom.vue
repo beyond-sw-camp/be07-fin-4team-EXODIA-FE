@@ -24,8 +24,7 @@ import Janus from 'janus-gateway';
 
 export default {
   name: 'VideoRoom',
-  props: ['roomName', 'roomId'], 
-
+  props: ['roomName', 'roomId'], // roomId를 명확하게 받음
   data() {
     return {
       localStream: null,
@@ -35,7 +34,9 @@ export default {
       opaqueId: "videoroomtest-" + Janus.randomString(12),
     };
   },
-  async mounted() {
+  mounted() {
+    console.log("roomId:", this.roomId);  // URL에서 받은 roomId 출력
+    console.log("roomName:", this.roomName);  // 쿼리에서 받은 roomName 출력
     this.initWebRTC();
     this.connectToJanus();
   },
@@ -60,7 +61,7 @@ export default {
         callback: () => {
           this.janus = new Janus({
             server: "http://43.201.35.213:8088/janus",
-            apisecret: "mySuperSuperSecretKey", // API 시크릿 추가
+            apisecret: "mySuperSuperSecretKey",
             success: this.attachToVideoRoomPlugin,
             error: (error) => {
               console.error("Janus 연결 실패:", error);
@@ -93,26 +94,25 @@ export default {
         onremotestream: this.onRemoteStream,
       });
     },
+
     joinRoom() {
-  // 방 번호로 사용될 id가 있어야 함. this.roomId로 설정
-  const roomId = this.roomId;  // 방의 숫자 ID를 사용
-  console.log("Joining room with ID:", roomId);
+      let roomId = this.roomId; // roomId가 문자열일 수 있으니 숫자로 변환
+      console.log("Joining room with ID:", roomId);
 
-  if (!roomId || isNaN(roomId)) {
-    console.error("Invalid room ID");
-    return;
+      if (!roomId || isNaN(roomId)) {
+        console.error("Invalid room ID");
+        return;
   }
-
-  const register = {
-    request: "join",
-    room: roomId,  // 방 ID를 숫자로 설정
-    ptype: "publisher",
-    display: this.roomName,  // display에는 roomName을 넣을 수 있음
-    apisecret: "mySuperSuperSecretKey"  // API 시크릿 추가
-  };
-  this.videoRoomPlugin.send({ message: register });
-},
-
+     roomId = Number(roomId); 
+      const register = {
+        request: "join",
+        room: roomId,
+        ptype: "publisher",
+        display: this.roomName,
+        apisecret: "mySuperSuperSecretKey"
+      };
+      this.videoRoomPlugin.send({ message: register });
+    },
 
     onMessage(msg, jsep) {
       const event = msg["videoroom"];
@@ -120,8 +120,6 @@ export default {
         if (event === "joined") {
           console.log("방 참가 완료:", msg);
           this.publishOwnFeed(true);
-        } else if (event === "event") {
-          // Handle events like participants joining/leaving
         }
       }
 
@@ -134,7 +132,7 @@ export default {
       this.videoRoomPlugin.createOffer({
         media: { video: useVideo, audio: true },
         success: (jsep) => {
-          const publish = { request: "publish", audio: true, video: true, apisecret: "mySuperSuperSecretKey" }; // API 시크릿 추가
+          const publish = { request: "publish", audio: true, video: true, apisecret: "mySuperSuperSecretKey" };
           this.videoRoomPlugin.send({ message: publish, jsep: jsep });
         },
         error: (error) => {
@@ -153,7 +151,7 @@ export default {
 
     leaveRoom() {
       if (this.videoRoomPlugin) {
-        this.videoRoomPlugin.send({ message: { request: "leave", apisecret: "mySuperSuperSecretKey" } }); // API 시크릿 추가
+        this.videoRoomPlugin.send({ message: { request: "leave", apisecret: "mySuperSuperSecretKey" } });
         this.videoRoomPlugin.detach();
       }
       this.$router.push('/video/rooms');

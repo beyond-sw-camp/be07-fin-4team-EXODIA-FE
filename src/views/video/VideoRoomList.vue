@@ -13,7 +13,7 @@
                   sm="12"
                   md="6"
                 >
-                  <v-card class="room-card" @click="enterRoom(room.id)">
+                  <v-card class="room-card" @click="enterRoom(room)"> 
                     <v-card-title>
                       <v-icon class="room-icon">mdi-video</v-icon>
                       {{ room.roomName }}
@@ -67,32 +67,31 @@
         this.$router.push('/video/create');
       },
   
-
       async enterRoom(room) {
-        const password = prompt('방 비밀번호를 입력하세요 (없으면 빈칸)');
-        try {
-            const requestData = { roomId: room.id, roomName: room.roomName, password }; // roomId와 roomName 함께 전송
+            const password = prompt('방 비밀번호를 입력하세요 (없으면 빈칸)');
+            try {
+            const requestData = { roomId: room.id, roomName: room.roomName, password };
             const token = localStorage.getItem('token');
             console.log('Request data:', requestData);
             const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/join`, requestData, {
-            headers: {
+                headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            }
+                }
             });
             console.log(response);
             alert('방에 입장하였습니다!');
-            this.$router.push(`/video/room/${room.id}`); // roomId를 사용하여 방에 입장
-        } catch (e) {
+            // roomId는 URL 파라미터로, roomName은 쿼리로 전달
+            this.$router.push({ path: `/video/room/${room.id}`, query: { roomName: room.roomName } });
+            } catch (e) {
             console.error('방 입장 중 오류 발생:', e);
             console.error('응답 데이터:', e.response?.data);
             alert(`방 입장에 실패했습니다. 오류: ${e.response?.data?.message || e.message}`);
-        }
+            }
         }
 
     }
   };
-  
   </script>
   
   <style scoped>
