@@ -21,7 +21,6 @@
 
 <script>
 import Janus from 'janus-gateway';
-import adapter from 'webrtc-adapter'; // Import webrtc-adapter
 
 export default {
   name: 'VideoRoom',
@@ -32,13 +31,13 @@ export default {
       participants: [],
       janus: null,
       videoRoomPlugin: null,
+      remoteFeed: null, // remoteFeed를 추가
       opaqueId: "videoroomtest-" + Janus.randomString(12),
-      privateId: null, // Private ID to be used in subscribe
     };
   },
   async mounted() {
-    this.initWebRTC(); 
-    this.connectToJanus(); 
+    this.initWebRTC();
+    this.connectToJanus();
   },
   methods: {
     async initWebRTC() {
@@ -54,16 +53,15 @@ export default {
         alert('카메라와 마이크 권한이 필요합니다.');
       }
     },
-    
-    connectToJanus() {
-      Janus.useDefaultDependencies({ adapter: adapter }); // Add adapter here
 
-      Janus.init({ 
-        debug: "all", 
+    connectToJanus() {
+      Janus.init({
+        debug: "all",
         callback: () => {
           this.janus = new Janus({
             server: "http://43.201.35.213:8088/janus",
             apisecret: 'mySuperSuperSecretKey', // API 비밀 키 추가
+            iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
             success: this.attachToVideoRoomPlugin,
             error: (error) => {
               console.error("Janus 연결 실패:", error);
@@ -84,16 +82,16 @@ export default {
         success: (pluginHandle) => {
           this.videoRoomPlugin = pluginHandle;
           console.log("플러그인에 연결됨: ", pluginHandle);
-          this.joinRoom(); 
+          this.joinRoom();
         },
         error: (error) => {
           console.error("플러그인 연결 실패:", error);
         },
-        onmessage: this.onMessage, 
+        onmessage: this.onMessage,
         onlocalstream: (stream) => {
           document.getElementById('local-video').srcObject = stream;
         },
-        onremotestream: this.onRemoteStream, 
+        onremotestream: this.onRemoteStream, // 리모트 스트림 수신 시 처리
       });
     },
 
@@ -106,29 +104,63 @@ export default {
       };
       this.videoRoomPlugin.send({ message: register });
     },
-    
+
     onMessage(msg, jsep) {
       const event = msg["videoroom"];
       if (event) {
         if (event === "joined") {
           console.log("방 참가 완료:", msg);
-          this.privateId = msg["private_id"];
           this.publishOwnFeed(true);
-
-          if (msg["publishers"]) {
-            this.subscribeToRemoteFeeds(msg["publishers"]);
-          }
-        } else if (event === "event") {
-          if (msg["publishers"]) {
-            this.subscribeToRemoteFeeds(msg["publishers"]);
-          }
-        } else if (event === "leaving" || event === "unpublished") {
-          this.removeParticipant(msg["leaving"] || msg["unpublished"]);
+        } else if (event === "event" && msg["publishers"]) {
+          const publishers = msg["publishers"];
+          publishers.forEach(publisher => {
+            this.newRemoteFeed(publisher);
+          });
         }
       }
 
       if (jsep) {
         this.videoRoomPlugin.handleRemoteJsep({ jsep: jsep });
+      }
+    },
+
+    newRemoteFeed(publisher) {
+      this.janus.attach({
+        plugin: "janus.plugin.videoroom",
+        opaqueId: this.opaqueId,
+        success: (pluginHandle) => {
+          this.remoteFeed = pluginHandle;
+          console.log("Remote feed connected for publisher:", publisher);
+
+          const subscribe = {
+            request: "join",
+            room: parseInt(this.roomName),
+            ptype: "subscriber",
+            feed: publisher.id,
+          };
+          this.remoteFeed.send({ message: subscribe });
+        },
+        error: (error) => {
+          console.error("Remote feed 연결 실패:", error);
+        },
+        onmessage: this.onRemoteMessage,
+        onremotestream: this.onRemoteStream,
+      });
+    },
+
+    onRemoteMessage(msg, jsep) {
+      if (jsep) {
+        this.remoteFeed.createAnswer({
+          jsep: jsep,
+          media: { audioSend: false, videoSend: false }, // 구독자이므로 전송하지 않음
+          success: (jsep) => {
+            const body = { request: "start", room: parseInt(this.roomName) };
+            this.remoteFeed.send({ message: body, jsep: jsep });
+          },
+          error: (error) => {
+            console.error("응답 생성 실패:", error);
+          }
+        });
       }
     },
 
@@ -145,64 +177,6 @@ export default {
       });
     },
 
-    subscribeToRemoteFeeds(publishers) {
-      for (let i = 0; i < publishers.length; i++) {
-        let publisher = publishers[i];
-        let id = publisher["id"];
-        let display = publisher["display"];
-        console.log(`구독 요청: publisher ${display} (${id})`);
-
-        this.janus.attach({
-          plugin: "janus.plugin.videoroom",
-          opaqueId: this.opaqueId,
-          success: (pluginHandle) => {
-            const remoteFeed = pluginHandle; // eslint-disable-line no-undef
-            console.log(`Remote feed ${id} 연결됨: ${pluginHandle}`);
-
-            let subscribe = {
-              request: "join",
-              room: parseInt(this.roomName),
-              ptype: "subscriber",
-              feed: id,
-              private_id: this.privateId
-            };
-
-            remoteFeed.send({ message: subscribe });
-          },
-          error: (error) => {
-            console.error("Remote feed 연결 실패:", error);
-          },
-          onmessage: (msg, jsep) => {
-            if (jsep) {
-              this.videoRoomPlugin.createAnswer({
-                jsep: jsep,
-                media: { audioSend: false, videoSend: false }, 
-                success: (jsep) => {
-                  const body = { request: "start", room: parseInt(this.roomName) };
-                  remoteFeed.send({ message: body, jsep: jsep }); // eslint-disable-line no-undef
-                },
-                error: (error) => {
-                  console.error("응답 생성 실패:", error);
-                }
-              });
-            }
-          },
-          onremotestream: (stream) => {
-            console.log("Remote stream을 받았습니다:", stream);
-
-            const videoElement = document.createElement("video");
-            videoElement.srcObject = stream;
-            videoElement.autoplay = true;
-            videoElement.playsInline = true;
-            document.getElementById("video-grid").appendChild(videoElement);
-          },
-          oncleanup: () => {
-            console.log(`Remote feed ${id} 정리 완료`);
-          }
-        });
-      }
-    },
-
     onRemoteStream(stream) {
       const videoElement = document.createElement("video");
       videoElement.srcObject = stream;
@@ -210,20 +184,13 @@ export default {
       videoElement.playsInline = true;
       document.getElementById("video-grid").appendChild(videoElement);
     },
-    
-    removeParticipant(id) {
-      const videoElement = document.getElementById(`remote-video-${id}`);
-      if (videoElement) {
-        videoElement.remove();
-      }
-    },
-    
+
     leaveRoom() {
       if (this.videoRoomPlugin) {
         this.videoRoomPlugin.send({ message: { request: "leave" } });
         this.videoRoomPlugin.detach();
       }
-      this.$router.push('/video/rooms'); 
+      this.$router.push('/video/rooms');
     }
   }
 };
@@ -236,7 +203,6 @@ export default {
   justify-content: center;
   gap: 10px;
 }
-
 video {
   width: 300px;
   height: 200px;
