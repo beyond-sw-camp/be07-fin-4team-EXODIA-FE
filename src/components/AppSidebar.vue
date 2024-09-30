@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar">
     <div class="menu">
-      <div class="menu-item">
+      <div class="menu-item" @click="$router.push('/')">
         <v-icon class="icon">mdi-home</v-icon>
         <span class="tooltip">홈</span>
       </div>
@@ -29,7 +29,7 @@
         <v-icon class="icon">mdi-message-text</v-icon>
         <span class="tooltip">메신저</span>
       </div>
-      <div class="menu-item">
+      <div class="menu-item" @click="$router.push('/video/rooms')">
         <v-icon class="icon">mdi-video</v-icon>
         <span class="tooltip">화상회의</span>
       </div>
@@ -57,7 +57,7 @@ export default {
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  background-color: #5fde63;
+  background-color: #468949;
   position: fixed;
   top: 0;
   left: 0;

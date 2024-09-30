@@ -6,15 +6,14 @@ import { userRouter } from './userRouter';
 import { documentRouter } from './documentRouter';
 
 
-
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: HomePage,
   },
-  ...videoRouter,
   ...userRouter,
+  ...videoRouter,
   ...documentRouter
 ];
 
