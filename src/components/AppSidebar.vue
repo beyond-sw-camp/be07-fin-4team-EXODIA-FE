@@ -1,13 +1,11 @@
 <template>
   <aside class="sidebar">
     <div class="menu">
-      <!-- Toggle sub-sidebar -->
       <div class="menu-item" @click="toggleSubSidebar">
         <v-icon class="icon">mdi-menu</v-icon>
         <span class="tooltip">메뉴 더 보기</span>
       </div>
 
-      <!-- Main Sidebar Menu -->
       <div class="menu-item" @click="$router.push('/')">
         <v-icon class="icon">mdi-home</v-icon>
         <span class="tooltip">홈</span>
@@ -49,14 +47,15 @@
         <span class="tooltip">조직도</span>
       </div>
 
-      <!-- Sub Sidebar -->
+
+
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
         <div v-if="currentPage === '/video/rooms'" class="menu">
           <div class="menu-item">
-            <span @click="$router.push('/video/rooms/create')">방 생성</span>
+            <span @click="$router.push('/video/create')">방 생성</span>
           </div>
           <div class="menu-item">
-            <span @click="$router.push('/video/rooms/list')">방 목록</span>
+            <span @click="$router.push('/video/rooms')">방 목록</span>
           </div>
         </div>
 
@@ -78,7 +77,7 @@
           <div class="menu-item">
             <span>게시판</span>
             <ul>
-              <li @click="$router.push('/board/write')">게시물 작성 (관리자)</li>
+              <li @click="$router.push('/board/write')">게시물 작성</li>
               <li @click="$router.push('/board/list')">게시물 목록</li>
             </ul>
           </div>
@@ -102,7 +101,7 @@ export default {
   data() {
     return {
       isSubSidebarVisible: false,
-      currentPage: '' // 현재 페이지 URL
+      currentPage: '' 
     };
   },
   methods: {
@@ -111,13 +110,11 @@ export default {
     }
   },
   watch: {
-    // URL 변경 감지
     $route(to) {
       this.currentPage = to.path;
     }
   },
   mounted() {
-    // 페이지 로드 시 현재 페이지 URL 설정
     this.currentPage = this.$route.path;
   }
 };
