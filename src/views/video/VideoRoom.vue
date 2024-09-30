@@ -7,6 +7,7 @@
           <v-card-text>
             <div id="video-grid" class="video-grid">
               <video id="local-video" autoplay playsinline></video>
+              <!-- 참가자 비디오 목록 -->
               <video v-for="participant in participants" :key="participant.id" :id="'remote-video-' + participant.id" autoplay playsinline></video>
             </div>
           </v-card-text>
@@ -24,7 +25,7 @@ import Janus from 'janus-gateway';
 
 export default {
   name: 'VideoRoom',
-  props: ['roomName', 'roomId'], // roomId를 명확하게 받음
+  props: ['roomName', 'roomId'],
   data() {
     return {
       localStream: null,
@@ -35,18 +36,13 @@ export default {
     };
   },
   mounted() {
-    console.log("roomId:", this.roomId);  // URL에서 받은 roomId 출력
-    console.log("roomName:", this.roomName);  // 쿼리에서 받은 roomName 출력
     this.initWebRTC();
     this.connectToJanus();
   },
   methods: {
     async initWebRTC() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         this.localStream = stream;
         document.getElementById('local-video').srcObject = stream;
       } catch (err) {
@@ -81,32 +77,23 @@ export default {
         opaqueId: this.opaqueId,
         success: (pluginHandle) => {
           this.videoRoomPlugin = pluginHandle;
-          console.log("플러그인에 연결됨: ", pluginHandle);
           this.joinRoom();
         },
         error: (error) => {
           console.error("플러그인 연결 실패:", error);
         },
-        onmessage: this.onMessage,
+        onmessage: this.onMessage, 
         onlocalstream: (stream) => {
           document.getElementById('local-video').srcObject = stream;
         },
-        onremotestream: this.onRemoteStream,
+        onremotestream: this.onRemoteStream, // 원격 스트림 처리
       });
     },
 
     joinRoom() {
-      let roomId = this.roomId; 
-      console.log("Joining room with ID:", roomId);
-
-      if (!roomId || isNaN(roomId)) {
-        console.error("Invalid room ID");
-        return;
-  }
-     roomId = Number(roomId); 
       const register = {
         request: "join",
-        room: roomId,
+        room: this.roomId,
         ptype: "publisher",
         display: this.roomName,
         apisecret: "mySuperSuperSecretKey"
@@ -116,10 +103,44 @@ export default {
 
     onMessage(msg, jsep) {
       const event = msg["videoroom"];
-      if (event) {
-        if (event === "joined") {
-          console.log("방 참가 완료:", msg);
-          this.publishOwnFeed(true);
+      if (event === "joined") {
+        console.log("방 참가 완료:", msg);
+        
+        // 이미 존재하는 참가자들의 목록을 받아옴
+        if (msg["publishers"]) {
+          const publishers = msg["publishers"];
+          for (let i in publishers) {
+            const publisher = publishers[i];
+            console.log("참가자 ID:", publisher.id);
+
+            // 참가자에 대한 구독 요청 (subscribe)
+            const subscribe = {
+              request: "join",
+              room: this.roomId,
+              ptype: "subscriber",
+              feed: publisher.id,
+            };
+            this.videoRoomPlugin.send({ message: subscribe });
+          }
+        }
+
+        this.publishOwnFeed(true);
+      }
+
+      if (event === "event" && msg["publishers"]) {
+        const publishers = msg["publishers"];
+        for (let i in publishers) {
+          const publisher = publishers[i];
+          console.log("새 참가자 ID:", publisher.id);
+
+          // 새로 들어온 참가자에 대한 구독
+          const subscribe = {
+            request: "join",
+            room: this.roomId,
+            ptype: "subscriber",
+            feed: publisher.id,
+          };
+          this.videoRoomPlugin.send({ message: subscribe });
         }
       }
 
@@ -142,11 +163,12 @@ export default {
     },
 
     onRemoteStream(stream) {
+      console.log("원격 스트림 수신됨:", stream);
       const videoElement = document.createElement("video");
       videoElement.srcObject = stream;
       videoElement.autoplay = true;
       videoElement.playsInline = true;
-      document.getElementById("video-grid").appendChild(videoElement);
+      document.getElementById("video-grid").appendChild(videoElement); // 비디오를 그리드에 추가
     },
 
     leaveRoom() {
