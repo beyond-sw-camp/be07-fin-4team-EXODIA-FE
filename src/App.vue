@@ -27,13 +27,13 @@ export default {
 
 <style>
 :root {
-  --sidebar-width: 4%; 
-  --header-height: 60px; 
+  --sidebar-width: 4%;
+  --header-height: 60px;
 }
 
 .app-container {
-  display: flex; 
-  height: 100vh; 
+  display: flex;
+  height: 100vh;
 }
 
 .main-layout {
@@ -44,25 +44,24 @@ export default {
 }
 
 .header {
-  height: var(--header-height); 
+  height: var(--header-height);
   background-color: #e6f1e3;
-  display: flex; 
+  display: flex;
   align-items: center;
-  padding: 0 20px; 
+  padding: 0 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: calc(100% - var(--sidebar-width));
-  position: fixed; 
+  position: fixed;
   top: 0;
-  left: var(--sidebar-width); 
-  z-index: 1000; 
+  left: var(--sidebar-width);
+  z-index: 500; 
 }
 
 .main-content {
   flex: 1;
-  margin-top: var(--header-height); 
+  margin-top: var(--header-height);
   padding: 20px;
   background-color: #f5f5f5;
-  overflow-y: auto; 
+  overflow-y: auto;
 }
 </style>
-
