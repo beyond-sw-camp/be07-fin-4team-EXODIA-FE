@@ -5,15 +5,14 @@ import { videoRouter } from './videoRouter';
 import { userRouter } from './userRouter'; 
 
 
-
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: HomePage,
   },
-  ...videoRouter,
-  ...userRouter
+  ...userRouter,
+  ...videoRouter
 ];
 
 const router = createRouter({

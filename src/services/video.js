@@ -1,7 +1,7 @@
 // src/services/video.js
 import Janus from 'janus-gateway';
 
-const JANUS_SERVER = 'http://ec2-3-39-254-7.ap-northeast-2.compute.amazonaws.com:8088/janus';
+const JANUS_SERVER = 'http://43.201.35.213:8088/janus"';
 
 export default {
   janus: null,

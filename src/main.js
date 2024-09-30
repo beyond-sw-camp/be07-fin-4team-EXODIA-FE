@@ -1,3 +1,4 @@
+// main.js
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
@@ -5,7 +6,10 @@ import store from './store';
 import axios from 'axios';
 import vuetify from './plugins/vuetify';
 
-axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8088';
+import adapter from 'webrtc-adapter';
+window.adapter = adapter; // window 객체에 adapter 설정
+
+axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8087';
 
 const app = createApp(App);
 
