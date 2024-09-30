@@ -58,12 +58,10 @@
 
         <!-- 상세 정보 -->
         <v-card>
-
-
             <v-navigation-drawer v-model="drawer" location="right" temporary width="400">
                 <v-tabs v-model="tab" align-tabs="center" background-color="transparent">
                     <v-tab value="1">상세보기</v-tab>
-                    <v-tab value="2">히스토리</v-tab>
+                    <v-tab value="2" @click="fetchHistory(this.selectedDocument.id)">히스토리</v-tab>
                 </v-tabs>
 
                 <v-tabs-window v-model="tab">
@@ -82,13 +80,34 @@
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn color="primary" @click="updateDocument(selectedDocument.id)">업데이트</v-btn>
+                            <v-btn color="primary">업데이트</v-btn>
                             <v-btn color="primary" @click="closeDrawer()">닫기</v-btn>
                         </v-card-actions>
                     </v-tabs-window-item>
 
                     <v-tabs-window-item value="2">
-                        <p>여기에 히스토리 내용이 표시됩니다.</p>
+                        <v-card-title>
+                            <span class="headline">히스토리</span>
+                        </v-card-title>
+
+                        <v-card-text>
+                            <v-list>
+                                <v-list-item-group>
+                                    <v-list-item v-for="(history, index) in historyDocument" :key="index">
+                                        <v-list-item-content>
+                                            <v-list-item-title>{{ history.fileName }}</v-list-item-title>
+                                            <v-list-item-text>{{ history.userName }}</v-list-item-text>
+                                            <v-list-item-text>version{{ history.version }}</v-list-item-text>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </v-list-item-group>
+                            </v-list>
+                        </v-card-text>
+
+                        <v-card-title>
+                            <span class="headline">댓글</span>
+                        </v-card-title>
+
                     </v-tabs-window-item>
                 </v-tabs-window>
 
@@ -113,8 +132,9 @@ export default {
             selectedType: '',
             typeOptions: [],
             drawer: false,
-            selectedDocument: {},
+            selectedDocument: [],
             tab: '상세보기',
+            historyDocument: [],
         };
     },
     mounted() {
@@ -124,7 +144,7 @@ export default {
     watch: {
         selectedType() {
             this.fetchDocuments();
-        }
+        },
     },
     methods: {
         // 문서 리스트 조회
@@ -140,7 +160,6 @@ export default {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
                 }
 
-                console.log(url)
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
                 this.documents = response.data.result;
             } catch (e) {
@@ -170,12 +189,12 @@ export default {
         closeDrawer() {
             this.drawer = false;
         },
-        async updateDocument(id) {
-            const url = `${process.env.VUE_APP_API_BASE_URL}/document/update/${id}`;
-            await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
+        // async updateDocument(id) {
+        //     const url = `${process.env.VUE_APP_API_BASE_URL}/document/update/${id}`;
+        //     await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
 
 
-        },
+        // },
         async fileDownload(id) {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/downloadFile/${id}`;
@@ -199,6 +218,17 @@ export default {
                 console.error('파일 다운로드 중 오류 발생:', e);
             }
         },
+        async fetchHistory(id) {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/document/${id}/versions`;
+                const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
+                console.log(url)
+                console.log(response.data.result[0])
+                this.historyDocument = response.data.result;
+            } catch (e) {
+                console.error('히스토리 정보를 가져오는 중 오류 발생:', e);
+            }
+        }
     },
 };
 </script>

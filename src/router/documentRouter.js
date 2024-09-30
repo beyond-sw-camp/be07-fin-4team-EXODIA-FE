@@ -11,5 +11,6 @@ export const documentRouter = [
         path: '/documents/create',
         name: 'DocumentCreate',
         component: DocumentCreate,
-    }
+    },
+
 ];
