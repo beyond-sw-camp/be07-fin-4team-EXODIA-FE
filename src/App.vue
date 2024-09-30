@@ -54,7 +54,7 @@ export default {
   position: fixed;
   top: 0;
   left: var(--sidebar-width);
-  z-index: 1000;
+  z-index: 500; 
 }
 
 .main-content {

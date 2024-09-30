@@ -49,8 +49,10 @@
 
 
 
+
+
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
-        <div v-if="currentPage === '/video/rooms'" class="menu">
+        <div v-if="currentPage.startsWith('/video')" class="menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
           </div>
@@ -59,7 +61,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage === '/document'" class="menu">
+        <div v-if="currentPage.startsWith('/document')" class="menu">
           <div class="menu-item">
             <span>팀 문서함</span>
             <ul>
@@ -73,7 +75,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage === '/board'" class="menu">
+        <div v-if="currentPage.startsWith('/board')" class="menu">
           <div class="menu-item">
             <span>게시판</span>
             <ul>
@@ -90,7 +92,6 @@
           </div>
         </div>
       </aside>
-
     </div>
   </aside>
 </template>
@@ -101,7 +102,7 @@ export default {
   data() {
     return {
       isSubSidebarVisible: false,
-      currentPage: '' 
+      currentPage: ''
     };
   },
   methods: {
@@ -134,7 +135,7 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -147,7 +148,7 @@ export default {
   position: fixed;
   top: 0;
   left: var(--sidebar-width);
-  z-index: 1100;
+  z-index: 2000;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -193,6 +194,7 @@ export default {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
+  z-index: 3000; 
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
