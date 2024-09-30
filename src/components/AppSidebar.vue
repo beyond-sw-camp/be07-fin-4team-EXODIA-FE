@@ -6,6 +6,10 @@
         <span class="tooltip">홈</span>
       </div>
       <div class="menu-item">
+        <v-icon class="icon">mdi-account</v-icon>
+        <span class="tooltip">마이페이지</span>
+      </div>
+      <div class="menu-item">
         <v-icon class="icon">mdi-calendar</v-icon>
         <span class="tooltip">캘린더</span>
       </div>
@@ -57,7 +61,7 @@ export default {
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  background-color: #468949;
+  background-color: #4CAF50;
   position: fixed;
   top: 0;
   left: 0;
