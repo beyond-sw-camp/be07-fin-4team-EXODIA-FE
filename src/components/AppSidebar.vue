@@ -46,12 +46,12 @@
         <v-icon class="icon">mdi-account-group</v-icon>
         <span class="tooltip">조직도</span>
       </div>
+      <div v-if="isHrDepartment" class="menu-item" @click="$router.push('/employee-management')">
+        <v-icon class="icon">mdi-account-cog</v-icon>
+        <span class="tooltip">직원 관리</span>
+      </div>
 
-
-
-
-
-      <aside v-if="isSubSidebarVisible" class="sub-sidebar">
+      <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar">
         <div v-if="currentPage.startsWith('/video')" class="menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
@@ -91,6 +91,23 @@
             </ul>
           </div>
         </div>
+
+        <div v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="menu">
+          <div class="menu-item">
+            <span>직원 관리</span>
+            <ul>
+              <li @click="$router.push('/employee-management/list')">직원 목록</li>
+              <li @click="$router.push('/employee-management/register')">직원 등록</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>급여 관리</span>
+            <ul>
+              <li @click="$router.push('/salary-management/list')">직원 급여 목록</li>
+              <li @click="$router.push('/salary-management/manage')">급여일 관리</li>
+            </ul>
+          </div>
+        </div>
       </aside>
     </div>
   </aside>
@@ -102,7 +119,8 @@ export default {
   data() {
     return {
       isSubSidebarVisible: false,
-      currentPage: ''
+      currentPage: '',
+      isHrDepartment: false
     };
   },
   methods: {
@@ -113,10 +131,17 @@ export default {
   watch: {
     $route(to) {
       this.currentPage = to.path;
+      if (this.currentPage.startsWith('/employee-management') || this.currentPage.startsWith('/salary-management')) {
+        this.isSubSidebarVisible = true;
+      }
     }
   },
   mounted() {
     this.currentPage = this.$route.path;
+    const departmentId = localStorage.getItem('departmentId');
+    if (departmentId === '4') {
+      this.isHrDepartment = true;
+    }
   }
 };
 </script>
@@ -194,7 +219,7 @@ export default {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  z-index: 3000; 
+  z-index: 3000;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
