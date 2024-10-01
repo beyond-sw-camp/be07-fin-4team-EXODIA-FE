@@ -50,8 +50,9 @@
         <v-icon class="icon">mdi-account-cog</v-icon>
         <span class="tooltip">직원 관리</span>
       </div>
+      <aside v-if="isSubSidebarVisible" class="sub-sidebar">
 
-      <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar">
+      <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
         <div v-if="currentPage.startsWith('/video')" class="menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
