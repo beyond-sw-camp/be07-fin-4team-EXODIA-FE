@@ -63,8 +63,8 @@
                 <td>{{ item.positionName }}</td>
                 <td>{{ item.joinDate }}</td>
                 <td>
-                  <v-btn @click.stop="editUser(item.userNum)" color="primary">수정</v-btn>
-                  <v-btn @click.stop="openDeleteDialog(item.userNum)" text color="red">삭제</v-btn>
+                  <v-btn class="red-text" @click.stop="editUser(item.userNum)" >수정</v-btn>
+                  <v-btn class="green-text" @click.stop="openDeleteDialog(item.userNum)" >삭제</v-btn>
                 </td>
               </tr>
             </template>
@@ -89,8 +89,8 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="red darken-1" @click="confirmDelete" text>삭제</v-btn>
-            <v-btn color="primary" @click="closeDeleteDialog" text>취소</v-btn>
+            <v-btn class="red-text" @click="confirmDelete">삭제</v-btn>
+            <v-btn class="green-text" @click="closeDeleteDialog">취소</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -121,7 +121,7 @@
           { text: "입사일", value: "joinDate" },
           { text: "관리", value: "actions", sortable: false },
         ],
-        deleteDialog: false,  
+        deleteDialog: false,
         deleteInfo: {
           userNum: "",
           deletedBy: "",
@@ -220,5 +220,14 @@
     color: #3f51b5;
     text-decoration: underline;
   }
+
+  .green-text {
+    color: #4CAF50 !important; 
+  }
+  
+  .red-text {
+    color: #AF2626 !important;
+  }
+
   </style>
   

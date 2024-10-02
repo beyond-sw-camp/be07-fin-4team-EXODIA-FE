@@ -98,7 +98,7 @@
             <span>직원 관리</span>
             <ul>
               <li @click="$router.push('/employee-management')">직원 목록</li>
-              <li @click="$router.push('/employee-management/register')">직원 등록</li>
+              <li @click="$router.push('/employee-management/create')">직원 등록</li>
             </ul>
           </div>
           <div class="menu-item">
