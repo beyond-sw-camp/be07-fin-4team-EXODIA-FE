@@ -83,7 +83,6 @@
                 <v-icon @click="toggleProjectVisibility"> {{ showProject ? 'mdi-chevron-up' :
                   'mdi-chevron-down' }}</v-icon>
               </v-list-item>
-
               <div v-if="showProject">
                 <v-list>
                   <v-list-item v-for="(type, index) in typeOptions" :key="index" @click="$router.push({
