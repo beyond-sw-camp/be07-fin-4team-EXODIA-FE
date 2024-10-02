@@ -1,5 +1,5 @@
 <template>
-    <v-container>
+    <v-container class="main-container">
         <h1>문서 등록</h1>
         <v-row justify="center">
             <v-col cols="12">
@@ -120,5 +120,9 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.main-container {
+    padding: 100px 150px;
 }
 </style>

@@ -64,15 +64,38 @@
 
         <div v-if="currentPage.startsWith('/document')" class="menu">
           <div class="menu-item">
-            <span>팀 문서함</span>
-            <ul>
-              <li @click="$router.push('/document/team/all')">전체 문서</li>
-              <li @click="$router.push('/document/team/updated')">최근 업데이트 문서</li>
-              <li @click="$router.push('/document/team/viewed')">최근 조회 문서</li>
-            </ul>
-          </div>
-          <div class="menu-item">
-            <span @click="$router.push('/project')">프로젝트</span>
+            <span style="font-size:20px; font-weight:800">팀 문서함</span>
+            <v-btn class="createBtn" @click="$router.push('/document/create')">
+              문서 등록
+            </v-btn>
+            <v-list>
+              <v-list-item @click="$router.push('/document')">
+                <v-list-item-title>전체 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$router.push('/document/list/updated')">
+                <v-list-item-title>최근 업데이트 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$router.push('/document/list/viewed')">
+                <v-list-item-title>최근 조회 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <span>프로젝트</span>
+                <v-icon @click="toggleProjectVisibility"> {{ showProject ? 'mdi-chevron-up' :
+                  'mdi-chevron-down' }}</v-icon>
+              </v-list-item>
+
+              <div v-if="showProject">
+                <v-list>
+                  <v-list-item v-for="(type, index) in typeOptions" :key="index" @click="$router.push({
+                    name: 'DocumentTypeList', state: {
+                      id: index + 1
+                    }
+                  })">
+                    <v-list-item-title>{{ type }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-list>
           </div>
         </div>
 
@@ -134,7 +157,19 @@ export default {
   methods: {
     toggleSubSidebar() {
       this.isSubSidebarVisible = !this.isSubSidebarVisible;
-    }
+    },
+    toggleProjectVisibility() {
+      this.showProject = !this.showProject;
+    },
+    async fetchTypes() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/types`, { headers: { Authorization: `Bearer ${this.token}` } });
+        this.typeOptions = response.data.result;
+        console.log(this.typeOptions)
+      } catch (e) {
+        console.error('문서 타입 가져오는 중 오류 발생:', e);
+      }
+    },
   },
   watch: {
     $route(to) {
@@ -146,6 +181,8 @@ export default {
   },
   mounted() {
     this.currentPage = this.$route.path;
+    this.fetchTypes();
+
     const departmentId = localStorage.getItem('departmentId');
     if (departmentId === '4') {
       this.isHrDepartment = true;
