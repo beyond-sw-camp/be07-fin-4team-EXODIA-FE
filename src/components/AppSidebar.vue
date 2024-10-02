@@ -26,7 +26,7 @@
         <v-icon class="icon">mdi-email</v-icon>
         <span class="tooltip">문서 관리</span>
       </div>
-      <div class="menu-item" @click="$router.push('/reservation')">
+      <div class="menu-item" @click="$router.push('/reservation/reservationList')">
         <v-icon class="icon">mdi-timer-sand</v-icon>
         <span class="tooltip">예약</span>
       </div>
@@ -46,12 +46,13 @@
         <v-icon class="icon">mdi-account-group</v-icon>
         <span class="tooltip">조직도</span>
       </div>
-
-
-
-
-
+      <div v-if="isHrDepartment" class="menu-item" @click="$router.push('/employee-management')">
+        <v-icon class="icon">mdi-account-cog</v-icon>
+        <span class="tooltip">직원 관리</span>
+      </div>
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
+
+      <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
         <div v-if="currentPage.startsWith('/video')" class="menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
@@ -63,15 +64,38 @@
 
         <div v-if="currentPage.startsWith('/document')" class="menu">
           <div class="menu-item">
-            <span>팀 문서함</span>
-            <ul>
-              <li @click="$router.push('/document/team/all')">전체 문서</li>
-              <li @click="$router.push('/document/team/updated')">최근 업데이트 문서</li>
-              <li @click="$router.push('/document/team/viewed')">최근 조회 문서</li>
-            </ul>
-          </div>
-          <div class="menu-item">
-            <span @click="$router.push('/project')">프로젝트</span>
+            <span style="font-size:20px; font-weight:800">팀 문서함</span>
+            <v-btn class="createBtn" @click="$router.push('/document/create')">
+              문서 등록
+            </v-btn>
+            <v-list>
+              <v-list-item @click="$router.push('/document')">
+                <v-list-item-title>전체 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$router.push('/document/list/updated')">
+                <v-list-item-title>최근 업데이트 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$router.push('/document/list/viewed')">
+                <v-list-item-title>최근 조회 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <span>프로젝트</span>
+                <v-icon @click="toggleProjectVisibility"> {{ showProject ? 'mdi-chevron-up' :
+                  'mdi-chevron-down' }}</v-icon>
+              </v-list-item>
+
+              <div v-if="showProject">
+                <v-list>
+                  <v-list-item v-for="(type, index) in typeOptions" :key="index" @click="$router.push({
+                    name: 'DocumentTypeList', state: {
+                      id: index + 1
+                    }
+                  })">
+                    <v-list-item-title>{{ type }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-list>
           </div>
         </div>
 
@@ -91,10 +115,34 @@
             </ul>
           </div>
         </div>
+
+        <div v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management')|| currentPage.includes('/department-management')" class="menu">
+          <div class="menu-item">
+            <span>직원 관리</span>
+            <ul>
+              <li @click="$router.push('/employee-management')">직원 목록</li>
+              <li @click="$router.push('/employee-management/create')">직원 등록</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>급여 관리</span>
+            <ul>
+              <li @click="$router.push('/salary-management')">직원 급여 목록</li>
+              <li @click="$router.push('/salary-management/manage')">급여일 관리</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>부서 관리</span>
+            <ul>
+              <li @click="$router.push('/department-management')">부서 조회</li>
+            </ul>
+          </div>
+        </div>
       </aside>
     </div>
   </aside>
 </template>
+
 
 <script>
 export default {
@@ -102,21 +150,43 @@ export default {
   data() {
     return {
       isSubSidebarVisible: false,
-      currentPage: ''
+      currentPage: '',
+      isHrDepartment: false
     };
   },
   methods: {
     toggleSubSidebar() {
       this.isSubSidebarVisible = !this.isSubSidebarVisible;
-    }
+    },
+    toggleProjectVisibility() {
+      this.showProject = !this.showProject;
+    },
+    async fetchTypes() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/types`, { headers: { Authorization: `Bearer ${this.token}` } });
+        this.typeOptions = response.data.result;
+        console.log(this.typeOptions)
+      } catch (e) {
+        console.error('문서 타입 가져오는 중 오류 발생:', e);
+      }
+    },
   },
   watch: {
     $route(to) {
       this.currentPage = to.path;
+      if (this.currentPage.startsWith('/employee-management') || this.currentPage.startsWith('/salary-management')) {
+        this.isSubSidebarVisible = true;
+      }
     }
   },
   mounted() {
     this.currentPage = this.$route.path;
+    this.fetchTypes();
+
+    const departmentId = localStorage.getItem('departmentId');
+    if (departmentId === '4') {
+      this.isHrDepartment = true;
+    }
   }
 };
 </script>
@@ -194,7 +264,7 @@ export default {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  z-index: 3000; 
+  z-index: 3000;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 

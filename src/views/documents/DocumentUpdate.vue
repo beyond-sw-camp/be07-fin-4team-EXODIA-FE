@@ -1,6 +1,6 @@
 <template>
     <v-container class="main-container">
-        <h1>문서 등록</h1>
+        <h1>문서 업데이트</h1>
         <v-row justify="center">
             <v-col cols="12">
                 <v-form>
@@ -17,9 +17,7 @@
                         <v-col cols=4>
                             문서 타입
                         </v-col>
-                        <v-combobox v-model="selectedType" :items="typeOptions" item-title="text" item-value="value"
-                            label="타입명을 선택하세요. 새로 추가하려면 입력하세요." :filter="customFilter" @blur="addTypeIfNew"
-                            class="custom-select" allow-overflow clearable persistent-hint></v-combobox>
+                        <v-col cols="8"> {{ this.documentType }} </v-col>
                     </v-row>
                     <v-row>
                         <v-col cols=4>
@@ -44,50 +42,38 @@
 <script>
 import axios from 'axios';
 
+
 export default {
     name: 'DocumentCreate',
     data() {
         return {
             token: localStorage.getItem('token') || null,
-            selectedType: '',
-            typeOptions: [],
+            document: {},
             description: '',
             selectedFile: '',
+            documentId: '',
+            documentType: '',
         }
     },
     mounted() {
-        this.fetchTypes();
+        const { id } = history.state;
+        this.documentId = id;
+        this.fetchDocument();
     },
     methods: {
-        async fetchTypes() {
+        async fetchDocument() {
             try {
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/types`, { headers: { Authorization: `Bearer ${this.token}` } });
-                this.typeOptions = response.data.result;
-                console.log(this.typeOptions)
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/detail/` + this.documentId, { headers: { Authorization: `Bearer ${this.token}` } });
+                this.document = response.data.result;
+                this.documentType = response.data.result.documentType;
             } catch (e) {
-                console.error('문서 타입 가져오는 중 오류 발생:', e);
-            }
-        },
-        async addTypeIfNew(newType) {
-            const existingType = this.typeOptions.find(type => type.value === newType);
-
-            if (!existingType && newType) {
-                try {
-                    const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/type/create`, {
-                        typeName: newType
-                    });
-                    console.log(response.data.result)
-
-                    this.typeOptions.push({ text: newType, value: newType });
-                    console("새로운 문서 타입이 추가되었습니다.");
-                } catch (e) {
-                    console.error('Error adding new document type:', e);
-                }
+                console.error('문서 디테일 가져오는 중 오류 발생:', e);
             }
         },
         async submitForm() {
             try {
                 const data = {
+                    id: this.documentId,
                     typeName: this.selectedType,
                     description: this.description,
                 };
@@ -95,7 +81,7 @@ export default {
                 submitData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
                 submitData.append("file", this.selectedFile);
 
-                await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/uploadFile`, submitData,
+                await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/update`, submitData,
                     { headers: { Authorization: `Bearer ${this.token}` } }
                 );
                 this.$router.push('/document');
