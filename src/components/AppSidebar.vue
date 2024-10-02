@@ -85,7 +85,11 @@
 
               <div v-if="showProject">
                 <v-list>
-                  <v-list-item v-for="type in typeOptions" :key="type.id">
+                  <v-list-item v-for="(type, index) in typeOptions" :key="index" @click="$router.push({
+                    name: 'DocumentTypeList', state: {
+                      id: index + 1
+                    }
+                  })">
                     <v-list-item-title>{{ type }}</v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -134,10 +138,6 @@ export default {
   methods: {
     toggleSubSidebar() {
       this.isSubSidebarVisible = !this.isSubSidebarVisible;
-      if (this.isSubSidebarVisible) {
-        this.fetchTypes();
-
-      }
     },
     toggleProjectVisibility() {
       this.showProject = !this.showProject;
@@ -159,6 +159,7 @@ export default {
   },
   mounted() {
     this.currentPage = this.$route.path;
+    this.fetchTypes();
   }
 };
 </script>
