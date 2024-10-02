@@ -1,14 +1,15 @@
 <template>
     <v-container>
+        <h1>문서 등록</h1>
         <v-row justify="center">
-            <v-col cols="12" sm="8" md="6">
+            <v-col cols="12">
                 <v-form>
                     <v-row>
                         <v-col cols=4>
                             첨부파일
                         </v-col>
                         <v-col cols="8">
-                            <v-file-input v-model="selectedFile" label="파일 선택" @change="fileUpdate" hide-details>
+                            <v-file-input v-model="selectedFile" label="파일 선택" @change="fileUpdate()">
                             </v-file-input>
                         </v-col>
                     </v-row>
@@ -16,10 +17,9 @@
                         <v-col cols=4>
                             문서 타입
                         </v-col>
-                        <v-col cols="8">
-                            <v-select v-model="selectedType" :items="typeOptions" item-title="text" item-value="value"
-                                class="custom-select"></v-select>
-                        </v-col>
+                        <v-combobox v-model="selectedType" :items="typeOptions" item-title="text" item-value="value"
+                            label="타입명을 선택하세요. 새로 추가하려면 입력하세요." :filter="customFilter" @blur="addTypeIfNew"
+                            class="custom-select" allow-overflow clearable persistent-hint></v-combobox>
                     </v-row>
                     <v-row>
                         <v-col cols=4>
@@ -30,9 +30,10 @@
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col cols="12" class="text-right">
-                            <v-btn color="primary" @click="submitForm">등록</v-btn>
-                        </v-col>
+                        <v-card-actions>
+                            <v-btn style="background-color:#4CAF50; color:#ffffff" @click="submitForm">등록</v-btn>
+                            <v-btn style="background-color:#AF2626; color:#ffffff" @click="closeForm">닫기</v-btn>
+                        </v-card-actions>
                     </v-row>
                 </v-form>
             </v-col>
@@ -44,28 +45,44 @@
 import axios from 'axios';
 
 export default {
-    name: 'DocumentsList',
+    name: 'DocumentCreate',
     data() {
         return {
             token: localStorage.getItem('token') || null,
-            selectedFile: '',
-            typeName: '',
-            description: '',
             selectedType: '',
-            typeOptions: []
-        };
+            typeOptions: [],
+            description: '',
+            selectedFile: '',
+        }
     },
     mounted() {
         this.fetchTypes();
     },
     methods: {
-        // 문서 타입 
         async fetchTypes() {
             try {
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/type`, { headers: { Authorization: `Bearer ${this.token}` } });
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/types`, { headers: { Authorization: `Bearer ${this.token}` } });
                 this.typeOptions = response.data.result;
+                console.log(this.typeOptions)
             } catch (e) {
                 console.error('문서 타입 가져오는 중 오류 발생:', e);
+            }
+        },
+        async addTypeIfNew(newType) {
+            const existingType = this.typeOptions.find(type => type.value === newType);
+
+            if (!existingType && newType) {
+                try {
+                    const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/type/create`, {
+                        typeName: newType
+                    });
+                    console.log(response.data.result)
+
+                    this.typeOptions.push({ text: newType, value: newType });
+                    console("새로운 문서 타입이 추가되었습니다.");
+                } catch (e) {
+                    console.error('Error adding new document type:', e);
+                }
             }
         },
         async submitForm() {
@@ -74,19 +91,14 @@ export default {
                     typeName: this.selectedType,
                     description: this.description,
                 };
+                const submitData = new FormData();
+                submitData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
+                submitData.append("file", this.selectedFile);
 
-                const createData = new FormData();
-                createData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
-                createData.append("file", this.selectedFile);
-
-                console.log(data)
-                console.log(this.selectedFile)
-                const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/uploadFile`, createData,
+                await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/uploadFile`, submitData,
                     { headers: { Authorization: `Bearer ${this.token}` } }
                 );
-                console.log('업로드 성공:', response.data);
-                // 성공시 문서 리스트 화면으로 
-                this.$router.push('/documents');
+                this.$router.push('/document');
 
             } catch (e) {
                 console.error('파일 업로드 중 오류 발생:', e);
@@ -95,8 +107,10 @@ export default {
         fileUpdate() {
             console.log('선택한 파일:', this.selectedFile);
         },
+        closeForm() {
+            this.$router.push('/document');
+        }
     }
-
 };
 </script>
 
