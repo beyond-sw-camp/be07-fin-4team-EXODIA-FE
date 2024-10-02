@@ -1,27 +1,30 @@
 <template>
     <v-row>
-        <h1 :class="{ 'drawer-open': drawer }" style="margin:100px 240px 80px">{{ pageTitle }}</h1>
+        <h2 :class="{ 'drawer-open': drawer }" style="margin:100px 240px 50px">{{ pageTitle }}</h2>
     </v-row>
 
     <div v-if="this.documents.length > 0">
-        <v-row justify="center" :class="{ 'drawer-open': drawer }">
-            <v-col cols="12" sm="8" md="6">
-                <v-row class="mb-2">
-                    <v-col></v-col>
-                    <v-col>제목</v-col>
-                    <v-col>문서타입</v-col>
-                    <v-col>작성자명</v-col>
-                    <v-col>생성 시간</v-col>
-                    <v-col>조회</v-col>
+        <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center; ">
+            <v-col cols="12" sm="8">
+                <v-row class="mb-2"
+                    style="background-color:#E6E8EF; border-radius:12px; padding:4px; color:#444444; font-weight:600;">
+                    <v-col cols="1"><strong>#</strong></v-col>
+                    <v-col cols="3"><strong>제목</strong></v-col>
+                    <v-col cols="2"><strong>프로젝트명</strong></v-col>
+                    <v-col cols="2"><strong>작성자명</strong></v-col>
+                    <v-col cols="2"><strong>생성 날짜</strong></v-col>
+                    <v-col cols="2"><strong>조회수</strong></v-col>
                 </v-row>
-                <v-row v-for="document in documents" :key="document.id" class="document"
-                    @click="openDrawer(document.id)">
-                    <v-col>{{ document.id }}</v-col>
-                    <v-col>{{ document.fileName }}</v-col>
-                    <v-col>{{ document.type }}</v-col>
-                    <v-col>{{ document.userName }}</v-col>
-                    <v-col>{{ formatDate(document.createdAt) }}</v-col>
-                    <v-col>0</v-col>
+
+                <v-row v-for="(document, index) in documents" :key="document.id" class="document" oulined
+                    @click="openDrawer(document.id)"
+                    style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
+                    <v-col cols="1">{{ index + 1 }}</v-col>
+                    <v-col cols="3">{{ document.fileName }}</v-col>
+                    <v-col cols="2">{{ document.type }}</v-col>
+                    <v-col cols="2">{{ document.userName }}</v-col>
+                    <v-col cols="2">{{ formatDate(document.createdAt) }}</v-col>
+                    <v-col cols="1">{{ document.views || 34 }}</v-col>
                 </v-row>
             </v-col>
         </v-row>
@@ -55,6 +58,10 @@
                     <v-card-text>
                         <v-row>생성 날짜</v-row>
                         <v-row>{{ formatDate(selectedDocument.createAt) }}</v-row>
+                    </v-card-text>
+                    <v-card-text>
+                        <v-row>생성 시간</v-row>
+                        <v-row>{{ formatLocalTime(selectedDocument.createAt) }}</v-row>
                     </v-card-text>
                     <v-card-text>
                         <v-row>파일 등록자</v-row>
@@ -115,7 +122,7 @@
 
                                 <v-card-actions>
                                     <v-btn small text color="primary" @click="confirmRevert(history.id)">
-                                        revert
+                                        복원
                                     </v-btn>
                                 </v-card-actions>
                             </v-card>
@@ -261,6 +268,9 @@ export default {
         },
         formatDate(date) {
             return new Date(date).toLocaleDateString();
+        },
+        formatLocalTime(date) {
+            return new Date(date).toLocaleTimeString();
         },
         toggleHistoryVisibility() {
             this.showHistory = !this.showHistory;

@@ -29,7 +29,7 @@
                             <v-textarea v-model="description" label="설명" rows="3" class="custom-textarea"></v-textarea>
                         </v-col>
                     </v-row>
-                    <v-row>
+                    <v-row justify="end">
                         <v-card-actions>
                             <v-btn style="background-color:#4CAF50; color:#ffffff" @click="submitForm">등록</v-btn>
                             <v-btn style="background-color:#AF2626; color:#ffffff" @click="closeForm">닫기</v-btn>
