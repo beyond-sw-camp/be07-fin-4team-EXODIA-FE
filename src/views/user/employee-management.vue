@@ -4,6 +4,11 @@
         <v-col>
           <h1>직원 목록</h1>
         </v-col>
+        <v-col cols="12" md="2" class="text-right">
+          <v-btn icon @click="goToCreate">
+            <v-icon>mdi-account-plus</v-icon>
+          </v-btn>
+        </v-col>
       </v-row>
   
       <v-row>
@@ -103,7 +108,7 @@
   
   export default {
     name: "EmployeeManagement",
-    mixins: [hrMixin],  // mixin 적용
+    mixins: [hrMixin],
     data() {
       return {
         users: [],
@@ -136,7 +141,7 @@
         try {
           const response = await axios.get("/user/list");
           this.users = response.data;
-          console.log("직원 목록:", this.users); // 직원 목록 로드 확인
+          console.log("직원 목록:", this.users);
         } catch (error) {
           console.error("직원 목록을 불러오는 중 오류가 발생했습니다:", error);
         }
@@ -150,10 +155,14 @@
           };
           const response = await axios.get("/user/search", { params });
           this.users = response.data;
-          console.log("검색 결과:", this.users); // 검색 결과 확인
+          console.log("검색 결과:", this.users);
         } catch (error) {
           console.error("검색 중 오류가 발생했습니다:", error);
         }
+      },
+  
+      goToCreate() {
+        this.$router.push("/employee-management/create");
       },
   
       viewUser(item) {
@@ -184,7 +193,7 @@
           return;
         }
   
-        const token = localStorage.getItem("token");  // 토큰을 가져옴
+        const token = localStorage.getItem("token");
         if (!token) {
           alert("토큰이 필요합니다. 다시 로그인해주세요.");
           return;
@@ -193,7 +202,7 @@
         try {
           await axios.delete(`/user/delete`, {
             headers: {
-              Authorization: `Bearer ${token}`
+              Authorization: `Bearer ${token}`,
             },
             data: {
               userNum: this.deleteInfo.userNum,
@@ -212,7 +221,7 @@
             console.error("직원 삭제 중 오류가 발생했습니다:", error);
           }
         }
-      }
+      },
     },
     mounted() {
       this.fetchUsers();
