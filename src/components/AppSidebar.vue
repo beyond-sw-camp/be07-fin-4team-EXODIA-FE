@@ -110,6 +110,9 @@
           </div>
           <div class="menu-item">
             <span>부서 관리</span>
+            <ul>
+              <li @click="$router.push('/department-management')">부서 조회</li>
+            </ul>
           </div>
         </div>
       </aside>
