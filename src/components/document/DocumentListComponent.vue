@@ -324,11 +324,6 @@ v-card-title,
     margin-bottom: 20px;
 }
 
-.v-timeline-divider__inner-dot {
-    height: 20px;
-    width: 20px;
-}
-
 .detailFileName {
     font-size: 20px;
     margin: 20px 0 0;

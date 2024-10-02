@@ -52,7 +52,7 @@
 
 
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
-        <div v-if="currentPage.startsWith('/video')" class="menu">
+        <div v-if="currentPage.startsWith('/video')" class="subside-menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
           </div>
@@ -61,21 +61,40 @@
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/document')" class="menu">
+        <div v-if="currentPage.startsWith('/document')" class="subside-menu">
           <div class="menu-item">
-            <span>팀 문서함</span>
-            <ul>
-              <li @click="$router.push('/document/team/all')">전체 문서</li>
-              <li @click="$router.push('/document/team/updated')">최근 업데이트 문서</li>
-              <li @click="$router.push('/document/team/viewed')">최근 조회 문서</li>
-            </ul>
-          </div>
-          <div class="menu-item">
-            <span @click="$router.push('/project')">프로젝트</span>
+            <span style="font-size:20px; font-weight:800">팀 문서함</span>
+            <v-btn class="createBtn" @click="$router.push('/document/create')">
+              문서 등록
+            </v-btn>
+            <v-list>
+              <v-list-item @click="$router.push('/document')">
+                <v-list-item-title>전체 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$router.push('/document/list/updated')">
+                <v-list-item-title>최근 업데이트 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$router.push('/document/list/viewed')">
+                <v-list-item-title>최근 조회 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <span>프로젝트</span>
+                <v-icon @click="toggleProjectVisibility"> {{ showProject ? 'mdi-chevron-up' :
+                  'mdi-chevron-down' }}</v-icon>
+              </v-list-item>
+
+              <div v-if="showProject">
+                <v-list>
+                  <v-list-item v-for="type in typeOptions" :key="type.id">
+                    <v-list-item-title>{{ type }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-list>
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/board')" class="menu">
+        <div v-if="currentPage.startsWith('/board')" class="subside-menu">
           <div class="menu-item">
             <span>게시판</span>
             <ul>
@@ -97,23 +116,46 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'AppSidebar',
   data() {
     return {
+      token: localStorage.getItem('token') || null,
+
       isSubSidebarVisible: false,
-      currentPage: ''
+      currentPage: '',
+      selectedType: '',
+      showProject: false,
+      typeOptions: [],
     };
   },
   methods: {
     toggleSubSidebar() {
       this.isSubSidebarVisible = !this.isSubSidebarVisible;
-    }
+      if (this.isSubSidebarVisible) {
+        this.fetchTypes();
+
+      }
+    },
+    toggleProjectVisibility() {
+      this.showProject = !this.showProject;
+    },
+    async fetchTypes() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/types`, { headers: { Authorization: `Bearer ${this.token}` } });
+        this.typeOptions = response.data.result;
+        console.log(this.typeOptions)
+      } catch (e) {
+        console.error('문서 타입 가져오는 중 오류 발생:', e);
+      }
+    },
   },
   watch: {
     $route(to) {
       this.currentPage = to.path;
-    }
+    },
   },
   mounted() {
     this.currentPage = this.$route.path;
@@ -146,12 +188,12 @@ export default {
   height: 100vh;
   background-color: #357a38;
   position: fixed;
-  top: 0;
+  top: 8vh;
   left: var(--sidebar-width);
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: flex-start;
   align-items: flex-start;
   padding: 20px;
 }
@@ -168,7 +210,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
   color: #ffffff;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -179,7 +221,7 @@ export default {
   font-size: 2vw;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   color: #ffffff;
 }
 
@@ -194,7 +236,7 @@ export default {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  z-index: 3000; 
+  z-index: 3000;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
@@ -205,5 +247,24 @@ export default {
 
 .menu-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.subside-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: 100%;
+}
+
+.v-list {
+  background-color: #357a38;
+  color: #ffffff;
+}
+
+.createBtn {
+  margin: 10px 0;
+  width: 150px;
+  border: none;
 }
 </style>
