@@ -52,7 +52,7 @@
       </div>
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
 
-      <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
+        <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
         <div v-if="currentPage.startsWith('/video')" class="menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
@@ -116,7 +116,9 @@
           </div>
         </div>
 
-        <div v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management')|| currentPage.includes('/department-management')" class="menu">
+        <div
+          v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management') || currentPage.includes('/department-management')"
+          class="menu">
           <div class="menu-item">
             <span>직원 관리</span>
             <ul>
@@ -145,6 +147,8 @@
 
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'AppSidebar',
   data() {
@@ -275,5 +279,26 @@ export default {
 
 .menu-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.subside-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: 100%;
+}
+
+.v-list {
+  background-color: #357a38;
+  color: #ffffff;
+}
+
+.createBtn {
+  margin: 10px 0;
+  width: 150px;
+  border: none;
+
+
 }
 </style>
