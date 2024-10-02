@@ -64,13 +64,36 @@
                 <td>{{ item.joinDate }}</td>
                 <td>
                   <v-btn @click.stop="editUser(item.userNum)" color="primary">수정</v-btn>
-                  <v-btn @click.stop="deleteUser(item.userNum)" text color="red">삭제</v-btn>
+                  <v-btn @click.stop="openDeleteDialog(item.userNum)" text color="red">삭제</v-btn>
                 </td>
               </tr>
             </template>
           </v-data-table>
         </v-col>
       </v-row>
+  
+      <v-dialog v-model="deleteDialog" persistent max-width="400">
+        <v-card>
+          <v-card-title class="headline">직원 삭제</v-card-title>
+          <v-card-text>
+            <v-text-field
+              v-model="deleteInfo.deletedBy"
+              label="담당자"
+              required
+            ></v-text-field>
+            <v-textarea
+              v-model="deleteInfo.reason"
+              label="삭제 사유"
+              required
+            ></v-textarea>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red darken-1" @click="confirmDelete" text>삭제</v-btn>
+            <v-btn color="primary" @click="closeDeleteDialog" text>취소</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-container>
   </template>
   
@@ -98,6 +121,12 @@
           { text: "입사일", value: "joinDate" },
           { text: "관리", value: "actions", sortable: false },
         ],
+        deleteDialog: false,  
+        deleteInfo: {
+          userNum: "",
+          deletedBy: "",
+          reason: "",
+        },
       };
     },
     methods: {
@@ -135,15 +164,29 @@
         this.$router.push(`/employee-management/edit/${userNum}`);
       },
   
-      async deleteUser(userNum) {
-        const confirmed = confirm("정말로 이 직원을 삭제하시겠습니까?");
-        if (confirmed) {
-          try {
-            await axios.delete(`/user/${userNum}`);
-            this.fetchUsers();
-          } catch (error) {
-            console.error("직원 삭제 중 오류가 발생했습니다:", error);
-          }
+      openDeleteDialog(userNum) {
+        this.deleteInfo.userNum = userNum;
+        this.deleteDialog = true;
+      },
+  
+      closeDeleteDialog() {
+        this.deleteDialog = false;
+        this.deleteInfo = { userNum: "", deletedBy: "", reason: "" };
+      },
+  
+      async confirmDelete() {
+        if (!this.deleteInfo.deletedBy || !this.deleteInfo.reason) {
+          alert("담당자와 삭제 사유를 입력해주세요.");
+          return;
+        }
+  
+        try {
+          await axios.post("/user/delete", this.deleteInfo);
+          alert("직원이 삭제되었습니다.");
+          this.fetchUsers();
+          this.closeDeleteDialog();
+        } catch (error) {
+          console.error("직원 삭제 중 오류가 발생했습니다:", error);
         }
       }
     },
