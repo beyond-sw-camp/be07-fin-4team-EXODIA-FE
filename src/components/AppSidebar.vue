@@ -26,7 +26,7 @@
         <v-icon class="icon">mdi-email</v-icon>
         <span class="tooltip">문서 관리</span>
       </div>
-      <div class="menu-item" @click="$router.push('/reservation')">
+      <div class="menu-item" @click="$router.push('/reservation/reservationList')">
         <v-icon class="icon">mdi-timer-sand</v-icon>
         <span class="tooltip">예약</span>
       </div>
@@ -46,13 +46,14 @@
         <v-icon class="icon">mdi-account-group</v-icon>
         <span class="tooltip">조직도</span>
       </div>
-
-
-
-
-
+      <div v-if="isHrDepartment" class="menu-item" @click="$router.push('/employee-management')">
+        <v-icon class="icon">mdi-account-cog</v-icon>
+        <span class="tooltip">직원 관리</span>
+      </div>
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
-        <div v-if="currentPage.startsWith('/video')" class="subside-menu">
+
+      <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
+        <div v-if="currentPage.startsWith('/video')" class="menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
           </div>
@@ -61,7 +62,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/document')" class="subside-menu">
+        <div v-if="currentPage.startsWith('/document')" class="menu">
           <div class="menu-item">
             <span style="font-size:20px; font-weight:800">팀 문서함</span>
             <v-btn class="createBtn" @click="$router.push('/document/create')">
@@ -98,7 +99,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/board')" class="subside-menu">
+        <div v-if="currentPage.startsWith('/board')" class="menu">
           <div class="menu-item">
             <span>게시판</span>
             <ul>
@@ -114,25 +115,43 @@
             </ul>
           </div>
         </div>
+
+        <div v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management')|| currentPage.includes('/department-management')" class="menu">
+          <div class="menu-item">
+            <span>직원 관리</span>
+            <ul>
+              <li @click="$router.push('/employee-management')">직원 목록</li>
+              <li @click="$router.push('/employee-management/create')">직원 등록</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>급여 관리</span>
+            <ul>
+              <li @click="$router.push('/salary-management')">직원 급여 목록</li>
+              <li @click="$router.push('/salary-management/manage')">급여일 관리</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>부서 관리</span>
+            <ul>
+              <li @click="$router.push('/department-management')">부서 조회</li>
+            </ul>
+          </div>
+        </div>
       </aside>
     </div>
   </aside>
 </template>
 
-<script>
-import axios from 'axios';
 
+<script>
 export default {
   name: 'AppSidebar',
   data() {
     return {
-      token: localStorage.getItem('token') || null,
-
       isSubSidebarVisible: false,
       currentPage: '',
-      selectedType: '',
-      showProject: false,
-      typeOptions: [],
+      isHrDepartment: false
     };
   },
   methods: {
@@ -155,11 +174,19 @@ export default {
   watch: {
     $route(to) {
       this.currentPage = to.path;
-    },
+      if (this.currentPage.startsWith('/employee-management') || this.currentPage.startsWith('/salary-management')) {
+        this.isSubSidebarVisible = true;
+      }
+    }
   },
   mounted() {
     this.currentPage = this.$route.path;
     this.fetchTypes();
+
+    const departmentId = localStorage.getItem('departmentId');
+    if (departmentId === '4') {
+      this.isHrDepartment = true;
+    }
   }
 };
 </script>
@@ -189,12 +216,12 @@ export default {
   height: 100vh;
   background-color: #357a38;
   position: fixed;
-  top: 8vh;
+  top: 0;
   left: var(--sidebar-width);
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-evenly;
   align-items: flex-start;
   padding: 20px;
 }
@@ -211,7 +238,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: flex-start;
+  justify-content: center;
   color: #ffffff;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -222,7 +249,7 @@ export default {
   font-size: 2vw;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   color: #ffffff;
 }
 

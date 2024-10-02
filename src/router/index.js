@@ -4,6 +4,9 @@ import HomePage from '@/views/HomePage.vue';
 import { videoRouter } from './videoRouter';
 import { userRouter } from './userRouter';
 import { documentRouter } from './documentRouter';
+import { mypageRouter } from './mypageRouter';
+import { reservationRouter } from './reservationRouter';
+
 
 
 const routes = [
@@ -14,7 +17,9 @@ const routes = [
   },
   ...userRouter,
   ...videoRouter,
-  ...documentRouter
+  ...documentRouter,
+  ...mypageRouter,
+  ...reservationRouter
 ];
 
 const router = createRouter({
