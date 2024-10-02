@@ -46,13 +46,14 @@
         <v-icon class="icon">mdi-account-group</v-icon>
         <span class="tooltip">조직도</span>
       </div>
-
-
-
-
-
+      <div v-if="isHrDepartment" class="menu-item" @click="$router.push('/employee-management')">
+        <v-icon class="icon">mdi-account-cog</v-icon>
+        <span class="tooltip">직원 관리</span>
+      </div>
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
-        <div v-if="currentPage.startsWith('/video')" class="subside-menu">
+
+      <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
+        <div v-if="currentPage.startsWith('/video')" class="menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
           </div>
@@ -61,40 +62,21 @@
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/document')" class="subside-menu">
+        <div v-if="currentPage.startsWith('/document')" class="menu">
           <div class="menu-item">
-            <span style="font-size:20px; font-weight:800">팀 문서함</span>
-            <v-btn class="createBtn" @click="$router.push('/document/create')">
-              문서 등록
-            </v-btn>
-            <v-list>
-              <v-list-item @click="$router.push('/document')">
-                <v-list-item-title>전체 문서</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="$router.push('/document/list/updated')">
-                <v-list-item-title>최근 업데이트 문서</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="$router.push('/document/list/viewed')">
-                <v-list-item-title>최근 조회 문서</v-list-item-title>
-              </v-list-item>
-              <v-list-item>
-                <span>프로젝트</span>
-                <v-icon @click="toggleProjectVisibility"> {{ showProject ? 'mdi-chevron-up' :
-                  'mdi-chevron-down' }}</v-icon>
-              </v-list-item>
-
-              <div v-if="showProject">
-                <v-list>
-                  <v-list-item v-for="type in typeOptions" :key="type.id">
-                    <v-list-item-title>{{ type }}</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </div>
-            </v-list>
+            <span>팀 문서함</span>
+            <ul>
+              <li @click="$router.push('/document/team/all')">전체 문서</li>
+              <li @click="$router.push('/document/team/updated')">최근 업데이트 문서</li>
+              <li @click="$router.push('/document/team/viewed')">최근 조회 문서</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span @click="$router.push('/project')">프로젝트</span>
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/board')" class="subside-menu">
+        <div v-if="currentPage.startsWith('/board')" class="menu">
           <div class="menu-item">
             <span>게시판</span>
             <ul>
@@ -110,55 +92,64 @@
             </ul>
           </div>
         </div>
+
+        <div v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management')|| currentPage.includes('/department-management')" class="menu">
+          <div class="menu-item">
+            <span>직원 관리</span>
+            <ul>
+              <li @click="$router.push('/employee-management')">직원 목록</li>
+              <li @click="$router.push('/employee-management/create')">직원 등록</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>급여 관리</span>
+            <ul>
+              <li @click="$router.push('/salary-management')">직원 급여 목록</li>
+              <li @click="$router.push('/salary-management/manage')">급여일 관리</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>부서 관리</span>
+            <ul>
+              <li @click="$router.push('/department-management')">부서 조회</li>
+            </ul>
+          </div>
+        </div>
       </aside>
     </div>
   </aside>
 </template>
 
-<script>
-import axios from 'axios';
 
+<script>
 export default {
   name: 'AppSidebar',
   data() {
     return {
-      token: localStorage.getItem('token') || null,
-
       isSubSidebarVisible: false,
       currentPage: '',
-      selectedType: '',
-      showProject: false,
-      typeOptions: [],
+      isHrDepartment: false
     };
   },
   methods: {
     toggleSubSidebar() {
       this.isSubSidebarVisible = !this.isSubSidebarVisible;
-      if (this.isSubSidebarVisible) {
-        this.fetchTypes();
-
-      }
-    },
-    toggleProjectVisibility() {
-      this.showProject = !this.showProject;
-    },
-    async fetchTypes() {
-      try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/types`, { headers: { Authorization: `Bearer ${this.token}` } });
-        this.typeOptions = response.data.result;
-        console.log(this.typeOptions)
-      } catch (e) {
-        console.error('문서 타입 가져오는 중 오류 발생:', e);
-      }
-    },
+    }
   },
   watch: {
     $route(to) {
       this.currentPage = to.path;
-    },
+      if (this.currentPage.startsWith('/employee-management') || this.currentPage.startsWith('/salary-management')) {
+        this.isSubSidebarVisible = true;
+      }
+    }
   },
   mounted() {
     this.currentPage = this.$route.path;
+    const departmentId = localStorage.getItem('departmentId');
+    if (departmentId === '4') {
+      this.isHrDepartment = true;
+    }
   }
 };
 </script>
@@ -188,12 +179,12 @@ export default {
   height: 100vh;
   background-color: #357a38;
   position: fixed;
-  top: 8vh;
+  top: 0;
   left: var(--sidebar-width);
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-evenly;
   align-items: flex-start;
   padding: 20px;
 }
@@ -210,7 +201,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: flex-start;
+  justify-content: center;
   color: #ffffff;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -221,7 +212,7 @@ export default {
   font-size: 2vw;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   color: #ffffff;
 }
 
@@ -247,24 +238,5 @@ export default {
 
 .menu-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
-}
-
-.subside-menu {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  height: 100%;
-}
-
-.v-list {
-  background-color: #357a38;
-  color: #ffffff;
-}
-
-.createBtn {
-  margin: 10px 0;
-  width: 150px;
-  border: none;
 }
 </style>

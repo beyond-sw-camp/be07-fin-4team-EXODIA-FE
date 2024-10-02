@@ -12,6 +12,7 @@
     "@stomp/stompjs": "^7.0.0",
     "axios": "^1.7.7",
     "core-js": "^3.8.3",
+    "element-plus": "^2.8.4",
     "event-source-polyfill": "^1.0.31",
     "janus-gateway": "^1.2.4",
     "jwt-decode": "^4.0.0",
