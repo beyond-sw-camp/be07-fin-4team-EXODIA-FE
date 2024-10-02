@@ -1,32 +1,35 @@
 <template>
-    <v-row justify="center">
+    <v-row>
         <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle }}</h1>
+    </v-row>
 
-    </v-row>
-    <v-row justify="center" :class="{ 'drawer-open': drawer }">
-        <v-col cols="12" sm="8" md="6">
-            <v-row class="mb-2">
-                <v-col></v-col>
-                <v-col>제목</v-col>
-                <v-col>문서타입</v-col>
-                <v-col>작성자명</v-col>
-                <v-col>생성 시간</v-col>
-                <v-col>조회</v-col>
-            </v-row>
-            <v-row v-for="document in documents" :key="document.id" class="document" @click="openDrawer(document.id)">
-                <v-col>{{ document.id }}</v-col>
-                <v-col>{{ document.fileName }}</v-col>
-                <v-col>{{ document.type }}</v-col>
-                <v-col>{{ document.userName }}</v-col>
-                <v-col>{{ formatDate(document.createdAt) }}</v-col>
-                <v-col>0</v-col>
-            </v-row>
-        </v-col>
-    </v-row>
+    <div v-if="this.documents.length > 0">
+        <v-row justify="center" :class="{ 'drawer-open': drawer }">
+            <v-col cols="12" sm="8" md="6">
+                <v-row class="mb-2">
+                    <v-col></v-col>
+                    <v-col>제목</v-col>
+                    <v-col>문서타입</v-col>
+                    <v-col>작성자명</v-col>
+                    <v-col>생성 시간</v-col>
+                    <v-col>조회</v-col>
+                </v-row>
+                <v-row v-for="document in documents" :key="document.id" class="document"
+                    @click="openDrawer(document.id)">
+                    <v-col>{{ document.id }}</v-col>
+                    <v-col>{{ document.fileName }}</v-col>
+                    <v-col>{{ document.type }}</v-col>
+                    <v-col>{{ document.userName }}</v-col>
+                    <v-col>{{ formatDate(document.createdAt) }}</v-col>
+                    <v-col>0</v-col>
+                </v-row>
+            </v-col>
+        </v-row>
+    </div>
 
     <!-- 상세 정보 -->
     <v-card>
-        <v-navigation-drawer v-model="drawer" location="right" temporary width="500">
+        <v-navigation-drawer v-model="drawer" location="right" temporary width="400">
             <v-tabs v-model="tab" align-tabs="center" background-color="transparent">
                 <v-tab class="tabs" value="1">상세보기</v-tab>
                 <v-tab class="tabs" value="2" @click="fetchHistory(this.selectedDocument.id)">히스토리</v-tab>
@@ -168,9 +171,9 @@ export default {
             try {
                 if (this.pageTitle == '전체 문서') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/all`;
-                } else if (this.selectedDoc == '최근 조회 문서') {
-                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewd`;
-                } else if (this.selectedDoc == '최근 업데이트 문서') {
+                } else if (this.pageTitle == '최근 조회 문서') {
+                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewed`;
+                } else if (this.pageTitle == '최근 업데이트 문서') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
                 }
 
