@@ -63,8 +63,8 @@
                 <td>{{ item.positionName }}</td>
                 <td>{{ item.joinDate }}</td>
                 <td>
-                  <v-btn class="red-text" @click.stop="editUser(item.userNum)" >수정</v-btn>
-                  <v-btn class="green-text" @click.stop="openDeleteDialog(item.userNum)" >삭제</v-btn>
+                  <v-btn v-if="isHrDepartment" class="red-text" @click.stop="editUser(item.userNum)">수정</v-btn>
+                  <v-btn v-if="isHrDepartment" class="green-text" @click.stop="openDeleteDialog(item.userNum)">삭제</v-btn>
                 </td>
               </tr>
             </template>
@@ -99,9 +99,11 @@
   
   <script>
   import axios from "axios";
+  import hrMixin from "@/assets/js/hrMixin";
   
   export default {
     name: "EmployeeManagement",
+    mixins: [hrMixin],  // mixin 적용
     data() {
       return {
         users: [],
@@ -134,6 +136,7 @@
         try {
           const response = await axios.get("/user/list");
           this.users = response.data;
+          console.log("직원 목록:", this.users); // 직원 목록 로드 확인
         } catch (error) {
           console.error("직원 목록을 불러오는 중 오류가 발생했습니다:", error);
         }
@@ -147,6 +150,7 @@
           };
           const response = await axios.get("/user/search", { params });
           this.users = response.data;
+          console.log("검색 결과:", this.users); // 검색 결과 확인
         } catch (error) {
           console.error("검색 중 오류가 발생했습니다:", error);
         }
@@ -180,19 +184,39 @@
           return;
         }
   
+        const token = localStorage.getItem("token");  // 토큰을 가져옴
+        if (!token) {
+          alert("토큰이 필요합니다. 다시 로그인해주세요.");
+          return;
+        }
+  
         try {
-          await axios.post("/user/delete", this.deleteInfo);
+          await axios.delete(`/user/delete`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+            data: {
+              userNum: this.deleteInfo.userNum,
+              deletedBy: this.deleteInfo.deletedBy,
+              reason: this.deleteInfo.reason,
+            },
+          });
           alert("직원이 삭제되었습니다.");
           this.fetchUsers();
           this.closeDeleteDialog();
         } catch (error) {
-          console.error("직원 삭제 중 오류가 발생했습니다:", error);
+          if (error.response && (error.response.status === 403 || error.response.status === 401)) {
+            alert("토큰이 만료되었습니다. 다시 로그인해주세요.");
+            this.$router.push("/login");
+          } else {
+            console.error("직원 삭제 중 오류가 발생했습니다:", error);
+          }
         }
       }
     },
     mounted() {
       this.fetchUsers();
-    }
+    },
   };
   </script>
   
@@ -215,19 +239,12 @@
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 1px 2px rgba(0, 0, 0, 0.24);
   }
   
-  .clickable {
-    cursor: pointer;
-    color: #3f51b5;
-    text-decoration: underline;
-  }
-
   .green-text {
-    color: #4CAF50 !important; 
+    color: #4caf50 !important;
   }
   
   .red-text {
-    color: #AF2626 !important;
+    color: #af2626 !important;
   }
-
   </style>
   

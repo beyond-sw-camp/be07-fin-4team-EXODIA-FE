@@ -23,7 +23,7 @@ export const userRouter = [
   // },
 
   {
-    path: '/employee-management/register',
+    path: '/employee-management/create',
     name: 'employee-register',
     component: EmployeeForm,
   },
