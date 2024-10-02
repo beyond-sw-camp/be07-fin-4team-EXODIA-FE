@@ -1,6 +1,7 @@
 <template>
-    <v-row :class="{ 'drawer-open': drawer }">
-        {{ pageTitle }}
+    <v-row justify="center">
+        <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle }}</h1>
+
     </v-row>
     <v-row justify="center" :class="{ 'drawer-open': drawer }">
         <v-col cols="12" sm="8" md="6">
@@ -63,7 +64,12 @@
 
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn style="background-color:#4CAF50; color:#ffffff">업데이트</v-btn>
+                        <v-btn style="background-color:#4CAF50; color:#ffffff" @click="$router.push({
+                            name: 'DocumentUpdate', state: {
+                                id: selectedDocument.id,
+                            }
+                        })">
+                            업데이트</v-btn>
                         <v-btn style="background-color:#AF2626; color:#ffffff" @click="closeDrawer()">닫기</v-btn>
                     </v-card-actions>
                 </v-tabs-window-item>
@@ -99,7 +105,7 @@
                                 </v-card-subtitle>
 
                                 <v-card-actions>
-                                    <v-btn small text color="primary" @click="revertToVersion(history.id)">
+                                    <v-btn small text color="primary" @click="confirmRevert(history.id)">
                                         revert
                                     </v-btn>
                                 </v-card-actions>
@@ -119,6 +125,12 @@
 
                     <v-card-actions>
                         <v-spacer></v-spacer>
+                        <v-btn style="background-color:#4CAF50; color:#ffffff" @click="$router.push({
+                            name: 'DocumentUpdate', state: {
+                                id: selectedDocument.id,
+                            }
+                        })">
+                            업데이트</v-btn>
                         <v-btn style="background-color:#AF2626; color:#ffffff" @click="closeDrawer()">닫기</v-btn>
                     </v-card-actions>
 
@@ -130,7 +142,6 @@
 
 <script>
 import axios from 'axios'
-// import { mdiChevronDown } from '@mdi/js';
 
 export default {
     props: ['pageTitle'],
@@ -143,7 +154,7 @@ export default {
             drawer: false,
             selectedDocument: [],
             tab: '상세보기',
-            showHistory: false
+            showHistory: false,
         }
     },
     mounted() {
@@ -219,11 +230,19 @@ export default {
                 console.error('히스토리 정보를 가져오는 중 오류 발생:', e);
             }
         },
+        confirmRevert(versionId) {
+            // rollback 이전에 확인받기 위한 창
+            const isConfirmed = window.confirm("이후의 문서에 대한 모든 버전이 삭제됩니다.\n 그래도 버전 되돌리기를 진행하시겠습니까?");
+            if (isConfirmed) {
+                this.revertToVersion(versionId);
+            }
+        },
         async revertToVersion(id) {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/rollback/${id}`;
-                const response = await axios.post(url, { headers: { Authorization: `Bearer ${this.token}` } });
-                console.log(response)
+                await axios.post(url, { headers: { Authorization: `Bearer ${this.token}` } });
+
+                this.fetchHistory(id);
 
             } catch (e) {
                 console.error('롤백 중 오류 발생:', e);
@@ -275,7 +294,6 @@ v-card-title,
 
 .headline {
     font-size: 14px;
-
 }
 
 .tabs>.v-btn {
