@@ -6,7 +6,6 @@
         </v-col>
       </v-row>
   
-      <!-- 검색 필터 -->
       <v-row>
         <v-col cols="12" md="4">
           <v-select
@@ -30,19 +29,23 @@
         </v-col>
       </v-row>
   
-      <!-- 테이블 헤더 설명 추가 -->
       <v-row>
         <v-col>
-          <span>사번</span>
-          <span>부서</span>
-          <span>이름</span>
-          <span>직급</span>
-          <span>입사일</span>
-          <span>액션</span>
+          <table class="tbl-header">
+            <thead>
+              <tr>
+                <th>사번</th>
+                <th>부서</th>
+                <th>이름</th>
+                <th>직급</th>
+                <th>입사일</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+          </table>
         </v-col>
       </v-row>
   
-      <!-- 직원 목록 테이블 -->
       <v-row>
         <v-col>
           <v-data-table
@@ -50,26 +53,20 @@
             :items="users"
             item-value="userNum"
             class="elevation-1"
+            @click:row="viewUser"
           >
-            <!-- v-slot을 동적 바인딩으로 수정 -->
-            <template v-slot:[`item.userNum`]="{ item }">
-              {{ item.userNum }}
-            </template>
-            <template v-slot:[`item.departmentName`]="{ item }">
-              {{ item.departmentName }}
-            </template>
-            <template v-slot:[`item.name`]="{ item }">
-              {{ item.name }}
-            </template>
-            <template v-slot:[`item.positionName`]="{ item }">
-              {{ item.positionName }}
-            </template>
-            <template v-slot:[`item.joinDate`]="{ item }">
-              {{ item.joinDate }}
-            </template>
-            <template v-slot:[`item.actions`]="{ item }">
-              <v-btn @click="viewUser(item.userNum)" text>수정</v-btn>
-              <v-btn @click="deleteUser(item.userNum)" text color="red">삭제</v-btn>
+            <template #item="{ item }">
+              <tr @click="viewUser(item)">
+                <td>{{ item.userNum }}</td>
+                <td>{{ item.departmentName }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.positionName }}</td>
+                <td>{{ item.joinDate }}</td>
+                <td>
+                  <v-btn @click.stop="editUser(item.userNum)" text>수정</v-btn>
+                  <v-btn @click.stop="deleteUser(item.userNum)" text color="red">삭제</v-btn>
+                </td>
+              </tr>
             </template>
           </v-data-table>
         </v-col>
@@ -84,27 +81,26 @@
     name: "EmployeeManagement",
     data() {
       return {
-        users: [], // 직원 데이터
-        searchQuery: "", // 검색어
-        searchType: "all", // 검색 타입 (전체, 이름, 부서, 직급)
+        users: [], 
+        searchQuery: "", 
+        searchType: "all",
         searchOptions: [
           { text: "전체", value: "all" },
           { text: "이름", value: "name" },
           { text: "부서", value: "department" },
           { text: "직급", value: "position" },
-        ], // 검색 옵션
+        ], 
         headers: [
           { text: "사번", value: "userNum" },
           { text: "부서", value: "departmentName" },
           { text: "이름", value: "name" },
           { text: "직급", value: "positionName" },
           { text: "입사일", value: "joinDate" },
-          { text: "액션", value: "actions", sortable: false },
-        ], // 테이블 헤더
+          { text: "관리", value: "actions", sortable: false },
+        ],
       };
     },
     methods: {
-      // 직원 목록을 서버에서 가져오는 메서드
       async fetchUsers() {
         try {
           const response = await axios.get("/user/list");
@@ -127,8 +123,16 @@
         }
       },
   
-      viewUser(userNum) {
-        this.$router.push(`/employee-management/detail/${userNum}`);
+      viewUser(item) {
+        if (item && item.userNum) {
+          this.$router.push(`/employee-management/detail/${item.userNum}`);
+        } else {
+          console.error("유효한 직원 정보가 없습니다.");
+        }
+      },
+  
+      editUser(userNum) {
+        this.$router.push(`/employee-management/edit/${userNum}`);
       },
   
       async deleteUser(userNum) {
@@ -144,14 +148,34 @@
       }
     },
     mounted() {
-      this.fetchUsers(); 
+      this.fetchUsers();
     }
   };
   </script>
   
   <style scoped>
+  .tbl-header {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+  
+  .tbl-header th {
+    text-align: left;
+    padding: 10px;
+    background-color: #f5f5f5;
+    font-weight: bold;
+    border-bottom: 2px solid #ddd;
+  }
+  
   .elevation-1 {
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 1px 2px rgba(0, 0, 0, 0.24);
+  }
+  
+  .clickable {
+    cursor: pointer;
+    color: #3f51b5;
+    text-decoration: underline;
   }
   </style>
   

@@ -93,7 +93,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="menu">
+        <div v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management')|| currentPage.includes('/department-management')" class="menu">
           <div class="menu-item">
             <span>직원 관리</span>
             <ul>
@@ -108,11 +108,15 @@
               <li @click="$router.push('/salary-management/manage')">급여일 관리</li>
             </ul>
           </div>
+          <div class="menu-item">
+            <span>부서 관리</span>
+          </div>
         </div>
       </aside>
     </div>
   </aside>
 </template>
+
 
 <script>
 export default {
