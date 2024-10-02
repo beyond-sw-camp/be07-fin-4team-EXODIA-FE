@@ -26,7 +26,7 @@
         <v-icon class="icon">mdi-email</v-icon>
         <span class="tooltip">문서 관리</span>
       </div>
-      <div class="menu-item" @click="$router.push('/reservation')">
+      <div class="menu-item" @click="$router.push('/reservation/reservationList')">
         <v-icon class="icon">mdi-timer-sand</v-icon>
         <span class="tooltip">예약</span>
       </div>
