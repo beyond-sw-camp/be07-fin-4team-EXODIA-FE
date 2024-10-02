@@ -3,6 +3,7 @@ import DocumentViewedList from '@/views/documents/DocumentViewedList.vue'
 import DocumentUpdatedList from '@/views/documents/DocumentUpdatedList.vue'
 import DocumentCreate from '@/views/documents/DocumentCreate.vue'
 import DocumentUpdate from '@/views/documents/DocumentUpdate.vue'
+import DocumentTypeList from '@/views/documents/DocumentTypeList.vue'
 
 export const documentRouter = [
     {
@@ -34,6 +35,11 @@ export const documentRouter = [
         path: '/document/update',
         name: 'DocumentUpdate',
         component: DocumentUpdate,
+    },
+    {
+        path: '/document/type/list',
+        name: 'DocumentTypeList',
+        component: DocumentTypeList,
     },
 
 

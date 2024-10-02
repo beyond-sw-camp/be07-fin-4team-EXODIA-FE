@@ -1,6 +1,6 @@
 <template>
     <v-row>
-        <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle }}</h1>
+        <h1 :class="{ 'drawer-open': drawer }" style="margin:100px 240px 80px">{{ pageTitle }}</h1>
     </v-row>
 
     <div v-if="this.documents.length > 0">
@@ -24,6 +24,12 @@
                     <v-col>0</v-col>
                 </v-row>
             </v-col>
+        </v-row>
+    </div>
+
+    <div v-else>
+        <v-row justify="center" :class="{ 'drawer-open': drawer }">
+            데이터가 존재하지 않습니다.
         </v-row>
     </div>
 
@@ -158,16 +164,18 @@ export default {
             selectedDocument: [],
             tab: '상세보기',
             showHistory: false,
+            pageId: '',
         }
     },
     mounted() {
         this.fetchDocuments();
+        const { id } = history.state;
+        this.pageId = id;
     },
     methods: {
         async fetchDocuments() {
             let url = '';
-            this.title = this.pageTitle;
-
+            console.log("fetchdocument" + this.pageTitle)
             try {
                 if (this.pageTitle == '전체 문서') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/all`;
@@ -175,11 +183,12 @@ export default {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewed`;
                 } else if (this.pageTitle == '최근 업데이트 문서') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
+                } else {
+                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/type/${this.pageTitle}`;
                 }
 
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
                 this.documents = response.data.result;
-                console.log(this.documents)
             } catch (e) {
                 console.error('문서 목록을 가져오는 중 오류 발생:', e);
             }
@@ -226,8 +235,7 @@ export default {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/versions/${id}`;
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
-                console.log(url)
-                console.log(response.data.result[0])
+
                 this.historyDocument = response.data.result;
             } catch (e) {
                 console.error('히스토리 정보를 가져오는 중 오류 발생:', e);
@@ -245,7 +253,7 @@ export default {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/rollback/${id}`;
                 await axios.post(url, { headers: { Authorization: `Bearer ${this.token}` } });
 
-                this.fetchHistory(id);
+                location.reload();
 
             } catch (e) {
                 console.error('롤백 중 오류 발생:', e);
@@ -256,7 +264,7 @@ export default {
         },
         toggleHistoryVisibility() {
             this.showHistory = !this.showHistory;
-        },
+        }
     },
 }
 </script>
@@ -323,6 +331,7 @@ v-card-title,
 .v-card-text {
     margin-bottom: 20px;
 }
+
 
 .detailFileName {
     font-size: 20px;
