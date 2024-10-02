@@ -267,5 +267,7 @@ export default {
   margin: 10px 0;
   width: 150px;
   border: none;
+
+
 }
 </style>
