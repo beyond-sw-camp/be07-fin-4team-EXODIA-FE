@@ -97,14 +97,14 @@
           <div class="menu-item">
             <span>직원 관리</span>
             <ul>
-              <li @click="$router.push('/employee-management/list')">직원 목록</li>
+              <li @click="$router.push('/employee-management')">직원 목록</li>
               <li @click="$router.push('/employee-management/register')">직원 등록</li>
             </ul>
           </div>
           <div class="menu-item">
             <span>급여 관리</span>
             <ul>
-              <li @click="$router.push('/salary-management/list')">직원 급여 목록</li>
+              <li @click="$router.push('/salary-management')">직원 급여 목록</li>
               <li @click="$router.push('/salary-management/manage')">급여일 관리</li>
             </ul>
           </div>

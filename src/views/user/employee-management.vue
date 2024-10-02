@@ -63,7 +63,7 @@
                 <td>{{ item.positionName }}</td>
                 <td>{{ item.joinDate }}</td>
                 <td>
-                  <v-btn @click.stop="editUser(item.userNum)" text>수정</v-btn>
+                  <v-btn @click.stop="editUser(item.userNum)" color="primary">수정</v-btn>
                   <v-btn @click.stop="deleteUser(item.userNum)" text color="red">삭제</v-btn>
                 </td>
               </tr>
@@ -81,15 +81,15 @@
     name: "EmployeeManagement",
     data() {
       return {
-        users: [], 
-        searchQuery: "", 
+        users: [],
+        searchQuery: "",
         searchType: "all",
         searchOptions: [
           { text: "전체", value: "all" },
           { text: "이름", value: "name" },
           { text: "부서", value: "department" },
           { text: "직급", value: "position" },
-        ], 
+        ],
         headers: [
           { text: "사번", value: "userNum" },
           { text: "부서", value: "departmentName" },
