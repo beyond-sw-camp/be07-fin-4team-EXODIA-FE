@@ -10,11 +10,11 @@
         <v-icon class="icon">mdi-home</v-icon>
         <span class="tooltip">홈</span>
       </div>
-      <div class="menu-item" @click="$router.push('/mypage')">
+      <div class="menu-item" @click="$router.push('/mypage/userProfile')">
         <v-icon class="icon">mdi-account</v-icon>
         <span class="tooltip">마이페이지</span>
       </div>
-      <div class="menu-item" @click="$router.push('/calendar')">
+      <div class="menu-item" @click="$router.push('/calendar/calendarList')">
         <v-icon class="icon">mdi-calendar</v-icon>
         <span class="tooltip">캘린더</span>
       </div>
