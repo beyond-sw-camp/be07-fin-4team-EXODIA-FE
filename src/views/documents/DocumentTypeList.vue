@@ -1,6 +1,6 @@
-<template>
-    <DocumentListComponent :pageTitle="typeId" :documents="documents" />
-</template>
+    <template>
+        <DocumentListComponent :pageTitle="typeId" :documents="documents" />
+    </template>
 
 <script>
 import DocumentListComponent from '@/components/document/DocumentListComponent.vue';
@@ -22,7 +22,6 @@ export default {
     mounted() {
         const { id } = history.state;
         this.typeId = id;
-
         this.fetchDocuments();
     },
     methods: {

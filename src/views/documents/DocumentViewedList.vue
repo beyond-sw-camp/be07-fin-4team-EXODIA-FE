@@ -24,7 +24,7 @@ export default {
     methods: {
         async fetchDocuments() {
             try {
-                const url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewe`;
+                const url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewed`;
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
                 this.documents = response.data.result;
                 console.log(this.documents)

@@ -3,7 +3,20 @@
         <h2 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle }}</h2>
     </v-row>
 
-    <div v-if="this.documents.length > 0" :class="{ 'drawer-open': drawer }">
+    <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
+        <v-col cols="8" sm="8">
+            <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" @input="filterDocuments"
+                style="margin-bottom: 20px;"></v-text-field>
+        </v-col>
+        <v-col cols="4" sm="2">
+            <!-- Search button to trigger searchFilter method -->
+            <v-btn color="primary" @click="searchFilter(searchQuery)">
+                검색
+            </v-btn>
+        </v-col>
+    </v-row>
+
+    <div v-if="this.localDocuments.length > 0" :class="{ 'drawer-open': drawer }">
         <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center; ">
             <v-col cols="12" sm="8">
                 <v-row class="mb-2"
@@ -16,7 +29,7 @@
                     <v-col cols="2"><strong>조회수</strong></v-col>
                 </v-row>
 
-                <v-row v-for="(document, index) in documents" :key="document.id" class="document" oulined
+                <v-row v-for="(document, index) in localDocuments" :key="document.id" class="document" oulined
                     @click="openDrawer(document.id)"
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
@@ -171,11 +184,17 @@ export default {
             tab: '상세보기',
             showHistory: false,
             pageId: '',
+            localDocuments: this.documents,
         }
     },
     mounted() {
         const { id } = history.state;
         this.pageId = id;
+    },
+    watch: {
+        documents(newDocuments) {
+            this.localDocuments = newDocuments;
+        }
     },
     methods: {
         async openDrawer(id) {
@@ -191,6 +210,7 @@ export default {
             }
         },
         closeDrawer() {
+            this.showHistory = false;
             this.drawer = false;
         },
         async fileDownload(id) {
@@ -226,6 +246,22 @@ export default {
                 console.error('히스토리 정보를 가져오는 중 오류 발생:', e);
             }
         },
+        async searchFilter(input) {
+            try {
+                if (!input) {
+                    this.localDocuments = this.documents;
+                    return;
+                }
+                const url = `${process.env.VUE_APP_API_BASE_URL}/es/document/search?keyword=${input}`;
+                const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
+
+                this.localDocuments = response.data.result;
+            }
+            catch (e) {
+
+                console.error("검색 중 오류 발생: ", e)
+            }
+        },
         confirmRevert(versionId) {
             // rollback 이전에 확인받기 위한 창
             const isConfirmed = window.confirm("이후의 문서에 대한 모든 버전이 삭제됩니다.\n 그래도 버전 되돌리기를 진행하시겠습니까?");
@@ -235,8 +271,8 @@ export default {
         },
         async revertToVersion(id) {
             try {
-                const url = `${process.env.VUE_APP_API_BASE_URL}/document/rollback/${id}`;
-                await axios.post(url, { headers: { Authorization: `Bearer ${this.token}` } });
+                const url = `${process.env.VUE_APP_API_BASE_URL} /document/rollback / ${id} `;
+                await axios.post(url, { headers: { Authorization: `Bearer ${this.token} ` } });
 
                 location.reload();
 
