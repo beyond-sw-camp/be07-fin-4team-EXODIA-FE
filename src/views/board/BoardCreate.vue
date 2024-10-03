@@ -40,9 +40,6 @@
             multiple
           />
 
-          <!-- 미리보기 이미지 -->
-          <v-img v-if="previewImageSrc" :src="previewImageSrc" max-width="200" class="my-3" />
-
           <div class="btnWrap">
             <v-btn text @click="cancel">취소</v-btn>
             <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
@@ -61,13 +58,14 @@ export default {
     return {
       title: '',
       content: '',
-      files: [],
-      previewImageSrc: null,
+      files: [], // 파일 배열
       selectedCategory: null,
       categories: [
         { value: 'NOTICE', title: '공지사항' },
         { value: 'FAMILY_EVENT', title: '경조사' },
       ], // 게시판 목록을 저장할 배열
+      userNum: localStorage.getItem('userNum'), // 로컬스토리지에서 userNum 가져오기
+      departmentId: localStorage.getItem('departmentId') // 로컬스토리지에서 departmentId 가져오기
     };
   },
   mounted() {
@@ -75,49 +73,15 @@ export default {
   },
   methods: {
     checkUserRole() {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      if (!this.userNum || !this.departmentId) {
         alert('로그인이 필요합니다.');
         this.$router.push('/login');
         return;
       }
-
-      const decodedToken = this.parseJwt(token);
-      const role = decodedToken.role;
-
-      if (role !== 'ADMIN') {
-        this.categories = this.categories.filter(cat => cat.value === 'POST');
-      }
-    },
-    parseJwt(token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(
-          atob(base64)
-            .split('')
-            .map(function (c) {
-              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            })
-            .join('')
-        );
-        return JSON.parse(jsonPayload);
-      } catch (error) {
-        return null;
-      }
     },
     async submitForm() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
-
-      const decodedToken = this.parseJwt(token);
-      const userNum = decodedToken.userNum; // 토큰에서 사용자 사번 추출
-
-      if (decodedToken.role !== 'ADMIN' && this.selectedCategory !== 'POST') {
-        alert('관리자만 공지와 경조사 게시글을 작성할 수 있습니다.');
+      if (this.departmentId !== '4') {
+        alert('관리자만 작성할 수 있습니다.');
         return;
       }
 
@@ -125,20 +89,22 @@ export default {
       formData.append('title', this.title);
       formData.append('content', this.content);
       formData.append('category', this.selectedCategory); // 선택된 카테고리를 formData에 추가
-      formData.append('userNum', userNum); // 사용자 사번 추가
+      formData.append('userNum', this.userNum); // 사용자 사번 추가
 
-      if (this.files && this.files.length) {
-        for (let i = 0; i < this.files.length; i++) {
-          formData.append('files', this.files[i]);
-        }
+      // 파일 배열을 FormData에 추가
+      if (this.files && this.files.length > 0) {
+        this.files.forEach((file) => {
+          formData.append('files', file); // 'files'라는 키로 파일을 추가
+        });
       }
+
 
       try {
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`; // 서버 URL 수정
         const response = await axios.post(apiUrl, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Bearer 토큰 추가
           },
         });
         console.log('저장 성공:', response.data);

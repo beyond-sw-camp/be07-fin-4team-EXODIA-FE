@@ -21,38 +21,58 @@
         <v-row>
           <v-col cols="12">
             <ul class="info">
-              <li><strong>작성자: {{ board.user_num }}</strong></li>
+              <li><strong>작성자: {{ board.userNum }}</strong></li>
               <li><strong>작성일:</strong> {{ formatDate(board.createdAt) }}</li>
               <li><strong>조회수:</strong> {{ board.hits }}</li>
+              <li><strong>카테고리:</strong> {{ board.category }}</li>
             </ul>
-            <v-img v-if="board.files && board.files.length > 0" :src="board.files[0].filePath" alt="board Image" max-width="400" class="my-3"/>
+
+            <!-- 파일 목록 표시 -->
+            <v-row v-if="board.files && board.files.length > 0" class="file-list my-3">
+              <v-col v-for="file in board.files" :key="file.id" cols="12" sm="6" md="4">
+                <v-card class="file-card pa-3">
+                  <!-- 파일이 이미지 형식일 경우 이미지로 렌더링 -->
+                  <v-img v-if="isImage(file.fileType)" :src="file.filePath" alt="file image" max-width="100%" />
+                  <!-- 파일 이름을 링크로 제공 -->
+                  <v-card-title>
+                    <a :href="file.filePath" target="_blank" @click.prevent="downloadFile(file.filePath, file.fileName)">{{ file.fileName }}</a>
+                  </v-card-title>
+                </v-card>
+              </v-col>
+            </v-row>
+
             <div v-html="board.content" class="text-body-1 bodyTxt"></div>
           </v-col>
         </v-row>
       </v-card-text>
 
-      <!-- 댓글 섹션 -->
-      <v-row v-if="comments && comments.length > 0">
+      <!-- 댓글 섹션 (FAMILY_EVENT 카테고리일 때만 표시) -->
+      <v-row v-if="isFamilyEventCategory">
         <v-divider class="my-3"></v-divider>
         <v-col cols="12">
           <h4 class="text-h6 font-weight-bold">댓글</h4>
-          <v-list two-line>
+
+          <!-- 댓글 리스트 표시 -->
+          <v-list two-line v-if="comments && comments.length > 0">
             <v-list-item v-for="comment in comments" :key="comment.id" class="py-2">
-              <v-list-item-content class="comment-content">
+              <div class="comment-content d-flex justify-space-between align-center">
                 <div class="comment-text">
                   <v-list-item-title class="text-subtitle-1">{{ comment.content }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ comment.user_num }} ({{ formatDate(comment.createdAt) }})</v-list-item-subtitle>
+                  <!-- 작성자의 사번 (userNum)과 이름을 표시 -->
+                  <v-list-item-subtitle>{{ comment.name }} (사번: {{ comment.userNum }})</v-list-item-subtitle>
                 </div>
-                <v-list-item-action class="action-buttons">
-                  <a v-if="canDeleteComment(comment)" href="javascript:void(0)" class="btn_board_option" @click="deleteComment(comment.id)">삭제</a>
-                </v-list-item-action>
-              </v-list-item-content>
+                <div class="action-buttons">
+                  <v-btn small text @click="editComment(comment)">수정</v-btn>
+                  <v-btn small text @click="deleteComment(comment.id)">삭제</v-btn>
+                </div>
+              </div>
             </v-list-item>
           </v-list>
 
-          <!-- 댓글 작성 폼 -->
+          <!-- 댓글 작성 폼은 항상 표시 -->
           <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="mt-3">
             <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined />
+            <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
           </v-form>
         </v-col>
       </v-row>
@@ -60,9 +80,8 @@
       <!-- 액션 버튼들 -->
       <v-card-actions class="d-flex justify-end">
         <v-btn class="btn_solid" @click="goBack">목록으로</v-btn>
-        <v-btn v-if="isFreeBoard" type="submit" class="btn_comment_ok" @click="submitComment">댓글작성</v-btn>
-        <v-btn v-if="canEditBoard" class="btn_st2" @click="editBoard">수정</v-btn>
-        <v-btn v-if="canDeleteBoard" class="btn_del" @click="confirmDeleteBoard">삭제</v-btn>
+        <v-btn class="btn_st2" @click="editBoard">수정</v-btn>
+        <v-btn class="btn_del" @click="confirmDeleteBoard">삭제</v-btn>
       </v-card-actions>
     </v-card>
 
@@ -74,17 +93,9 @@
 
 <script>
 import axios from 'axios';
-import { VList, VListItem, VListItemContent, VListItemAction } from 'vuetify/components';
 import 'vuetify/styles';
 
-
 export default {
-  components: {
-    VList,
-    VListItem,
-    VListItemContent,
-    VListItemAction,
-  },
   data() {
     return {
       board: null,
@@ -94,17 +105,15 @@ export default {
       isFreeBoard: false,
       deleteDialog: false,
       error: null,
-      userId: localStorage.getItem('userId'),
-      userEmail: '',
+      userNum: localStorage.getItem('userNum'), // userNum을 localStorage에서 직접 가져옴
+      boardId: localStorage.getItem('board_id'), // board_id를 localStorage에서 직접 가져옴
       boardTitle: ''
     };
   },
   computed: {
-    canEditBoard() {
-      return this.isAdmin || (this.board.user_num === this.userId);
-    },
-    canDeleteBoard() {
-      return this.isAdmin || (this.board.user_num === this.userId);
+    // 댓글 표시 여부를 결정하는 변수 (카테고리가 FAMILY_EVENT일 경우 true)
+    isFamilyEventCategory() {
+      return this.board?.category === 'FAMILY_EVENT';
     }
   },
   created() {
@@ -116,19 +125,27 @@ export default {
       const token = localStorage.getItem('token');
       this.isLoggedIn = !!token;
     },
+    editBoard() {
+    this.$router.push({ name: 'BoardUpdate', params: { id: this.board.id } });
+  },
     async fetchBoardDetail() {
       try {
         const boardId = this.$route.params.id;
-        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/detail/${boardId}`;
-
-        const response = await axios.get(apiUrl);
+        const response = await axios.get(`/board/detail/${boardId}`);
         this.board = response.data.result;
 
-        // board 객체가 존재할 경우, comments를 설정
-        this.comments = this.board && this.board.comments ? this.board.comments : [];
+        // 댓글을 FAMILY_EVENT 카테고리일 때만 설정
+        if (this.isFamilyEventCategory) {
+          this.comments = Array.isArray(this.board?.comments) ? this.board.comments : [];
+        }
       } catch (error) {
-        console.error('게시글을 불러오는 데 실패했습니다:', error);
-        this.error = '게시글을 불러오는 데 실패했습니다.';
+        if (error.response && error.response.status === 401) {
+          alert('인증이 만료되었습니다. 다시 로그인 해주세요.');
+          this.$router.push('/login');
+        } else {
+          console.error('게시글을 불러오는 데 실패했습니다:', error);
+          this.error = '게시글을 불러오는 데 실패했습니다.';
+        }
       }
     },
     async submitComment() {
@@ -137,20 +154,26 @@ export default {
         return;
       }
 
-      const boardId = this.$route.params.id;
+      const boardId = this.$route.params.id; // 게시글 ID는 경로에서 가져옴
       const newComment = {
         content: this.newCommentContent,
-        boardId: boardId,
-        userId: this.userId
+        board_id: boardId,  // 서버에서 요구하는 필드명으로 설정
+        userNum: this.userNum, // localStorage에서 가져온 userNum 사용
+        name: this.userNum // 댓글 작성자 이름을 사번(userNum)으로 설정
       };
 
       try {
-        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/comment/create`, newComment);
+        await axios.post(`/comment/create`, newComment);
         this.newCommentContent = '';
         this.fetchBoardDetail(); // 댓글 작성 후 댓글 목록 다시 불러오기
       } catch (error) {
-        console.error('댓글 작성에 실패했습니다:', error);
-        alert('댓글 작성에 실패했습니다.');
+        if (error.response && error.response.status === 401) {
+          alert('인증이 만료되었습니다. 다시 로그인 해주세요.');
+          this.$router.push('/login');
+        } else {
+          console.error('댓글 작성에 실패했습니다:', error);
+          alert('댓글 작성에 실패했습니다.');
+        }
       }
     },
     formatDate(date) {
@@ -162,11 +185,56 @@ export default {
     },
     confirmDeleteBoard() {
       this.deleteDialog = true;
+    },
+    // 댓글 수정 메서드에서 userNum을 서버로 전송
+editComment(comment) {
+  const updatedContent = prompt("댓글을 수정하세요:", comment.content);
+  if (updatedContent && updatedContent !== comment.content) {
+    // 로컬스토리지에서 userNum을 가져와 서버에 전송
+    const userNum = localStorage.getItem("userNum");
+    console.log(comment.id)
+
+    axios
+      .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum })
+      .then(() => this.fetchBoardDetail())
+      .catch((error) => {
+        console.error("댓글 수정에 실패했습니다:", error);
+        alert("댓글 수정에 실패했습니다.");
+      });
+  }
+},
+
+// 댓글 삭제 메서드에서도 userNum을 서버로 전송
+deleteComment(commentId) {
+  if (confirm("댓글을 삭제하시겠습니까?")) {
+    // 로컬스토리지에서 userNum을 가져와 서버에 전송
+    const userNum = localStorage.getItem("userNum");
+
+    axios
+      .delete(`/comment/delete/${commentId}`, { data: { userNum } }) // DELETE 요청의 경우, `data` 속성으로 전송
+      .then(() => this.fetchBoardDetail())
+      .catch((error) => {
+        console.error("댓글 삭제에 실패했습니다:", error);
+        alert("댓글 삭제에 실패했습니다.");
+      });
+  }
+}
+,
+    isImage(fileType) {
+      // 간단한 이미지 타입 확인 함수
+      return fileType.includes('image/');
+    },
+    downloadFile(fileUrl, fileName) {
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   }
 };
 </script>
-
 
 <style scoped>
 .v-container {
@@ -243,15 +311,7 @@ export default {
 .action-buttons {
   display: flex;
   align-items: center;
-  margin-left: 16px;
-}
-
-.v-list-item-action {
-  margin-left: auto;
-}
-
-.v-list-item-action .v-btn {
-  margin-left: 8px;
+  gap: 10px;
 }
 
 .comment-text {
@@ -278,9 +338,4 @@ export default {
   background-color: #f5f5f5;
   color: black;
 }
-
-.v-icon {
-  font-size: 18px !important;
-}
 </style>
-

@@ -6,6 +6,7 @@ import axios from 'axios';
 import vuetify from './plugins/vuetify';
 import adapter from 'webrtc-adapter';
 
+
 window.adapter = adapter; 
 axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8087';
 

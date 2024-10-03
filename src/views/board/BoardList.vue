@@ -60,16 +60,16 @@
       </tbody>
     </table>
 
-    <!-- 작성하기 버튼 -->
-    <div class="btnWrap">
-      <button 
+    <!-- 작성하기 버튼을 목록 하단에 배치 -->
+    <v-row class="d-flex justify-end">
+      <v-btn 
         v-if="isAdmin" 
-        @click="createNewPost" 
-        class="btn_write"
+        class="btn_write mt-4"
+        @click="createNewPost"
       >
         작성하기
-      </button>
-    </div>
+      </v-btn>
+    </v-row>
 
     <!-- 페이지네이션 -->
     <v-pagination
@@ -120,22 +120,21 @@ export default {
     }
   },
   created() {
-    this.checkUserRole();
+    this.checkUserRole(); // 사용자 권한 확인 및 설정
     this.fetchBoardItems(); // 컴포넌트 생성 시 게시글 목록을 가져옴
     this.userId = localStorage.getItem('userId'); // 로컬스토리지에서 userId 가져오기
   },
   methods: {
     checkUserRole() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        this.$router.push('/login');
-        return;
-      }
+      // 로컬스토리지에서 departmentId 값을 가져옴
+      const departmentId = localStorage.getItem('departmentId');
+      console.log("Department ID:", departmentId); // 콘솔 로그로 값 확인
 
-      const decodedToken = this.parseJwt(token);
-      this.userNum = decodedToken.userNum;
-      this.isAdmin = decodedToken.role === 'ADMIN'; // 관리자인지 확인
+      // departmentId 값이 4이면 관리자로 설정
+      this.isAdmin = departmentId === '4';
+      
+      // 추가로 필요한 사용자 정보 설정
+      this.userNum = localStorage.getItem('userNum');
     },
     parseJwt(token) {
       try {
@@ -199,10 +198,10 @@ export default {
         alert('관리자만 이 게시판에 글을 작성할 수 있습니다.');
         return;
       }
-      this.$router.push({ name: 'BoardCreate' });
+      this.$router.push({ name: 'BoardCreate' }); // BoardCreate 페이지로 이동
     },
     goToDetail(id) {
-      this.$router.push({ name: 'BoardDetail', params: { id } });
+      this.$router.push({ name: 'BoardDetail', params: { id } }); // 게시글 상세 페이지로 이동
     },
     performSearch() {
       this.currentPage = 1; // 검색할 때 첫 페이지로 초기화
@@ -217,6 +216,19 @@ export default {
 
 
 <style scoped>
+.btn_write {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.btn_write:hover {
+  background-color: #388e3c;
+}
 
 .inner {
   max-width: 1200px;

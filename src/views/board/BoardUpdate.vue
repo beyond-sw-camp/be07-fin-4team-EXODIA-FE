@@ -99,7 +99,6 @@ export default {
       categoryOptions: [
         { text: '공지사항', value: 'NOTICE' },
         { text: '경조사', value: 'FAMILY_EVENT' },
-        { text: '자유게시판', value: 'POST' }
       ]
     };
   },
