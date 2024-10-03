@@ -1,39 +1,36 @@
 <template>
   <div class="department-container">
     <h1>부서 관리</h1>
-    <button @click="openCreateDialog">부서 추가</button>
-    <button @click="saveAllChanges">변경 사항 저장</button>
 
-    <!-- 트리 구조 -->
-    <ul class="tree-list">
-      <li
-        v-for="department in departments"
-        :key="department.id"
-        class="tree-item"
-        draggable="true"
-        @dragstart="dragStart(department)"
-        @dragover.prevent
-        @drop="drop(department)"
-      >
-        <span>{{ department.name }}</span>
-        <ul v-if="department.children && department.children.length">
-          <li
-            v-for="child in department.children"
-            :key="child.id"
-            class="tree-item"
-            draggable="true"
-            @dragstart="dragStart(child)"
-            @dragover.prevent
-            @drop="drop(child)"
-          >
-            <span>{{ child.name }}</span>
-          </li>
-        </ul>
-      </li>
-    </ul>
+    <!-- 버튼들 -->
+    <div class="button-group">
+      <button @click="openCreateDialog">부서 추가</button>
+      <button @click="toggleEditMode">{{ editMode ? '편집 완료' : '편집' }}</button>
+      <button :disabled="!editMode || !isChanged" @click="saveAllChanges" class="save-button">변경 사항 저장</button>
+    </div>
+
+    <!-- 트리 구조 표시 -->
+    <div class="pyramid-tree">
+      <div v-for="(level, index) in levels" :key="index" class="tree-level">
+        <div v-for="department in level" :key="department.id" class="tree-item">
+          <div class="tree-node">
+            {{ department.name }}
+          </div>
+          <!-- 세로 줄 표시 -->
+          <div v-if="department.children && department.children.length" class="vertical-line"></div>
+          <div v-if="department.children && department.children.length" class="sub-tree">
+            <div v-for="child in department.children" :key="child.id" class="tree-item">
+              <div class="tree-node">{{ child.name }}</div>
+              <!-- 자식 노드를 부모 노드 아래에 정확하게 배치 -->
+              <div v-if="child.children.length" class="vertical-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- 부서 추가/수정 다이얼로그 -->
-    <div v-if="dialog">
+    <div v-if="dialog" class="dialog">
       <h3>{{ isEdit ? '부서 수정' : '부서 추가' }}</h3>
       <input v-model="departmentForm.name" placeholder="부서 이름" />
       <select v-model="departmentForm.parentId">
@@ -51,58 +48,84 @@
 export default {
   data() {
     return {
-      departments: [], // 트리 구조 데이터
+      departments: [], // 전체 부서 리스트
+      levels: [], // depth별 부서들을 가로로 배치
       draggedItem: null, // 드래그 중인 아이템
       departmentForm: {
         id: null,
         name: "",
         parentId: null,
       },
-      parentOptions: [], // 상위 부서 옵션
+      parentOptions: [], // 부모 부서 선택 리스트
       dialog: false,
       isEdit: false,
+      editMode: false, // 편집 모드 상태
+      departmentBackup: [], // 변경 전 부서 데이터 백업
+      isChanged: false, // 변경 사항 여부
     };
   },
   methods: {
     async fetchDepartments() {
       try {
         const response = await this.$axios.get("/department");
-        this.departments = this.buildTree(response.data.result);
-        this.parentOptions = response.data.result;
+        this.departments = response.data.result;
+        this.buildTree(); // 부서를 depth 별로 나눠서 가로로 표시할 준비
+        this.parentOptions = this.departments; // 부모 부서 선택 리스트
+        this.isChanged = false; // 변경 사항 초기화
       } catch (error) {
         console.error("부서 목록을 불러오는 중 오류 발생:", error);
       }
     },
-    buildTree(departments) {
+    buildTree() {
       const map = {};
-      const roots = [];
-      departments.forEach(department => {
+      this.levels = [];
+      this.departments.forEach(department => {
         map[department.id] = { ...department, children: [] };
       });
-      departments.forEach(department => {
+      this.departments.forEach(department => {
         if (department.parentDepartment) {
           map[department.parentDepartment.id].children.push(map[department.id]);
         } else {
-          roots.push(map[department.id]);
+          if (!this.levels[0]) this.levels[0] = [];
+          this.levels[0].push(map[department.id]);
         }
       });
-      return roots;
+      // depth에 따라 레벨별로 나누기
+      const recursiveAddToLevel = (dept, level) => {
+        if (!this.levels[level]) this.levels[level] = [];
+        dept.children.forEach(child => {
+          this.levels[level].push(child);
+          recursiveAddToLevel(child, level + 1);
+        });
+      };
+      this.levels[0].forEach(dept => recursiveAddToLevel(dept, 1));
     },
     dragStart(department) {
-      this.draggedItem = department;
+      if (this.editMode) {
+        this.draggedItem = department;
+      }
     },
     drop(department) {
-      if (this.draggedItem.id !== department.id) {
-        // 드래그된 아이템의 부모 부서를 새로운 부모 부서로 업데이트
+      if (this.editMode && this.draggedItem.id !== department.id) {
         this.draggedItem.parentDepartment = department.id;
-        this.saveAllChanges(); // 변경 사항 저장
-        this.fetchDepartments(); // 다시 트리 구조 불러오기
+        this.isChanged = true; // 변경 사항 표시
+        this.buildTree(); // 다시 트리 구조 빌드
       }
     },
     openCreateDialog() {
       this.isEdit = false;
       this.departmentForm = { id: null, name: "", parentId: null };
       this.dialog = true;
+    },
+    toggleEditMode() {
+      this.editMode = !this.editMode;
+      if (!this.editMode) {
+        this.departments = JSON.parse(JSON.stringify(this.departmentBackup)); // 복구
+        this.buildTree();
+        this.isChanged = false;
+      } else {
+        this.departmentBackup = JSON.parse(JSON.stringify(this.departments)); // 백업
+      }
     },
     async saveDepartment() {
       if (this.isEdit) {
@@ -120,7 +143,13 @@ export default {
       this.fetchDepartments();
     },
     async saveAllChanges() {
-      // 변경 사항 저장 로직
+      try {
+        await this.$axios.post("/department/save", this.departments);
+        alert("변경 사항이 저장되었습니다.");
+        this.isChanged = false; // 변경 사항 초기화
+      } catch (error) {
+        console.error("변경 사항 저장 중 오류 발생:", error);
+      }
     },
   },
   mounted() {
@@ -134,20 +163,74 @@ export default {
   margin: 20px;
 }
 
-.tree-list {
-  list-style: none;
-  padding-left: 20px;
+.pyramid-tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tree-level {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
 }
 
 .tree-item {
-  margin: 5px 0;
-  padding: 5px;
-  border: 1px solid #ddd;
-  background-color: #f9f9f9;
-  cursor: move;
+  margin: 10px 20px;
+  position: relative;
 }
 
-.tree-item:hover {
+.tree-node {
+  display: inline-block;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  cursor: default;
+  transition: background-color 0.3s;
+  min-width: 150px;
+}
+
+.tree-node:hover {
   background-color: #f1f1f1;
+}
+
+.vertical-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 100%;
+  width: 2px;
+  background-color: #000;
+}
+
+.button-group {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.button-group button {
+  margin-right: 10px;
+  padding: 10px 15px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button-group button:hover {
+  background-color: #45a049;
+}
+
+.save-button[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.dialog {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
 }
 </style>
