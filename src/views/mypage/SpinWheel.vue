@@ -1,5 +1,14 @@
 <template>
-  <v-container class="text-center">
+  <v-container fluid>
+    <!-- v-tabs 추가 -->
+    <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs" >
+      <v-tab @click="navigateTab('/mypage/attendance')">출/퇴근</v-tab>
+      <v-tab @click="navigateTab('/mypage/userProfile')">프로필</v-tab>
+      <v-tab @click="navigateTab('/mypage/evaluation')">인사 평가</v-tab>
+      <v-tab @click="navigateTab('/mypage/spinWheel')">오늘의 점심</v-tab>
+    </v-tabs>
+    <br>
+    <br>
     <v-row justify="center" class="my-8">
       <!-- 왼쪽: 돌림판 -->
       <v-col cols="12" sm="6" md="5">
@@ -14,7 +23,6 @@
 
       <!-- 오른쪽: 결과 -->
       <v-col cols="12" sm="6" md="5">
-        <!-- 돌림판 결과 출력 -->
         <v-sheet class="pa-4" elevation="2">
           <h2>결과</h2>
           <v-sheet class="pa-6 text-h5" elevation="1">
@@ -50,11 +58,18 @@ export default {
     };
   },
   mounted() {
-    this.ctx = this.$refs.canvas.getContext("2d"); // Canvas의 2D 컨텍스트를 가져옴
-    this.drawWheel(); // 기본 메뉴로 돌림판 그리기
-    this.$refs.canvas.addEventListener("click", this.handleCanvasClick);
+    this.$nextTick(() => {
+      this.ctx = this.$refs.canvas.getContext("2d"); // Canvas의 2D 컨텍스트를 가져옴
+      this.drawWheel(); // 기본 메뉴로 돌림판 그리기
+      this.$refs.canvas.addEventListener("click", this.handleCanvasClick);
+    });
   },
   methods: {
+    // 탭 클릭 시 라우팅 처리
+    navigateTab(route) {
+      this.$router.push(route); // 클릭된 탭에 맞는 경로로 이동
+    },
+
     // 돌림판 그리는 함수
     drawWheel() {
       const canvas = this.$refs.canvas;
@@ -153,25 +168,51 @@ export default {
 </script>
 
 <style scoped>
-.wheel-container {
-  text-align: center;
+/* 탭 관련 스타일 */
+.header-tabs {
+  margin-bottom: 30px;
 }
 
+.tab-item {
+  font-weight: bold;
+  font-size: 16px;
+  color: #4CAF50;
+  min-width: 100px;
+}
+
+.v-tabs {
+  border-bottom: 1px solid #e0e0e0;
+  height: unset;
+  margin-top: -20px;
+  min-width: 90px;
+  margin-right: 13px;
+}
+
+.v-tab {
+  font-weight: bold;
+  padding: 12px;
+}
+
+/* 돌림판 관련 스타일 */
 canvas {
   transition: 2s;
   margin-top: 20px;
   width: 100%; /* 화면에 꽉 차게 설정 */
-  height: auto;
+  /* height: auto; */
   background-color: transparent; /* 배경 흰색 제거 */
 }
-
+.tab-item {
+  font-weight: bold;
+  
+  color: #4CAF50;
+}
 /* 검은 줄 스타일 (화살표) */
 .indicator {
   width: 10px;
   height: 40px;
   background-color: black;
   position: relative;
-  top: 50px; /* 30px 더 하단으로 설정 */
+  top: 50px;
   left: 50%;
   transform: translateX(-50%);
 }
