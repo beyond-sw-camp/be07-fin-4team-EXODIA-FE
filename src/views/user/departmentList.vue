@@ -16,15 +16,13 @@
           <div class="tree-node">
             {{ department.name }}
           </div>
-          <!-- 세로 줄 표시 -->
-          <div v-if="department.children && department.children.length" class="vertical-line"></div>
-          <div v-if="department.children && department.children.length" class="sub-tree">
-            <div v-for="child in department.children" :key="child.id" class="tree-item">
-              <div class="tree-node">{{ child.name }}</div>
-              <!-- 자식 노드를 부모 노드 아래에 정확하게 배치 -->
-              <div v-if="child.children.length" class="vertical-line"></div>
-            </div>
-          </div>
+        </div>
+      </div>
+
+      <!-- 각 레벨 간 연결선 -->
+      <div v-for="(level, index) in levelsWithChildren" :key="'line-' + index" class="line-group">
+        <div v-for="(department, deptIndex) in level" :key="'line-' + index + '-' + deptIndex" class="line-item">
+          <div class="horizontal-line"></div>
         </div>
       </div>
     </div>
@@ -48,85 +46,112 @@
 export default {
   data() {
     return {
-      departments: [], // 전체 부서 리스트
-      levels: [], // depth별 부서들을 가로로 배치
-      draggedItem: null, // 드래그 중인 아이템
+      departments: [], // 전체 부서 목록
+      levels: [], // 계층화된 부서 리스트
+      draggedItem: null, // 드래그된 아이템 저장
       departmentForm: {
         id: null,
         name: "",
         parentId: null,
       },
-      parentOptions: [], // 부모 부서 선택 리스트
-      dialog: false,
-      isEdit: false,
+      parentOptions: [], // 상위 부서 선택 옵션
+      dialog: false, // 다이얼로그 표시 여부
+      isEdit: false, // 수정 모드 여부
       editMode: false, // 편집 모드 상태
-      departmentBackup: [], // 변경 전 부서 데이터 백업
+      departmentBackup: [], // 편집 전 원본 데이터 저장
       isChanged: false, // 변경 사항 여부
     };
   },
+  computed: {
+    levelsWithChildren() {
+      // 자식이 있는 레벨만 필터링하여 반환
+      return this.levels.filter(level => level.some(department => department.children.length > 0));
+    },
+  },
   methods: {
+    // 서버에서 부서 목록 불러오기
     async fetchDepartments() {
       try {
         const response = await this.$axios.get("/department");
         this.departments = response.data.result;
-        this.buildTree(); // 부서를 depth 별로 나눠서 가로로 표시할 준비
-        this.parentOptions = this.departments; // 부모 부서 선택 리스트
-        this.isChanged = false; // 변경 사항 초기화
+        this.buildTree(); 
+        this.parentOptions = this.departments;
+        this.isChanged = false;
       } catch (error) {
         console.error("부서 목록을 불러오는 중 오류 발생:", error);
       }
     },
+    // 부서를 계층 구조로 빌드
     buildTree() {
       const map = {};
-      this.levels = [];
+      const roots = [];
+
+      // 모든 부서 객체를 맵으로 저장
       this.departments.forEach(department => {
         map[department.id] = { ...department, children: [] };
       });
+
+      // 부모-자식 관계를 설정하고 자식 노드를 중복 없이 연결
       this.departments.forEach(department => {
         if (department.parentDepartment) {
-          map[department.parentDepartment.id].children.push(map[department.id]);
+          if (map[department.parentDepartment.id]) {
+            map[department.parentDepartment.id].children.push(map[department.id]);
+          }
         } else {
-          if (!this.levels[0]) this.levels[0] = [];
-          this.levels[0].push(map[department.id]);
+          roots.push(map[department.id]);
         }
       });
-      // depth에 따라 레벨별로 나누기
-      const recursiveAddToLevel = (dept, level) => {
-        if (!this.levels[level]) this.levels[level] = [];
-        dept.children.forEach(child => {
-          this.levels[level].push(child);
-          recursiveAddToLevel(child, level + 1);
-        });
-      };
-      this.levels[0].forEach(dept => recursiveAddToLevel(dept, 1));
+
+      // 계층적으로 배열을 생성하여 levels에 저장
+      this.levels = this.createLevels(roots);
     },
+    // 부서를 계층별로 레벨화
+    createLevels(departments, level = 0, result = []) {
+      if (!result[level]) {
+        result[level] = [];
+      }
+
+      departments.forEach(department => {
+        result[level].push(department);
+        if (department.children && department.children.length > 0) {
+          this.createLevels(department.children, level + 1, result);
+        }
+      });
+
+      return result;
+    },
+    // 드래그 시작
     dragStart(department) {
       if (this.editMode) {
         this.draggedItem = department;
       }
     },
+    // 드롭 후 부모 변경
     drop(department) {
       if (this.editMode && this.draggedItem.id !== department.id) {
         this.draggedItem.parentDepartment = department.id;
-        this.isChanged = true; // 변경 사항 표시
-        this.buildTree(); // 다시 트리 구조 빌드
+        this.isChanged = true;
+        this.buildTree();
       }
     },
+    // 부서 추가 다이얼로그 열기
     openCreateDialog() {
       this.isEdit = false;
       this.departmentForm = { id: null, name: "", parentId: null };
       this.dialog = true;
     },
+    // 편집 모드 토글
     toggleEditMode() {
       this.editMode = !this.editMode;
       if (!this.editMode) {
-        this.departments = JSON.parse(JSON.stringify(this.departmentBackup)); // 복구
+        this.departments = JSON.parse(JSON.stringify(this.departmentBackup)); 
         this.buildTree();
         this.isChanged = false;
       } else {
-        this.departmentBackup = JSON.parse(JSON.stringify(this.departments)); // 백업
+        this.departmentBackup = JSON.parse(JSON.stringify(this.departments)); 
       }
     },
+    // 부서 저장
     async saveDepartment() {
       if (this.isEdit) {
         await this.$axios.put(`/department/${this.departmentForm.id}`, {
@@ -142,18 +167,19 @@ export default {
       this.dialog = false;
       this.fetchDepartments();
     },
+    // 모든 변경 사항 저장
     async saveAllChanges() {
       try {
         await this.$axios.post("/department/save", this.departments);
         alert("변경 사항이 저장되었습니다.");
-        this.isChanged = false; // 변경 사항 초기화
+        this.isChanged = false;
       } catch (error) {
         console.error("변경 사항 저장 중 오류 발생:", error);
       }
     },
   },
   mounted() {
-    this.fetchDepartments(); // 컴포넌트가 마운트되었을 때 부서 데이터를 불러옴
+    this.fetchDepartments(); 
   },
 };
 </script>
@@ -194,12 +220,32 @@ export default {
   background-color: #f1f1f1;
 }
 
-.vertical-line {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  height: 100%;
+/* 부모와 자식 간의 선 연결 */
+.connector {
   width: 2px;
+  height: 20px;
+  background-color: #000;
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.line-group {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.line-item {
+  display: flex;
+  justify-content: center;
+  margin: 0 20px;
+}
+
+.horizontal-line {
+  width: 100%;
+  height: 2px;
   background-color: #000;
 }
 
