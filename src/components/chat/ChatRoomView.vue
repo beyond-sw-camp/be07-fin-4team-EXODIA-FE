@@ -14,10 +14,10 @@
             </div>
         </div>
 
-        <!-- <div>
+        <div>
             <input v-model="messageToSend" @keyup.enter="sendMessage" placeholder="메시지를 입력하세요..." />
             <button @click="sendMessage">전송</button>
-        </div> -->
+        </div>
     </div>
 </template>
 
@@ -63,8 +63,8 @@ export default {
         connect() {
             if (this.stompClient && this.stompClient.connected) { return; } // 연결확인
             const socket = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`);
-            // this.stompClient = Stomp.over(socket);
-            this.stompClient = Stomp.over(()=>socket);
+            this.stompClient = Stomp.over(socket);
+            // this.stompClient = Stomp.over(()=>socket);
             // this.stompClient = Stomp.over(() => new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`));
             const authtoken = localStorage.getItem('token'); // Authorization: `Bearer ${authtoken}`
             console.log(this.stompClient);
@@ -87,24 +87,25 @@ export default {
 
         },
 
-        // async sendMessage() {
-        //     if (this.messageToSend !== '') {
-        //         if (this.stompClient && this.stompClient.connected) {
-        //             this.getSendTime();
-        //             const messageReq = {
-        //                 userNum: localStorage.getItem('userNum'),
-        //                 roomId: this.chatRoomId,
-        //                 messageType: "TALK",
-        //                 message: this.messageToSend,
-        //                 sendAt: this.sendTime
-        //             }; // type 은 그때그때 달라져야한다.
-        //             this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
-        //             this.messageToSend = ''; // 입력 필드 초기화
-        //         } else {
-        //             console.error('unconnected');
-        //         }
-        //     }
-        // },
+        async sendMessage() {
+            if (this.messageToSend !== '') {
+                if (this.stompClient && this.stompClient.connected) {
+                    this.getSendTime();
+                    const today = new Date();
+                    const messageReq = {
+                        userNum: localStorage.getItem('userNum'),
+                        roomId: this.chatRoomId,
+                        messageType: "TALK",
+                        message: this.messageToSend,
+                        sendAt: today
+                    }; // type 은 그때그때 달라져야한다.
+                    this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
+                    this.messageToSend = ''; // 입력 필드 초기화
+                } else {
+                    console.error('unconnected');
+                }
+            }
+        },
 
         // async openRoom(enterRoomId) {
         //     this.chatRoomId = enterRoomId;
@@ -121,7 +122,7 @@ export default {
             // let minutes = today.getMinutes(); // 분
             // this.sendTime = year + "-" + month + "-" + date + " " + hour + ":" + minutes;
             const today = new Date();
-            return today.toISOString().slice(0, 16).replace('T', ' ');
+            this.sendTime = today.toISOString().slice(0, 16).replace('T', ' ');
         },
     }
 }
