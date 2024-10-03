@@ -153,12 +153,15 @@ export default {
   name: 'AppSidebar',
   data() {
     return {
+      token: localStorage.getItem('token') || null,
+
       isSubSidebarVisible: false,
       currentPage: '',
       isHrDepartment: false,
       selectedType: '',
       showProject: false,
       typeOptions: [],
+
     };
   },
   methods: {
@@ -167,6 +170,10 @@ export default {
     },
     toggleProjectVisibility() {
       this.showProject = !this.showProject;
+      if (this.showProject) {
+        this.fetchTypes();
+
+      }
     },
     async fetchTypes() {
       try {
@@ -188,8 +195,6 @@ export default {
   },
   mounted() {
     this.currentPage = this.$route.path;
-    this.fetchTypes();
-
     const departmentId = localStorage.getItem('departmentId');
     if (departmentId === '4') {
       this.isHrDepartment = true;
@@ -286,6 +291,7 @@ export default {
 
 .subside-menu {
   display: flex;
+  margin-top: 20px;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
