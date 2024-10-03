@@ -6,6 +6,7 @@ import { userRouter } from './userRouter';
 import { documentRouter } from './documentRouter';
 import { mypageRouter } from './mypageRouter';
 import { reservationRouter } from './reservationRouter';
+import { chatRouter } from './chatRouter';
 
 
 
@@ -19,7 +20,8 @@ const routes = [
   ...videoRouter,
   ...documentRouter,
   ...mypageRouter,
-  ...reservationRouter
+  ...reservationRouter,
+  ...chatRouter
 ];
 
 const router = createRouter({

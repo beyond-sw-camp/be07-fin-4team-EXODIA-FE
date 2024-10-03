@@ -14,17 +14,20 @@
             </div>
         </div>
 
-        <div>
+        <!-- <div>
             <input v-model="messageToSend" @keyup.enter="sendMessage" placeholder="메시지를 입력하세요..." />
             <button @click="sendMessage">전송</button>
-        </div>
+        </div> -->
     </div>
 </template>
 
 <script>
 import axios from 'axios';
-import SockJS from "sockjs-client";
-import { Stomp } from "@stomp/stompjs";
+// import SockJS from "sockjs-client";
+// import { Stomp } from "@stomp/stompjs";
+
+import Stomp from 'webstomp-client'
+import SockJS from 'sockjs-client'
 
 export default {
     props: [
@@ -48,7 +51,9 @@ export default {
         // this.chatRoomId = this.chatRoomIdProp;
         this.chatSenderNumTmp = localStorage.getItem('userNum');
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
-        this.chatMessageList = response.data;
+        if(response.data){
+            this.chatMessageList = response.data;
+        } 
         this.connect();
     },
     // mounted() {
@@ -58,43 +63,48 @@ export default {
         connect() {
             if (this.stompClient && this.stompClient.connected) { return; } // 연결확인
             const socket = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`);
-            this.stompClient = Stomp.over(socket);
-            console.log("socket");
-            const token = localStorage.getItem('token'); // Authorization: `Bearer ${token}`
+            // this.stompClient = Stomp.over(socket);
+            this.stompClient = Stomp.over(()=>socket);
+            // this.stompClient = Stomp.over(() => new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`));
+            const authtoken = localStorage.getItem('token'); // Authorization: `Bearer ${authtoken}`
+            console.log(this.stompClient);
             this.stompClient.connect(
-                { Authorization: `Bearer ${token}` },
+                {Authorization: `Bearer ${authtoken}`},
                 () => {
                     console.log("Connected to WebSocket");
-                    this.stompClient.subscribe(`/topic/chat/${this.chatRoomId}`, (message) => {
+                    this.stompClient.subscribe(`/topic/chat/room/${this.chatRoomId}`, (message) => {
+                        console.log(message);
                         const receivedMessage = JSON.parse(message.body);
                         this.chatMessageList.push(receivedMessage);
                     });
+                    console.log(this.stompClient);  // stompClient가 제대로 설정되었는지 확인
                 },
                 (error) => {
+                    console.log("third")
                     console.error("Connection error: ", error);
                 }
-            );
+            )
 
         },
 
-        async sendMessage() {
-            if (this.messageToSend !== '') {
-                if (this.stompClient && this.stompClient.connected) {
-                    this.getSendTime();
-                    const messageReq = {
-                        userNum: localStorage.getItem('userNum'),
-                        roomId: this.chatRoomId,
-                        messageType: "TALK",
-                        message: this.messsageToSend,
-                        sendAt: this.sendTime
-                    }; // type 은 그때그때 달라져야한다.
-                    this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
-                    this.messageToSend = ''; // 입력 필드 초기화
-                } else {
-                    console.error('unconnected');
-                }
-            }
-        },
+        // async sendMessage() {
+        //     if (this.messageToSend !== '') {
+        //         if (this.stompClient && this.stompClient.connected) {
+        //             this.getSendTime();
+        //             const messageReq = {
+        //                 userNum: localStorage.getItem('userNum'),
+        //                 roomId: this.chatRoomId,
+        //                 messageType: "TALK",
+        //                 message: this.messageToSend,
+        //                 sendAt: this.sendTime
+        //             }; // type 은 그때그때 달라져야한다.
+        //             this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
+        //             this.messageToSend = ''; // 입력 필드 초기화
+        //         } else {
+        //             console.error('unconnected');
+        //         }
+        //     }
+        // },
 
         // async openRoom(enterRoomId) {
         //     this.chatRoomId = enterRoomId;
