@@ -129,18 +129,11 @@ export default {
       this.draggedItem = department; // 드래그 중인 항목을 저장
     },
 
-    drop(department) {
-      if (this.draggedItem && this.draggedItem.id !== department.id) {
-        const newParentId = department.id;
-
-        // 드래그된 항목을 계층에서 제거
-        this.removeDepartment(this.draggedItem.id);
-
-        // 드래그된 항목의 parentId를 새로운 부모 ID로 설정
-        this.draggedItem.parentId = newParentId;
-
-        // 드래그된 항목을 새로운 부모 아래에 추가
-        this.addDepartmentToHierarchy(this.draggedItem, department);
+    drop(parentDepartment) {
+      if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
+        // 부모 ID 변경
+        this.draggedItem.parentId = parentDepartment.id;
+        this.addDepartmentToHierarchy(this.draggedItem, parentDepartment);
 
         // 변경 사항 저장
         this.saveAllChanges();
@@ -148,6 +141,67 @@ export default {
         // 드래그한 항목 초기화
         this.draggedItem = null;
       }
+    },
+
+    addDepartmentToHierarchy(department, newParent) {
+      if (!newParent.children) {
+        newParent.children = [];
+      }
+      newParent.children.push(department);
+    },
+
+    flattenHierarchyForSave(hierarchy) {
+      const result = [];
+      const flatten = (node) => {
+        result.push({
+          id: node.id,
+          name: node.name,
+          parentId: node.parentId,
+        });
+        if (node.children) {
+          node.children.forEach(flatten);
+        }
+      };
+      hierarchy.forEach(flatten);
+      return result;
+    },
+
+    async saveAllChanges() {
+      try {
+        const departmentsToSave = this.flattenHierarchyForSave(this.hierarchy);
+        await this.$axios.post("/department/saveAll", departmentsToSave);
+        alert("변경사항이 저장되었습니다.");
+        this.fetchHierarchy();
+      } catch (error) {
+        console.error("Error saving changes:", error);
+      }
+    },
+
+    async saveDepartment() {
+      try {
+        if (this.isEdit) {
+          await this.$axios.put(`/department/${this.departmentForm.id}`, {
+            name: this.departmentForm.name,
+            parentId: this.departmentForm.parentId
+          });
+        } else {
+          const response = await this.$axios.post("/department", {
+            name: this.departmentForm.name,
+            parentId: this.departmentForm.parentId || null 
+          });
+          this.hierarchy.push(response.data); 
+        }
+        this.closeDialog();
+        this.fetchHierarchy(); 
+      } catch (error) {
+        console.error("Error saving department:", error);
+      }
+    },
+
+
+    deleteDepartment(departmentId) {
+      this.removeDepartment(departmentId);
+      this.saveAllChanges();
     },
 
     removeDepartment(departmentId) {
@@ -159,50 +213,12 @@ export default {
       });
     },
 
-    addDepartmentToHierarchy(department, newParent) {
-      if (!newParent.children) {
-        newParent.children = [];
-      }
-      newParent.children.push(department);
-    },
-
-    async saveAllChanges() {
-      try {
-        await this.$axios.post("/department/saveAll", this.hierarchy);
-        alert("변경사항이 저장되었습니다.");
-        this.fetchHierarchy(); // 저장 후 계층 데이터를 다시 불러옴
-      } catch (error) {
-        console.error("Error saving changes:", error);
-      }
-    },
-
+    // getNodeStyle 함수 추가
     getNodeStyle(department) {
       return {
         cursor: this.editMode ? 'move' : 'default',
         opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.5 : 1,
       };
-    },
-
-    async saveDepartment() {
-      try {
-        if (this.isEdit) {
-          // 수정 로직
-        } else {
-          // 추가 로직
-          const response = await this.$axios.post("/department/add", this.departmentForm);
-          this.hierarchy.push(response.data); // 추가된 부서 계층에 추가
-        }
-        this.closeDialog();
-        this.fetchHierarchy(); // 변경 사항 반영
-      } catch (error) {
-        console.error("Error saving department:", error);
-      }
-    },
-
-    deleteDepartment(departmentId) {
-      // 삭제 로직
-      this.removeDepartment(departmentId);
-      this.saveAllChanges(); // 삭제 후 저장
     },
   },
 
