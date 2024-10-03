@@ -131,14 +131,9 @@ export default {
 
     drop(parentDepartment) {
       if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
-        // 부모 ID 변경
         this.draggedItem.parentId = parentDepartment.id;
         this.addDepartmentToHierarchy(this.draggedItem, parentDepartment);
-
-        // 변경 사항 저장
         this.saveAllChanges();
-
-        // 드래그한 항목 초기화
         this.draggedItem = null;
       }
     },
@@ -152,19 +147,20 @@ export default {
 
     flattenHierarchyForSave(hierarchy) {
       const result = [];
-      const flatten = (node) => {
+      const flatten = (node, parentId = null) => {
         result.push({
           id: node.id,
           name: node.name,
-          parentId: node.parentId,
+          parentId: parentId
         });
         if (node.children) {
-          node.children.forEach(flatten);
+          node.children.forEach(child => flatten(child, node.id));
         }
       };
-      hierarchy.forEach(flatten);
+      hierarchy.forEach(node => flatten(node));
       return result;
     },
+
 
     async saveAllChanges() {
       try {
