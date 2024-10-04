@@ -7,7 +7,8 @@ import { documentRouter } from './documentRouter';
 import { mypageRouter } from './mypageRouter';
 import { reservationRouter } from './reservationRouter';
 import { boardRouter } from './boardRouter';
-
+import { calendarRouter } from './calendarRouter';
+import { positionRouter } from './positionRouter';
 
 
 const routes = [
@@ -22,6 +23,8 @@ const routes = [
   ...mypageRouter,
   ...reservationRouter,
   ...boardRouter
+  ...calendarRouter,
+  ...positionRouter
 ];
 
 const router = createRouter({

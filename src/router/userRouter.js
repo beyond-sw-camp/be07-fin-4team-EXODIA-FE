@@ -1,7 +1,7 @@
 import Login from '@/views/Login.vue';
 import EmployeeManagement from '@/views/user/employee-management.vue';
-// import employeeRegister from '@/views/user/employeeRegister.vue';
 import EmployeeForm from '@/views/user/employee-template.vue'
+import DepartmentList from '@/views/user/departmentList.vue'
 
 
 export const userRouter = [
@@ -15,13 +15,6 @@ export const userRouter = [
     name: 'employee-management',
     component: EmployeeManagement,
   },
-
-  // {
-  //   path: '/employee-management/create',
-  //   name: 'employeeRegister',
-  //   component: employeeRegister,
-  // },
-
   {
     path: '/employee-management/create',
     name: 'employee-register',
@@ -37,7 +30,12 @@ export const userRouter = [
     name: 'employee-detail',
     component: EmployeeForm,
   },
-  
+  {
+    path: '/department-management',
+    name: 'department-management',
+    component: DepartmentList,
+  },
+
 ];
 
 
