@@ -49,10 +49,30 @@
 <br>
 
 <details>
+<summary>로그인</summary>
+
+### 관리자 로그인
+
+<img src="./img/api테스트/관리자로그인.png">
+
+* * *
+
+### 일반 로그인
+
+<img src="./github.png">
+
+</details>
+
+
+
+
+
+<details>
 <summary>직원 관리</summary>
 
 ## 직원 등록
 
+<img src="./github.png"
 
 
 
