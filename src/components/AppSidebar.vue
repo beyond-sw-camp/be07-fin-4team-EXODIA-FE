@@ -18,9 +18,13 @@
         <v-icon class="icon">mdi-calendar</v-icon>
         <span class="tooltip">캘린더</span>
       </div>
-      <div class="menu-item" @click="$router.push('/board')">
+      <div class="menu-item" @click="$router.push('/board/notice/List')">
         <v-icon class="icon">mdi-book-open-variant</v-icon>
-        <span class="tooltip">게시판</span>
+        <span class="tooltip">공지사항</span>
+      </div>
+      <div class="menu-item" @click="$router.push('/board/familyevent/List')">
+        <v-icon class="icon">mdi-book-open-variant</v-icon>
+        <span class="tooltip">경조사</span>
       </div>
       <div class="menu-item" @click="$router.push('/document')">
         <v-icon class="icon">mdi-email</v-icon>
