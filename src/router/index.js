@@ -22,7 +22,7 @@ const routes = [
   ...documentRouter,
   ...mypageRouter,
   ...reservationRouter,
-  ...boardRouter
+  ...boardRouter,
   ...calendarRouter,
   ...positionRouter
 ];

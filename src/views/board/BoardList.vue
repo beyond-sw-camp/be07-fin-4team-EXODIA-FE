@@ -36,6 +36,7 @@
           <th scope="col">제목</th>
           <th scope="col">작성자</th>
           <th scope="col">작성일</th>
+          <th scope="col">조회수</th> 
         </tr>
       </thead>
       <tbody>
@@ -44,6 +45,7 @@
           <td @click="goToDetail(item.id)" class="text_left subject">{{ item.title }}</td>
           <td>{{ item.user_num }}</td>
           <td>{{ formatDate(item.createdAt) }}</td>
+          <td>{{ item.hits }}</td>
         </tr>
       </tbody>
     </table>
