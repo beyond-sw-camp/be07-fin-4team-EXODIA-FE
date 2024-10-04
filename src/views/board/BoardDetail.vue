@@ -116,6 +116,7 @@ export default {
       return this.board?.category === 'FAMILY_EVENT';
     }
   },
+
   created() {
     this.checkLoginStatus();
     this.fetchBoardDetail();
@@ -126,8 +127,8 @@ export default {
       this.isLoggedIn = !!token;
     },
     editBoard() {
-    this.$router.push({ name: 'BoardUpdate', params: { id: this.board.id } });
-  },
+      this.$router.push({ name: 'BoardUpdate', params: { id: this.board.id } });
+    },
     async fetchBoardDetail() {
       try {
         const boardId = this.$route.params.id;
@@ -183,43 +184,59 @@ export default {
     goBack() {
       this.$router.go(-1); // 이전 페이지로 이동
     },
-    confirmDeleteBoard() {
-      this.deleteDialog = true;
-    },
+    async confirmDeleteBoard() {
+    if (confirm("정말로 이 게시물을 삭제하시겠습니까?")) {
+      try {
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/delete/${this.board.id}`;
+
+        // 삭제 요청 보내기
+        await axios.get(apiUrl);
+
+        alert('게시물이 성공적으로 삭제되었습니다.');
+        this.$router.push({ name: 'BoardList', params: { category: this.board.category } });
+      } catch (error) {
+        console.error('게시물 삭제에 실패했습니다:', error);
+        alert('게시물 삭제에 실패했습니다.');
+      }
+    }
+  },
     // 댓글 수정 메서드에서 userNum을 서버로 전송
-editComment(comment) {
-  const updatedContent = prompt("댓글을 수정하세요:", comment.content);
-  if (updatedContent && updatedContent !== comment.content) {
-    // 로컬스토리지에서 userNum을 가져와 서버에 전송
-    const userNum = localStorage.getItem("userNum");
-    console.log(comment.id)
+    editComment(comment) {
+      const updatedContent = prompt("댓글을 수정하세요:", comment.content);
+      if (updatedContent && updatedContent !== comment.content) {
+        // 로컬스토리지에서 userNum을 가져와 서버에 전송
+        const userNum = localStorage.getItem("userNum");
+        console.log(comment.id)
 
-    axios
-      .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum })
-      .then(() => this.fetchBoardDetail())
-      .catch((error) => {
-        console.error("댓글 수정에 실패했습니다:", error);
-        alert("댓글 수정에 실패했습니다.");
-      });
-  }
-},
+        axios
+          .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum })
+          .then(() => this.fetchBoardDetail())
+          .catch((error) => {
+            console.error("댓글 수정에 실패했습니다:", error);
+            alert("댓글 수정에 실패했습니다.");
+          });
+      }
+    },
+    // 댓글 삭제 메서드에서도 userNum을 서버로 전송
+    async deleteComment(commentId) {
+    if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
+      // 로컬스토리지에서 userNum을 가져옴
+      const userNum = localStorage.getItem("userNum");
 
-// 댓글 삭제 메서드에서도 userNum을 서버로 전송
-deleteComment(commentId) {
-  if (confirm("댓글을 삭제하시겠습니까?")) {
-    // 로컬스토리지에서 userNum을 가져와 서버에 전송
-    const userNum = localStorage.getItem("userNum");
+      try {
+        // GET 요청을 보내고 userNum을 URL 파라미터로 전송
+        const apiUrl = `/comment/delete/${commentId}?userNum=${userNum}`;
+        
+        await axios.get(apiUrl);
 
-    axios
-      .delete(`/comment/delete/${commentId}`, { data: { userNum } }) // DELETE 요청의 경우, `data` 속성으로 전송
-      .then(() => this.fetchBoardDetail())
-      .catch((error) => {
+        alert("댓글이 성공적으로 삭제되었습니다.");
+        this.fetchBoardDetail(); // 삭제 후 댓글 목록을 다시 불러옵니다.
+      } catch (error) {
         console.error("댓글 삭제에 실패했습니다:", error);
         alert("댓글 삭제에 실패했습니다.");
-      });
-  }
-}
-,
+      }
+    }
+  },
     isImage(fileType) {
       // 간단한 이미지 타입 확인 함수
       return fileType.includes('image/');
@@ -235,6 +252,7 @@ deleteComment(commentId) {
   }
 };
 </script>
+
 
 <style scoped>
 .v-container {

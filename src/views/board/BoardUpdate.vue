@@ -26,18 +26,7 @@
             dense
           />
 
-          <!-- 카테고리 선택 -->
-          <v-select
-            v-model="category"
-            :items="categoryOptions"
-            item-title="text"
-            item-value="value"
-            label="카테고리"
-            required
-            outlined
-            dense
-          />
-
+        
           <!-- 상단 고정 여부 -->
           <v-checkbox
             v-model="isPinned"
@@ -64,14 +53,16 @@
                 :key="index"
                 @click="downloadFile(file.filePath, file.fileName)"
               >
-                <v-list-item-content>
-                  <v-list-item-title>{{ file.fileName }}</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action>
-                  <v-btn icon @click.stop="removeFile(index)">
-                    <v-icon color="red">mdi-delete</v-icon>
-                  </v-btn>
-                </v-list-item-action>
+                <v-row>
+                  <v-col>
+                    <span>{{ file.fileName }}</span>
+                  </v-col>
+                  <v-col class="d-flex justify-end">
+                    <v-btn icon @click.stop="removeFile(index)">
+                      <v-icon color="red">mdi-delete</v-icon>
+                    </v-btn>
+                  </v-col>
+                </v-row>
               </v-list-item>
             </v-list>
           </div>
@@ -125,34 +116,37 @@ export default {
       }
     },
     async submitForm() {
-      try {
-        const formData = new FormData();
-        formData.append('title', this.title);
-        formData.append('content', this.content);
-        formData.append('category', this.category);
-        formData.append('isPinned', this.isPinned);
+  try {
+    const formData = new FormData();
+    formData.append('title', this.title);
+    formData.append('content', this.content);
+    formData.append('category', this.category); 
+    formData.append('isPinned', this.isPinned);
 
-        // 파일 정보 추가
-        if (this.files && this.files.length > 0) {
-          this.files.forEach((file) => formData.append('files', file));
-        }
+    // 파일 정보 추가
+    if (this.files && this.files.length > 0) {
+      this.files.forEach((file) => formData.append('files', file));
+    }
 
-        const postId = this.$route.params.id;
-        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/update/${postId}`;
+    const postId = this.$route.params.id;
+    const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/update/${postId}`;
 
-        await axios.post(apiUrl, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+    await axios.post(apiUrl, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-        alert('게시글이 성공적으로 수정되었습니다.');
-        this.$router.push({ name: 'BoardDetail', params: { id: postId } }); // 수정 후 상세 페이지로 이동
-      } catch (error) {
-        console.error('게시글을 수정하는 데 실패했습니다:', error);
-        alert('게시글 수정에 실패했습니다.');
-      }
-    },
+    alert('게시글이 성공적으로 수정되었습니다.');
+
+    // BoardList 페이지로 이동하면서 category 파라미터를 전달
+    this.$router.push({ name: 'BoardList', params: { category: this.category } });
+  } catch (error) {
+    console.error('게시글을 수정하는 데 실패했습니다:', error);
+    alert('게시글 수정에 실패했습니다.');
+  }
+}
+,
     async downloadFile(filePath, fileName) {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/file/download`, {

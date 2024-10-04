@@ -4,18 +4,6 @@
 
     <!-- 게시판 상단 검색 폼 -->
     <v-form ref="form" class="d-flex mb-4">
-      <!-- 카테고리 선택 -->
-      <v-col cols="12" md="2">
-        <v-select
-          v-model="category"
-          :items="categoryOptions"
-          item-title="text"
-          item-value="value"
-          label="카테고리"
-          required
-        ></v-select>
-      </v-col>
-
       <!-- 검색 범위 선택 -->
       <v-col cols="12" md="2">
         <v-select
@@ -93,7 +81,7 @@ export default {
       itemsPerPage: 10, // 페이지당 항목 수
       isAdmin: false, // 관리자인지 여부
       userNum: null, // 현재 로그인된 사용자의 ID
-      category: 'NOTICE', // 초기 카테고리 값을 'NOTICE'로 설정
+      category: '', // URL에서 카테고리 가져오기
       boardTitle: '',
 
       // 검색 필드 추가
@@ -111,16 +99,19 @@ export default {
     };
   },
   watch: {
-    // category가 변경될 때 자동으로 게시글 목록을 업데이트
-    category(newCategory) {
-      console.log('Category changed:', newCategory);
+    // 카테고리가 변경될 때마다 목록을 가져오도록 설정
+    '$route.params.category': function(newCategory) {
+      this.category = newCategory || 'NOTICE';
       this.currentPage = 1; // 페이지를 첫 페이지로 초기화
       this.setBoardTitle(); // 제목 설정
       this.fetchBoardItems(); // 게시글 목록 가져오기
     }
   },
   created() {
+    // URL에서 카테고리 값을 가져와 초기 설정
+    this.category = this.$route.params.category || 'NOTICE';
     this.checkUserRole(); // 사용자 권한 확인 및 설정
+    this.setBoardTitle(); // 초기 제목 설정
     this.fetchBoardItems(); // 컴포넌트 생성 시 게시글 목록을 가져옴
     this.userId = localStorage.getItem('userId'); // 로컬스토리지에서 userId 가져오기
   },
@@ -136,57 +127,64 @@ export default {
       // 추가로 필요한 사용자 정보 설정
       this.userNum = localStorage.getItem('userNum');
     },
-    parseJwt(token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(
-          atob(base64)
-            .split('')
-            .map(function (c) {
-              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            })
-            .join('')
-        );
-        return JSON.parse(jsonPayload);
-      } catch (error) {
-        return null;
-      }
-    },
     async fetchBoardItems() {
-      try {
-        const params = {
-          page: this.currentPage - 1,
-          size: this.itemsPerPage,
-          searchType: this.searchType,
-          searchQuery: this.searchQuery,
-          category: this.category // 선택한 카테고리 전달
-        };
-        console.log('Fetch Board Items Params:', params);  // 파라미터 로그 출력
+  try {
+    const params = {
+      page: this.currentPage - 1,
+      size: this.itemsPerPage,
+      searchType: this.searchType,
+      searchQuery: this.searchQuery,
+    };
 
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/board/list`, { params });
+    
+    console.log("Category:", this.category); // category 값 출력
 
-        const result = response.data.result;
-        if (result && result.content) {
-          this.boardItems = result.content;
-          this.totalPages = result.totalPages;
-        } else {
-          console.error('올바르지 않은 데이터 형식입니다:', response.data);
-        }
-      } catch (error) {
-        console.error('목록을 가져오는 중 오류가 발생했습니다:', error);
-        if (error.response && error.response.status === 401) {
-          alert('로그인 세션이 만료되었습니다. 다시 로그인해주세요.');
-          localStorage.removeItem('token');
-          this.$router.push('/login');
-        }
-      }
-    },
+    // 경로에 카테고리 값을 포함한 URL 설정
+    const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.category.toLowerCase()}/list`;
+
+    console.log("Category:", this.category); // category 값 출력
+    console.log("Fetch Board Items URL:", apiUrl); // URL 로그 출력
+
+    // 요청 시 URL과 파라미터를 확인할 수 있도록 콘솔에 출력
+    console.log("Request URL:", apiUrl, "with params:", params);
+
+    const response = await axios.get(apiUrl, { params });
+
+    // 서버에서 반환된 응답이 올바른지 확인
+    console.log("Response Data:", response.data);
+
+    const result = response.data.result;
+    if (result && result.content) {
+      this.boardItems = result.content;
+      this.totalPages = result.totalPages;
+    } else {
+      console.error("올바르지 않은 데이터 형식입니다:", response.data);
+    }
+  } catch (error) {
+    console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
+
+    // 에러 응답을 좀 더 자세히 확인
+    if (error.response) {
+      console.error("Error Response Data:", error.response.data);
+      console.error("Error Response Status:", error.response.status);
+    }
+
+    if (error.response && error.response.status === 401) {
+      alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
+      localStorage.removeItem("token");
+      this.$router.push("/login");
+    }
+  }
+}
+,
     setBoardTitle() {
+      // URL에서 가져온 category 값을 기준으로 제목 설정
       if (this.category === 'FAMILY_EVENT') {
         this.boardTitle = '경조사';
       } else if (this.category === 'NOTICE') {
         this.boardTitle = '공지사항';
+      } else {
+        this.boardTitle = '게시판';
       }
     },
     formatDate(date) {
@@ -198,10 +196,13 @@ export default {
         alert('관리자만 이 게시판에 글을 작성할 수 있습니다.');
         return;
       }
-      this.$router.push({ name: 'BoardCreate' }); // BoardCreate 페이지로 이동
+
+      // 게시글 작성 페이지로 이동 시 카테고리를 경로로 전달
+      this.$router.push({ name: 'BoardCreate' });
     },
     goToDetail(id) {
-      this.$router.push({ name: 'BoardDetail', params: { id } }); // 게시글 상세 페이지로 이동
+      // 게시글 상세 페이지로 이동 시 카테고리를 경로로 전달
+      this.$router.push({ name: 'BoardDetail', params: { id }});
     },
     performSearch() {
       this.currentPage = 1; // 검색할 때 첫 페이지로 초기화
@@ -210,9 +211,6 @@ export default {
   },
 };
 </script>
-
-
-
 
 
 <style scoped>

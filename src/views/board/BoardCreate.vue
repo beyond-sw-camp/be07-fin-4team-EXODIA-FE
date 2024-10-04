@@ -80,40 +80,49 @@ export default {
       }
     },
     async submitForm() {
-      if (this.departmentId !== '4') {
-        alert('관리자만 작성할 수 있습니다.');
-        return;
-      }
+  if (this.departmentId !== '4') {
+    alert('관리자만 작성할 수 있습니다.');
+    return;
+  }
 
-      const formData = new FormData();
-      formData.append('title', this.title);
-      formData.append('content', this.content);
-      formData.append('category', this.selectedCategory); // 선택된 카테고리를 formData에 추가
-      formData.append('userNum', this.userNum); // 사용자 사번 추가
+  const formData = new FormData();
+  formData.append('title', this.title);
+  formData.append('content', this.content);
+  formData.append('category', this.selectedCategory); // 선택된 카테고리를 formData에 추가
+  formData.append('userNum', this.userNum); // 사용자 사번 추가
 
-      // 파일 배열을 FormData에 추가
-      if (this.files && this.files.length > 0) {
-        this.files.forEach((file) => {
-          formData.append('files', file); // 'files'라는 키로 파일을 추가
-        });
-      }
+  // 파일 배열을 FormData에 추가
+  if (this.files && this.files.length > 0) {
+    this.files.forEach((file) => {
+      formData.append('files', file); // 'files'라는 키로 파일을 추가
+    });
+  }
 
+  try {
+    const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`; // 서버 URL 수정
+    const response = await axios.post(apiUrl, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // Bearer 토큰 추가
+      },
+    });
+    console.log('저장 성공:', response.data);
 
-      try {
-        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`; // 서버 URL 수정
-        const response = await axios.post(apiUrl, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${localStorage.getItem('token')}`, // Bearer 토큰 추가
-          },
-        });
-        console.log('저장 성공:', response.data);
-        this.$router.push({ name: 'BoardList' });
-      } catch (error) {
-        console.error('저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
-        alert('게시글 저장에 실패했습니다.');
-      }
-    },
+    // 작성 완료 후 카테고리별로 다른 페이지로 이동
+    if (this.selectedCategory === 'NOTICE') {
+      this.$router.push({ path: '/board/notice/list' });
+    } else if (this.selectedCategory === 'FAMILY_EVENT') {
+      this.$router.push({ path: '/board/familyevent/list' });
+    } else {
+      // 기본 BoardList 페이지로 이동 (예비 처리)
+      this.$router.push({ name: 'BoardList' });
+    }
+  } catch (error) {
+    console.error('저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
+    alert('게시글 저장에 실패했습니다.');
+  }
+}
+,
     cancel() {
       this.$router.go(-1);
     },
