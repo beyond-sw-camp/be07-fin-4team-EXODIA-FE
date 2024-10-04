@@ -1,27 +1,43 @@
 <template>
     <v-row>
-        <h1 :class="{ 'drawer-open': drawer }" style="margin:100px 240px 80px">{{ pageTitle }}</h1>
+        <h2 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle }}</h2>
     </v-row>
 
-    <div v-if="this.documents.length > 0">
-        <v-row justify="center" :class="{ 'drawer-open': drawer }">
-            <v-col cols="12" sm="8" md="6">
-                <v-row class="mb-2">
-                    <v-col></v-col>
-                    <v-col>제목</v-col>
-                    <v-col>문서타입</v-col>
-                    <v-col>작성자명</v-col>
-                    <v-col>생성 시간</v-col>
-                    <v-col>조회</v-col>
+    <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
+        <v-col cols="8" sm="8">
+            <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" @input="filterDocuments"
+                style="margin-bottom: 20px;"></v-text-field>
+        </v-col>
+        <v-col cols="4" sm="2">
+            <!-- Search button to trigger searchFilter method -->
+            <v-btn color="primary" @click="searchFilter(searchQuery)">
+                검색
+            </v-btn>
+        </v-col>
+    </v-row>
+
+    <div v-if="this.localDocuments.length > 0" :class="{ 'drawer-open': drawer }">
+        <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center; ">
+            <v-col cols="12" sm="8">
+                <v-row class="mb-2"
+                    style="background-color:#E6E8EF; border-radius:12px; padding:4px; color:#444444; font-weight:600;">
+                    <v-col cols="1"><strong>#</strong></v-col>
+                    <v-col cols="3"><strong>제목</strong></v-col>
+                    <v-col cols="2"><strong>프로젝트명</strong></v-col>
+                    <v-col cols="2"><strong>작성자</strong></v-col>
+                    <v-col cols="2"><strong>등록일</strong></v-col>
+                    <v-col cols="2"><strong>조회수</strong></v-col>
                 </v-row>
-                <v-row v-for="document in documents" :key="document.id" class="document"
-                    @click="openDrawer(document.id)">
-                    <v-col>{{ document.id }}</v-col>
-                    <v-col>{{ document.fileName }}</v-col>
-                    <v-col>{{ document.type }}</v-col>
-                    <v-col>{{ document.userName }}</v-col>
-                    <v-col>{{ formatDate(document.createdAt) }}</v-col>
-                    <v-col>0</v-col>
+
+                <v-row v-for="(document, index) in localDocuments" :key="document.id" class="document" oulined
+                    @click="openDrawer(document.id)"
+                    style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
+                    <v-col cols="1">{{ index + 1 }}</v-col>
+                    <v-col cols="3">{{ document.fileName }}</v-col>
+                    <v-col cols="2">{{ document.type }}</v-col>
+                    <v-col cols="2">{{ document.userName }}</v-col>
+                    <v-col cols="2">{{ formatDate(document.createdAt) }}</v-col>
+                    <v-col cols="1">{{ document.views || 34 }}</v-col>
                 </v-row>
             </v-col>
         </v-row>
@@ -35,7 +51,7 @@
 
     <!-- 상세 정보 -->
     <v-card>
-        <v-navigation-drawer v-model="drawer" location="right" temporary width="400">
+        <v-navigation-drawer v-model="drawer" location="right" temporary width="500">
             <v-tabs v-model="tab" align-tabs="center" background-color="transparent">
                 <v-tab class="tabs" value="1">상세보기</v-tab>
                 <v-tab class="tabs" value="2" @click="fetchHistory(this.selectedDocument.id)">히스토리</v-tab>
@@ -49,12 +65,16 @@
                     </v-card-title>
                     <v-divider></v-divider>
                     <v-card-text>
-                        <v-row>파일 확장자</v-row>
-                        <v-row>{{ selectedDocument.fileExtension }}</v-row>
+                        <v-row>프로젝트명</v-row>
+                        <v-row>{{ selectedDocument.documentType }}</v-row>
                     </v-card-text>
                     <v-card-text>
                         <v-row>생성 날짜</v-row>
                         <v-row>{{ formatDate(selectedDocument.createAt) }}</v-row>
+                    </v-card-text>
+                    <v-card-text>
+                        <v-row>생성 시간</v-row>
+                        <v-row>{{ formatLocalTime(selectedDocument.createAt) }}</v-row>
                     </v-card-text>
                     <v-card-text>
                         <v-row>파일 등록자</v-row>
@@ -99,23 +119,23 @@
                     <v-timeline dense v-if="showHistory">
                         <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
                             <v-card>
-                                <v-card-title>
-                                    <div class="d-flex align-center fileName">
+                                <v-card-text style="margin-bottom:0; padding:0">
+                                    <div class="fileName">
                                         <v-icon left>mdi-file-document-outline</v-icon>
                                         <span>{{ history.fileName }}</span>
                                     </div>
-                                </v-card-title>
+                                </v-card-text>
 
-                                <v-card-subtitle class="d-flex align-center userName">
+                                <v-card-text class="userName" style="margin-bottom:0; padding:0">
                                     <v-avatar left size="24">
                                         <img :src="history.userAvatar" alt="User Avatar" />
                                     </v-avatar>
                                     <span>{{ history.userName }}</span>
-                                </v-card-subtitle>
+                                </v-card-text>
 
-                                <v-card-actions>
+                                <v-card-actions style="margin:0;">
                                     <v-btn small text color="primary" @click="confirmRevert(history.id)">
-                                        revert
+                                        복원
                                     </v-btn>
                                 </v-card-actions>
                             </v-card>
@@ -153,46 +173,30 @@
 import axios from 'axios'
 
 export default {
-    props: ['pageTitle'],
+    props: ['pageTitle', 'documents'],
     data() {
         return {
             token: localStorage.getItem('token') || null,
 
-            documents: [],
             title: '',
             drawer: false,
             selectedDocument: [],
             tab: '상세보기',
             showHistory: false,
             pageId: '',
+            localDocuments: this.documents,
         }
     },
     mounted() {
-        this.fetchDocuments();
         const { id } = history.state;
         this.pageId = id;
     },
+    watch: {
+        documents(newDocuments) {
+            this.localDocuments = newDocuments;
+        }
+    },
     methods: {
-        async fetchDocuments() {
-            let url = '';
-            console.log("fetchdocument" + this.pageTitle)
-            try {
-                if (this.pageTitle == '전체 문서') {
-                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/all`;
-                } else if (this.pageTitle == '최근 조회 문서') {
-                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewed`;
-                } else if (this.pageTitle == '최근 업데이트 문서') {
-                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
-                } else {
-                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/type/${this.pageTitle}`;
-                }
-
-                const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
-                this.documents = response.data.result;
-            } catch (e) {
-                console.error('문서 목록을 가져오는 중 오류 발생:', e);
-            }
-        },
         async openDrawer(id) {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/detail/${id}`;
@@ -206,6 +210,7 @@ export default {
             }
         },
         closeDrawer() {
+            this.showHistory = false;
             this.drawer = false;
         },
         async fileDownload(id) {
@@ -241,6 +246,22 @@ export default {
                 console.error('히스토리 정보를 가져오는 중 오류 발생:', e);
             }
         },
+        async searchFilter(input) {
+            try {
+                if (!input) {
+                    this.localDocuments = this.documents;
+                    return;
+                }
+                const url = `${process.env.VUE_APP_API_BASE_URL}/es/document/search?keyword=${input}`;
+                const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
+
+                this.localDocuments = response.data.result;
+            }
+            catch (e) {
+
+                console.error("검색 중 오류 발생: ", e)
+            }
+        },
         confirmRevert(versionId) {
             // rollback 이전에 확인받기 위한 창
             const isConfirmed = window.confirm("이후의 문서에 대한 모든 버전이 삭제됩니다.\n 그래도 버전 되돌리기를 진행하시겠습니까?");
@@ -250,8 +271,8 @@ export default {
         },
         async revertToVersion(id) {
             try {
-                const url = `${process.env.VUE_APP_API_BASE_URL}/document/rollback/${id}`;
-                await axios.post(url, { headers: { Authorization: `Bearer ${this.token}` } });
+                const url = `${process.env.VUE_APP_API_BASE_URL} /document/rollback / ${id} `;
+                await axios.post(url, { headers: { Authorization: `Bearer ${this.token} ` } });
 
                 location.reload();
 
@@ -261,6 +282,9 @@ export default {
         },
         formatDate(date) {
             return new Date(date).toLocaleDateString();
+        },
+        formatLocalTime(date) {
+            return new Date(date).toLocaleTimeString();
         },
         toggleHistoryVisibility() {
             this.showHistory = !this.showHistory;
@@ -278,7 +302,7 @@ export default {
 
 .drawer-open {
     transition: margin-right 0.3s ease;
-    margin-right: 500px;
+    margin-right: 200px;
 }
 
 .v-card>.v-navigation-drawer {
@@ -316,9 +340,7 @@ v-card-title,
     font-size: 12px;
 }
 
-.v-card {
-    margin-bottom: 5px;
-}
+
 
 .v-card-text>.v-row:first-child {
     font-size: 14px;
