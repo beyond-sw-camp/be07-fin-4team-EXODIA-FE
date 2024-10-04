@@ -10,11 +10,11 @@
         <v-icon class="icon">mdi-home</v-icon>
         <span class="tooltip">홈</span>
       </div>
-      <div class="menu-item" @click="$router.push('/mypage')">
+      <div class="menu-item" @click="$router.push('/mypage/userProfile')">
         <v-icon class="icon">mdi-account</v-icon>
         <span class="tooltip">마이페이지</span>
       </div>
-      <div class="menu-item" @click="$router.push('/calendar')">
+      <div class="menu-item" @click="$router.push('/calendar/calendarList')">
         <v-icon class="icon">mdi-calendar</v-icon>
         <span class="tooltip">캘린더</span>
       </div>
@@ -53,7 +53,7 @@
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
 
         <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
-        <div v-if="currentPage.startsWith('/video')" class="menu">
+        <div v-if="currentPage.startsWith('/video')" class="subside-menu">
           <div class="menu-item">
             <span @click="$router.push('/video/create')">방 생성</span>
           </div>
@@ -62,7 +62,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/document')" class="menu">
+        <div v-if="currentPage.startsWith('/document')" class="subside-menu">
           <div class="menu-item">
             <span style="font-size:20px; font-weight:800">팀 문서함</span>
             <v-btn class="createBtn" @click="$router.push('/document/create')">
@@ -98,7 +98,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/board')" class="menu">
+        <div v-if="currentPage.startsWith('/board')" class="subside-menu">
           <div class="menu-item">
             <span>게시판</span>
             <ul>
@@ -152,9 +152,15 @@ export default {
   name: 'AppSidebar',
   data() {
     return {
+      token: localStorage.getItem('token') || null,
+
       isSubSidebarVisible: false,
       currentPage: '',
-      isHrDepartment: false
+      isHrDepartment: false,
+      selectedType: '',
+      showProject: false,
+      typeOptions: [],
+
     };
   },
   methods: {
@@ -163,6 +169,10 @@ export default {
     },
     toggleProjectVisibility() {
       this.showProject = !this.showProject;
+      if (this.showProject) {
+        this.fetchTypes();
+
+      }
     },
     async fetchTypes() {
       try {
@@ -184,8 +194,6 @@ export default {
   },
   mounted() {
     this.currentPage = this.$route.path;
-    this.fetchTypes();
-
     const departmentId = localStorage.getItem('departmentId');
     if (departmentId === '4') {
       this.isHrDepartment = true;
@@ -219,12 +227,12 @@ export default {
   height: 100vh;
   background-color: #357a38;
   position: fixed;
-  top: 0;
+  top: 8vh;
   left: var(--sidebar-width);
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: flex-start;
   align-items: flex-start;
   padding: 20px;
 }
@@ -282,6 +290,7 @@ export default {
 
 .subside-menu {
   display: flex;
+  margin-top: 20px;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
