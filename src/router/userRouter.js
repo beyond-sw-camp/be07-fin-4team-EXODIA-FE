@@ -35,6 +35,7 @@ export const userRouter = [
     name: 'department-management',
     component: DepartmentList,
   },
+
 ];
 
 
