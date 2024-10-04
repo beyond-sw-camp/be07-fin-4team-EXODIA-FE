@@ -46,3 +46,14 @@
 
 [API 단위 테스트 결과](https://documenter.getpostman.com/view/38441114/2sAXxLDEz5)
 
+<details>
+<summary>직원 관리</summary>
+
+## 직원 등록
+
+
+
+
+
+</details>
+
