@@ -189,7 +189,7 @@ export default {
     },
     // 회의실 예약 페이지로 이동하는 함수
     goToMeetingRoomReservation() {
-      this.$router.push("/reservationMeet"); // 회의실 예약 페이지로 라우팅
+      this.$router.push("/reservation/meetReservationList"); // 회의실 예약 페이지로 라우팅
     },
   },
   mounted() {
