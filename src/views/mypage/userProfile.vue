@@ -1,10 +1,12 @@
 <template>
   <v-container fluid>
-  <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-    <v-tab v-for="tab in tabs" :key="tab.label" class="tab-item">
-      {{ tab.label }}
-    </v-tab>
-  </v-tabs>
+
+    <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
+      <v-tab @click="navigateTab(0)">출/퇴근</v-tab>
+      <v-tab @click="navigateTab(1)">프로필</v-tab>
+      <v-tab @click="navigateTab(2)">인사 평가</v-tab>
+      <v-tab @click="navigateTab(3)">오늘의 점심</v-tab>
+    </v-tabs>
 
     <v-tabs-items v-model="activeTab">
       <v-tab-item v-if="activeTab === 0">
@@ -70,9 +72,8 @@
         <!-- 인사 평가 정보를 여기에 표시 -->
       </v-tab-item>
 
-
       <!-- 오늘의 점심 -->
-      <v-tab-item v-if="activeTab === 4">
+      <v-tab-item v-if="activeTab === 3">
         <h3>오늘의 점심 추천</h3>
         <!-- 오늘의 점심 추천 관련 정보를 여기에 표시 -->
       </v-tab-item>
@@ -101,7 +102,6 @@ export default {
   mounted() {
     this.fetchUserProfile();
   },
-
   
   methods: {
     async fetchUserProfile() {
@@ -120,15 +120,14 @@ export default {
       }
     },
     navigateTab(index) {
-      if (index === 3) {
-        
-        this.$router.push({ name: 'SpinWheel' });
+      if (index === 0) {
+        this.$router.push('/mypage/attendance');
+      } else if (index === 3) {
+        this.$router.push('/mypage/spinWheel');
       } else {
-        
         this.activeTab = index;
       }
     }
-
   }
 };
 </script>
@@ -144,7 +143,9 @@ export default {
   font-size: 16px;
   color: #4CAF50;
 }
-
+.v-tabs--density-default {
+    --v-tabs-height: 48px;
+}
 .v-tabs {
   border-bottom: 1px solid #e0e0e0;
 }
@@ -152,7 +153,6 @@ export default {
 .v-tab {
   font-weight: bold;
 }
-
 
 /* 프로필(이미지) 컨텐츠 */
 .profile-content {
@@ -178,7 +178,6 @@ export default {
   font-weight: bold;
   margin-top: 20px;
 }
-
 
 /* 테이블(유저 정보) */
 .profile-info {
