@@ -44,7 +44,7 @@
 
 ## API단위 테스트 결과서(주요기능)
 
-[API 단위 테스트](https://documenter.getpostman.com/view/38441114/2sAXxLDEz5)
+[API 단위 테스트(세부기능)](https://documenter.getpostman.com/view/38441114/2sAXxLDEz5)
 
 <details>
 <summary>로그인</summary>
@@ -58,6 +58,8 @@
 <img src="./img/api테스트/관리자로그인.png"/>
 
 </details>
+
+* * *
 
 <details>
 <summary>직원 관리</summary>
