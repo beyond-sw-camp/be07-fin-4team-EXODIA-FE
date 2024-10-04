@@ -41,3 +41,8 @@
 
 
 <br>
+
+## 📄 API단위 테스트 결과서(주요 기능)
+
+[API 단위 테스트 결과](https://documenter.getpostman.com/view/38441114/2sAXxLDEz5)
+
