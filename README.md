@@ -59,8 +59,6 @@
 
 </details>
 
-* * *
-
 <details>
 <summary>직원 관리</summary>
 
