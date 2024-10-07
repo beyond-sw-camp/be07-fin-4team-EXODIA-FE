@@ -1,11 +1,11 @@
 <!-- 채팅방 하나의 화면 -->
-     <!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기, 채팅 이미지 모아보기 -->
-    <!--채팅 날짜 구분해서 채팅메세지 불러오기 / 나와 구성원 구분하여 띄워주기 / 구성원 프로필사진 : 메세지-->
-    <!-- 채팅입력창, 파일 보내기, 이미지 보내기-->
+<!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기, 채팅 이미지 모아보기 -->
+<!--채팅 날짜 구분해서 채팅메세지 불러오기 / 나와 구성원 구분하여 띄워주기 / 구성원 프로필사진 : 메세지-->
+<!-- 채팅입력창, 파일 보내기, 이미지 보내기-->
 
 
 <template>
-     <v-container>
+    <v-container>
         <v-app-bar>
             <template>
 
@@ -13,21 +13,21 @@
             <v-app-bar-title>
             </v-app-bar-title>
             <template>
-                
+
             </template>
         </v-app-bar>
 
         <v-container>
         </v-container>
-     </v-container>
-    
+    </v-container>
+
 
     <div>
         <div>
             <div v-for="(messageContent, index) in chatMessageList" :key="index">
                 <strong>{{ messageContent.sendName }}:</strong>
                 <span>{{ messageContent.message }}</span>
-                <small>{{ messageContent.sendAt }}</small>
+                <!-- <small>{{ messageContent.sendAt }}</small> -->
             </div>
         </div>
 
@@ -65,35 +65,32 @@ export default {
         // this.chatRoomId = this.chatRoomIdProp;
         this.chatSenderNumTmp = localStorage.getItem('userNum');
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
-        if(response.data){
-            this.chatMessageList = response.data;
-        } 
+        if (response.data) {
+            this.chatMessageList = response.data.result;
+        }
+    },
+    mounted() {
         this.connect();
     },
-    // mounted() {
-    //   this.connect();
-    // },
     methods: {
         connect() {
             if (this.stompClient && this.stompClient.connected) { return; } // 연결확인
             const socket = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`);
             this.stompClient = Stomp.over(socket);
             const authtoken = localStorage.getItem('token'); // Authorization: `Bearer ${authtoken}`
-            console.log(this.stompClient);
             this.stompClient.connect(
-                {Authorization: `Bearer ${authtoken}`},
-                () => {
+                { Authorization: `Bearer ${authtoken}` },
+                (frame) => {
+                    console.log("frame : " + frame);
                     console.log("Connected to WebSocket");
                     this.stompClient.subscribe(`/topic/chat/room/${this.chatRoomId}`, (message) => {
-                        console.log(message);
                         const receivedMessage = JSON.parse(message.body);
                         this.chatMessageList.push(receivedMessage);
                     });
-                    console.log(this.stompClient);  // stompClient가 제대로 설정되었는지 확인
                 },
                 (error) => {
-                    console.log("third")
                     console.error("Connection error: ", error);
+                    setTimeout(() => this.connect(), 5000);  // 재연결 시도
                 }
             )
 
