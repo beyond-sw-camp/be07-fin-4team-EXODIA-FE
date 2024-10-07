@@ -1,24 +1,29 @@
 <template>
     <v-container>
         <v-row>
-            <v-select v-model="selectedType" :items="submitTypes" item-text="typeName" item-value="id" hint="결재 타입 골라골라"
+            <v-select v-model="selectedType" :items="submitTypes" item-text="typeName" item-value="id" hint="문서 선택"
                 label="결재 종류"></v-select>
+        </v-row>
 
-            <v-col cols="12">
-                <h2>User Drag & Drop</h2>
+        <v-row v-if="this.selectedType == '법인 카드 신청'">
+            <div>법인 카드 신청</div>
+        </v-row>
+
+        <v-row>
+            <v-col cols=" 3">
+            <v-card>
+                <v-card-title>결재 라인</v-card-title>
+                <v-list>
+                    <v-list-item v-for="user in users" :key="user.id" draggable="true" @dragstart="onDragStart(user)"
+                        class="draggable-item">
+                        <v-list-item-content>{{ user.name }}</v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
             </v-col>
-            <v-col cols="6">
-                <v-card>
-                    <v-card-title>결재 라인</v-card-title>
-                    <v-list>
-                        <v-list-item v-for="user in users" :key="user.id" draggable="true"
-                            @dragstart="onDragStart(user)" class="draggable-item">
-                            <v-list-item-content>{{ user.name }}</v-list-item-content>
-                        </v-list-item>
-                    </v-list>
-                </v-card>
-            </v-col>
-            <v-col cols="6">
+        </v-row>
+        <v-row>
+            <v-col cols="3">
                 <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
                     <v-card-title>Drop Here</v-card-title>
                     <v-list>
@@ -31,10 +36,13 @@
                     </v-list>
                 </v-card>
                 <v-btn color="primary" class="mt-4" @click="submitDroppedUsers">
-                    Submit Dropped Users
+                    결제라인 등록
                 </v-btn>
             </v-col>
         </v-row>
+
+
+
     </v-container>
 </template>
 
@@ -44,11 +52,20 @@ import axios from 'axios';
 export default {
     data() {
         return {
+            token: localStorage.getItem('token') || null,
+            userNum: localStorage.getItem('userNum') || null,
+
             users: [],
             droppedUsers: [],
             draggedUser: null,
             submitTypes: [],
             selectedType: '',
+
+            submitCreateData: {
+                submitType: '',
+                contents: '',
+                users: []
+            },
         };
     },
     mounted() {
@@ -98,6 +115,16 @@ export default {
                 console.error('Error submitting users:', error);
             }
         },
+        async createSubmit() {
+            try {
+                const response = await axios.post('/create', this.submitCreateData);
+                console.log(response.data);
+                alert("결재 요청 성공");
+            } catch (error) {
+                console.error('Error creating submit:', error);
+                alert("결재 요청 실패: " + error.response.data.message || error.message);
+            }
+        }
     },
 };
 </script>
