@@ -53,7 +53,7 @@ export default {
     data() {
         return {
             stompClient: null,
-            chatRoomId: 1,
+            chatRoomId: this.$route.params.id,
             chatSenderNumTmp: '', // 채팅방을 여는 사람 
             chatMessageList: [], // 주고받은 채팅
             messageType: '', // 메세지 타입
@@ -102,13 +102,13 @@ export default {
         async sendMessage() {
             if (this.messageToSend !== '') {
                 if (this.stompClient && this.stompClient.connected) {
-                    this.getSendTime();
+                    // this.getSendTime();
                     const messageReq = {
                         userNum: localStorage.getItem('userNum'),
                         roomId: this.chatRoomId,
                         messageType: "TALK",
                         message: this.messageToSend,
-                        sendAt: this.sendTime
+                        // sendAt: this.sendTime
                     }; // type 은 그때그때 달라져야한다.
                     this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
                     this.messageToSend = ''; // 입력 필드 초기화
@@ -118,17 +118,17 @@ export default {
             }
         },
 
-        getSendTime() {
-            // let today = new Date();
-            // let year = today.getFullYear(); // 년
-            // let month = today.getMonth() + 1; // 월
-            // let date = today.getDate(); // 일
-            // let hour = today.getHours(); // 시
-            // let minutes = today.getMinutes(); // 분
-            // this.sendTime = year + "-" + month + "-" + date + " " + hour + ":" + minutes;
-            const today = new Date();
-            this.sendTime = today.toISOString().slice(0, 16).replace('T', ' ');
-        },
+        // getSendTime() {
+        //     // let today = new Date();
+        //     // let year = today.getFullYear(); // 년
+        //     // let month = today.getMonth() + 1; // 월
+        //     // let date = today.getDate(); // 일
+        //     // let hour = today.getHours(); // 시
+        //     // let minutes = today.getMinutes(); // 분
+        //     // this.sendTime = year + "-" + month + "-" + date + " " + hour + ":" + minutes;
+        //     const today = new Date();
+        //     this.sendTime = today.toISOString().slice(0, 16).replace('T', ' ');
+        // },
     }
 }
 

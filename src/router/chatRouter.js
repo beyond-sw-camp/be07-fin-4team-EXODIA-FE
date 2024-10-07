@@ -14,9 +14,9 @@ export const chatRouter = [
         name: 'chatRoomList',
         component: ChatRoomList,
     },
-    
+
     {
-        path: '/chatRoom/1',
+        path: '/chatRoom/:id',
         name: 'ChatRoom',
         component: ChatRoomView,
         // props: route => ({
