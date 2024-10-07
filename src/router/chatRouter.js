@@ -1,5 +1,6 @@
 import ChatRoomView from '@/components/chat/ChatRoomView.vue';
 import ChatRoomCreate from '@/components/chat/ChatRoomCreate.vue';
+import ChatRoomList from '@/views/chat/ChatRoomList.vue';
 
 export const chatRouter = [
     {
@@ -7,6 +8,13 @@ export const chatRouter = [
         name: 'chatRoomCreatePage',
         component: ChatRoomCreate,
     },
+
+    {
+        path: '/chat/list',
+        name: 'chatRoomList',
+        component: ChatRoomList,
+    },
+    
     {
         path: '/chatRoom/1',
         name: 'ChatRoom',

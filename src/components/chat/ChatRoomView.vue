@@ -1,10 +1,27 @@
 <!-- 채팅방 하나의 화면 -->
+     <!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기, 채팅 이미지 모아보기 -->
+    <!--채팅 날짜 구분해서 채팅메세지 불러오기 / 나와 구성원 구분하여 띄워주기 / 구성원 프로필사진 : 메세지-->
+    <!-- 채팅입력창, 파일 보내기, 이미지 보내기-->
 
 
 <template>
-    <!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기, 채팅 이미지 모아보기 -->
-    <!--채팅 날짜 구분해서 채팅메세지 불러오기 / 나와 구성원 구분하여 띄워주기 / 구성원 프로필사진 : 메세지-->
-    <!-- 채팅입력창, 파일 보내기, 이미지 보내기-->
+     <v-container>
+        <v-app-bar>
+            <template>
+
+            </template>
+            <v-app-bar-title>
+            </v-app-bar-title>
+            <template>
+                
+            </template>
+        </v-app-bar>
+
+        <v-container>
+        </v-container>
+     </v-container>
+    
+
     <div>
         <div>
             <div v-for="(messageContent, index) in chatMessageList" :key="index">
@@ -23,9 +40,6 @@
 
 <script>
 import axios from 'axios';
-// import SockJS from "sockjs-client";
-// import { Stomp } from "@stomp/stompjs";
-
 import Stomp from 'webstomp-client'
 import SockJS from 'sockjs-client'
 
@@ -64,8 +78,6 @@ export default {
             if (this.stompClient && this.stompClient.connected) { return; } // 연결확인
             const socket = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`);
             this.stompClient = Stomp.over(socket);
-            // this.stompClient = Stomp.over(()=>socket);
-            // this.stompClient = Stomp.over(() => new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`));
             const authtoken = localStorage.getItem('token'); // Authorization: `Bearer ${authtoken}`
             console.log(this.stompClient);
             this.stompClient.connect(
@@ -91,13 +103,12 @@ export default {
             if (this.messageToSend !== '') {
                 if (this.stompClient && this.stompClient.connected) {
                     this.getSendTime();
-                    const today = new Date();
                     const messageReq = {
                         userNum: localStorage.getItem('userNum'),
                         roomId: this.chatRoomId,
                         messageType: "TALK",
                         message: this.messageToSend,
-                        sendAt: today
+                        sendAt: this.sendTime
                     }; // type 은 그때그때 달라져야한다.
                     this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
                     this.messageToSend = ''; // 입력 필드 초기화
@@ -106,12 +117,6 @@ export default {
                 }
             }
         },
-
-        // async openRoom(enterRoomId) {
-        //     this.chatRoomId = enterRoomId;
-        //     this.chatSenderNumTmp = localStorage.getItem('userNum');
-        //     this.chatMessageList = axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
-        // },
 
         getSendTime() {
             // let today = new Date();
