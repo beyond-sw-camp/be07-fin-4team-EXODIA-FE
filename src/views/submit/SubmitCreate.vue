@@ -1,12 +1,15 @@
 <template>
     <v-container>
         <v-row>
+            <v-select v-model="selectedType" :items="submitTypes" item-text="typeName" item-value="id" hint="결재 타입 골라골라"
+                label="결재 종류"></v-select>
+
             <v-col cols="12">
                 <h2>User Drag & Drop</h2>
             </v-col>
             <v-col cols="6">
                 <v-card>
-                    <v-card-title>Available Users</v-card-title>
+                    <v-card-title>결재 라인</v-card-title>
                     <v-list>
                         <v-list-item v-for="user in users" :key="user.id" draggable="true"
                             @dragstart="onDragStart(user)" class="draggable-item">
@@ -44,7 +47,12 @@ export default {
             users: [],
             droppedUsers: [],
             draggedUser: null,
+            submitTypes: [],
+            selectedType: '',
         };
+    },
+    mounted() {
+        this.fetchSubmitTypes();
     },
     created() {
         this.fetchUsers();
@@ -56,6 +64,15 @@ export default {
                 this.users = response.data;
             } catch (e) {
                 console.error('직원 불러오는데 오류 발생:', e);
+            }
+        },
+        async fetchSubmitTypes() {
+            try {
+                const response = await axios.get('/submit/list');
+                this.submitTypes = response.data.result;
+
+            } catch (e) {
+                console.error('결재 타입 불러오는데 오류 발생:', e);
             }
         },
         onDragStart(user) {
