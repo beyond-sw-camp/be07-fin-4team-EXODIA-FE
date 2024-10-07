@@ -1,6 +1,6 @@
 import reservationList from "@/views/reservation/reservationList.vue";
 import meetReservationList from "@/views/reservation/meetReservationList"
-
+import adminCarResList from "@/views/reservation/adminCarResList.vue"
 export const reservationRouter = [
     {
         path: '/reservation/reservationList',
@@ -12,6 +12,11 @@ export const reservationRouter = [
         name: 'meetReservationList',
         component: meetReservationList,
     },
+    {
+        path: '/reservation/adminCarResList',
+        name: 'adminCarResList',
+        component: adminCarResList,
+    }
    
 
 ];
