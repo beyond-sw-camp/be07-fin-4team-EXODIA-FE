@@ -10,6 +10,7 @@ import { chatRouter } from './chatRouter';
 import { boardRouter } from './boardRouter';
 import { calendarRouter } from './calendarRouter';
 import { positionRouter } from './positionRouter';
+import { submitRouter } from './submitRouter';
 
 
 const routes = [
@@ -26,7 +27,8 @@ const routes = [
   ...boardRouter,
   ...calendarRouter,
   ...positionRouter,
-  ...chatRouter
+  ...submitRouter,
+  ...chatRouter,
 ];
 
 const router = createRouter({
