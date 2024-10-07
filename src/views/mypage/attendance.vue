@@ -2,7 +2,7 @@
   <v-container fluid class="timeline-container">
     <!-- Week Selection -->
     <v-row>
-      <v-col cols="12" md="6">
+      <v-col cols="10" md="4">
         <v-select
           v-model="selectedWeek"
           :items="weeks"
@@ -17,7 +17,7 @@
       <v-col cols="1">
         <div class="header-cell"></div>
       </v-col>
-      <v-col cols="11" style="margin-top: 30px;">
+      <v-col cols="11" style="margin-top: 10px;">
         <v-row>
           <div v-for="hour in hours" :key="hour" class="hour-label">
             {{ hour }}
@@ -61,11 +61,17 @@ export default {
       weekdays: ['월', '화', '수', '목', '금', '토', '일'], // 요일 설정
       hours: Array.from({ length: 24 }, (_, i) => `${i}`), // 0~23시까지 시간
       attendanceData: {}, // API에서 받은 데이터
+
+      clockInTime: null, // 오늘 출근 시간
+      clockOutTime: null, // 오늘 퇴근 시간
+      weeklyWorkHours: 0, // 금주차 누적 근무 시간
+      weeklyOvertimeHours: 0, // 금주차 초과 근무 시간
     };
   },
   watch: {
     selectedWeek() {
       this.fetchWeeklyDetails(); // 주차가 변경될 때마다 데이터 불러오기
+      
     },
   },
   mounted() {
@@ -73,8 +79,22 @@ export default {
     const currentWeek = this.getISOWeekNumber(today); // 현재 주차 계산
     this.selectedWeek = `${currentWeek}주차`; // 선택된 주차 기본 설정
     this.fetchWeeklyDetails(); // 기본 주차 데이터 로드
+    this.emitAttendanceData(); // 데이터 전송
   },
   methods: {
+
+    emitAttendanceData() {
+      this.$emit('update-attendance', {
+        clockInTime: this.clockInTime,
+        clockOutTime: this.clockOutTime,
+        weeklyWorkHours: this.weeklyWorkHours,
+        weeklyOvertimeHours: this.weeklyOvertimeHours,
+      });
+    },
+  
+
+
+
     getISOWeekNumber(date) {
     const thursday = new Date(date.getTime());
     thursday.setDate(date.getDate() + (4 - (date.getDay() || 7)));
@@ -108,7 +128,49 @@ export default {
       } catch (error) {
         console.error('주차별 데이터를 불러오는 중 오류 발생:', error);
       }
+      this.emitAttendanceData(); // 데이터 넘기기
     },
+
+    async fetchAttendanceData() {
+    try {
+      const token = localStorage.getItem('token');
+      const userNum = localStorage.getItem('userNum');
+      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/today`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        params: {
+          userNum: userNum
+        }
+      });
+
+      const attendanceData = response.data;
+      // Log the entire response to check the structure
+      console.log('Fetched today\'s attendance data:', attendanceData);
+
+      // Log today's clock-in and clock-out times
+      if (attendanceData.todayClockInTime) {
+        console.log('Today\'s Clock-in Time:', attendanceData.todayClockInTime);
+      } else {
+        console.log('No clock-in record found for today');
+      }
+
+      if (attendanceData.todayClockOutTime) {
+        console.log('Today\'s Clock-out Time:', attendanceData.todayClockOutTime);
+      } else {
+        console.log('No clock-out record found for today');
+      }
+      this.attendanceData.clockInTime = attendanceData.todayClockInTime || 'N/A';
+      this.attendanceData.clockOutTime = attendanceData.todayClockOutTime || 'N/A';
+
+    } catch (error) {
+      console.error("Error fetching today's clock-in/out data:", error);
+    }
+  },
+
+
+
+
 
     // 근무 시간이 있는지 확인하는 함수
     isWorkHour(day, hour) {
@@ -144,9 +206,9 @@ export default {
 
 <style scoped>
 .timeline-container {
-  background-color: white;
-  padding: 20px;
-  border: solid 1px;
+  /* background-color: white; */
+  /* padding: 20px; */
+  /* border: solid 1px; */
 }
 
 .hours-row {
@@ -154,10 +216,12 @@ export default {
 }
 
 .hour-label {
-  width: calc(100% / 24);
+  width: calc(100% / 30);
   text-align: center;
+  font-size: 12px;
   font-weight: bold;
   background-color: #ffffff;
+  
   border: 1px solid #D8EACA;
   padding: 10px;
 }
@@ -166,17 +230,23 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f0f0f0;
+  /* background-color: #f0f0f0; */
   height: 50px;
   font-size: 18px;
-  margin-bottom: 10px;
+  margin-top: -20px;
   border-radius: 30px;
+  margin-bottom: -15px;
 }
 
 .timeline-bar {
-  width: calc(100% / 24);
+  margin-top: -10px;
+  width: calc(100% / 30);
   padding: 0;
   height: 50px;
+  border-width: 0px 1px 0px 1px;
+  border-style: solid;
+  border-color: #D8EACA;
+  
 }
 
 .v-progress-linear {

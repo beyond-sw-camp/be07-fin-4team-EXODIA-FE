@@ -1,20 +1,15 @@
 <template>
   <v-container fluid>
-
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-      <v-tab @click="navigateTab(0)">출/퇴근</v-tab>
-      <v-tab @click="navigateTab(1)">프로필</v-tab>
-      <v-tab @click="navigateTab(2)">인사 평가</v-tab>
-      <v-tab @click="navigateTab(3)">오늘의 점심</v-tab>
+
+      <v-tab @click="navigateTab(0)">프로필</v-tab>
+      <v-tab @click="navigateTab(1)">인사 평가</v-tab>
+      <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
     </v-tabs>
 
     <v-tabs-items v-model="activeTab">
-      <v-tab-item v-if="activeTab === 0">
-        <h3>출/퇴근 정보</h3>
-      </v-tab-item>
-
       <!-- 프로필 -->
-      <v-tab-item v-if="activeTab === 1">
+      <v-tab-item v-if="activeTab === 0">
         <v-row no-gutters class="profile-content">
           <v-col cols="12" md="3">
             <v-card class="profile-card">
@@ -27,8 +22,8 @@
             </v-card>
           </v-col>
 
-          <v-col cols="12" md="8" class="profile-info">
-            <v-card class="info-card">
+          <v-col cols="12" md="7" class="profile-info">
+            <v-card class="info-card" >
               <v-card-text>
                 <v-simple-table>
                   <thead>
@@ -64,18 +59,76 @@
             </v-card>
           </v-col>
         </v-row>
+
+
+        <v-row class="leave-info-table" justify="" style="margin-top: 10px;">
+          <v-col cols="8" md="6">
+            <v-card >
+              <v-simple-table style="text-align: center;">
+                <thead>
+                  <tr style="justify-content: center; width: 100%;">
+                    <th>잔여 휴가</th>
+                    <th>사용 휴가</th>
+                    <th>병가</th>
+                    <th>결근</th>
+                    <th>유연 근무제</th>
+                    <th>근무 일수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
+                    <td>{{ usedLeave || 'N/A' }}일</td>
+                    <td>{{ sickLeave || 'N/A' }}일</td>
+                    <td>{{ absentDays || 'N/A' }}일</td>
+                    <td>{{ flexWork || 'N/A' }}</td>
+                    <td>{{ workDays || 'N/A' }}일</td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
+            </v-card>
+          </v-col>
+
+          <v-col cols="8" md="4">
+            <v-card >
+              <v-simple-table style="text-align: center;">
+                <thead>
+                  <tr style="justify-content: center;">
+                    <th>출근시간</th>
+                    <th>퇴근시간</th>
+                    <th>주차누적근무</th>
+                    <th>주차초과근무</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
+                    <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
+                    <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
+                    <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
+            </v-card>
+          </v-col>
+
+
+        </v-row>
+
+        <!-- 타임라인 -->
+        <v-row class="timeline-container" style="margin-top: 10px;">
+          <attendance-record />
+        </v-row>
       </v-tab-item>
 
       <!-- 인사 평가 -->
-      <v-tab-item v-if="activeTab === 2">
+      <v-tab-item v-if="activeTab === 1">
         <h3>인사 평가</h3>
-        <!-- 인사 평가 정보를 여기에 표시 -->
       </v-tab-item>
 
       <!-- 오늘의 점심 -->
-      <v-tab-item v-if="activeTab === 3">
+      <v-tab-item v-if="activeTab === 2">
         <h3>오늘의 점심 추천</h3>
-        <!-- 오늘의 점심 추천 관련 정보를 여기에 표시 -->
       </v-tab-item>
     </v-tabs-items>
   </v-container>
@@ -83,15 +136,30 @@
 
 <script>
 import axios from 'axios';
+import moment from 'moment'; // 날짜 계산에 사용할 라이브러리
+import AttendanceRecord from './attendance.vue'; // 타임라인 컴포넌트 import
 
 export default {
   name: "UserProfile",
+  components: {
+    AttendanceRecord // 타임라인 컴포넌트 등록
+  },
   data() {
     return {
-      activeTab: 1,
+      activeTab: 0  ,
       userProfile: {},
+      workDays: null, // 근무 일수
+      usedLeave: 0, // 사용된 휴가
+      sickLeave: 0, // 병가
+      absentDays: 0, // 결근일수
+      flexWork: '8-5', // 유연 근무제 정보
+      attendanceData: {
+        clockInTime: null,
+        clockOutTime: null,
+        weeklyWorkHours: 0,
+        weeklyOvertimeHours: 0,
+      },
       tabs: [
-        { label: "출/퇴근" },
         { label: "프로필" },
         { label: "인사 평가" },
         { label: "오늘의 점심" }
@@ -104,6 +172,9 @@ export default {
   },
   
   methods: {
+    updateAttendanceData(data) {
+      this.attendanceData = data;
+    },
     async fetchUserProfile() {
       try {
         const token = localStorage.getItem('token');
@@ -113,16 +184,45 @@ export default {
             Authorization: `Bearer ${token}`
           }
         });
+
         console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
+
+      console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
+      console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
+
+        // 입사일로부터 현재까지의 근무일수 계산
+        if (this.userProfile.joinDate) {
+          const joinDate = moment(this.userProfile.joinDate, "YYYY-MM-DD HH:mm:ss.SSSSSS");
+          const currentDate = moment();
+          this.workDays = currentDate.diff(joinDate, 'days'); // 근무 일수 계산
+          console.log('Joindate : ', joinDate);
+          console.log('Work Days : ', this.workDays);
+        }
+
+        // 여기서 추가적인 데이터를 설정할 수 있음 (병가, 결근 등)
+        this.sickLeave = this.userProfile.sickLeave || 0;
+        this.usedLeave = this.userProfile.usedLeave || 0;
+        this.absentDays = this.userProfile.absentDays || 0;
+        
+        this.attendanceData.clockInTime = this.userProfile.attendanceData?.clockInTime
+        ? moment(this.userProfile.attendanceData.clockInTime).format('HH:mm:ss')
+        : 'N/A';
+      this.attendanceData.clockOutTime = this.userProfile.attendanceData?.clockOutTime
+        ? moment(this.userProfile.attendanceData.clockOutTime).format('HH:mm:ss')
+        : 'N/A';
+      this.attendanceData.weeklyWorkHours = this.userProfile.attendanceData?.weeklyWorkHours || 'N/A';
+      this.attendanceData.weeklyOvertimeHours = this.userProfile.attendanceData?.weeklyOvertimeHours || 'N/A';
+      
+
       } catch (error) {
         console.error('유저 정보 가져오기 실패:', error);
       }
     },
     navigateTab(index) {
-      if (index === 0) {
-        this.$router.push('/mypage/attendance');
-      } else if (index === 3) {
+      if (index === 1) {
+        this.$router.push('/mypage/evalution');
+      } else if (index === 2) {
         this.$router.push('/mypage/spinWheel');
       } else {
         this.activeTab = index;
@@ -143,9 +243,11 @@ export default {
   font-size: 16px;
   color: #4CAF50;
 }
+
 .v-tabs--density-default {
-    --v-tabs-height: 48px;
+  --v-tabs-height: 48px;
 }
+
 .v-tabs {
   border-bottom: 1px solid #e0e0e0;
 }
@@ -179,17 +281,18 @@ export default {
   margin-top: 20px;
 }
 
-/* 테이블(유저 정보) */
 .profile-info {
   margin-left: 30px;
 }
 
 .info-card {
   padding: 20px;
+  
 }
 
 .v-simple-table {
   width: 100%;
+  
 }
 
 thead th {
@@ -197,6 +300,7 @@ thead th {
   font-weight: bold;
   text-align: left;
   padding: 10px;
+  
 }
 
 tbody td {
@@ -207,5 +311,51 @@ tbody td {
 td:first-child {
   font-weight: bold;
   color: #666;
+}
+
+.leave-info-table {
+  margin-top: 20px;
+  /* background-color: #f5f5f5; */
+  box-shadow: none;
+}
+
+.timeline-container {
+  /* background-color: white; */
+  /* padding: 20px; */
+  /* border: solid 1px; */
+}
+
+.hours-row {
+  margin-bottom: 10px;
+}
+
+.hour-label {
+  width: calc(100% / 36);
+  text-align: center;
+  font-weight: bold;
+  background-color: #ffffff;
+  border: 1px solid #D8EACA;
+  padding: 10px;
+}
+
+.day-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* background-color: #f0f0f0; */
+  height: 40px;
+  font-size: 18px;
+  margin-bottom: 10px;
+  border-radius: 30px;
+}
+
+.timeline-bar {
+  width: calc(100% / 36);
+  padding: 0;
+  height: 50px;
+}
+
+.v-progress-linear {
+  height: 30px;
 }
 </style>
