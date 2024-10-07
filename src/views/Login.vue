@@ -83,6 +83,9 @@ export default {
         localStorage.setItem('departmentId', departmentId);
         localStorage.setItem('positionId', positionId);
 
+        const token1 = localStorage.getItem('token');
+        console.log('Stored Token:', token1); 
+
         if (this.rememberUserNum) {
           localStorage.setItem('savedUserNum', this.userNum);  
         } else {

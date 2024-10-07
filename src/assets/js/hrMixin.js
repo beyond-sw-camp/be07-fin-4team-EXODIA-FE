@@ -1,21 +1,22 @@
+import auth from '../../services/auth'; 
+
 export default {
-    data() {
-      return {
-        isHrDepartment: false
-      };
-    },
-    methods: {
-      checkHrDepartment() {
-        const departmentId = localStorage.getItem('departmentId');
-        if (departmentId === '4') {
-          this.isHrDepartment = true;
-        } else {
-          this.isHrDepartment = false;
-        }
+  data() {
+    return {
+      isHrDepartment: false
+    };
+  },
+  methods: {
+    checkHrDepartment() {
+      const currentUser = auth.getCurrentUser();
+      if (currentUser && currentUser.departmentId === '4') { 
+        this.isHrDepartment = true;
+      } else {
+        this.isHrDepartment = false;
       }
-    },
-    mounted() {
-      this.checkHrDepartment();
     }
-  };
-  
+  },
+  mounted() {
+    this.checkHrDepartment();
+  }
+};

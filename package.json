@@ -8,7 +8,14 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/google-calendar": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@fullcalendar/vue3": "^6.1.15",
     "@mdi/font": "^7.4.47",
+    "@mdi/js": "^7.4.47",
     "@stomp/stompjs": "^7.0.0",
     "axios": "^1.7.7",
     "core-js": "^3.8.3",
@@ -17,11 +24,12 @@
     "janus-gateway": "^1.2.4",
     "jwt-decode": "^4.0.0",
     "mitt": "^3.0.1",
+    "moment": "^2.30.1",
     "sockjs-client": "^1.6.1",
     "swiper": "^11.1.9",
-    "vue": "^3.2.13",
+    "vue": "^3.5.10",
     "vue-router": "^4.4.5",
-    "vuetify": "^3.6.14",
+    "vuetify": "^3.7.2",
     "vuex": "^4.1.0",
     "webrtc-adapter": "^8.2.3",
     "webstomp-client": "1.2.6"
@@ -29,6 +37,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
+    "@babel/preset-typescript": "^7.25.7",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
@@ -39,6 +48,7 @@
     "https-browserify": "^1.0.0",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
+    "ts-loader": "^9.5.1",
     "url": "^0.11.4",
     "util": "^0.12.5",
     "video.js": "^8.17.3"
