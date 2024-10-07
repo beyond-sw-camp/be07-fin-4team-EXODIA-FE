@@ -9,6 +9,7 @@ import { reservationRouter } from './reservationRouter';
 import { boardRouter } from './boardRouter';
 import { calendarRouter } from './calendarRouter';
 import { positionRouter } from './positionRouter';
+import { submitRouter } from './submitRouter';
 
 
 const routes = [
@@ -22,9 +23,10 @@ const routes = [
   ...documentRouter,
   ...mypageRouter,
   ...reservationRouter,
-  ...boardRouter
+  ...boardRouter,
   ...calendarRouter,
-  ...positionRouter
+  ...positionRouter,
+  ...submitRouter
 ];
 
 const router = createRouter({
