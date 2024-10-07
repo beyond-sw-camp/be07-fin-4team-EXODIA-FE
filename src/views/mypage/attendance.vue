@@ -1,23 +1,16 @@
 <template>
   <v-container fluid class="timeline-container">
-    <!-- Month Selection -->
+    <!-- Week Selection -->
     <v-row>
       <v-col cols="12" md="6">
         <v-select
-          v-model="selectedMonth"
-          :items="months"
-          label="월 선택"
+          v-model="selectedWeek"
+          :items="weeks"
+          label="주차 선택"
           outlined
         ></v-select>
       </v-col>
     </v-row>
-
-    <!-- Week Selection -->
-    <v-tabs v-model="selectedWeek" background-color="grey lighten-5">
-      <v-tab v-for="week in getWeeksInMonth(selectedMonth)" :key="week">
-        {{ week }}주차
-      </v-tab>
-    </v-tabs>
 
     <!-- Timeline Header with Hours -->
     <v-row class="hours-row">
@@ -34,15 +27,17 @@
     </v-row>
 
     <!-- Timeline for Each Day -->
-    <v-row v-for="(day, index) in weekdays" :key="index" class="day-row">
+    <v-row v-for="day in weekdays" :key="day" class="day-row">
       <v-col cols="1">
         <div class="day-label">{{ day }}</div>
       </v-col>
       <v-col cols="11">
         <v-row>
           <div v-for="hour in hours" :key="hour" class="timeline-bar">
+            <!-- 근무 시간이 있을 때만 표시 -->
             <v-progress-linear
-              :value="getWorkHoursPercentage(day, hour)"
+              v-if="isWorkHour(day, hour)"
+              :value="100"
               height="30"
               :color="getTimeColor(day, hour)"
               class="timeline-progress"
@@ -61,192 +56,88 @@ export default {
   name: 'AttendanceRecord',
   data() {
     return {
-      selectedMonth: new Date().getMonth() + 1, // Default to current month
-      selectedWeek: 1, // Default to the first week
-      months: Array.from({ length: 12 }, (_, i) => `${i + 1}월`), // 1월부터 12월까지 배열
+      selectedWeek: null, // 선택된 주차
+      weeks: Array.from({ length: 52 }, (_, i) => `${i + 1}주차`), // 1주차부터 52주차까지 배열
       weekdays: ['월', '화', '수', '목', '금', '토', '일'], // 요일 설정
       hours: Array.from({ length: 24 }, (_, i) => `${i}`), // 0~23시까지 시간
       attendanceData: {}, // API에서 받은 데이터
-      startDate: null, // 주차 시작 날짜
-      endDate: null, // 주차 종료 날짜
     };
   },
   watch: {
-    selectedMonth() {
-      this.updateDateRange();
-    },
     selectedWeek() {
-      this.updateDateRange();
+      this.fetchWeeklyDetails(); // 주차가 변경될 때마다 데이터 불러오기
     },
   },
   mounted() {
-    this.fetchUserInfo(); // 유저 정보 확인 후 데이터 불러오기
-    this.updateDateRange();
+    const today = new Date();
+    const currentWeek = this.getISOWeekNumber(today); // 현재 주차 계산
+    this.selectedWeek = `${currentWeek}주차`; // 선택된 주차 기본 설정
+    this.fetchWeeklyDetails(); // 기본 주차 데이터 로드
   },
   methods: {
-    // 주차 시작 날짜와 종료 날짜를 계산하는 함수
-    updateDateRange() {
-      const firstDayOfMonth = new Date(new Date().getFullYear(), this.selectedMonth - 1, 1);
-      const selectedWeekNumber = this.selectedWeek;
+    getISOWeekNumber(date) {
+    const thursday = new Date(date.getTime());
+    thursday.setDate(date.getDate() + (4 - (date.getDay() || 7)));
+    
+    const yearStart = new Date(thursday.getFullYear(), 0, 1);
+    const weekNumber = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
+    
+    return weekNumber;
+  },
+    // 선택된 주차의 데이터를 API에서 가져오는 함수
+    async fetchWeeklyDetails() {
+      if (!this.selectedWeek) return;
 
-      if (!selectedWeekNumber || selectedWeekNumber <= 0) {
-        console.error("유효하지 않은 주차입니다.");
-        return;
-      }
-
-      // 주차의 시작 날짜 계산 (월요일 기준, ISO-8601)
-      const startOfSelectedWeek = this.getStartOfISOWeek(firstDayOfMonth, selectedWeekNumber);
-
-      if (!isNaN(startOfSelectedWeek.getTime())) {
-        this.startDate = startOfSelectedWeek.toISOString().split('T')[0]; // ISO 형식으로 변환
-      } else {
-        console.error("유효하지 않은 날짜입니다.");
-        return;
-      }
-
-      // 주차의 마지막 날을 계산 (일요일)
-      const endOfSelectedWeek = new Date(startOfSelectedWeek);
-      endOfSelectedWeek.setDate(startOfSelectedWeek.getDate() + 6); // ISO 주 기준으로 일요일을 계산
-      this.endDate = endOfSelectedWeek.toISOString().split('T')[0];
-
-      this.fetchWeeklyDetails(); // 주차 및 달 변경 후 데이터 가져오기
-    },
-
-    async fetchUserInfo() {
       try {
-        const userNum = localStorage.getItem('userNum');
-        if (!userNum) {
-          throw new Error('로그인 정보가 없습니다.');
-        }
-
-        await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/profile/${userNum}`, {
+        const weekNumber = this.selectedWeek.replace('주차', ''); // '1주차' 같은 값을 숫자로 변환
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/weekly`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        });
-
-        this.fetchWeeklyDetails();
-      } catch (error) {
-        console.error('유저 정보를 불러오는 중 오류 발생:', error);
-        if (error.response?.status === 401) {
-          alert('세션이 만료되었습니다. 다시 로그인 해주세요.');
-          this.$router.push('/login');
-        }
-      }
-    },
-
-    async fetchWeeklyDetails() {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/weekly-details`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
           params: {
-            startDate: this.startDate,
-            endDate: this.endDate,
+            year: new Date().getFullYear(),
           },
         });
 
-        const weeklyDetails = response.data.result || {};
-        this.attendanceData = this.parseAttendanceData(weeklyDetails);
+        const weekData = response.data.find(week => week.weekNumber == weekNumber);
+        if (weekData) {
+          this.attendanceData = weekData.days;
+        } else {
+          this.attendanceData = {};
+        }
       } catch (error) {
-        console.error('근무 기록을 불러오는 중 오류 발생:', error);
-        if (error.response?.status === 401) {
-          alert('세션이 만료되었습니다. 다시 로그인 해주세요.');
-          this.$router.push('/login');
-        }
+        console.error('주차별 데이터를 불러오는 중 오류 발생:', error);
       }
     },
 
-    // ISO-8601 기준으로 월의 주차 계산
-    getWeeksInMonth(month) {
-      const year = new Date().getFullYear();
-      const firstDayOfMonth = new Date(year, month - 1, 1);
-      const lastDayOfMonth = new Date(year, month, 0); // 해당 달의 마지막 날
-
-      const weeks = [];
-      let startOfWeek = this.getStartOfISOWeek(firstDayOfMonth);
-
-      while (startOfWeek <= lastDayOfMonth) {
-        weeks.push(this.getISOWeekNumber(startOfWeek));
-        startOfWeek.setDate(startOfWeek.getDate() + 7); // 다음 주로 이동
-      }
-
-      return Array.from(new Set(weeks)); // 중복된 주차를 제거
-    },
-
-    // ISO-8601 기준으로 주차의 시작(월요일)을 반환하는 함수
-    getStartOfISOWeek(date, weekNumber = 1) {
-      const startOfWeek = new Date(date);
-      const dayOfWeek = startOfWeek.getDay() || 7; // ISO 기준: 일요일은 7로 설정
-      startOfWeek.setDate(startOfWeek.getDate() - (dayOfWeek - 1)); // 월요일 기준으로 설정
-
-      if (weekNumber > 1) {
-        startOfWeek.setDate(startOfWeek.getDate() + (weekNumber - 1) * 7); // 선택한 주차로 이동
-      }
-
-      return startOfWeek;
-    },
-
-    // ISO-8601 기준 주차 계산
-    getISOWeekNumber(date) {
-      const thursday = new Date(date.getTime());
-      thursday.setDate(date.getDate() + (4 - (date.getDay() || 7))); // ISO 주차 기준 목요일로 계산
-
-      const yearStart = new Date(thursday.getFullYear(), 0, 1);
-      const weekNumber = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
-
-      return weekNumber;
-    },
-
-    parseAttendanceData(weeklyDetails) {
-      const parsedData = {};
-
-      Object.keys(weeklyDetails).forEach((day) => {
-        const dayData = weeklyDetails[day];
-        parsedData[day] = dayData.map((attendance) => ({
-          inTime: new Date(attendance.inTime),
-          outTime: new Date(attendance.outTime),
-          hoursWorked: attendance.hoursWorked,
-        }));
-      });
-
-      return parsedData;
-    },
-
-    getWorkHoursPercentage(day, hour) {
+    // 근무 시간이 있는지 확인하는 함수
+    isWorkHour(day, hour) {
       const dayData = this.attendanceData[day];
       if (dayData) {
-        const matchingEntry = dayData.find((entry) => {
-          const startHour = entry.inTime.getHours();
-          const endHour = entry.outTime.getHours();
-          return hour >= startHour && hour < endHour;
-        });
-
-        if (matchingEntry) {
-          return 100; // 해당 시간에 근무한 경우
-        }
+        const startHour = new Date(dayData.inTime).getHours();
+        const endHour = new Date(dayData.outTime).getHours();
+        return hour >= startHour && hour < endHour;
       }
-
-      return 0;
+      return false; // 근무 시간이 없는 경우
     },
 
+    // 시간대별 색상 설정 메서드
     getTimeColor(day, hour) {
-      const dayData = this.attendanceData[day];
-      if (dayData) {
-        const matchingEntry = dayData.find((entry) => {
-          const startHour = entry.inTime.getHours();
-          const endHour = entry.outTime.getHours();
-          return hour >= startHour && hour < endHour;
-        });
+  const dayData = this.attendanceData[day];
+  if (dayData) {
+    const inTime = new Date(dayData.inTime).getHours();
+    const outTime = new Date(dayData.outTime).getHours();
+    
+    // hour가 근무 시간 범위 내에 있는 경우에만 색상을 결정
+    if (hour >= inTime && hour < outTime) {
+      const hoursWorked = dayData.hoursWorked;
+      return hoursWorked > 8 ? '#4CAF50' : '#D8EACA'; // 초과 근무는 초록색, 일반 근무는 연한 초록색
+    }
+  }
+  return 'white'; // 근무 시간이 아닌 경우
+},
 
-        if (matchingEntry) {
-          return matchingEntry.hoursWorked > 8 ? '#4CAF50' : '#D8EACA'; // 초과 근무일 경우 초록색
-        }
-      }
-      return 'white';
-    },
+
   },
 };
 </script>

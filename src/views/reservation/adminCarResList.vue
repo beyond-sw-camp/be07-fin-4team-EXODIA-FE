@@ -113,7 +113,7 @@
       async rejectReservation(reservationId) {
         try {
           const token = localStorage.getItem("token");
-          await axios.put(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/reject/${reservationId}`, null, {
+          await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/reject/${reservationId}`, null, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
