@@ -9,7 +9,7 @@ import { reservationRouter } from './reservationRouter';
 import { boardRouter } from './boardRouter';
 import { calendarRouter } from './calendarRouter';
 import { positionRouter } from './positionRouter';
-
+import { notificationRouter } from './notificationRouter';
 
 const routes = [
   {
@@ -24,7 +24,8 @@ const routes = [
   ...reservationRouter,
   ...boardRouter,
   ...calendarRouter,
-  ...positionRouter
+  ...positionRouter,
+  ...notificationRouter
 ];
 
 const router = createRouter({
