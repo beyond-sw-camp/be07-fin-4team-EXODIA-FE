@@ -25,7 +25,8 @@ const routes = [
   ...reservationRouter,
   ...boardRouter,
   ...calendarRouter,
-  ...positionRouter
+  ...positionRouter,
+  ...chatRouter
 ];
 
 const router = createRouter({
