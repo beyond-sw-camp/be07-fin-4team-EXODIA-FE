@@ -6,6 +6,7 @@ import { userRouter } from './userRouter';
 import { documentRouter } from './documentRouter';
 import { mypageRouter } from './mypageRouter';
 import { reservationRouter } from './reservationRouter';
+import { chatRouter } from './chatRouter';
 import { boardRouter } from './boardRouter';
 import { calendarRouter } from './calendarRouter';
 import { positionRouter } from './positionRouter';
@@ -26,7 +27,8 @@ const routes = [
   ...boardRouter,
   ...calendarRouter,
   ...positionRouter,
-  ...submitRouter
+  ...submitRouter,
+  ...chatRouter,
 ];
 
 const router = createRouter({
