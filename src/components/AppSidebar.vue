@@ -34,7 +34,7 @@
         <v-icon class="icon">mdi-timer-sand</v-icon>
         <span class="tooltip">예약</span>
       </div>
-      <div class="menu-item" @click="$router.push('/approval')">
+      <div class="menu-item" @click="$router.push('/submit')">
         <v-icon class="icon">mdi-pencil-box</v-icon>
         <span class="tooltip">결재</span>
       </div>
