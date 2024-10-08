@@ -3,8 +3,9 @@
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
 
       <v-tab @click="navigateTab(0)">프로필</v-tab>
-      <v-tab @click="navigateTab(1)">인사 평가</v-tab>
+      <v-tab @click="navigateTab(1)">평가리스트</v-tab>
       <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
+      <v-tab @click="navigateTab(3)">인사평가</v-tab>
     </v-tabs>
 
     <v-tabs-items v-model="activeTab">
@@ -121,15 +122,17 @@
         </v-row>
       </v-tab-item>
 
-      <!-- 인사 평가 -->
+      
       <v-tab-item v-if="activeTab === 1">
-        <h3>인사 평가</h3>
+        <!-- 평가리스트 -->
+      </v-tab-item>      
+      <v-tab-item v-if="activeTab === 2">
+        <!-- 오늘의 점심 -->
+      </v-tab-item>
+      <v-tab-item v-if="activeTab === 3">
+        <!-- 인사평가 -->
       </v-tab-item>
 
-      <!-- 오늘의 점심 -->
-      <v-tab-item v-if="activeTab === 2">
-        <h3>오늘의 점심 추천</h3>
-      </v-tab-item>
     </v-tabs-items>
   </v-container>
 </template>
@@ -137,7 +140,7 @@
 <script>
 import axios from 'axios';
 import moment from 'moment'; // 날짜 계산에 사용할 라이브러리
-import AttendanceRecord from './attendance.vue'; // 타임라인 컴포넌트 import
+import AttendanceRecord from './attendance.vue';
 
 export default {
   name: "UserProfile",
@@ -161,8 +164,9 @@ export default {
       },
       tabs: [
         { label: "프로필" },
-        { label: "인사 평가" },
-        { label: "오늘의 점심" }
+        { label: "평가리스트" },
+        { label: "오늘의 점심" },
+        { label: "인사평가"}
       ],
       defaultProfileImage: 'https://via.placeholder.com/150'
     };
@@ -221,9 +225,11 @@ export default {
     },
     navigateTab(index) {
       if (index === 1) {
-        this.$router.push('/mypage/evalution');
+        this.$router.push('/mypage/evalutionFrame');
       } else if (index === 2) {
         this.$router.push('/mypage/spinWheel');
+      } else if (index === 3) {
+        this.$router.push('/mypage/evalutionList');
       } else {
         this.activeTab = index;
       }

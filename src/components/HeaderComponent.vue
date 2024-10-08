@@ -11,6 +11,9 @@
       <v-avatar>
         <img src="@/assets/user.png" alt="User Avatar" class="user-avatar" />
       </v-avatar>
+
+
+
     </div>
   </header>
 </template>
