@@ -24,9 +24,9 @@
           </v-col>
 
           <v-col cols="12" md="7" class="profile-info">
-            <v-card class="info-card" >
+            <v-card class="info-card">
               <v-card-text>
-                <v-simple-table>
+                <table class="custom-table">
                   <thead>
                     <tr>
                       <th style="width: 30%;">항목</th>
@@ -55,63 +55,69 @@
                       <td>{{ userProfile?.joinDate || 'N/A' }}</td>
                     </tr>
                   </tbody>
-                </v-simple-table>
+                </table>
               </v-card-text>
             </v-card>
           </v-col>
+
         </v-row>
 
 
         <v-row class="leave-info-table" justify="" style="margin-top: 10px;">
           <v-col cols="8" md="6">
-            <v-card >
-              <v-simple-table style="text-align: center;">
-                <thead>
-                  <tr style="justify-content: center; width: 100%;">
-                    <th>잔여 휴가</th>
-                    <th>사용 휴가</th>
-                    <th>병가</th>
-                    <th>결근</th>
-                    <th>유연 근무제</th>
-                    <th>근무 일수</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
-                    <td>{{ usedLeave || 'N/A' }}일</td>
-                    <td>{{ sickLeave || 'N/A' }}일</td>
-                    <td>{{ absentDays || 'N/A' }}일</td>
-                    <td>{{ flexWork || 'N/A' }}</td>
-                    <td>{{ workDays || 'N/A' }}일</td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
+            <v-card>
+              <v-card-text>
+                <table class="custom-leave-table">
+                  <thead>
+                    <tr>
+                      <th>잔여 휴가</th>
+                      <th>사용 휴가</th>
+                      <th>병가</th>
+                      <th>결근</th>
+                      <th>유연 근무제</th>
+                      <th>근무 일수</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
+                      <td>{{ usedLeave || 'N/A' }}일</td>
+                      <td>{{ sickLeave || 'N/A' }}일</td>
+                      <td>{{ absentDays || 'N/A' }}일</td>
+                      <td>{{ flexWork || 'N/A' }}</td>
+                      <td>{{ workDays || 'N/A' }}일</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="8" md="4">
-            <v-card >
-              <v-simple-table style="text-align: center;">
-                <thead>
-                  <tr style="justify-content: center;">
-                    <th>출근시간</th>
-                    <th>퇴근시간</th>
-                    <th>주차누적근무</th>
-                    <th>주차초과근무</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
-                    <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
-                    <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
-                    <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
+          <v-col cols="8" md="5">
+            <v-card>
+              <v-card-text>
+                <table class="custom-attendance-table">
+                  <thead>
+                    <tr>
+                      <th>출근시간</th>
+                      <th>퇴근시간</th>
+                      <th>주차누적근무</th>
+                      <th>주차초과근무</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
+                      <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
+                      <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
+                      <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </v-card-text>
             </v-card>
           </v-col>
+
 
 
         </v-row>
@@ -363,5 +369,69 @@ td:first-child {
 
 .v-progress-linear {
   height: 30px;
+}
+
+
+.custom-table {
+  width: 100%; /* v-col 크기와 동일하게 맞추기 */
+  table-layout: fixed; /* 테이블 셀의 고정된 너비 설정 */
+  border-collapse: collapse; /* 경계선 중복 제거 */
+}
+
+.custom-table th,
+.custom-table td {
+  
+  padding: 10px; /* 셀 내 패딩 추가 */
+}
+
+.custom-table th {
+  
+  background-color: #f0f0f0;
+  font-weight: bold;
+  text-align: left;
+  border: 1px solid #e0e0e0;
+}
+
+.custom-table td:first-child {
+  
+  font-weight: bold;
+  color: #666;
+}
+
+.custom-leave-table {
+  width: 100%; /* v-col 크기와 동일하게 설정 */
+  table-layout: fixed; /* 셀 너비 고정 */
+  border-collapse: collapse; /* 테두리 중복 제거 */
+  text-align: center; /* 텍스트 중앙 정렬 */
+  background-color: #ffffff;
+}
+
+.custom-leave-table th,
+.custom-leave-table td {
+  padding: 10px; /* 셀 내 패딩 */
+  
+}
+
+.custom-leave-table th {
+  background-color: #f0f0f0; /* 헤더 배경색 */
+  font-weight: bold;
+  text-align: center;
+}
+.custom-attendance-table {
+  width: 100%; /* v-col 크기와 동일하게 설정 */
+  table-layout: fixed; /* 셀 너비 고정 */
+  border-collapse: collapse; /* 테두리 중복 제거 */
+  text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+.custom-attendance-table th,
+.custom-attendance-table td {
+  padding: 10px; /* 셀 내 패딩 */
+}
+
+.custom-attendance-table th {
+  background-color: #f0f0f0; /* 헤더 배경색 */
+  font-weight: bold;
+  text-align: center;
 }
 </style>
