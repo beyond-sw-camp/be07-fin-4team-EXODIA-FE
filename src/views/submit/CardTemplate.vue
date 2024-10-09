@@ -174,6 +174,8 @@ export default {
             try {
                 this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
                 await axios.post('/submit/create', this.submitCreateData);
+                alert("결재 요청이 성공적으로 처리되었습니다.")
+                location.reload();
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }

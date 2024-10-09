@@ -11,6 +11,10 @@
         <CardTemplate />
     </div>
 
+    <div v-if="showVacationTemplate">
+        <VacationTemplate />
+    </div>
+
 
 
 </template>
@@ -18,19 +22,21 @@
 <script>
 import axios from 'axios';
 import CardTemplate from './CardTemplate.vue';
+import VacationTemplate from './VacationTemplate.vue';
 
 export default {
     components: {
-        CardTemplate,
+        CardTemplate, VacationTemplate,
     },
     data() {
         return {
             token: localStorage.getItem('token') || null,
             userNum: localStorage.getItem('userNum') || null,
 
-            submitType: '',
+            submitType: '법인 카드 신청',
             submitTypes: [],
-            showCardTemplate: false
+            showCardTemplate: true,
+            showVacationTemplate: false,
         };
     },
     mounted() {
@@ -38,14 +44,14 @@ export default {
     },
     watch: {
         'submitType': function (newType) {
-            console.log("Submit type changed to:", newType);
             this.showCardTemplate = newType === '법인 카드 신청';
+            this.showVacationTemplate = newType == '휴가 신청'
         }
     },
     methods: {
         async fetchSubmitTypes() {
             try {
-                const response = await axios.get('/submit/list');
+                const response = await axios.get('/submit/type/list');
                 this.submitTypes = response.data.result;
 
             } catch (e) {
