@@ -164,6 +164,8 @@ export default {
           (dept) => dept.id === this.userDetail.departmentId
         );
         this.userDetail.departmentId = foundDepartment ? foundDepartment.id : null;
+      } else {
+        console.error("Department ID is missing:", this.userDetail.departmentId);
       }
 
       if (this.userDetail.positionId) {
@@ -171,8 +173,10 @@ export default {
           (pos) => pos.id === this.userDetail.positionId
         );
         this.userDetail.positionId = foundPosition ? foundPosition.id : null;
+      } else {
+        console.error("Position ID is missing:", this.userDetail.positionId);
       }
-    },
+  },
 
     async fetchDepartments() {
       try {
@@ -214,36 +218,35 @@ export default {
         this.previewImageSrc = null;
       }
     },
-
     async submitForm() {
-      const formData = new FormData();
-      formData.append("userNum", this.userDetail.userNum);
-      formData.append("name", this.userDetail.name);
-      formData.append("departmentId", this.userDetail.departmentId);
-      formData.append("positionId", this.userDetail.positionId);
-      formData.append("email", this.userDetail.email);
-      formData.append("phone", this.userDetail.phone);
-      formData.append("hireType", this.userDetail.hireType);
-      formData.append("annualLeave", this.userDetail.annualLeave);
+      console.log("Submitting with departmentId:", this.userDetail.departmentId);
+  console.log("Submitting with positionId:", this.userDetail.positionId);
 
-      if (this.userDetail.profileImage) {
-        formData.append("profileImage", this.userDetail.profileImage);
-      }
+      const payload = {
+        userNum: this.userDetail.userNum,
+        name: this.userDetail.name,
+        departmentId: this.userDetail.departmentId,
+        positionId: this.userDetail.positionId,
+        email: this.userDetail.email,
+        phone: this.userDetail.phone,
+        hireType: this.userDetail.hireType,
+        annualLeave: this.userDetail.annualLeave,
+      };
 
       try {
         const token = localStorage.getItem("token");
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
+            'Content-Type': 'application/json', 
+          }
         };
 
         if (this.isEditMode) {
-          await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
+          await axios.put(`/user/list/${this.$route.params.userNum}`, payload, config);
           alert("수정 완료");
         } else {
-          await axios.post("/user/register", formData, config);
+          await axios.post("/user/register", payload, config);
           alert("등록 완료");
         }
 
@@ -270,3 +273,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.v-btn {
+  margin-right: 10px;
+}
+
+.red--text {
+  color: #f44336 !important;
+}
+</style>
