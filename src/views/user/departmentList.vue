@@ -14,6 +14,7 @@
         <li v-for="department in hierarchy" :key="department.id">
           <div
             class="tree-node"
+            :style="getNodeStyle(department, 0)"
             :draggable="editMode"
             @dragstart="dragStart(department)"
             @dragover.prevent
@@ -26,6 +27,7 @@
             <li v-for="child in department.children" :key="child.id">
               <div
                 class="tree-node"
+                :style="getNodeStyle(child, 1)"
                 :draggable="editMode"
                 @dragstart="dragStart(child)"
                 @dragover.prevent
@@ -38,6 +40,7 @@
                 <li v-for="subChild in child.children" :key="subChild.id">
                   <div
                     class="tree-node"
+                    :style="getNodeStyle(subChild, 2)"
                     :draggable="editMode"
                     @dragstart="dragStart(subChild)"
                     @dragover.prevent
@@ -136,20 +139,19 @@ export default {
     },
 
     async updateDepartmentParent(departmentId, newParentId) {
-  console.log('Department ID:', departmentId);
-  console.log('New Parent ID:', newParentId); // 추가된 디버그 출력
-  try {
-    await this.$axios.put(`/department/${departmentId}`, {
-      name: this.draggedItem.name,  // 부서 이름도 함께 전송
-      parentId: newParentId,
-    });
-    alert('부서 계층이 업데이트되었습니다.');
-    this.fetchHierarchy(); // 계층 업데이트 후 새로고침
-  } catch (error) {
-    console.error('Error updating department parent:', error);
-  }
-},
-
+      console.log('Department ID:', departmentId);
+      console.log('New Parent ID:', newParentId);
+      try {
+        await this.$axios.put(`/department/${departmentId}`, {
+          name: this.draggedItem.name,  // 부서 이름도 함께 전송
+          parentId: newParentId,
+        });
+        alert('부서 계층이 업데이트되었습니다.');
+        this.fetchHierarchy(); // 계층 업데이트 후 새로고침
+      } catch (error) {
+        console.error('Error updating department parent:', error);
+      }
+    },
 
     async saveDepartment() {
       try {
@@ -186,17 +188,25 @@ export default {
       });
     },
 
-    // getNodeStyle 함수 추가
-    getNodeStyle(department) {
+    getNodeStyle(department, depth) {
+      const colors = ['#ffeb3b', '#64b5f6', '#81c784']; 
+      const color = colors[depth % colors.length]; 
       return {
         cursor: this.editMode ? "move" : "default",
         opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.5 : 1,
+        backgroundColor: color,
+        padding: "15px",
+        margin: "10px",
+        borderRadius: "10px",
+        boxShadow: "3px 3px 10px rgba(0, 0, 0, 0.2)",
+        textAlign: "center",
+        transition: "all 0.3s ease",
       };
     },
   },
 
   mounted() {
-    this.fetchHierarchy(); // 컴포넌트가 마운트될 때 계층 데이터를 서버에서 불러옴
+    this.fetchHierarchy(); 
   },
 };
 </script>
