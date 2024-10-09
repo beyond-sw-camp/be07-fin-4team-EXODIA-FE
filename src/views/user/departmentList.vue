@@ -14,7 +14,6 @@
         <li v-for="department in hierarchy" :key="department.id">
           <div
             class="tree-node"
-            :style="getNodeStyle(department)"
             :draggable="editMode"
             @dragstart="dragStart(department)"
             @dragover.prevent
@@ -27,7 +26,6 @@
             <li v-for="child in department.children" :key="child.id">
               <div
                 class="tree-node"
-                :style="getNodeStyle(child)"
                 :draggable="editMode"
                 @dragstart="dragStart(child)"
                 @dragover.prevent
@@ -40,7 +38,6 @@
                 <li v-for="subChild in child.children" :key="subChild.id">
                   <div
                     class="tree-node"
-                    :style="getNodeStyle(subChild)"
                     :draggable="editMode"
                     @dragstart="dragStart(subChild)"
                     @dragover.prevent
@@ -89,8 +86,8 @@ export default {
     async fetchHierarchy() {
       try {
         const response = await this.$axios.get("/department/hierarchy");
-        this.hierarchy = response.data; 
-        this.parentOptions = this.flattenHierarchy(this.hierarchy); 
+        this.hierarchy = response.data;
+        this.parentOptions = this.flattenHierarchy(this.hierarchy);
       } catch (error) {
         console.error("Error fetching department hierarchy:", error);
       }
@@ -132,68 +129,48 @@ export default {
     drop(parentDepartment) {
       if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
         this.draggedItem.parentId = parentDepartment.id;
-        this.addDepartmentToHierarchy(this.draggedItem, parentDepartment);
-        this.saveAllChanges();
-        this.draggedItem = null;
+
+        // 드롭 후 서버로 부서 계층 정보 업데이트 요청
+        this.updateDepartmentParent(this.draggedItem.id, parentDepartment.id);
       }
     },
 
-    addDepartmentToHierarchy(department, newParent) {
-      if (!newParent.children) {
-        newParent.children = [];
-      }
-      newParent.children.push(department);
-    },
+    async updateDepartmentParent(departmentId, newParentId) {
+  console.log('Department ID:', departmentId);
+  console.log('New Parent ID:', newParentId); // 추가된 디버그 출력
+  try {
+    await this.$axios.put(`/department/${departmentId}`, {
+      name: this.draggedItem.name,  // 부서 이름도 함께 전송
+      parentId: newParentId,
+    });
+    alert('부서 계층이 업데이트되었습니다.');
+    this.fetchHierarchy(); // 계층 업데이트 후 새로고침
+  } catch (error) {
+    console.error('Error updating department parent:', error);
+  }
+},
 
-    flattenHierarchyForSave(hierarchy) {
-      const result = [];
-      const flatten = (node, parentId = null) => {
-        result.push({
-          id: node.id,
-          name: node.name,
-          parentId: parentId
-        });
-        if (node.children) {
-          node.children.forEach(child => flatten(child, node.id));
-        }
-      };
-      hierarchy.forEach(node => flatten(node));
-      return result;
-    },
-
-
-    async saveAllChanges() {
-      try {
-        const departmentsToSave = this.flattenHierarchyForSave(this.hierarchy);
-        await this.$axios.post("/department/saveAll", departmentsToSave);
-        alert("변경사항이 저장되었습니다.");
-        this.fetchHierarchy();
-      } catch (error) {
-        console.error("Error saving changes:", error);
-      }
-    },
 
     async saveDepartment() {
       try {
         if (this.isEdit) {
           await this.$axios.put(`/department/${this.departmentForm.id}`, {
             name: this.departmentForm.name,
-            parentId: this.departmentForm.parentId
+            parentId: this.departmentForm.parentId,
           });
         } else {
           const response = await this.$axios.post("/department", {
             name: this.departmentForm.name,
-            parentId: this.departmentForm.parentId || null 
+            parentId: this.departmentForm.parentId || null,
           });
-          this.hierarchy.push(response.data); 
+          this.hierarchy.push(response.data);
         }
         this.closeDialog();
-        this.fetchHierarchy(); 
+        this.fetchHierarchy();
       } catch (error) {
         console.error("Error saving department:", error);
       }
     },
-
 
     deleteDepartment(departmentId) {
       this.removeDepartment(departmentId);
@@ -201,10 +178,10 @@ export default {
     },
 
     removeDepartment(departmentId) {
-      this.hierarchy = this.hierarchy.filter(department => department.id !== departmentId);
-      this.hierarchy.forEach(department => {
+      this.hierarchy = this.hierarchy.filter((department) => department.id !== departmentId);
+      this.hierarchy.forEach((department) => {
         if (department.children) {
-          department.children = department.children.filter(child => child.id !== departmentId);
+          department.children = department.children.filter((child) => child.id !== departmentId);
         }
       });
     },
@@ -212,7 +189,7 @@ export default {
     // getNodeStyle 함수 추가
     getNodeStyle(department) {
       return {
-        cursor: this.editMode ? 'move' : 'default',
+        cursor: this.editMode ? "move" : "default",
         opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.5 : 1,
       };
     },
@@ -257,7 +234,7 @@ ul {
   margin-right: 10px;
   padding: 10px 15px;
   border: none;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   cursor: pointer;
   transition: background-color 0.3s;
