@@ -1,6 +1,6 @@
 <template>
     <v-row>
-        <h2 style="margin:40px 50px">내가 한 요청</h2>
+        <h1 style="margin:35px 0; font-weight:800">결재 요청 문서</h1>
     </v-row>
 
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
@@ -19,10 +19,10 @@
         <v-row justify="center" style="margin:0; text-align:center; ">
             <v-col cols="12">
                 <v-row class="mb-2"
-                    style="background-color:#E6E8EF; border-radius:12px; padding:4px; color:#444444; font-weight:600;">
-                    <v-col cols="1"><strong>#</strong></v-col>
-                    <v-col cols="6"><strong>결재 종류</strong></v-col>
-                    <v-col cols="2"><strong>결재 신청 일시</strong></v-col>
+                    style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
+                    <v-col cols="1"><strong> </strong></v-col>
+                    <v-col cols="4"><strong>결재 종류</strong></v-col>
+                    <v-col cols="4"><strong>결재 신청 일시</strong></v-col>
                     <v-col cols="2"><strong>결재 상태</strong></v-col>
                 </v-row>
 
@@ -30,8 +30,8 @@
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
                     @click="showDetail(submit.id)">
                     <v-col cols="1">{{ index + 1 }}</v-col>
-                    <v-col cols="6">{{ submit.submitType }}</v-col>
-                    <v-col cols="2">{{ formatDate(submit.submitTime) }}</v-col>
+                    <v-col cols="4">{{ submit.submitType }}</v-col>
+                    <v-col cols="4">{{ formatDate(submit.submitTime) }}</v-col>
                     <v-col cols="2">
                         <v-chip class="d-flex justify-center align-center" v-bind:class="{
                             'chip-reject': submit.submitStatus === 'REJECT',
@@ -102,6 +102,10 @@ export default {
 }
 </script>
 <style scoped>
+*:not(h2) {
+    font-size: 14px;
+}
+
 .login-container {
     height: 100vh;
     display: flex;

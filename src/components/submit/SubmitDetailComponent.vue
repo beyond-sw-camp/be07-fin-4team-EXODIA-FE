@@ -1,57 +1,101 @@
 <template>
-    <v-card class="p-4">
-        <v-row>
-            <v-col cols="12">
-                <h3>결재 정보 상세</h3>
-            </v-col>
-            <v-col cols="6">
-                <strong>신청자 이름:</strong> {{ selectedSubmit.userName }}
-            </v-col>
-            <v-col cols="6">
-                <strong>부서:</strong> {{ selectedSubmit.department }}
-            </v-col>
-            <v-col cols="12">
-                <strong>결재 종류:</strong> {{ selectedSubmit.submitType }}
-            </v-col>
-            <v-col cols="12">
-                <strong>상태:</strong>
-                <v-chip class="d-inline-flex align-center" v-bind:class="{
-                    'chip-reject': selectedSubmit.submitStatus === 'REJECT',
-                    'chip-accept': selectedSubmit.submitStatus === 'ACCEPT'
-                }">{{ selectedSubmit.submitStatus }}</v-chip>
-            </v-col>
-            <v-col cols="12">
-                <strong>신청 시간:</strong> {{ formatDate(selectedSubmit.submitTime) }}
-            </v-col>
-            <!-- <v-col cols="12">
-                <strong>내용:</strong> {{ parseContents(selectedSubmit.contents) }}
-            </v-col> -->
-            <v-col v-for="(value, key) in selectedSubmit.contents" :key="key" cols="12">
-                <strong>{{ key }}:</strong> {{ value }}
-            </v-col>
+    <h1 style="margin:35px 0; font-weight:800">결재 상세 조회</h1>
+    <h2 style="margin:20px 0;">{{ selectedSubmit.submitType }}</h2>
+
+    <v-row>
+        <!-- 내용 -->
+        <v-col cols="8">
+            <v-row>
+                <v-col cols="2">
+                    <v-list-subheader>신청인</v-list-subheader>
+                </v-col>
+                <v-col cols="4">
+                    <v-list-subheader style="font-weight:700">{{ selectedSubmit.userName }}</v-list-subheader>
+                </v-col>
+                <v-col cols="2">
+                    <v-list-subheader>부서</v-list-subheader>
+                </v-col>
+                <v-col cols="4">
+                    <v-list-subheader style="font-weight:700">{{ selectedSubmit.department }}</v-list-subheader>
+                </v-col>
+            </v-row>
+
+            <!-- 결재 상태 -->
+            <v-row>
+                <v-col cols="2">
+                    <v-list-subheader>상태</v-list-subheader>
+                </v-col>
+                <v-col cols="8">
+                    <v-chip class="d-inline-flex align-center" v-bind:class="{
+                        'chip-reject': selectedSubmit.submitStatus === 'REJECT',
+                        'chip-accept': selectedSubmit.submitStatus === 'ACCEPT'
+                    }">{{ selectedSubmit.submitStatus }}</v-chip>
+                </v-col>
+            </v-row>
+
+            <!-- 결재 신청 시간 -->
+            <v-row>
+                <v-col cols="2">
+                    <v-list-subheader>신청 시간</v-list-subheader>
+                </v-col>
+                <v-col cols="10">
+                    <v-list-subheader style="font-weight:700">
+                        {{ formatDate(selectedSubmit.submitTime) }}
+                        {{ formatLocalTime(selectedSubmit.submitTime) }}
+                    </v-list-subheader>
+                </v-col>
+            </v-row>
+
+            <!-- 결재 내용 -->
+
+            <v-row style="justify-content: space-between">
+                <v-col cols="2">
+                    <v-list-subheader>내용</v-list-subheader>
+                </v-col>
+                <div style="border: 1px solid #b9b9b9; border-radius:20px">
+                    <v-col v-for="(value, key) in selectedSubmit.contents" :key="key" cols="12">
+                        {{ key }}: {{ value }}
+                    </v-col>
+                </div>
 
 
-            <!-- 승인 여부, 거절 선택/ 결재 담당자만 보여주게끔 -->
+            </v-row>
+        </v-col>
+
+        <!-- 승인 거절 -->
+        <v-col cols="4" v-if="selectedSubmit.submitStatus === 'WAITING'">
+            <strong>승인 여부 선택:</strong>
+            <v-radio-group v-model="approvalStatus" mandatory @change="handleApprovalChange(approvalStatus)">
+                <v-radio label="승인" value="ACCEPT"></v-radio>
+                <v-radio label="반려" value="REJECT"></v-radio>
+            </v-radio-group>
             <v-col cols="12" v-if="selectedSubmit.submitStatus === 'WAITING'">
-                <strong>승인 여부 선택:</strong>
-                <v-radio-group v-model="approvalStatus" mandatory>
-                    <v-radio label="승인" value="ACCEPT"></v-radio>
-                    <v-radio label="반려" value="REJECT"></v-radio>
-                </v-radio-group>
+                <v-btn color="primary" @click="submitDecision">
+                    제출
+                </v-btn>
             </v-col>
+        </v-col>
 
-            <v-col cols="12" v-if="approvalStatus === 'REJECT' && selectedSubmit.submitStatus === 'WAITING'">
+    </v-row>
+
+    <!-- 반려 사유 모달 -->
+    <v-dialog v-model="isRejectReasonDialogVisible" max-width="500px">
+        <v-card>
+            <v-card-title>
+                <span class="text-h6">반려 사유 입력</span>
+            </v-card-title>
+            <v-card-text>
                 <v-text-field label="반려 사유" v-model="reason" :rules="[v => !!v || '반려 사유를 작성하세요']"
                     required></v-text-field>
-            </v-col>
-        </v-row>
-    </v-card>
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="isRejectReasonDialogVisible = false">취소</v-btn>
+                <v-btn color="blue darken-1" text @click="submitDecision">확인</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 
-    <v-col cols="12" v-if="selectedSubmit.submitStatus === 'WAITING'">
-        <v-btn color="primary" @click="submitDecision">
-            제출
-        </v-btn>
-    </v-col>
 </template>
 
 <script>
@@ -66,6 +110,7 @@ export default {
             approvalStatus: '',
             reason: '',
             submitId: '',
+            isRejectReasonDialogVisible: false,
 
         }
     },
@@ -89,7 +134,7 @@ export default {
                 console.error('문서 상세 정보를 가져오는 중 오류 발생:', e);
             }
         },
-        submitDecision() {
+        async submitDecision() {
             if (this.approvalStatus === 'REJECT' && !this.reason) {
                 alert('반려 사유를 작성하세요');
                 return;
@@ -103,7 +148,7 @@ export default {
             };
 
             try {
-                axios.post(url, submitData, { headers: { Authorization: `Bearer ${this.token}` } })
+                await axios.post(url, submitData, { headers: { Authorization: `Bearer ${this.token}` } })
                 alert("결재 상태 변경이 성공적으로 처리되었습니다.")
                 location.reload();
             } catch (e) {
@@ -114,10 +159,40 @@ export default {
         formatDate(date) {
             return new Date(date).toLocaleDateString();
         },
+        formatLocalTime(date) {
+            return new Date(date).toLocaleTimeString();
+        },
+        handleApprovalChange(value) {
+            console.log(value)
+            if (value === 'REJECT') {
+                this.isRejectReasonDialogVisible = true;
+            }
+        },
+        confirmRejectReason() {
+            if (!this.reason) {
+                alert('반려 사유를 작성하세요');
+            } else {
+                this.isRejectReasonDialogVisible = false;
+            }
+        },
     }
 }
 </script>
 <style scoped>
+*:not(h1, h2) {
+    font-size: 14px;
+    background-color: #f5f5f5;
+}
+
+.subtitle {
+    justify-content: space-between;
+}
+
+.contents-item {
+    border: 1px solid #b9b9b9;
+    border-radius: 20px;
+}
+
 .chip-reject {
     background-color: #e57373;
     color: white;

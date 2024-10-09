@@ -1,9 +1,9 @@
 <template>
     <v-row>
-        <h2 style="margin:40px 50px">나에게 온 요청</h2>
+        <h1 style="margin:35px 0; font-weight:800">결재 할 문서</h1>
     </v-row>
 
-    <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
+    <v-row justify="center" style="margin:0; text-align:center;">
         <v-col cols="6" sm="6">
             <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
                 style="margin-bottom: 20px;"></v-text-field>
@@ -20,7 +20,7 @@
             <v-col cols="12">
                 <v-row class="mb-2"
                     style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
-                    <v-col cols="1"><strong>#</strong></v-col>
+                    <v-col cols="1"><strong> </strong></v-col>
                     <v-col cols="3"><strong>결재 종류</strong></v-col>
                     <v-col cols="3"><strong>결재 신청인</strong></v-col>
                     <v-col cols="3"><strong>결재 신청 일시</strong></v-col>
@@ -46,7 +46,7 @@
     </div>
 
     <div v-else>
-        <v-row justify="center" :class="{ 'drawer-open': drawer }">
+        <v-row justify="center">
             데이터가 존재하지 않습니다.
         </v-row>
     </div>
@@ -130,96 +130,9 @@ export default {
 }
 </script>
 <style scoped>
-*:not(h2) {
+*:not(h1) {
     font-size: 14px;
 }
-
-.login-container {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.drawer-open {
-    transition: margin-right 0.3s ease;
-    margin-right: 200px;
-}
-
-.v-card>.v-navigation-drawer {
-    padding-top: 8vh;
-}
-
-.v-card-title {
-    padding: 0;
-}
-
-v-card-title,
-.v-card-subtitle {
-    display: flex;
-    align-items: center;
-}
-
-.v-tabs-window {
-    margin: 50px;
-}
-
-.v-avatar img {
-    object-fit: cover;
-}
-
-.headline {
-    font-size: 14px;
-}
-
-.tabs>.v-btn {
-    font-size: 14px;
-}
-
-
-.v-btn {
-    font-size: 12px;
-}
-
-.v-card-text>.v-row:first-child {
-    font-size: 14px;
-}
-
-.v-card-text>.v-row:last-child {
-    font-size: 16px;
-}
-
-.v-card-text {
-    margin-bottom: 20px;
-}
-
-
-.detailFileName {
-    font-size: 20px;
-    margin: 20px 0 0;
-}
-
-.fileName {
-    font-size: 13px;
-    margin: 10px;
-}
-
-.userName {
-    font-size: 13px;
-}
-
-.fileModifiedDate {
-    font-size: 10px;
-}
-
-.v-timeline--vertical.v-timeline {
-    row-gap: 0;
-}
-
-.v-divider {
-    margin: 20px 0;
-}
-
 
 .chip-reject {
     background-color: #e57373;

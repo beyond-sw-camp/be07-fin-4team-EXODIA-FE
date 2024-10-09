@@ -2,8 +2,8 @@
 
     <v-col cols="3">
         <v-row>
-            <v-select v-model="submitType" :items="submitTypes" item-text="typeName" item-value="id"
-                label="결재 종류"></v-select>
+            <v-select v-model="submitType" variant="underlined" :items="submitTypes" item-text="typeName"
+                item-value="id" label="결재 종류"></v-select>
         </v-row>
     </v-col>
 
@@ -62,4 +62,8 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+* {
+    font-size: 14px;
+}
+</style>
