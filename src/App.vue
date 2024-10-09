@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <div class="app-container">
+    <div v-if="!isLoginPage" class="app-container">
       <AppSidebar />
       <div class="main-layout">
         <HeaderComponent />
@@ -9,10 +9,14 @@
         </div>
       </div>
     </div>
+    <div v-else>
+      <router-view /> 
+    </div>
   </v-app>
 </template>
 
 <script>
+import { useRoute } from 'vue-router'; 
 import HeaderComponent from './components/HeaderComponent.vue';
 import AppSidebar from './components/AppSidebar.vue';
 
@@ -21,6 +25,15 @@ export default {
   components: {
     HeaderComponent,
     AppSidebar,
+  },
+  setup() {
+    const route = useRoute(); 
+
+    const isLoginPage = computed(() => route.path === '/login');
+
+    return {
+      isLoginPage,
+    };
   },
 };
 </script>
