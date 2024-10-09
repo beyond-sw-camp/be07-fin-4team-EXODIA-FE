@@ -8,7 +8,10 @@
                 </v-col>
 
                 <v-col cols="10">
-                    <v-text-field label="신청일" v-model="formData.신청일"></v-text-field>
+                    <v-date-input label="Date of birth" prepend-icon="" variant="outlined"
+                        persistent-placeholder></v-date-input>
+                    <!-- <v-text-field label="사용 기간" v-model="formData.사용기간"></v-text-field> -->
+
                 </v-col>
             </v-row>
 

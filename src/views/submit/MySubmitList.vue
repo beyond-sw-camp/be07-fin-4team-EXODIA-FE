@@ -22,7 +22,7 @@
                     style="background-color:#E6E8EF; border-radius:12px; padding:4px; color:#444444; font-weight:600;">
                     <v-col cols="1"><strong>#</strong></v-col>
                     <v-col cols="6"><strong>결재 종류</strong></v-col>
-                    <v-col cols="2"><strong>결재 일시</strong></v-col>
+                    <v-col cols="2"><strong>결재 신청 일시</strong></v-col>
                     <v-col cols="2"><strong>결재 상태</strong></v-col>
                 </v-row>
 
