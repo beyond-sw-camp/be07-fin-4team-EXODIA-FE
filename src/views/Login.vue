@@ -1,11 +1,11 @@
 <template>
   <v-container class="login-container">
     <v-row justify="center" align="center">
-      <v-col cols="12" sm="6" md="4" class="text-center">
+      <v-col cols="12" sm="8" md="6" class="text-center">
         <div class="logo-container">
-          <img src="@/assets/logo.png" alt="Logo" class="logo"/>
+          <img src="@/assets/exodia.png" alt="Logo" class="logo"/>
         </div>
-        <v-card elevation="2" class="login-card">
+        <v-card elevation="4" class="login-card">
           <v-card-title class="headline">로그인</v-card-title>
           <v-card-text>
             <v-form @submit.prevent="doLogin">
@@ -15,6 +15,8 @@
                 prepend-inner-icon="mdi-account"
                 required
                 outlined
+                dense
+                class="input-field"
               ></v-text-field>
               <v-text-field
                 v-model="password"
@@ -23,20 +25,17 @@
                 prepend-inner-icon="mdi-lock"
                 required
                 outlined
+                dense
+                class="input-field"
               ></v-text-field>
-              <div class="remember-forgot">
-                <v-checkbox
-                  v-model="rememberUserNum"
-                  label="사번 저장하기"
-                  dense
-                ></v-checkbox>
-                <a href="#" class="forgot-password">비밀번호 찾기</a>
-              </div>
-              <v-btn type="submit" color="primary" block class="mt-3">
+              <v-checkbox
+                v-model="rememberUserNum"
+                label="사번 저장하기"
+                dense
+                class="remember-checkbox"
+              ></v-checkbox>
+              <v-btn type="submit" color="primary" block large class="mt-4 login-btn">
                 로그인
-              </v-btn>
-              <v-btn block outlined class="mt-2">
-                회원가입
               </v-btn>
             </v-form>
           </v-card-text>
@@ -113,39 +112,54 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #43cea2, #185a9d); /* 그라데이션 배경 */
+  background: linear-gradient(135deg, #b8e994, #78e08f); 
 }
 
 .logo-container {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .logo {
-  width: 100px;
+  width: 120px;
 }
 
 .login-card {
   padding: 40px;
-  border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  background-color: rgba(255, 255, 255, 0.95); 
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.remember-forgot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.headline {
+  font-size: 24px;
+  color: #2d3436;
+  font-weight: 600;
+}
+
+.input-field {
+  font-size: 18px;
   margin-bottom: 20px;
 }
 
-.forgot-password {
-  font-size: 14px;
-  color: #757575;
-  text-decoration: none;
+.remember-checkbox {
+  margin-top: 10px;
+}
+
+.login-btn {
+  background-color: #6ab04c;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.login-btn:hover {
+  background-color: #45a049;
+}
+
+.v-text-field input {
+  font-size: 16px;
 }
 
 .v-btn {
-  font-weight: bold;
   font-size: 16px;
 }
 </style>
