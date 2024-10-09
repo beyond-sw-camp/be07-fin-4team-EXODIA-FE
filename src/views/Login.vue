@@ -34,7 +34,7 @@
                 dense
                 class="remember-checkbox"
               ></v-checkbox>
-              <v-btn type="submit" color="primary" block large class="mt-4 login-btn">
+              <v-btn type="submit" color="success" block large class="mt-4 login-btn">
                 로그인
               </v-btn>
             </v-form>
@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { jwtDecode } from 'jwt-decode'; 
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 export default {
@@ -112,7 +112,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #b8e994, #78e08f); 
+  background: linear-gradient(135deg, #c6ffde, #128a44);
 }
 
 .logo-container {
@@ -126,7 +126,7 @@ export default {
 .login-card {
   padding: 40px;
   border-radius: 15px;
-  background-color: rgba(255, 255, 255, 0.95); 
+  background-color: rgba(255, 255, 255, 0.95);
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
 }
 
@@ -146,13 +146,13 @@ export default {
 }
 
 .login-btn {
-  background-color: #6ab04c;
+  background-color: #4caf50;
   font-weight: bold;
   font-size: 18px;
 }
 
 .login-btn:hover {
-  background-color: #45a049;
+  background-color: #388e3c;
 }
 
 .v-text-field input {
