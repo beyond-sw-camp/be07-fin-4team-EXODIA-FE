@@ -9,6 +9,7 @@ import { reservationRouter } from './reservationRouter';
 import { boardRouter } from './boardRouter';
 import { calendarRouter } from './calendarRouter';
 import { positionRouter } from './positionRouter';
+import { qnaRouter } from './qnaRouter';
 
 
 const routes = [
@@ -24,7 +25,8 @@ const routes = [
   ...reservationRouter,
   ...boardRouter,
   ...calendarRouter,
-  ...positionRouter
+  ...positionRouter,
+  ...qnaRouter
 ];
 
 const router = createRouter({
