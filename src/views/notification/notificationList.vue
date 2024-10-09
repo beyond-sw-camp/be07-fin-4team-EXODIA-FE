@@ -19,6 +19,7 @@
           </v-btn>
         </v-btn-toggle>
 
+        <!-- 알림 리스트 -->
         <v-list style="background-color: #f5f5f5;">
           <v-list-item-group>
             <v-list-item
@@ -67,6 +68,7 @@ export default {
   created() {
     this.fetchNotifications();
     this.fetchUnreadCount();
+    this.initSSE();  // SSE 초기화
   },
   computed: {
     // 선택된 타입에 따른 알림 필터링
@@ -77,15 +79,38 @@ export default {
           (notification) => notification.type === this.selectedType
         );
       }
-      
       return filtered.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
     },
   },
   methods: {
+    // JWT 토큰을 URL의 쿼리 파라미터로 포함한 SSE 연결
+    initSSE() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("JWT 토큰이 없습니다.");
+        return;
+      }
+
+      // SSE 연결
+      const eventSource = new EventSource(`${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`);
+      
+      // 메시지 수신
+      eventSource.onmessage = (event) => {
+        const newNotification = JSON.parse(event.data);
+        this.notifications.unshift(newNotification); // 새로운 알림을 맨 위에 추가
+      };
+
+      // 오류 처리
+      eventSource.onerror = (error) => {
+        console.error("SSE 연결 오류:", error);
+      };
+    },
+
     formatDate(notificationTime) {
       const date = new Date(notificationTime);
       return date.toLocaleDateString();
     },
+    
     // 전체 알림 리스트 가져오기
     async fetchNotifications() {
       try {
@@ -155,7 +180,6 @@ export default {
   border-radius: 8px;
   font-weight: bold;
   transition: background-color 0.3s ease, color 0.3s ease;
-  /* border: 1px solid #e0e0e0; */
 }
 
 .custom-btn.active {
@@ -174,5 +198,4 @@ export default {
   background-color: #f9f9f9 !important;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1) !important;
 }
-
 </style>

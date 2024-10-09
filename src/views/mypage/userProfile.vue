@@ -179,6 +179,7 @@ export default {
   },
   mounted() {
     this.fetchUserProfile();
+    this.fetchTodayAttendance(); //
   },
   
   methods: {
@@ -229,6 +230,29 @@ export default {
         console.error('유저 정보 가져오기 실패:', error);
       }
     },
+// 출 퇴근 기록 예시(ver1)
+async fetchTodayAttendance() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/today`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = response.data;
+      // 출퇴근 시간 데이터 바인딩
+      this.attendanceData.clockInTime = data.clockInTime || 'N/A';
+      this.attendanceData.clockOutTime = data.clockOutTime || 'N/A';
+      this.attendanceData.weeklyWorkHours = data.weeklyWorkHours || 'N/A';
+      this.attendanceData.weeklyOvertimeHours = data.weeklyOvertimeHours || 'N/A';
+
+    } catch (error) {
+      console.error('오늘의 출퇴근 기록을 가져오는 중 오류 발생:', error);
+    }
+  },
+
+
     navigateTab(index) {
       if (index === 1) {
         this.$router.push('/mypage/evalutionFrame');
