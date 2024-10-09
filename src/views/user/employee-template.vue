@@ -81,16 +81,16 @@ export default {
   data() {
     return {
       userDetail: {
-        userNum: '',
-        name: '',
-        departmentName: '',
-        positionName: '',
-        email: '',
-        phone: '',
-        profileImage: '',
-        hireType: '',
-        annualLeave: 0,
-      },
+      userNum: '',
+      name: '',
+      departmentId: '',  
+      positionId: '',   
+      email: '',
+      phone: '',
+      profileImage: '',
+      hireType: '',
+      annualLeave: 0,
+    },
       hireTypeOptions: ['정규직', '계약직', '인턴', '파트타임'],
       isEditMode: false,
       isDetailMode: false,
@@ -98,33 +98,59 @@ export default {
   },
   methods: {
     async fetchUserDetail() {
-      const userNum = this.$route.params.userNum;
-      try {
-        const response = await axios.get(`/user/list/${userNum}`);
-        if (response.data) {
-          this.userDetail = response.data;
-        } else {
-          console.error("유효한 직원 정보가 없습니다.");
-        }
-      } catch (error) {
-        console.error("직원 정보를 불러오는 중 오류가 발생했습니다:", error);
-      }
-    },
+  const userNum = this.$route.params.userNum;
+  try {
+    const response = await axios.get(`/user/list/${userNum}`);
+    if (response.data) {
+      this.userDetail = {
+        ...response.data,
+        departmentId: response.data.department ? response.data.department.id : null,
+        positionId: response.data.position ? response.data.position.id : null,
+      };
+    } else {
+      console.error("유효한 직원 정보가 없습니다.");
+    }
+  } catch (error) {
+    console.error("직원 정보를 불러오는 중 오류가 발생했습니다:", error);
+  }
+}
+,
+
     async saveUser() {
       const userNum = this.$route.params.userNum;
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        alert("토큰이 만료되었습니다. 다시 로그인해주세요.");
+        this.$router.push("/login");
+        return;
+      }
+
       try {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        console.log("Saving User Data:", this.userDetail); 
         if (this.isEditMode) {
-          await axios.put(`/user/list/${userNum}`, this.userDetail);
+          await axios.put(`/user/list/${userNum}`, this.userDetail, config);
           alert("수정 완료");
         } else {
-          await axios.post("/user/register", this.userDetail);
+          await axios.post("/user/register", this.userDetail, config);
           alert("등록 완료");
         }
+
         this.$router.push("/employee-management");
       } catch (error) {
         console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
+        if (error.response && error.response.status === 401) {
+          alert("권한이 없습니다. 다시 로그인해주세요.");
+          this.$router.push("/login");
+        }
       }
     },
+
     goBack() {
       this.$router.push("/employee-management");
     },

@@ -1,14 +1,16 @@
 <template>
   <v-container>
-    <!-- 직원 목록 제목 및 직원 생성 버튼 -->
     <v-row>
-      <v-col cols="12" class="d-flex justify-space-between align-center">
+      <v-col>
         <h1>직원 목록</h1>
-        <v-btn color="success" @click="goToCreate">직원 생성</v-btn>
+      </v-col>
+      <!-- 직원 생성 버튼 -->
+      <v-col class="d-flex justify-end">
+        <v-btn color="primary" @click="goToCreate">직원 생성</v-btn>
       </v-col>
     </v-row>
 
-    <!-- 검색 기능 -->
+    <!-- 검색 기준 및 검색어 입력 -->
     <v-row>
       <v-col cols="12" md="4">
         <v-select
@@ -20,7 +22,6 @@
           required
         ></v-select>
       </v-col>
-
       <v-col cols="12" md="8">
         <v-text-field
           v-model="searchQuery"
@@ -38,39 +39,24 @@
         <v-data-table
           :headers="headers"
           :items="users"
-          :items-per-page="10"
+          item-value="userNum"
           class="elevation-1"
-          :search="searchQuery"
+          @click:row="viewUser"
         >
-          <!-- 테이블 행 렌더링 -->
-          <template v-slot:body="{ items }">
-            <tbody>
-              <tr v-for="item in items" :key="item.userNum">
-                <td>{{ item.userNum }}</td>
-                <td>{{ item.departmentName }}</td>
-                <td>{{ item.name }}</td>
-                <td>{{ item.positionName }}</td>
-                <td>{{ item.joinDate }}</td>
-                <td>
-                  <v-btn
-                    text
-                    small
-                    color="green"
-                    @click.stop="editUser(item.userNum)"
-                  >
-                    수정
-                  </v-btn>
-                  <v-btn
-                    text
-                    small
-                    color="red"
-                    @click.stop="openDeleteDialog(item.userNum)"
-                  >
-                    삭제
-                  </v-btn>
-                </td>
-              </tr>
-            </tbody>
+          <!-- 직원 정보를 행에 나열 -->
+          <template v-slot:item="{ item }">
+            <tr @click="viewUser(item)">
+              <td>{{ item.userNum }}</td>
+              <td>{{ item.departmentName }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.positionName }}</td>
+              <td>{{ item.joinDate }}</td>
+              <td>
+                <!-- 수정, 삭제 버튼 -->
+                <v-btn text class="green--text" @click.stop="editUser(item.userNum)">수정</v-btn>
+                <v-btn text class="red--text" @click.stop="openDeleteDialog(item.userNum)">삭제</v-btn>
+              </td>
+            </tr>
           </template>
         </v-data-table>
       </v-col>
@@ -81,21 +67,13 @@
       <v-card>
         <v-card-title class="headline">직원 삭제</v-card-title>
         <v-card-text>
-          <v-text-field
-            v-model="deleteInfo.deletedBy"
-            label="담당자"
-            required
-          ></v-text-field>
-          <v-textarea
-            v-model="deleteInfo.reason"
-            label="삭제 사유"
-            required
-          ></v-textarea>
+          <v-text-field v-model="deleteInfo.deletedBy" label="담당자" required></v-text-field>
+          <v-textarea v-model="deleteInfo.reason" label="삭제 사유" required></v-textarea>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="error" @click="confirmDelete">삭제</v-btn>
-          <v-btn color="grey" @click="closeDeleteDialog">취소</v-btn>
+          <v-btn class="red--text" @click="confirmDelete">삭제</v-btn>
+          <v-btn class="green--text" @click="closeDeleteDialog">취소</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -109,9 +87,9 @@ export default {
   name: "EmployeeManagement",
   data() {
     return {
-      users: [],
-      searchQuery: "",
-      searchType: "all",
+      users: [], // 직원 목록
+      searchQuery: "", // 검색어
+      searchType: "all", // 검색 기준
       searchOptions: [
         { text: "전체", value: "all" },
         { text: "이름", value: "name" },
@@ -135,6 +113,7 @@ export default {
     };
   },
   methods: {
+    // 직원 목록 가져오기
     async fetchUsers() {
       try {
         const response = await axios.get("/user/list");
@@ -144,6 +123,7 @@ export default {
       }
     },
 
+    // 검색 실행
     async performSearch() {
       try {
         const params = {
@@ -157,20 +137,30 @@ export default {
       }
     },
 
+    // 행 클릭 시 상세 정보 페이지로 이동
+    viewUser(item) {
+      if (item && item.userNum) {
+        this.$router.push(`/employee-management/detail/${item.userNum}`);
+      }
+    },
+
+    // 직원 생성 페이지로 이동
+    goToCreate() {
+      this.$router.push("/employee-management/create");
+    },
+
+    // 수정 버튼 클릭
     editUser(userNum) {
       this.$router.push(`/employee-management/edit/${userNum}`);
     },
 
+    // 삭제 다이얼로그 열기
     openDeleteDialog(userNum) {
       this.deleteInfo.userNum = userNum;
       this.deleteDialog = true;
     },
 
-    closeDeleteDialog() {
-      this.deleteDialog = false;
-      this.deleteInfo = { userNum: "", deletedBy: "", reason: "" };
-    },
-
+    // 삭제 확인 후 삭제 실행
     async confirmDelete() {
       if (!this.deleteInfo.deletedBy || !this.deleteInfo.reason) {
         alert("담당자와 삭제 사유를 입력해주세요.");
@@ -206,10 +196,6 @@ export default {
         }
       }
     },
-
-    goToCreate() {
-      this.$router.push("/employee-management/create");
-    },
   },
   mounted() {
     this.fetchUsers();
@@ -218,16 +204,6 @@ export default {
 </script>
 
 <style scoped>
-.d-flex {
-  display: flex;
-}
-.justify-space-between {
-  justify-content: space-between;
-}
-.align-center {
-  align-items: center;
-}
-
 .tbl-header {
   width: 100%;
   border-collapse: collapse;
@@ -246,16 +222,11 @@ export default {
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 1px 2px rgba(0, 0, 0, 0.24);
 }
 
-.v-btn text {
-  font-weight: bold;
-  color: white;
-}
-
-.v-btn[color="green"] {
+.green--text {
   color: #4caf50 !important;
 }
 
-.v-btn[color="red"] {
+.red--text {
   color: #f44336 !important;
 }
 </style>
