@@ -112,13 +112,14 @@ export default {
     // 소분류 목록 가져오기 (토큰 사용)
     async fetchSubEvalutions() {
       try {
-        const response = await axios.get('/sub-evalution/list-with-categories', {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/sub-evalution/list-with-categories`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}` // Bearer Token을 헤더에 추가
           }
         });
         this.evalutions = response.data.map(item => ({
           ...item,
+          subEvalutionId: item.subEvalutionId,
           subEvalutionContent: item.subEvalutionContent || '', // 소분류가 비어 있으면 빈 값 설정
           grade: item.grade || '', // 기본 grade 설정
           saved: !!item.subEvalutionContent, // content가 null이 아니면 저장됨으로 표시
@@ -134,9 +135,8 @@ export default {
       if (item.editable) {
         // 저장 로직 (mdi-check 클릭 시)
         try {
-          await axios.put(`/sub-evalution/update/${item.evalutionmId}`, {
+          await axios.put(`${process.env.VUE_APP_API_BASE_URL}/sub-evalution/update/${item.subEvalutionId}`, {
             content: item.subEvalutionContent,
-            grade: item.grade
           }, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -148,7 +148,7 @@ export default {
           item.saved = true;
           alert('수정이 완료되었습니다.');
         } catch (error) {
-          console.error('Failed to update sub-evaluation', error);
+            console.error('소분류 수정에 실패하였습니다', error);
           alert('수정에 실패했습니다.');
         }
       } else {
@@ -184,7 +184,7 @@ export default {
         .map(item => ({
           content: item.subEvalutionContent,
           evalutionmId: item.evalutionmId,
-          grade: item.grade
+          subEvalutionId: item.subEvalutionId,
         }));
 
       if (payload.length === 0) {
@@ -193,7 +193,7 @@ export default {
       }
 
       try {
-        await axios.post('/sub-evalution/create-multiple', payload, {
+        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/sub-evalution/create-multiple`, payload, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}` // Bearer Token을 헤더에 추가
           }
