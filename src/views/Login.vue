@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import jwtDecode from 'jwt-decode'; // default export로 수정
+import { jwtDecode } from 'jwt-decode'; 
 import axios from 'axios';
 
 export default {

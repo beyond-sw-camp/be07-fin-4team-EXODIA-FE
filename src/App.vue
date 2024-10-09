@@ -10,13 +10,14 @@
       </div>
     </div>
     <div v-else>
-      <router-view /> 
+      <router-view />
     </div>
   </v-app>
 </template>
 
 <script>
-import { useRoute } from 'vue-router'; 
+import { useRoute } from 'vue-router';
+import { computed } from 'vue'; 
 import HeaderComponent from './components/HeaderComponent.vue';
 import AppSidebar from './components/AppSidebar.vue';
 
