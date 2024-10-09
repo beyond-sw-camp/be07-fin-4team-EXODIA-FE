@@ -4,12 +4,11 @@
     </v-row>
 
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
-        <v-col cols="8" sm="8">
+        <v-col cols="6" sm="6">
             <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" @input="filterDocuments"
                 style="margin-bottom: 20px;"></v-text-field>
         </v-col>
         <v-col cols="4" sm="2">
-            <!-- Search button to trigger searchFilter method -->
             <v-btn color="primary" @click="searchFilter(searchQuery)">
                 검색
             </v-btn>
@@ -47,6 +46,15 @@
         <v-row justify="center" :class="{ 'drawer-open': drawer }">
             데이터가 존재하지 않습니다.
         </v-row>
+    </div>
+
+    <div class="pagination-controls">
+        <button @click="goToPage(page - 1)" :disabled="page === 1">
+            <v-icon>{{ 'mdi-chevron-left' }}</v-icon>
+        </button>
+        <span> {{ page }} / {{ totalPages }}</span>
+        <button @click="goToPage(page + 1)" :disabled="page === totalPages">
+            <v-icon>{{ 'mdi-chevron-right' }}</v-icon></button>
     </div>
 
     <!-- 상세 정보 -->
@@ -127,13 +135,13 @@
                                 </v-card-text>
 
                                 <v-card-text class="userName" style="margin-bottom:0; padding:0">
-                                    <v-avatar left size="24">
+                                    <!-- <v-avatar left size="24">
                                         <img :src="history.userAvatar" alt="User Avatar" />
-                                    </v-avatar>
-                                    <span>{{ history.userName }}</span>
+                                    </v-avatar> -->
+                                    <span style="padding:20px;">{{ history.userName }}</span>
                                 </v-card-text>
 
-                                <v-card-actions style="margin:0;">
+                                <v-card-actions style=" margin:0;">
                                     <v-btn small text color="primary" @click="confirmRevert(history.id)">
                                         복원
                                     </v-btn>
@@ -173,17 +181,19 @@
 import axios from 'axios'
 
 export default {
-    props: ['pageTitle', 'documents'],
+    props: ['pageTitle', 'documents', 'totalPages'],
     data() {
         return {
             token: localStorage.getItem('token') || null,
 
             title: '',
             drawer: false,
-            selectedDocument: [],
+            selectedDocument: {},
             tab: '상세보기',
             showHistory: false,
             pageId: '',
+            page: 1,
+            size: 10,
             localDocuments: this.documents,
         }
     },
@@ -288,7 +298,15 @@ export default {
         },
         toggleHistoryVisibility() {
             this.showHistory = !this.showHistory;
-        }
+        },
+        goToPage(newPage) {
+            if (newPage >= 1 && newPage <= this.totalPages) {
+                this.page = newPage;
+                // this.fetchDocuments();
+                console.log(this.page)
+                this.$emit('page-changed', newPage);
+            }
+        },
     },
 }
 </script>

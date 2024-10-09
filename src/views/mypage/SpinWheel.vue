@@ -1,31 +1,27 @@
 <template>
   <v-container fluid>
     <!-- v-tabs 추가 -->
-    <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs" >
-      <v-tab @click="navigateTab('/mypage/attendance')">출/퇴근</v-tab>
+    <v-tabs v-model="activeTab" background-color="#ffffff" centered class="header-tabs">
       <v-tab @click="navigateTab('/mypage/userProfile')">프로필</v-tab>
       <v-tab @click="navigateTab('/mypage/evaluation')">인사 평가</v-tab>
       <v-tab @click="navigateTab('/mypage/spinWheel')">오늘의 점심</v-tab>
     </v-tabs>
-    <br>
-    <br>
-    <v-row justify="center" class="my-8">
+    <v-row justify="" class="my-8" style="margin-top: 10px; margin-left: 70px;">
       <!-- 왼쪽: 돌림판 -->
-      <v-col cols="12" sm="6" md="5">
+      <v-col cols="12" sm="6" md="5" style="background-color: #F5F5F5;">
         <!-- 검은 줄 (화살표) -->
         <v-sheet class="indicator"></v-sheet>
 
-        <!-- Canvas for Wheel -->
-        <v-sheet class="pa-4" elevation="2">
-          <canvas ref="canvas" width="600" height="600"></canvas>
+        <v-sheet class="pa-4" elevation="0" style="background-color: #F5F5F5;">
+          <canvas ref="canvas" width="400" height="400"></canvas>
         </v-sheet>
       </v-col>
 
       <!-- 오른쪽: 결과 -->
-      <v-col cols="12" sm="6" md="5">
-        <v-sheet class="pa-4" elevation="2">
-          <h2>결과</h2>
-          <v-sheet class="pa-6 text-h5" elevation="1">
+      <v-col cols="12" sm="6" md="5" style="margin-top: 40px;">
+        <v-sheet class="pa-4" elevation="0" style="background-color: #F5F5F5;">
+          
+          <v-sheet class="pa-6 text-h5" elevation="0" style="background-color: #F5F5F5;">
             {{ resultText || '오늘의 점심' }}
           </v-sheet>
         </v-sheet>
@@ -44,6 +40,7 @@
     </v-row>
   </v-container>
 </template>
+
 
 <script>
 export default {
@@ -72,37 +69,44 @@ export default {
 
     // 돌림판 그리는 함수
     drawWheel() {
-      const canvas = this.$refs.canvas;
-      const [cw, ch] = [canvas.width / 2, canvas.height / 2];
-      const arc = Math.PI / (this.product.length / 2);
-      this.ctx.clearRect(0, 0, canvas.width, canvas.height); // 기존 그린 것 지우기
+    const canvas = this.$refs.canvas;
+    const [cw, ch] = [canvas.width / 2, canvas.height / 2];
+    const arc = Math.PI / (this.product.length / 2);
+    this.ctx.clearRect(0, 0, canvas.width, canvas.height); // 기존 그린 것 지우기
 
-      // 각 메뉴 섹션 그리기
-      for (let i = 0; i < this.product.length; i++) {
-        this.ctx.beginPath();
-        this.ctx.fillStyle = this.colors[i % this.colors.length];
-        this.ctx.moveTo(cw, ch);
-        this.ctx.arc(cw, ch, cw, arc * (i - 1), arc * i);
-        this.ctx.fill();
-        this.ctx.closePath();
-      }
+    // 각 메뉴 섹션 그리기
+    for (let i = 0; i < this.product.length; i++) {
+      this.ctx.beginPath();
+      this.ctx.fillStyle = this.colors[i % this.colors.length];
+      this.ctx.moveTo(cw, ch);
+      this.ctx.arc(cw, ch, cw, arc * (i - 1), arc * i);
+      this.ctx.fill();
+      this.ctx.closePath();
+    }
 
-      // 메뉴 텍스트 그리기
-      this.ctx.fillStyle = "#fff";
-      this.ctx.font = "18px Pretendard";
-      this.ctx.textAlign = "center";
-      for (let i = 0; i < this.product.length; i++) {
-        const angle = arc * i + arc / 2;
-        this.ctx.save();
-        this.ctx.translate(
-          cw + Math.cos(angle) * (cw - 50),
-          ch + Math.sin(angle) * (ch - 50)
-        );
-        this.ctx.rotate(angle + Math.PI / 2);
-        this.ctx.fillText(this.product[i], 0, 0);
-        this.ctx.restore();
-      }
-    },
+    // 메뉴 텍스트 그리기
+    this.ctx.fillStyle = "#fff";
+    this.ctx.font = "18px Pretendard";
+    this.ctx.textAlign = "center";
+    for (let i = 0; i < this.product.length; i++) {
+      const angle = arc * i + arc / 2;
+      this.ctx.save();
+      this.ctx.translate(
+        cw + Math.cos(angle) * (cw - 50),
+        ch + Math.sin(angle) * (ch - 50)
+      );
+      this.ctx.rotate(angle + Math.PI / 2);
+      this.ctx.fillText(this.product[i], 0, 0);
+      this.ctx.restore();
+    }
+
+    // 중앙에 원 뚫기
+    this.ctx.beginPath();
+    this.ctx.arc(cw, ch, 30, 0, 2 * Math.PI); // 반지름 30짜리 원
+    this.ctx.fillStyle = "#F5F5F5"; // 배경과 동일한 색상으로 채움
+    this.ctx.fill();
+    this.ctx.closePath();
+  },
 
     // 메뉴 추가 함수
     addMenu() {
@@ -170,7 +174,7 @@ export default {
 <style scoped>
 /* 탭 관련 스타일 */
 .header-tabs {
-  margin-bottom: 30px;
+  /* margin-bottom: 30px; */
 }
 
 .tab-item {
@@ -178,6 +182,7 @@ export default {
   font-size: 16px;
   color: #4CAF50;
   min-width: 100px;
+  background-color: #e0e0e0;
 }
 
 .v-tabs {
@@ -186,6 +191,7 @@ export default {
   margin-top: -20px;
   min-width: 90px;
   margin-right: 13px;
+  
 }
 
 .v-tab {
@@ -199,7 +205,7 @@ canvas {
   margin-top: 20px;
   width: 100%; /* 화면에 꽉 차게 설정 */
   /* height: auto; */
-  background-color: transparent; /* 배경 흰색 제거 */
+  
 }
 .tab-item {
   font-weight: bold;
@@ -218,6 +224,6 @@ canvas {
 }
 
 .v-btn {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 </style>

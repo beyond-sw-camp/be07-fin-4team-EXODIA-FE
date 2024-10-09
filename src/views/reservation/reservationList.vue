@@ -1,17 +1,24 @@
 <template>
   <v-container fluid>
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
-    <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3">
-      <!-- 차량 예약 탭 -->
-      <v-tab @click="goToVehicleReservation" class="text-body-1">
-        법인 차량 예약
-      </v-tab>
+    <v-row justify="space-between">
+      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3">
+        <!-- 차량 예약 탭 -->
+        <v-tab @click="goToVehicleReservation" class="text-body-1">
+          법인 차량 예약
+        </v-tab>
 
-      <!-- 회의실 예약 탭 -->
-      <v-tab @click="goToMeetingRoomReservation" class="text-body-1">
-        회의실 예약
-      </v-tab>
-    </v-tabs>
+        <!-- 회의실 예약 탭 -->
+        <v-tab @click="goToMeetingRoomReservation" class="text-body-1">
+          회의실 예약
+        </v-tab>
+      </v-tabs>
+
+      <!-- 오른쪽 상단에 관리자 전용 아이콘 추가 (인사팀인 경우에만 표시) -->
+      <v-btn v-if="isHrDepartment" icon @click="goToAdminPage">
+        <v-icon>mdi-cog</v-icon> <!-- 톱니바퀴 아이콘 -->
+      </v-btn>
+    </v-row>
 
     <!-- 현재 탭에 대한 내용 -->
     <v-tabs-items v-model="selectedTab">
@@ -68,6 +75,7 @@
 
 <script>
 import axios from "axios";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   data() {
@@ -78,7 +86,17 @@ export default {
       userName: "", // 사용자 이름
     };
   },
+  computed: {
+    ...mapGetters({
+      departmentId: "getDepartmentId", // Vuex에서 departmentId 가져오기
+    }),
+    isHrDepartment() {
+      // 인사팀이면 true를 반환
+      return this.departmentId === "4"; // '4'가 인사팀의 departmentId라고 가정
+    }
+  },
   methods: {
+    ...mapActions(["setUserAllInfoActions"]), // 사용자 정보를 Vuex에 저장하는 액션 호출
     formattedDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -121,6 +139,7 @@ export default {
           }
         );
         this.userName = response.data.name; // 사용자 이름 저장
+        this.setUserAllInfoActions(); // Vuex에 사용자 정보 저장
       } catch (error) {
         console.error("Error fetching user info:", error);
         if (error.response?.status === 401) {
@@ -128,6 +147,10 @@ export default {
           this.$router.push("/login");
         }
       }
+    },
+    goToAdminPage() {
+      // 관리자 페이지로 이동
+      this.$router.push("/reservation/adminCarResList");
     },
     async createReservation(carId) {
       try {
@@ -175,13 +198,11 @@ export default {
       this.fetchVehicleAvailability(this.selectedDate);
     },
     prevDay() {
-  const prevDay = new Date(this.selectedDate);
-  prevDay.setDate(this.selectedDate.getDate() - 1);
-
-  // 날짜가 정상적으로 변경되도록 조건을 제거합니다.
-  this.selectedDate = prevDay;
-  this.fetchVehicleAvailability(this.selectedDate);
-},
+      const prevDay = new Date(this.selectedDate);
+      prevDay.setDate(this.selectedDate.getDate() - 1);
+      this.selectedDate = prevDay;
+      this.fetchVehicleAvailability(this.selectedDate);
+    },
     // 차량 예약 페이지로 이동하는 함수
     goToVehicleReservation() {
       this.selectedTab = 0;
