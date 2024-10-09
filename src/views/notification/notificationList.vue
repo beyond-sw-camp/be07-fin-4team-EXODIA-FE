@@ -2,35 +2,39 @@
   <v-container>
     <v-row>
       <v-col>
-        <h2>알림 리스트</h2>
         <div v-if="unreadCount > 0" class="unread-count">
           읽지 않은 알림: {{ unreadCount }}개
         </div>
 
         <!-- 알림 타입 필터 버튼 -->
-        <v-btn-toggle v-model="selectedType" class="mb-4">
-          <v-btn value="">전체</v-btn>
-          <v-btn value="공지사항">공지사항</v-btn>
-          <v-btn value="경조사">경조사</v-btn>
-          <v-btn value="예약">예약</v-btn>
-          <v-btn value="결재">결재</v-btn>
-          <v-btn value="문서">문서</v-btn>
+        <v-btn-toggle v-model="selectedType" class="mb-4 custom-btn-toggle">
+          <v-btn
+            v-for="(label, value) in notificationTypes"
+            :key="value"
+            :value="value"
+            class="custom-btn"
+            :class="{ active: selectedType === value }"
+          >
+            {{ label }}
+          </v-btn>
         </v-btn-toggle>
 
-        <!-- 알림 리스트 -->
-        <v-list>
+        <v-list style="background-color: #f5f5f5;">
           <v-list-item-group>
             <v-list-item
               v-for="notification in filteredNotifications"
               :key="notification.id"
               @click="markAsRead(notification.id)"
+              class="notification-item"
             >
               <v-list-item-content>
+                <v-list-item-subtitle><strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{ formatDate(notification.notificationTime) }}</v-list-item-subtitle>
+                <br>
                 <v-list-item-title>
                   <strong v-if="!notification.isRead">[NEW]</strong>
                   {{ notification.message }}
                 </v-list-item-title>
-                <v-list-item-subtitle>{{ notification.type }}</v-list-item-subtitle>
+                <br>
               </v-list-item-content>
             </v-list-item>
           </v-list-item-group>
@@ -50,6 +54,14 @@ export default {
       notifications: [],
       unreadCount: 0,
       selectedType: "", // 선택된 알림 타입
+      notificationTypes: {
+        "": "전체",
+        공지사항: "공지사항",
+        경조사: "경조사",
+        예약: "예약",
+        결재: "결재",
+        문서: "문서",
+      },
     };
   },
   created() {
@@ -59,15 +71,21 @@ export default {
   computed: {
     // 선택된 타입에 따른 알림 필터링
     filteredNotifications() {
+      let filtered = this.notifications;
       if (this.selectedType) {
-        return this.notifications.filter(
+        filtered = filtered.filter(
           (notification) => notification.type === this.selectedType
         );
       }
-      return this.notifications;
+      
+      return filtered.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
     },
   },
   methods: {
+    formatDate(notificationTime) {
+      const date = new Date(notificationTime);
+      return date.toLocaleDateString();
+    },
     // 전체 알림 리스트 가져오기
     async fetchNotifications() {
       try {
@@ -126,4 +144,35 @@ export default {
   font-weight: bold;
   color: red;
 }
+.custom-btn-toggle {
+  display: flex;
+  gap: 10px;
+}
+
+.custom-btn {
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* border: 1px solid #e0e0e0; */
+}
+
+.custom-btn.active {
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+}
+
+.custom-btn:hover {
+  background-color: #ddd;
+}
+.notification-item {
+  margin-bottom: 15px !important;
+  padding: 0px 40px;
+  border-radius: 10px !important;
+  background-color: #f9f9f9 !important;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
 </style>
