@@ -10,7 +10,7 @@
         <h3 v-else>직원 등록</h3>
       </v-card-title>
 
-      <v-card-text>
+      <v-card-text v-if="dataLoaded"> <!-- 데이터가 로드된 후 렌더링 -->
         <v-form ref="form" @submit.prevent="submitForm">
           <v-row>
             <!-- 사번 및 이름 -->
@@ -83,6 +83,7 @@
           </v-row>
         </v-form>
       </v-card-text>
+      <v-card-text v-else>로딩 중...</v-card-text> <!-- 데이터 로딩 중 표시 -->
     </v-card>
   </v-container>
 </template>
@@ -111,6 +112,7 @@ export default {
       previewImageSrc: null,
       isEditMode: false,
       isDetailMode: false,
+      dataLoaded: false, // 데이터 로드 완료 여부
     };
   },
   methods: {
@@ -124,6 +126,7 @@ export default {
             departmentId: response.data.department ? response.data.department.id : null,
             positionId: response.data.position ? response.data.position.id : null,
           };
+          this.dataLoaded = true; // 데이터 로드 완료
         }
       } catch (error) {
         console.error("직원 정보를 불러오는 중 오류가 발생했습니다:", error);
