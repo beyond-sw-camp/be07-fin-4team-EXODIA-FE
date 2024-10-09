@@ -5,11 +5,11 @@
 
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
         <v-col cols="6" sm="6">
-            <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" @input="filterDocuments"
+            <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
                 style="margin-bottom: 20px;"></v-text-field>
         </v-col>
-        <v-col cols="4" sm="2">
-            <v-btn color="primary" @click="searchFilter(searchQuery)">
+        <v-col cols="6" sm="2">
+            <v-btn class="searchBtn" @click="searchFilter(searchQuery)">
                 검색
             </v-btn>
         </v-col>
@@ -19,7 +19,7 @@
         <v-row justify="center" style="margin:0; text-align:center; ">
             <v-col cols="12">
                 <v-row class="mb-2"
-                    style="background-color:#E6E8EF; border-radius:12px; padding:4px; color:#444444; font-weight:600;">
+                    style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
                     <v-col cols="1"><strong>#</strong></v-col>
                     <v-col cols="3"><strong>결재 종류</strong></v-col>
                     <v-col cols="3"><strong>결재 신청인</strong></v-col>
@@ -27,7 +27,7 @@
                     <v-col cols="2"><strong>결재 상태</strong></v-col>
                 </v-row>
 
-                <v-row v-for="(submit, index) in submitList" :key="submit.id" oulined
+                <v-row v-for="(submit, index) in filteredSubmitList" :key="submit.id" oulined
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
                     @click="showDetail(submit.id)">
                     <v-col cols="1">{{ index + 1 }}</v-col>
@@ -74,10 +74,29 @@ export default {
             token: localStorage.getItem('token') || null,
             submitList: [],
             selectedSubmit: '',
+            searchQuery: '',
         }
     },
     mounted() {
         this.fetchMySubmits();
+    },
+    computed: {
+        filteredSubmitList() {
+            if (!this.searchQuery) {
+                return this.submitList;
+            }
+
+            const query = this.searchQuery.toLowerCase();
+            console.log("query: " + this.searchQuery)
+            return this.submitList.filter(submit => {
+                return (
+                    submit.submitType.toLowerCase().includes(query) ||
+                    `${submit.department} ${submit.userName}`.toLowerCase().includes(query) ||
+                    this.formatDate(submit.submitTime).toLowerCase().includes(query) ||
+                    submit.submitStatus.toLowerCase().includes(query)
+                );
+            });
+        },
     },
     methods: {
         async fetchMySubmits() {
@@ -101,11 +120,20 @@ export default {
             this.$router.push({ name: 'SubmitDetailComponent', params: { submitId: submitId } })
             this.selectedSubmitId = submitId;
         },
+        searchFilter() {
+            // Triggered by clicking the search button
+            // filteredSubmitList will automatically update based on searchQuery
+            console.log("필터링 진행")
+        },
 
     },
 }
 </script>
 <style scoped>
+*:not(h2) {
+    font-size: 14px;
+}
+
 .login-container {
     height: 100vh;
     display: flex;
@@ -152,8 +180,6 @@ v-card-title,
 .v-btn {
     font-size: 12px;
 }
-
-
 
 .v-card-text>.v-row:first-child {
     font-size: 14px;
@@ -203,5 +229,10 @@ v-card-title,
 .chip-accept {
     background-color: #81c784;
     color: white;
+}
+
+.searchBtn {
+    border: none;
+    height: 50px;
 }
 </style>
