@@ -58,16 +58,21 @@
     </div>
 
     <!-- 부서 추가/수정 다이얼로그 -->
-    <div v-if="dialog" class="dialog">
-      <h3>{{ isEdit ? '부서 수정' : '부서 추가' }}</h3>
-      <input v-model="departmentForm.name" placeholder="부서 이름" />
-      <select v-model="departmentForm.parentId">
-        <option v-for="option in parentOptions" :value="option.id" :key="option.id">
-          {{ option.name }}
-        </option>
-      </select>
-      <button @click="saveDepartment">{{ isEdit ? '수정' : '추가' }}</button>
-      <button @click="closeDialog">취소</button>
+    <div v-if="dialog" class="dialog-container">
+      <div class="dialog-card">
+        <h3>{{ isEdit ? '부서 수정' : '부서 추가' }}</h3>
+        <input v-model="departmentForm.name" placeholder="부서 이름" class="dialog-input" />
+        <select v-model="departmentForm.parentId" class="dialog-select">
+          <option value="" disabled>부모 부서 선택</option>
+          <option v-for="option in parentOptions" :value="option.id" :key="option.id">
+            {{ option.name }}
+          </option>
+        </select>
+        <div class="dialog-buttons">
+          <button class="save-button" @click="saveDepartment">{{ isEdit ? '수정' : '추가' }}</button>
+          <button class="cancel-button" @click="closeDialog">취소</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -143,11 +148,11 @@ export default {
       console.log('New Parent ID:', newParentId);
       try {
         await this.$axios.put(`/department/${departmentId}`, {
-          name: this.draggedItem.name,  // 부서 이름도 함께 전송
+          name: this.draggedItem.name,
           parentId: newParentId,
         });
         alert('부서 계층이 업데이트되었습니다.');
-        this.fetchHierarchy(); // 계층 업데이트 후 새로고침
+        this.fetchHierarchy();
       } catch (error) {
         console.error('Error updating department parent:', error);
       }
@@ -189,8 +194,8 @@ export default {
     },
 
     getNodeStyle(department, depth) {
-      const colors = ['#ffeb3b', '#64b5f6', '#81c784']; 
-      const color = colors[depth % colors.length]; 
+      const colors = ['#ffeb3b', '#64b5f6', '#81c784']; // 계층별 색상
+      const color = colors[depth % colors.length]; // 계층별로 색상을 반복 적용
       return {
         cursor: this.editMode ? "move" : "default",
         opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.5 : 1,
@@ -206,7 +211,7 @@ export default {
   },
 
   mounted() {
-    this.fetchHierarchy(); 
+    this.fetchHierarchy();
   },
 };
 </script>
@@ -254,24 +259,55 @@ ul {
   background-color: #45a049;
 }
 
-.dialog {
-  margin-top: 20px;
-  padding: 20px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
+.dialog-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.tree-node button {
-  margin-left: 10px;
-  background-color: #ff4c4c;
+.dialog-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  width: 300px;
+}
+
+.dialog-input,
+.dialog-select {
+  margin-bottom: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.save-button {
+  background-color: #4caf50;
   color: white;
   border: none;
-  border-radius: 3px;
-  padding: 5px;
+  padding: 10px 15px;
   cursor: pointer;
+  border-radius: 5px;
 }
 
-.tree-node button:hover {
-  background-color: #ff0000;
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
 }
 </style>
