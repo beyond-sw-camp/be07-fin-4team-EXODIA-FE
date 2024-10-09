@@ -1,6 +1,6 @@
 <template>
   <v-container class="mt-5">
-    <v-card class="mx-auto" max-width="800">
+    <v-card v-if="dataLoaded || isRegisterMode" class="mx-auto" max-width="800">
       <v-card-title>
         <div v-if="isEditMode" class="text-right">
           <v-btn @click="deleteUser()" class="red--text">삭제</v-btn>
@@ -10,7 +10,7 @@
         <h3 v-else>직원 등록</h3>
       </v-card-title>
 
-      <v-card-text v-if="dataLoaded"> <!-- 데이터가 로드된 후 렌더링 -->
+      <v-card-text>
         <v-form ref="form" @submit.prevent="submitForm">
           <v-row>
             <!-- 사번 및 이름 -->
@@ -26,9 +26,11 @@
               <v-select
                 v-model="userDetail.departmentId"
                 :items="departmentOptions"
-                item-title="name" 
-                item-value="id"  
+                item-title="name"
+                item-value="id"
                 label="부서"
+                :disabled="isDetailMode"
+                v-if="departmentOptions.length > 0"
               />
             </v-col>
 
@@ -37,9 +39,11 @@
               <v-select
                 v-model="userDetail.positionId"
                 :items="positionOptions"
-                item-title="name" 
-                item-value="id" 
+                item-title="name"
+                item-value="id"
                 label="직급"
+                :disabled="isDetailMode"
+                v-if="positionOptions.length > 0"
               />
             </v-col>
 
@@ -78,12 +82,11 @@
             <!-- 버튼들 -->
             <v-col cols="12" class="d-flex justify-space-between">
               <v-btn @click="goBack" outlined>목록으로</v-btn>
-              <v-btn type="submit" color="primary">{{ isEditMode ? '수정 완료' : '등록 완료' }}</v-btn>
+              <v-btn v-if="!isDetailMode" type="submit" color="primary">{{ isEditMode ? '수정 완료' : '등록 완료' }}</v-btn>
             </v-col>
           </v-row>
         </v-form>
       </v-card-text>
-      <v-card-text v-else>로딩 중...</v-card-text> <!-- 데이터 로딩 중 표시 -->
     </v-card>
   </v-container>
 </template>
@@ -112,12 +115,32 @@ export default {
       previewImageSrc: null,
       isEditMode: false,
       isDetailMode: false,
-      dataLoaded: false, // 데이터 로드 완료 여부
+      isRegisterMode: false,  // 등록 모드 추가
+      dataLoaded: false,
     };
   },
   methods: {
+    // URL에 따라 모드 설정
+    setModeBasedOnRoute() {
+      const routeName = this.$route.name;
+      if (routeName === 'employee-edit') {
+        this.isEditMode = true;
+        this.isDetailMode = false;
+        this.isRegisterMode = false;
+      } else if (routeName === 'employee-detail') {
+        this.isEditMode = false;
+        this.isDetailMode = true;
+        this.isRegisterMode = false;
+      } else {
+        this.isEditMode = false;
+        this.isDetailMode = false;
+        this.isRegisterMode = true;
+      }
+    },
+
     async fetchUserDetail() {
       const userNum = this.$route.params.userNum;
+      if (!userNum) return;
       try {
         const response = await axios.get(`/user/list/${userNum}`);
         if (response.data) {
@@ -126,10 +149,28 @@ export default {
             departmentId: response.data.department ? response.data.department.id : null,
             positionId: response.data.position ? response.data.position.id : null,
           };
-          this.dataLoaded = true; // 데이터 로드 완료
+          this.previewImageSrc = response.data.profileImage || null;
         }
+        this.setInitialValues();
+        this.dataLoaded = true;
       } catch (error) {
         console.error("직원 정보를 불러오는 중 오류가 발생했습니다:", error);
+      }
+    },
+
+    setInitialValues() {
+      if (this.userDetail.departmentId) {
+        const foundDepartment = this.departmentOptions.find(
+          (dept) => dept.id === this.userDetail.departmentId
+        );
+        this.userDetail.departmentId = foundDepartment ? foundDepartment.id : null;
+      }
+
+      if (this.userDetail.positionId) {
+        const foundPosition = this.positionOptions.find(
+          (pos) => pos.id === this.userDetail.positionId
+        );
+        this.userDetail.positionId = foundPosition ? foundPosition.id : null;
       }
     },
 
@@ -137,7 +178,6 @@ export default {
       try {
         const response = await axios.get('/department');
         this.departmentOptions = response.data;
-        console.log('부서 목록:', this.departmentOptions); 
       } catch (error) {
         console.error('부서 목록을 불러오는 중 오류가 발생했습니다:', error);
       }
@@ -147,7 +187,6 @@ export default {
       try {
         const response = await axios.get('/positions');
         this.positionOptions = response.data;
-        console.log('직급 목록:', this.positionOptions);
       } catch (error) {
         console.error('직급 목록을 불러오는 중 오류가 발생했습니다:', error);
       }
@@ -201,7 +240,7 @@ export default {
         };
 
         if (this.isEditMode) {
-          await axios.put(`/user/list/${this.userNum}`, formData, config);
+          await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
           alert("수정 완료");
         } else {
           await axios.post("/user/register", formData, config);
@@ -222,31 +261,12 @@ export default {
     },
   },
   mounted() {
-    const path = this.$route.path;
+    this.setModeBasedOnRoute();
     this.fetchDepartments();
     this.fetchPositions();
-
-    if (path.includes("detail")) {
-      this.isDetailMode = true;
-      this.fetchUserDetail();
-    } else if (path.includes("edit")) {
-      this.isEditMode = true;
+    if (this.$route.params.userNum) {
       this.fetchUserDetail();
     }
   },
 };
 </script>
-
-<style scoped>
-.v-btn {
-  margin-right: 10px;
-}
-
-.green--text {
-  color: #4caf50 !important;
-}
-
-.red--text {
-  color: #f44336 !important;
-}
-</style>

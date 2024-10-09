@@ -43,7 +43,6 @@
           class="elevation-1"
           @click:row="viewUser"
         >
-          <!-- 직원 정보를 행에 나열 -->
           <template v-slot:item="{ item }">
             <tr @click="viewUser(item)">
               <td>{{ item.userNum }}</td>
@@ -52,7 +51,6 @@
               <td>{{ item.positionName }}</td>
               <td>{{ item.joinDate }}</td>
               <td>
-                <!-- 수정, 삭제 버튼 -->
                 <v-btn text class="green--text" @click.stop="editUser(item.userNum)">수정</v-btn>
                 <v-btn text class="red--text" @click.stop="openDeleteDialog(item.userNum)">삭제</v-btn>
               </td>
@@ -204,22 +202,8 @@ export default {
 </script>
 
 <style scoped>
-.tbl-header {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 10px;
-}
-
-.tbl-header th {
-  text-align: left;
-  padding: 10px;
-  background-color: #f5f5f5;
-  font-weight: bold;
-  border-bottom: 2px solid #ddd;
-}
-
-.elevation-1 {
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 1px 2px rgba(0, 0, 0, 0.24);
+.v-btn {
+  margin-right: 10px;
 }
 
 .green--text {
