@@ -1,98 +1,89 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
-        <h1 v-if="isDetailMode">직원 세부 정보</h1>
-        <h1 v-else-if="isEditMode">직원 수정</h1>
-        <h1 v-else>직원 등록</h1>
-      </v-col>
-    </v-row>
+  <v-container class="mt-5">
+    <v-card class="mx-auto" max-width="800">
+      <v-card-title>
+        <div v-if="isEditMode" class="text-right">
+          <v-btn @click="deleteUser()" class="red--text">삭제</v-btn>
+        </div>
+        <h3 v-if="isEditMode">직원 수정</h3>
+        <h3 v-else-if="isDetailMode">직원 세부 정보</h3>
+        <h3 v-else>직원 등록</h3>
+      </v-card-title>
 
-    <!-- 프로필 이미지 -->
-    <v-row>
-      <v-col cols="12" class="text-center">
-        <v-avatar size="150">
-          <img :src="userDetail.profileImage || '/default-profile.png'" alt="프로필 이미지" />
-        </v-avatar>
-      </v-col>
-      <v-col cols="12">
-        <v-file-input
-          v-model="userDetail.profileImage"
-          label="프로필 이미지"
-          accept="image/*"
-          v-if="!isDetailMode"
-        ></v-file-input>
-      </v-col>
-    </v-row>
+      <v-card-text>
+        <v-form ref="form" @submit.prevent="submitForm">
+          <v-row>
+            <!-- 사번 및 이름 -->
+            <v-col cols="12" md="6">
+              <v-text-field v-model="userDetail.userNum" label="사번" :readonly="isEditMode || isDetailMode" required />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="userDetail.name" label="이름" :readonly="isDetailMode" required />
+            </v-col>
 
-    <!-- 사번 및 이름 -->
-    <v-row>
-      <v-col cols="12" md="6">
-        <v-text-field v-model="userDetail.userNum" label="사번" :readonly="isEditMode || isDetailMode"></v-text-field>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-text-field v-model="userDetail.name" label="이름" :readonly="isDetailMode"></v-text-field>
-      </v-col>
-    </v-row>
+            <!-- 부서 선택 -->
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="userDetail.departmentId"
+                :items="departmentOptions"
+                item-title="name" 
+                item-value="id"  
+                label="부서"
+              />
+            </v-col>
 
-    <!-- 부서 및 직급 선택 -->
-    <v-row>
-      <v-col cols="12" md="6">
-        <v-select
-          v-model="userDetail.departmentId"
-          :items="departmentOptions"
-          item-text="name"
-          item-value="id"
-          label="부서"
-          :disabled="isDetailMode"
-          required
-        ></v-select>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-select
-          v-model="userDetail.positionId"
-          :items="positionOptions"
-          item-text="name"
-          item-value="id"
-          label="직급"
-          :disabled="isDetailMode"
-          required
-        ></v-select>
-      </v-col>
-    </v-row>
+            <!-- 직급 선택 -->
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="userDetail.positionId"
+                :items="positionOptions"
+                item-title="name" 
+                item-value="id" 
+                label="직급"
+              />
+            </v-col>
 
-    <!-- 이메일 및 전화번호 -->
-    <v-row>
-      <v-col cols="12" md="6">
-        <v-text-field v-model="userDetail.email" label="이메일" :readonly="isDetailMode"></v-text-field>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-text-field v-model="userDetail.phone" label="전화번호" :readonly="isDetailMode"></v-text-field>
-      </v-col>
-    </v-row>
+            <!-- 이메일 및 전화번호 -->
+            <v-col cols="12" md="6">
+              <v-text-field v-model="userDetail.email" label="이메일" :readonly="isDetailMode" />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="userDetail.phone" label="전화번호" :readonly="isDetailMode" />
+            </v-col>
 
-    <!-- 고용 유형 및 잔여 휴가 -->
-    <v-row>
-      <v-col cols="12" md="6">
-        <v-select
-          v-model="userDetail.hireType"
-          :items="hireTypeOptions"
-          label="고용 유형"
-          :disabled="isDetailMode"
-        ></v-select>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-text-field v-model="userDetail.annualLeave" label="잔여 휴가" :readonly="isDetailMode"></v-text-field>
-      </v-col>
-    </v-row>
+            <!-- 고용 유형 및 잔여 휴가 -->
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="userDetail.hireType"
+                :items="hireTypeOptions"
+                label="고용 유형"
+                :disabled="isDetailMode"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="userDetail.annualLeave" label="잔여 휴가" :readonly="isDetailMode" />
+            </v-col>
 
-    <!-- 버튼 (수정/등록 완료, 취소) -->
-    <v-row v-if="!isDetailMode">
-      <v-col cols="12">
-        <v-btn @click="saveUser" class="green--text">{{ isEditMode ? '수정 완료' : '등록 완료' }}</v-btn>
-        <v-btn @click="goBack" class="red--text">취소</v-btn>
-      </v-col>
-    </v-row>
+            <!-- 프로필 이미지 업로드 -->
+            <v-col cols="12">
+              <v-file-input
+                label="프로필 이미지 업로드"
+                v-model="userDetail.profileImage"
+                accept="image/*"
+                @change="onFileChange"
+              />
+              <v-img v-if="previewImageSrc" :src="previewImageSrc" max-width="200" />
+            </v-col>
+
+            <!-- 버튼들 -->
+            <v-col cols="12" class="d-flex justify-space-between">
+              <v-btn @click="goBack" outlined>목록으로</v-btn>
+              <v-btn type="submit" color="primary">{{ isEditMode ? '수정 완료' : '등록 완료' }}</v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-card-text>
+    </v-card>
   </v-container>
 </template>
 
@@ -117,6 +108,7 @@ export default {
       departmentOptions: [],  // 부서 목록
       positionOptions: [],    // 직급 목록
       hireTypeOptions: ['정규직', '계약직', '인턴', '파트타임'],
+      previewImageSrc: null,
       isEditMode: false,
       isDetailMode: false,
     };
@@ -132,8 +124,6 @@ export default {
             departmentId: response.data.department ? response.data.department.id : null,
             positionId: response.data.position ? response.data.position.id : null,
           };
-        } else {
-          console.error("유효한 직원 정보가 없습니다.");
         }
       } catch (error) {
         console.error("직원 정보를 불러오는 중 오류가 발생했습니다:", error);
@@ -142,8 +132,9 @@ export default {
 
     async fetchDepartments() {
       try {
-        const response = await axios.get('/department/hierarchy');
+        const response = await axios.get('/department');
         this.departmentOptions = response.data;
+        console.log('부서 목록:', this.departmentOptions); 
       } catch (error) {
         console.error('부서 목록을 불러오는 중 오류가 발생했습니다:', error);
       }
@@ -151,62 +142,77 @@ export default {
 
     async fetchPositions() {
       try {
-        const response = await axios.get('/positions');  
+        const response = await axios.get('/positions');
         this.positionOptions = response.data;
-        console.log("직급 목록:", this.positionOptions);  // 콘솔로 직급 목록 출력
+        console.log('직급 목록:', this.positionOptions);
       } catch (error) {
         console.error('직급 목록을 불러오는 중 오류가 발생했습니다:', error);
       }
     },
 
+    onFileChange(event) {
+      const files = event.target.files || event.dataTransfer.files;
+      if (files && files.length > 0) {
+        this.userDetail.profileImage = files[0];
+        this.previewImage();
+      } else {
+        this.userDetail.profileImage = null;
+        this.previewImageSrc = null;
+      }
+    },
 
-    async saveUser() {
-  const userNum = this.$route.params.userNum;
-  const token = localStorage.getItem("token");
+    previewImage() {
+      if (this.userDetail.profileImage) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.previewImageSrc = e.target.result;
+        };
+        reader.readAsDataURL(this.userDetail.profileImage);
+      } else {
+        this.previewImageSrc = null;
+      }
+    },
 
-  if (!token) {
-    alert("토큰이 만료되었습니다. 다시 로그인해주세요.");
-    this.$router.push("/login");
-    return;
-  }
+    async submitForm() {
+      const formData = new FormData();
+      formData.append("userNum", this.userDetail.userNum);
+      formData.append("name", this.userDetail.name);
+      formData.append("departmentId", this.userDetail.departmentId);
+      formData.append("positionId", this.userDetail.positionId);
+      formData.append("email", this.userDetail.email);
+      formData.append("phone", this.userDetail.phone);
+      formData.append("hireType", this.userDetail.hireType);
+      formData.append("annualLeave", this.userDetail.annualLeave);
 
-  if (!this.userDetail.departmentId || !this.userDetail.positionId) {
-    alert("부서와 직급을 선택해주세요.");
-    return;
-  }
+      if (this.userDetail.profileImage) {
+        formData.append("profileImage", this.userDetail.profileImage);
+      }
 
-  // 확인용 콘솔 로그
-  console.log("Selected Department ID:", this.userDetail.departmentId);
-  console.log("Selected Position ID:", this.userDetail.positionId);
+      try {
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        };
 
-  if (!this.userDetail.profileImage) {
-    this.userDetail.profileImage = null;
-  }
+        if (this.isEditMode) {
+          await axios.put(`/user/list/${this.userNum}`, formData, config);
+          alert("수정 완료");
+        } else {
+          await axios.post("/user/register", formData, config);
+          alert("등록 완료");
+        }
 
-  try {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-
-    if (this.isEditMode) {
-      await axios.put(`/user/list/${userNum}`, this.userDetail, config);
-      alert("수정 완료");
-    } else {
-      await axios.post("/user/register", this.userDetail, config);
-      alert("등록 완료");
-    }
-
-    this.$router.push("/employee-management");
-  } catch (error) {
-    console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
-    if (error.response) {
-      alert(error.response.data.status_message);  // 서버에서 받은 오류 메시지 표시
-    }
-  }
-},
-
+        this.$router.push("/employee-management");
+      } catch (error) {
+        console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
+        if (error.response) {
+          alert(error.response.data.status_message);
+        }
+      }
+    },
 
     goBack() {
       this.$router.push("/employee-management");
@@ -214,8 +220,8 @@ export default {
   },
   mounted() {
     const path = this.$route.path;
-    this.fetchDepartments();  // 부서 목록 로드
-    this.fetchPositions();    // 직급 목록 로드
+    this.fetchDepartments();
+    this.fetchPositions();
 
     if (path.includes("detail")) {
       this.isDetailMode = true;
