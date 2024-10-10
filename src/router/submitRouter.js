@@ -1,12 +1,11 @@
-// src/router/boardRouter.js
 import SubmitCreate from "@/views/submit/SubmitCreate.vue";
 import SubmitList from "@/views/submit/SubmitList.vue";
 import MySubmitList from "@/views/submit/MySubmitList.vue";
 import SubmitDetailComponent from "@/components/submit/SubmitDetailComponent.vue";
 
 export const submitRouter = [
+
     {
-        // 결재 요청
         path: '/submit',
         name: 'SubmitCreate',
         component: SubmitCreate,
@@ -28,5 +27,4 @@ export const submitRouter = [
         name: 'SubmitDetailComponent',
         component: SubmitDetailComponent,
     }
-
 ];

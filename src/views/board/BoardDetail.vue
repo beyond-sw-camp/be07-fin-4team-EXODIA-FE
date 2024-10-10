@@ -130,25 +130,32 @@ export default {
       this.$router.push({ name: 'BoardUpdate', params: { id: this.board.id } });
     },
     async fetchBoardDetail() {
-      try {
-        const boardId = this.$route.params.id;
-        const response = await axios.get(`/board/detail/${boardId}`);
-        this.board = response.data.result;
+  try {
+    const boardId = this.$route.params.id;
+    const userNum = localStorage.getItem('userNum'); // 사용자 번호 가져오기
 
-        // 댓글을 FAMILY_EVENT 카테고리일 때만 설정
-        if (this.isFamilyEventCategory) {
-          this.comments = Array.isArray(this.board?.comments) ? this.board.comments : [];
-        }
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          alert('인증이 만료되었습니다. 다시 로그인 해주세요.');
-          this.$router.push('/login');
-        } else {
-          console.error('게시글을 불러오는 데 실패했습니다:', error);
-          this.error = '게시글을 불러오는 데 실패했습니다.';
-        }
-      }
-    },
+    // 서버 요청 시 userNum을 쿼리 파라미터로 함께 전달
+    const response = await axios.get(`/board/detail/${boardId}`, { params: { userNum } });
+    this.board = response.data.result;
+
+    // 댓글을 FAMILY_EVENT 카테고리일 때만 설정
+    if (this.isFamilyEventCategory) {
+      this.comments = Array.isArray(this.board?.comments) ? this.board.comments : [];
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      console.error("Bad Request: 파라미터가 누락되었거나 올바르지 않습니다.", error.response.data);
+      alert('잘못된 요청입니다. 요청 데이터를 확인해주세요.');
+    } else if (error.response && error.response.status === 401) {
+      alert('인증이 만료되었습니다. 다시 로그인 해주세요.');
+      this.$router.push('/login');
+    } else {
+      console.error('게시글을 불러오는 데 실패했습니다:', error);
+      this.error = '게시글을 불러오는 데 실패했습니다.';
+    }
+  }
+}
+,
     async submitComment() {
       if (!this.newCommentContent.trim()) {
         alert('댓글 내용을 입력하세요.');
@@ -177,6 +184,7 @@ export default {
         }
       }
     },
+  
     formatDate(date) {
       const options = { year: 'numeric', month: 'long', day: 'numeric' };
       return new Date(date).toLocaleDateString(undefined, options);

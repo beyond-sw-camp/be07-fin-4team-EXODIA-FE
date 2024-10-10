@@ -15,7 +15,7 @@
       </div>      
       
       <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
-        <img src="@/assets/sh.png" alt="User Avatar" class="user-avatar"
+        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
           style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
     </div>
