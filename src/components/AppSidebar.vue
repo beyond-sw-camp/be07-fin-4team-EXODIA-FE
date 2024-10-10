@@ -5,12 +5,6 @@
         <img :src="require('@/assets/exodia.png')" alt="Logo" />
       </div>
 
-      <!-- 메뉴를 헤더에 넣을지 사이드바에 넣을지 아니면 뺴버릴지 -->
-      <div class="menu-item" @click="toggleSubSidebar">
-        <v-icon class="icon">mdi-menu</v-icon>
-        <span>메뉴</span>
-      </div>
-
       <!-- 사이드: 게시판 -->
       <div class="menu-item" @click="$router.push('/board/notice/List')"
         :class="{ 'active': $route.path.startsWith('/board') }" @mouseover="showSubSidebar('board')">
@@ -26,7 +20,7 @@
       </div>
 
       <!-- 사이드: 예약 -->
-      <div class="menu-item" @click="$router.push('/reservation/reservationList')"
+      <div class="menu-item" @click="$router.push('/reservation/meetReservationList')"
         :class="{ 'active': $route.path.startsWith('/reservation') }" @mouseover="showSubSidebar('reservation')">
         <v-icon class="icon">mdi-timer-sand</v-icon>
         <span>예약</span>
@@ -111,7 +105,11 @@
 
     <!-- 서브사이드: 예약 -->
     <div v-if="hoveredMenu === 'reservation'">
-      예약 서브사이드바
+      <v-row @click="$router.push('/reservation/meetReservationList')">
+        회의실 예약
+      </v-row>
+      <v-row @click="$router.push('/reservation/reservationList')">
+        법인 차량 예약 </v-row>
     </div>
 
     <!-- 서브사이드: 결재 -->
