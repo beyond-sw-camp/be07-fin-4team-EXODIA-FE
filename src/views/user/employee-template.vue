@@ -101,8 +101,8 @@ export default {
       userDetail: {
         userNum: '',
         name: '',
-        departmentId: '',
-        positionId: '',
+        departmentId: null,
+        positionId: null,
         email: '',
         phone: '',
         profileImage: '',
@@ -138,6 +138,7 @@ export default {
       }
     },
 
+    // 직원 정보 불러오기
     async fetchUserDetail() {
       const userNum = this.$route.params.userNum;
       if (!userNum) return;
@@ -146,38 +147,39 @@ export default {
         if (response.data) {
           this.userDetail = {
             ...response.data,
-            departmentId: response.data.department ? response.data.department.id : null,
-            positionId: response.data.position ? response.data.position.id : null,
+            departmentId: response.data.departmentId || null,  // departmentId 바로 사용
+            positionId: response.data.positionId || null,      // positionId 바로 사용
           };
           this.previewImageSrc = response.data.profileImage || null;
         }
-        this.setInitialValues();
         this.dataLoaded = true;
       } catch (error) {
         console.error("직원 정보를 불러오는 중 오류가 발생했습니다:", error);
       }
     },
 
+    // 부서 및 직급 설정
     setInitialValues() {
-      if (this.userDetail.departmentId) {
-        const foundDepartment = this.departmentOptions.find(
-          (dept) => dept.id === this.userDetail.departmentId
-        );
-        this.userDetail.departmentId = foundDepartment ? foundDepartment.id : null;
-      } else {
-        console.error("Department ID is missing:", this.userDetail.departmentId);
+      if (this.departmentOptions.length > 0 && this.userDetail.departmentId !== null) {
+        const foundDepartment = this.departmentOptions.find(dept => dept.id === this.userDetail.departmentId);
+        if (foundDepartment) {
+          this.userDetail.departmentId = foundDepartment.id;
+        } else {
+          console.error("Department not found with ID:", this.userDetail.departmentId);
+        }
       }
 
-      if (this.userDetail.positionId) {
-        const foundPosition = this.positionOptions.find(
-          (pos) => pos.id === this.userDetail.positionId
-        );
-        this.userDetail.positionId = foundPosition ? foundPosition.id : null;
-      } else {
-        console.error("Position ID is missing:", this.userDetail.positionId);
+      if (this.positionOptions.length > 0 && this.userDetail.positionId !== null) {
+        const foundPosition = this.positionOptions.find(pos => pos.id === this.userDetail.positionId);
+        if (foundPosition) {
+          this.userDetail.positionId = foundPosition.id;
+        } else {
+          console.error("Position not found with ID:", this.userDetail.positionId);
+        }
       }
-  },
+    },
 
+    // 부서 목록 불러오기
     async fetchDepartments() {
       try {
         const response = await axios.get('/department');
@@ -187,6 +189,7 @@ export default {
       }
     },
 
+    // 직급 목록 불러오기
     async fetchPositions() {
       try {
         const response = await axios.get('/positions');
@@ -218,10 +221,8 @@ export default {
         this.previewImageSrc = null;
       }
     },
-    async submitForm() {
-      console.log("Submitting with departmentId:", this.userDetail.departmentId);
-  console.log("Submitting with positionId:", this.userDetail.positionId);
 
+    async submitForm() {
       const payload = {
         userNum: this.userDetail.userNum,
         name: this.userDetail.name,
@@ -263,13 +264,14 @@ export default {
       this.$router.push("/employee-management");
     },
   },
-  mounted() {
+  async mounted() {
     this.setModeBasedOnRoute();
-    this.fetchDepartments();
-    this.fetchPositions();
+    await this.fetchDepartments();
+    await this.fetchPositions();
     if (this.$route.params.userNum) {
-      this.fetchUserDetail();
+      await this.fetchUserDetail();
     }
+    this.setInitialValues(); 
   },
 };
 </script>
