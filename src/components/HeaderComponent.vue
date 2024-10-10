@@ -125,7 +125,8 @@ export default {
 
 .icon-item.active>.icon {
   color: #7A5656;
-
+}
+  
 .notification-icon {
   font-size: 2vh; 
   margin-right: 1vh;
