@@ -112,7 +112,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #c6ffde, #128a44);
+  background: linear-gradient(135deg, #6f4833a4, #6f4833a4);
 }
 
 .logo-container {
@@ -146,13 +146,13 @@ export default {
 }
 
 .login-btn {
-  background-color: #4caf50;
+  background-color: #6f4833a4;
   font-weight: bold;
   font-size: 18px;
 }
 
 .login-btn:hover {
-  background-color: #388e3c;
+  background-color: #6f4833a4;
 }
 
 .v-text-field input {
