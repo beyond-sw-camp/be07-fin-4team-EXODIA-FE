@@ -20,7 +20,7 @@
       </div>
 
       <!-- 사이드: 예약 -->
-      <div class="menu-item" @click="$router.push('/reservation/meetReservationList')"
+      <div class="menu-item" @click="$router.push('/reservation/reservationList')"
         :class="{ 'active': $route.path.startsWith('/reservation') }" @mouseover="showSubSidebar('reservation')">
         <v-icon class="icon">mdi-timer-sand</v-icon>
         <span>예약</span>
@@ -33,14 +33,7 @@
         <span>전자 결재</span>
       </div>
 
-      <!-- 사이드: 메신저 -->
-      <div class="menu-item" @click="$router.push('/messenger')"
-        :class="{ 'active': $route.path.startsWith('/messenger') }" @mouseover="showSubSidebar('messenger')">
-        <v-icon class="icon">mdi-forum-outline</v-icon>
-        <span>메신저</span>
-      </div>
-
-      <!-- 사이드: 화상회의 -->
+      <!-- 사이드: 화상 회의 -->
       <div class="menu-item" @click="$router.push('/video/rooms')"
         :class="{ 'active': $route.path.startsWith('/video') }" @mouseover="showSubSidebar('video')">
         <v-icon class="icon">mdi-video</v-icon>
@@ -69,7 +62,7 @@
     @mouseleave="hideSubSidebar">
 
     <!-- 서브사이드: 게시판 -->
-    <div v-if="hoveredMenu === 'board'">
+    <div v-if="hoveredMenu === 'board'" class="sub-side-menu-item">
       <v-row @click="$router.push('/board/list')">
         공지사항
       </v-row>
@@ -82,9 +75,9 @@
     </div>
 
     <!-- 서브사이드: 문서 관리 -->
-    <div v-if="hoveredMenu === 'document'">
-      <v-row>
-        팀 문서함
+    <div v-if="hoveredMenu === 'document'" class="sub-side-menu-item">
+      <v-row style="font-weight:700; font-size:16px;">
+        팀 문서
       </v-row>
       <v-row>
         <v-btn class="createBtn" @click="$router.push('/document/create')">
@@ -93,18 +86,18 @@
       </v-row>
 
       <v-row @click="$router.push('/document')">
-        전체 문서함
+        전체 문서
       </v-row>
       <v-row @click="$router.push('/document/list/updated')">
-        최근 업데이트 문서함
+        최근 업데이트 문서
       </v-row>
       <v-row @click="$router.push('/document/list/viewed')">
-        최근 조회 문서함
+        최근 조회 문서
       </v-row>
     </div>
 
     <!-- 서브사이드: 예약 -->
-    <div v-if="hoveredMenu === 'reservation'">
+    <div v-if="hoveredMenu === 'reservation'" class="sub-side-menu-item">
       <v-row @click="$router.push('/reservation/meetReservationList')">
         회의실 예약
       </v-row>
@@ -113,7 +106,7 @@
     </div>
 
     <!-- 서브사이드: 결재 -->
-    <div v-if="hoveredMenu === 'submit'">
+    <div v-if="hoveredMenu === 'submit'" class="sub-side-menu-item">
       <v-row>
         <v-btn class="createBtn" @click="$router.push('/submit')">
           결재 생성
@@ -125,23 +118,52 @@
       <v-row @click="$router.push('/submit/list/my')">
         결재 요청 문서
       </v-row>
-
-    </div>
-
-    <!-- 서브사이드: 메신저-->
-    <div v-if="hoveredMenu === 'messenger'">
-      매신저 서브사이드바
     </div>
 
     <!-- 서브사이드: 화상 회의 -->
-    <div v-if="hoveredMenu === 'video'">
-      화상회의 서브사이드바
+    <div v-if="hoveredMenu === 'video'" class="sub-side-menu-item">
+      <v-row>
+        <v-btn class="createBtn" @click="$router.push('/video/create')">
+          화상 회의 생성
+        </v-btn>
+      </v-row>
+      <v-row @click="$router.push('/video/rooms')">
+        화상 회의 목록
+      </v-row>
     </div>
 
     <!-- 서브사이드: 직원관리 -->
-    <div v-if="hoveredMenu === 'employee-management'">
-      직원관리 서브사이드바
+    <div
+      v-if="hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management'"
+      class="sub-side-menu-item">
+      <v-row style="font-weight:700; font-size:16px;">
+        직원 관리
+      </v-row>
+      <v-row>
+        <v-btn class="createBtn" @click="$router.push('/employee-management/create')">
+          직원 등록
+        </v-btn>
+      </v-row>
+      <v-row @click="$router.push('/employee-management')">
+        직원 목록
+      </v-row>
+      <v-row style="font-weight:700; font-size:16px;">
+        급여 관리
+      </v-row>
+      <v-row @click="$router.push('/salary-management')">
+        직원 급여 목록
+      </v-row>
+      <v-row @click="$router.push('/salary-management/manage')">
+        급여일 관리
+      </v-row>
+      <v-row style="font-weight:700; font-size:16px;">
+        부서 관리
+      </v-row>
+      <v-row @click="$router.push('/department-management')">
+        부서 조회
+      </v-row>
     </div>
+
   </aside>
 </template>
 
@@ -226,6 +248,14 @@ export default {
   --header-height: 60px;
 }
 
+* {
+  font-size: 14px;
+}
+
+.v-row {
+  cursor: pointer;
+}
+
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
@@ -241,7 +271,7 @@ export default {
 
 .sub-sidebar {
   background-color: rgba(122, 86, 86, 0.2);
-  width: var(--sub-sidebar-width);
+  width: 180px;
   height: 100vh;
   position: fixed;
   top: 8vh;
@@ -332,5 +362,18 @@ export default {
   margin: 30px;
   margin-left: 40px;
   font-weight: 700;
+}
+
+.sub-side-menu-item {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+}
+
+.sub-side-menu-item>.v-row,
+.sub-side-menu-item>.v-btn {
+  padding: 10px;
 }
 </style>
