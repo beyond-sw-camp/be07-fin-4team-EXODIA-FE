@@ -34,7 +34,7 @@
         <tr>
           <th scope="col">번호</th>
           <th scope="col">제목</th>
-          <th scope="col">작성자</th>
+          <th scope="col">작성자</th> <!-- 컬럼명 유지 -->
           <th scope="col">작성일</th>
           <th scope="col">조회수</th>
         </tr>
@@ -43,7 +43,7 @@
         <tr v-for="(item, index) in boardItems" :key="item.id">
           <td>{{ index + 1 + (currentPage - 1) * itemsPerPage }}</td>
           <td @click="goToDetail(item.id)" class="text_left subject">{{ item.title }}</td>
-          <td>{{ item.user_num }}</td>
+          <td>관리자</td> <!-- 작성자를 모두 '관리자'로 표시 -->
           <td>{{ formatDate(item.createdAt) }}</td>
           <td>{{ item.hits }}</td>
         </tr>
@@ -63,11 +63,12 @@
 
     <!-- 페이지네이션 -->
     <v-pagination
-  v-model="currentPage"
-  :length="totalPages"
-  @input="onPageChange"
-  class="my-4"
-></v-pagination>
+    v-model="currentPage"
+    :length="totalPages"
+    @change="onPageChange"
+    class="my-4"
+    ></v-pagination>
+  
 
   </v-container>
 </template>
@@ -102,13 +103,9 @@ export default {
     };
   },
   watch: {
-    // 카테고리가 변경될 때마다 목록을 가져오도록 설정
-    '$route.params.category': function(newCategory) {
-      console.log("카테고리가 변경되었습니다:", newCategory);
-      this.category = newCategory || 'NOTICE';
-      this.currentPage = 1; // 페이지를 첫 페이지로 초기화
-      this.setBoardTitle(); // 제목 설정
-      this.fetchBoardItems(); // 게시글 목록 가져오기
+    currentPage(newPage, oldPage) {
+      console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
+      this.fetchBoardItems();
     }
   },
   created() {
@@ -120,7 +117,6 @@ export default {
     this.userId = localStorage.getItem('userId'); // 로컬스토리지에서 userId 가져오기
   },
   methods: {
-
     checkUserRole() {
       // 로컬스토리지에서 departmentId 값을 가져옴
       const departmentId = localStorage.getItem('departmentId');
@@ -133,63 +129,41 @@ export default {
       this.userNum = localStorage.getItem('userNum');
     },
     async fetchBoardItems() {
-      try {
-        // 페이지 번호는 0부터 시작하므로 currentPage에서 1을 뺍니다.
-        const params = {
-          page: this.currentPage - 1,
-          size: this.itemsPerPage,
-          searchType: this.searchType,
-          searchQuery: this.searchQuery || '', // 검색어가 없을 때 빈 문자열로 처리
-        };
-
-        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.category.toLowerCase()}/list`;
-        console.log("API 요청 URL:", apiUrl); // 요청 URL 확인
-        console.log("요청 파라미터:", params); // 요청 파라미터 확인
-
-        // 서버로부터 데이터 가져오기
-        const response = await axios.get(apiUrl, { params });
-
-        // 전체 응답 데이터 출력
-        console.log("응답 데이터 전체:", response.data);
-
-        // 응답 데이터 구조 확인 후 할당
-        let result;
-        if (Array.isArray(response.data)) {
-          result = response.data; // 배열 형태로 반환된 경우
-        } else if (response.data && response.data.result) {
-          result = response.data.result; // result 필드가 있는 경우
-        } else {
-          result = response.data; // 기타 경우
-        }
-
-        console.log("Result 데이터:", result); // 결과 데이터 로그 출력
-
-        // 응답 데이터가 올바른지 확인합니다.
-        if (result && result.content) {
-          console.log("게시글 목록 업데이트:", result.content);
-          console.log("전체 페이지 수 업데이트:", result.totalPages);
-
-          // 게시글 목록 및 페이지 수 업데이트
-          this.boardItems = result.content;
-          this.totalPages = result.totalPages;
-        } else {
-          console.error("올바르지 않은 데이터 형식입니다:", response.data);
-        }
-      } catch (error) {
-        console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
-        if (error.response) {
-          console.error("오류 응답 데이터:", error.response.data);
-          console.error("오류 응답 상태 코드:", error.response.status);
-        }
-      }
-    },
-    onPageChange(newPage) {
-  console.log("페이지 변경 이벤트가 호출되었습니다. 새로운 페이지 번호:", newPage);
-  console.log("현재 페이지 상태:", this.currentPage);
-  this.currentPage = newPage; // currentPage 값을 업데이트
-  console.log("onPageChange 함수 내에서 업데이트된 페이지 번호:", this.currentPage);
-  this.fetchBoardItems(); // 페이지가 변경될 때 게시글 목록을 다시 불러옵니다.
+  try {
+    // API 요청 파라미터를 설정할 때 currentPage 값을 명시적으로 지정
+    const params = {
+      page: this.currentPage - 1, // 페이지 번호를 0부터 시작하기 위해 1을 뺍니다.
+      size: this.itemsPerPage,
+      searchType: this.searchType,
+      searchQuery: this.searchQuery || '', // 검색어가 없을 때 빈 문자열로 처리
+    };
+    console.log("fetchBoardItems 호출됨 - currentPage:", this.currentPage); // currentPage 확인
+    console.log("API 요청 파라미터:", params); // 요청 파라미터 확인
+    
+    const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.category.toLowerCase()}/list`;
+    const response = await axios.get(apiUrl, { params });
+    console.log("응답 데이터 전체:", response.data);
+    
+    // 응답 데이터 처리
+    if (response.data && response.data.result) {
+      const result = response.data.result;
+      this.boardItems = result.content;
+      this.totalPages = result.totalPages;
+    }
+  } catch (error) {
+    console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
+  }
 },
+onPageChange(newPage) {
+  console.log("onPageChange 메서드 호출됨 - 새로운 페이지 번호:", newPage);
+  this.currentPage = newPage;
+  this.$nextTick(() => {
+    console.log("onPageChange - nextTick 후 currentPage:", this.currentPage);
+    this.fetchBoardItems(); // 페이지가 변경될 때 게시글 목록을 다시 불러옵니다.
+  });
+},
+
+
 
     setBoardTitle() {
       // URL에서 가져온 category 값을 기준으로 제목 설정
