@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <div class="app-container">
+    <div v-if="!isLoginPage" class="app-container">
       <AppSidebar />
       <div class="main-layout">
         <HeaderComponent />
@@ -9,10 +9,15 @@
         </div>
       </div>
     </div>
+    <div v-else>
+      <router-view />
+    </div>
   </v-app>
 </template>
 
 <script>
+import { useRoute } from 'vue-router';
+import { computed } from 'vue'; 
 import HeaderComponent from './components/HeaderComponent.vue';
 import AppSidebar from './components/AppSidebar.vue';
 
@@ -22,12 +27,21 @@ export default {
     HeaderComponent,
     AppSidebar,
   },
+  setup() {
+    const route = useRoute(); 
+
+    const isLoginPage = computed(() => route.path === '/login');
+
+    return {
+      isLoginPage,
+    };
+  },
 };
 </script>
 
 <style>
 :root {
-  --sidebar-width: 4%;
+  --sidebar-width: 13%;
   --header-height: 60px;
 }
 
@@ -45,23 +59,23 @@ export default {
 
 .header {
   height: var(--header-height);
-  background-color: #e6f1e3;
   display: flex;
   align-items: center;
   padding: 0 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: calc(100% - var(--sidebar-width));
   position: fixed;
   top: 0;
   left: var(--sidebar-width);
-  z-index: 500; 
+  z-index: 500;
 }
 
 .main-content {
   flex: 1;
   margin-top: var(--header-height);
-  padding: 20px;
+  padding: 50px 200px;
+  margin-right: 40px;
   background-color: #f5f5f5;
+  border-radius: 25px;
   overflow-y: auto;
 }
 </style>
