@@ -5,10 +5,10 @@ import store from './store';
 import axios from 'axios';
 import { createVuetify } from 'vuetify'; 
 import * as components from 'vuetify/components'; 
-import * as directives from 'vuetify/directives';
+import * as directives from 'vuetify/directives'; 
 import 'vuetify/styles';
 import '@mdi/font/css/materialdesignicons.css'; 
-import adapter from 'webrtc-adapter'; 
+import adapter from 'webrtc-adapter';
 import vuetify from './plugins/vuetify';
 import adapter from 'webrtc-adapter';
 
@@ -35,7 +35,8 @@ app.config.globalProperties.$axios = axios;
 
 app.use(router);
 app.use(store);
-app.use(vuetify); 
+app.use(vuetify);
+
 
 
 app.mount('#app');
