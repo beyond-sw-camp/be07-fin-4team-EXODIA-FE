@@ -96,6 +96,8 @@ export default {
         { text: "부서", value: "department" },
         { text: "직급", value: "position" },
       ],
+      departments: [], // 부서 목록
+      positions: [], // 직급 목록
       deleteDialog: false,
       deleteInfo: {
         userNum: "",
@@ -133,13 +135,19 @@ export default {
     },
 
     getDepartmentName(departmentId) {
-      const department = this.departments.find(dept => dept.id === departmentId);
-      return department ? department.name : "알 수 없음";
+      if (this.departments && this.departments.length > 0) {
+        const department = this.departments.find(dept => dept.id === departmentId);
+        return department ? department.name : "알 수 없음";
+      }
+      return "알 수 없음"; // 부서가 아직 로드되지 않았을 때 기본값 처리
     },
 
     getPositionName(positionId) {
-      const position = this.positions.find(pos => pos.id === positionId);
-      return position ? position.name : "알 수 없음";
+      if (this.positions && this.positions.length > 0) {
+        const position = this.positions.find(pos => pos.id === positionId);
+        return position ? position.name : "알 수 없음";
+      }
+      return "알 수 없음"; // 직급이 아직 로드되지 않았을 때 기본값 처리
     },
 
     performSearch() {
