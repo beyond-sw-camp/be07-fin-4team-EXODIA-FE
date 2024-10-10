@@ -116,7 +116,18 @@
 
     <!-- 서브사이드: 결재 -->
     <div v-if="hoveredMenu === 'submit'">
-      결재 서브사이드바
+      <v-row>
+        <v-btn class="createBtn" @click="$router.push('/submit')">
+          결재 생성
+        </v-btn>
+      </v-row>
+      <v-row @click="$router.push('/submit/list')">
+        결재 할 문서
+      </v-row>
+      <v-row @click="$router.push('/submit/list/my')">
+        결재 요청 문서
+      </v-row>
+
     </div>
 
     <!-- 서브사이드: 메신저-->
