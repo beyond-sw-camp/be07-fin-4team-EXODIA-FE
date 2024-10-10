@@ -2,7 +2,7 @@
   <v-container fluid class="timeline-container">
     <!-- Week Selection -->
     <v-row>
-      <v-col cols="10" md="4">
+      <v-col cols="10" md="6">
         <v-select
           v-model="selectedWeek"
           :items="weeks"

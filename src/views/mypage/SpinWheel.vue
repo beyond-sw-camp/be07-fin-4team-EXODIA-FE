@@ -1,12 +1,20 @@
 <template>
   <v-container fluid>
-    <!-- v-tabs 추가 -->
-    <v-tabs v-model="activeTab" background-color="#ffffff" centered class="header-tabs">
-      <v-tab @click="navigateTab('/mypage/userProfile')">프로필</v-tab>
-      <v-tab @click="navigateTab('/mypage/evaluation')">인사 평가</v-tab>
-      <v-tab @click="navigateTab('/mypage/spinWheel')">오늘의 점심</v-tab>
+    <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
+      <v-tab @click="navigateTab(0)">프로필</v-tab>
+      <v-tab @click="navigateTab(1)">평가리스트</v-tab>
+      <v-tab @click="navigateTab(2)">오늘의점심</v-tab>
+      <v-tab @click="navigateTab(3)">인사평가</v-tab>
     </v-tabs>
-    <v-row justify="" class="my-8" style="margin-top: 10px; margin-left: 70px;">
+
+    <v-tab-item v-if="activeTab === 0">
+        <!-- 프로필 -->
+    </v-tab-item>
+    <v-tab-item v-if="activeTab === 1">
+        <!-- 평가리스트 -->
+    </v-tab-item>
+    <v-tab-item v-if="activeTab === 2">
+      <v-row justify="" class="my-8" style=" margin-left: 70px;">
       <!-- 왼쪽: 돌림판 -->
       <v-col cols="12" sm="6" md="5" style="background-color: #F5F5F5;">
         <!-- 검은 줄 (화살표) -->
@@ -38,6 +46,11 @@
         </v-row>
       </v-col>
     </v-row>
+    </v-tab-item>
+    <v-tab-item v-if="activeTab === 3">
+        <!-- 인사평가 -->
+    </v-tab-item>    
+
   </v-container>
 </template>
 
@@ -46,6 +59,7 @@
 export default {
   data() {
     return {
+      activeTab: 2,
       product: ["햄버거", "피자"], // 기본 메뉴
       colors: ["#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF", "#4B0082", "#8B00FF", "brown"], // 무지개 색상
       newMenu: "", // 추가할 메뉴 입력 필드
@@ -62,10 +76,6 @@ export default {
     });
   },
   methods: {
-    // 탭 클릭 시 라우팅 처리
-    navigateTab(route) {
-      this.$router.push(route); // 클릭된 탭에 맞는 경로로 이동
-    },
 
     // 돌림판 그리는 함수
     drawWheel() {
@@ -167,6 +177,18 @@ export default {
         this.drawWheel();
       }
     },
+
+    navigateTab(index) {
+        if (index === 0) {
+            this.$router.push('/mypage/userProfile');
+        } else if (index === 1) {
+            this.$router.push('/mypage/evalutionFrame');
+        } else if (index === 3) {
+            this.$router.push('/mypage/evalutionList');
+        } else {
+          this.activeTab = index;
+        }
+      }
   },
 };
 </script>
@@ -174,7 +196,7 @@ export default {
 <style scoped>
 /* 탭 관련 스타일 */
 .header-tabs {
-  /* margin-bottom: 30px; */
+  margin-bottom: 30px;
 }
 
 .tab-item {

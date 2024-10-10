@@ -144,6 +144,22 @@
             </ul>
           </div>
         </div>
+
+        <div v-if="currentPage.startsWith('/mypage')" class="myp">
+          <div class="menu-item" >
+            <span style="font-size:20px; font-weight:800">마이페이지</span>
+              <ul style="margin-bottom: 20px;">
+                <li @click="$router.push('/mypage/userProfile')" class="mypage-item">프로필</li>
+                <li @click="$router.push('/mypage/evalutionFrame')" class="mypage-item">평가리스트</li>
+                <li @click="$router.push('/mypage/spinWheel')" class="mypage-item">오늘의점심</li>
+                <li @click="$router.push('/mypage/evalutionList')" class="mypage-item">인사평가</li>
+              </ul>
+          </div>
+  
+        </div>
+
+
+        
       </aside>
     </div>
   </aside>
@@ -313,5 +329,20 @@ export default {
   border: none;
 
 
+}
+.myp {
+  width: 150px;
+}
+.mypage-item {
+  margin: 20px;
+  list-style-type: none;
+  cursor: none;
+  transition: margin 0.3s ease;
+}
+
+.mypage-item:hover {
+  margin: 30px;
+  margin-left: 40px;
+  font-weight:700;
 }
 </style>
