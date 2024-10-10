@@ -41,10 +41,6 @@
             <v-simple-table dense>
               <thead>
                 <tr>
-                  <th>대분류</th>
-                  <th>중분류</th>
-                  <th>소분류 입력</th>
-                  <th>평가</th>
                 </tr>
               </thead>
               <tbody>
@@ -236,7 +232,7 @@ export default {
 <style scoped>
 .main-view {
   margin-left: -150px;
-  margin-top: -50px;
+  /* margin-top: -50px; */
   padding: -50px;
 }
 /* 헤더 탭 여백 */

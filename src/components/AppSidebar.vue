@@ -74,42 +74,6 @@
       </v-row>
     </div>
 
-        <div v-if="currentPage.startsWith('/document')" class="subside-menu">
-          <div class="menu-item">
-            <span style="font-size:20px; font-weight:800">팀 문서함</span>
-            <v-btn class="createBtn" @click="$router.push('/document/create')">
-              문서 등록
-            </v-btn>
-            <v-list>
-              <v-list-item @click="$router.push('/document')">
-                <v-list-item-title>전체 문서</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="$router.push('/document/list/updated')">
-                <v-list-item-title>최근 업데이트 문서</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="$router.push('/document/list/viewed')">
-                <v-list-item-title>최근 조회 문서</v-list-item-title>
-              </v-list-item>
-              <v-list-item>
-                <span>프로젝트</span>
-                <v-icon @click="toggleProjectVisibility"> {{ showProject ? 'mdi-chevron-up' :
-                  'mdi-chevron-down' }}</v-icon>
-              </v-list-item>
-
-              <div v-if="showProject">
-                <v-list>
-                  <v-list-item v-for="(type, index) in typeOptions" :key="index" @click="$router.push({
-                    name: 'DocumentTypeList', state: {
-                      id: index + 1
-                    }
-                  })">
-                    <v-list-item-title>{{ type }}</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </div>
-            </v-list>
-          </div>
-        </div>
     <!-- 서브사이드: 문서 관리 -->
     <div v-if="hoveredMenu === 'document'" class="sub-side-menu-item">
       <v-row style="font-weight:700; font-size:16px;">

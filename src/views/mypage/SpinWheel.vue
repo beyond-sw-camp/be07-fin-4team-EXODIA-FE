@@ -1,63 +1,62 @@
 <template>
   <div class="main-view">
-  <v-container fluid>
-    <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-      <v-tab @click="navigateTab(0)">프로필</v-tab>
-      <v-tab @click="navigateTab(1)">평가리스트</v-tab>
-      <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
-      <v-tab @click="navigateTab(3)">인사평가</v-tab>
-    </v-tabs>
+    <v-container fluid>
+      <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
+        <v-tab @click="navigateTab(0)">프로필</v-tab>
+        <v-tab @click="navigateTab(1)">평가리스트</v-tab>
+        <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
+        <v-tab @click="navigateTab(3)">인사평가</v-tab>
+      </v-tabs>
 
-    <v-tab-item v-if="activeTab === 0">
+      <v-tab-item v-if="activeTab === 0">
         <!-- 프로필 -->
-    </v-tab-item>
-    <v-tab-item v-if="activeTab === 1">
+      </v-tab-item>
+      <v-tab-item v-if="activeTab === 1">
         <!-- 평가리스트 -->
-    </v-tab-item>
-    <v-tab-item v-if="activeTab === 2">
-      <v-row justify="" class="my-8" style=" margin-left: 70px;">
-      <!-- 왼쪽: 돌림판 -->
-      <v-col cols="12" sm="6" md="5" style="background-color: #F5F5F5;">
-        <!-- 검은 줄 (화살표) -->
-        <v-sheet class="indicator"></v-sheet>
+      </v-tab-item>
+      <v-tab-item v-if="activeTab === 2">
+        <v-row justify="" class="my-8" style=" margin-left: 70px;">
+          <!-- 왼쪽: 돌림판 -->
+          <v-col cols="12" sm="6" md="5" style="background-color: #F5F5F5;">
+            <!-- 검은 줄 (화살표) -->
+            <v-sheet class="indicator"></v-sheet>
 
-        <v-sheet class="pa-4" elevation="0" style="background-color: #F5F5F5;">
-          <canvas ref="canvas" width="400" height="400"></canvas>
-        </v-sheet>
-      </v-col>
+            <v-sheet class="pa-4" elevation="0" style="background-color: #F5F5F5;">
+              <canvas ref="canvas" width="400" height="400"></canvas>
+            </v-sheet>
+          </v-col>
 
-      <!-- 오른쪽: 결과 -->
-      <v-col cols="12" sm="6" md="5" style="margin-top: 40px;">
-        <v-sheet class="pa-4" elevation="0" style="background-color: #F5F5F5;">
-          
-          <v-sheet class="pa-6 text-h5" elevation="0" style="background-color: #F5F5F5;">
-            {{ resultText || '오늘의 점심' }}
-          </v-sheet>
-        </v-sheet>
+          <!-- 오른쪽: 결과 -->
+          <v-col cols="12" sm="6" md="5" style="margin-top: 40px;">
+            <v-sheet class="pa-4" elevation="0" style="background-color: #F5F5F5;">
+              <v-sheet class="pa-6 text-h5" elevation="0" style="background-color: #F5F5F5;">
+                {{ resultText || '오늘의 점심' }}
+              </v-sheet>
+            </v-sheet>
 
-        <!-- Spin Button -->
-        <v-btn color="yellow darken-2" @click="rotate" large class="mt-4">돌려돌려 돌림판</v-btn>
+            <!-- Spin Button -->
+            <v-btn color="yellow darken-2" @click="rotate" large class="mt-4">돌려돌려 돌림판</v-btn>
 
-        <!-- Add Menu Section -->
-        <v-row justify="center" class="mt-4">
-          <v-col cols="12">
-            <v-text-field v-model="newMenu" label="메뉴 추가" solo></v-text-field>
-            <v-btn color="primary" @click="addMenu" large>메뉴 추가</v-btn>
+            <!-- Add Menu Section -->
+            <v-row justify="center" class="mt-4">
+              <v-col cols="12">
+                <v-text-field v-model="newMenu" label="메뉴 추가" solo></v-text-field>
+                <v-btn color="primary" @click="addMenu" large>메뉴 추가</v-btn>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
-      </v-col>
-    </v-row>
-    </v-tab-item>
-    <v-tab-item v-if="activeTab === 3">
+      </v-tab-item>
+      <v-tab-item v-if="activeTab === 3">
         <!-- 인사평가 -->
-    </v-tab-item>    
-
-  </v-container>
+      </v-tab-item>
+    </v-container>
   </div>
 </template>
 
-
 <script>
+import JSConfetti from 'js-confetti'; // JSConfetti import
+
 export default {
   data() {
     return {
@@ -68,6 +67,7 @@ export default {
       ctx: null, // Canvas Context
       currentRotation: 0, // 돌림판의 현재 회전 각도
       resultText: "", // 돌림판 결과
+      jsConfetti: null, // JSConfetti 인스턴스
     };
   },
   mounted() {
@@ -75,50 +75,50 @@ export default {
       this.ctx = this.$refs.canvas.getContext("2d"); // Canvas의 2D 컨텍스트를 가져옴
       this.drawWheel(); // 기본 메뉴로 돌림판 그리기
       this.$refs.canvas.addEventListener("click", this.handleCanvasClick);
+      this.jsConfetti = new JSConfetti(); // JSConfetti 인스턴스 생성
     });
   },
   methods: {
-
     // 돌림판 그리는 함수
     drawWheel() {
-    const canvas = this.$refs.canvas;
-    const [cw, ch] = [canvas.width / 2, canvas.height / 2];
-    const arc = Math.PI / (this.product.length / 2);
-    this.ctx.clearRect(0, 0, canvas.width, canvas.height); // 기존 그린 것 지우기
+      const canvas = this.$refs.canvas;
+      const [cw, ch] = [canvas.width / 2, canvas.height / 2];
+      const arc = Math.PI / (this.product.length / 2);
+      this.ctx.clearRect(0, 0, canvas.width, canvas.height); // 기존 그린 것 지우기
 
-    // 각 메뉴 섹션 그리기
-    for (let i = 0; i < this.product.length; i++) {
+      // 각 메뉴 섹션 그리기
+      for (let i = 0; i < this.product.length; i++) {
+        this.ctx.beginPath();
+        this.ctx.fillStyle = this.colors[i % this.colors.length];
+        this.ctx.moveTo(cw, ch);
+        this.ctx.arc(cw, ch, cw, arc * (i - 1), arc * i);
+        this.ctx.fill();
+        this.ctx.closePath();
+      }
+
+      // 메뉴 텍스트 그리기
+      this.ctx.fillStyle = "#fff";
+      this.ctx.font = "18px Pretendard";
+      this.ctx.textAlign = "center";
+      for (let i = 0; i < this.product.length; i++) {
+        const angle = arc * i + arc / 2;
+        this.ctx.save();
+        this.ctx.translate(
+          cw + Math.cos(angle) * (cw - 50),
+          ch + Math.sin(angle) * (ch - 50)
+        );
+        this.ctx.rotate(angle + Math.PI / 2);
+        this.ctx.fillText(this.product[i], 0, 0);
+        this.ctx.restore();
+      }
+
+      // 중앙에 원 뚫기
       this.ctx.beginPath();
-      this.ctx.fillStyle = this.colors[i % this.colors.length];
-      this.ctx.moveTo(cw, ch);
-      this.ctx.arc(cw, ch, cw, arc * (i - 1), arc * i);
+      this.ctx.arc(cw, ch, 30, 0, 2 * Math.PI); // 반지름 30짜리 원
+      this.ctx.fillStyle = "#F5F5F5"; // 배경과 동일한 색상으로 채움
       this.ctx.fill();
       this.ctx.closePath();
-    }
-
-    // 메뉴 텍스트 그리기
-    this.ctx.fillStyle = "#fff";
-    this.ctx.font = "18px Pretendard";
-    this.ctx.textAlign = "center";
-    for (let i = 0; i < this.product.length; i++) {
-      const angle = arc * i + arc / 2;
-      this.ctx.save();
-      this.ctx.translate(
-        cw + Math.cos(angle) * (cw - 50),
-        ch + Math.sin(angle) * (ch - 50)
-      );
-      this.ctx.rotate(angle + Math.PI / 2);
-      this.ctx.fillText(this.product[i], 0, 0);
-      this.ctx.restore();
-    }
-
-    // 중앙에 원 뚫기
-    this.ctx.beginPath();
-    this.ctx.arc(cw, ch, 30, 0, 2 * Math.PI); // 반지름 30짜리 원
-    this.ctx.fillStyle = "#F5F5F5"; // 배경과 동일한 색상으로 채움
-    this.ctx.fill();
-    this.ctx.closePath();
-  },
+    },
 
     // 메뉴 추가 함수
     addMenu() {
@@ -146,10 +146,15 @@ export default {
         canvas.style.transform = `rotate(-${rotate}deg)`;
         canvas.style.transition = "2s";
 
-        // 결과 텍스트 업데이트
+        // 결과 텍스트 업데이트 및 팡파레 실행
         setTimeout(() => {
           this.resultText = this.product[ran];
-        }, 2000); // 2초 후 결과 출력
+          this.jsConfetti.addConfetti({
+            confettiColors: ["#4B89DC","#4B66DC", "#7E91E6","#B5C0F0","#B5CEF0","#B5E3F0",],
+            confettiRadius: 6,
+            confettiNumber: 600,
+          });
+        }, 2000); // 2초 후 결과 출력 및 팡파레 실행
       }, 1);
     },
 
@@ -181,16 +186,16 @@ export default {
     },
 
     navigateTab(index) {
-        if (index === 0) {
-            this.$router.push('/mypage/userProfile');
-        } else if (index === 1) {
-            this.$router.push('/mypage/evalutionFrame');
-        } else if (index === 3) {
-            this.$router.push('/mypage/evalutionList');
-        } else {
-          this.activeTab = index;
-        }
+      if (index === 0) {
+        this.$router.push('/mypage/userProfile');
+      } else if (index === 1) {
+        this.$router.push('/mypage/evalutionFrame');
+      } else if (index === 3) {
+        this.$router.push('/mypage/evalutionList');
+      } else {
+        this.activeTab = index;
       }
+    },
   },
 };
 </script>
@@ -198,7 +203,7 @@ export default {
 <style scoped>
 .main-view {
   margin-left: -150px;
-  margin-top: -50px;
+  /* margin-top: -50px; */
   padding: -50px;
 }
 /* 탭 관련 스타일 */
@@ -220,27 +225,24 @@ export default {
   margin-top: -20px;
   min-width: 90px;
   margin-right: 13px;
-  
 }
 
 .v-tab {
   font-weight: bold;
-  /* padding: 12px; */
 }
 
 /* 돌림판 관련 스타일 */
 canvas {
   transition: 2s;
   margin-top: 20px;
-  width: 100%; /* 화면에 꽉 차게 설정 */
-  /* height: auto; */
-  
+  width: 100%;
 }
+
 .tab-item {
   font-weight: bold;
-  
   color: #4CAF50;
 }
+
 /* 검은 줄 스타일 (화살표) */
 .indicator {
   width: 10px;

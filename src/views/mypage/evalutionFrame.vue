@@ -30,14 +30,14 @@
                   <td
                     v-if="shouldShowBigCategory(index)"
                     :rowspan="getRowspanForBigCategory(index)"
-                    style="width: 150px; text-align: center; font-weight: bold; border: 1px solid #e0e0e0;"
+                    style="width: 200px; text-align: center; font-weight: bold; border: 1px solid #e0e0e0;"
                   >
                     {{ item.bigCategoryName }}
                   </td>
-                  <td style="width: 150px; text-align: center; border: 1px solid #e0e0e0;">
+                  <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
                     {{ item.midCategoryName }}
                   </td>
-                  <td style="border: 1px solid #e0e0e0;">
+                  <td style="border: 1px solid #e0e0e0;" width="700">
                     <!-- 소분류 입력 필드 -->
                     <v-text-field
                       v-model="item.subEvalutionContent"
@@ -45,7 +45,7 @@
                       outlined
                       dense
                       :disabled="item.saved && !item.editable"
-                      :style="{ width: '700px', marginRight: '0px', color: '#000000', float: 'left', border: 'none'}"
+                      :style="{ width: '600px', marginRight: '10px', color: '#000000', float: 'left', border: 'none'}"
                     />
                     <v-btn icon @click="toggleEditAndSave(item, index)" style="justify-content: center; width: 30px; height: 30px; margin-top: 15px; margin-right: 10px; background-color: transparent; box-shadow: none;">
                       <v-icon>{{ item.editable ? 'mdi-check' : 'mdi-pencil' }}</v-icon>
@@ -238,7 +238,7 @@ export default {
 /* 헤더 탭 여백 */
 .main-view {
   margin-left: -150px;
-  margin-top: -50px;
+  /* margin-top: -50px; */
   padding: -50px;
 }
 .header-tabs {
