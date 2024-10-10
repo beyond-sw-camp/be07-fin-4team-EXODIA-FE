@@ -1,4 +1,5 @@
 <template>
+  <div class="main-view">
   <v-container fluid>
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
 
@@ -12,7 +13,7 @@
       <!-- 프로필 -->
       <v-tab-item v-if="activeTab === 0">
         <v-row no-gutters class="profile-content">
-          <v-col cols="12" md="3">
+          <v-col cols="12" md="4">
             <v-card class="profile-card">
               <v-img 
                 :src="userProfile?.profileImage || defaultProfileImage" 
@@ -141,6 +142,7 @@
 
     </v-tabs-items>
   </v-container>
+</div>
 </template>
 
 <script>
@@ -269,9 +271,15 @@ async fetchTodayAttendance() {
 </script>
 
 <style scoped>
+.main-view {
+  margin-left: -150px;
+  margin-top: -50px;
+  padding: -50px;
+}
 /* 헤더 탭 여백 */
 .header-tabs {
   margin-bottom: 30px;
+  
 }
 
 .tab-item {

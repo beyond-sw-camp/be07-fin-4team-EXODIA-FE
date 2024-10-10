@@ -1,9 +1,10 @@
 <template>
+  <div class="main-view">
   <v-container fluid>
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
       <v-tab @click="navigateTab(0)">프로필</v-tab>
       <v-tab @click="navigateTab(1)">평가리스트</v-tab>
-      <v-tab @click="navigateTab(2)">오늘의점심</v-tab>
+      <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
       <v-tab @click="navigateTab(3)">인사평가</v-tab>
     </v-tabs>
 
@@ -52,6 +53,7 @@
     </v-tab-item>    
 
   </v-container>
+  </div>
 </template>
 
 
@@ -194,6 +196,11 @@ export default {
 </script>
 
 <style scoped>
+.main-view {
+  margin-left: -150px;
+  margin-top: -50px;
+  padding: -50px;
+}
 /* 탭 관련 스타일 */
 .header-tabs {
   margin-bottom: 30px;
@@ -218,7 +225,7 @@ export default {
 
 .v-tab {
   font-weight: bold;
-  padding: 12px;
+  /* padding: 12px; */
 }
 
 /* 돌림판 관련 스타일 */
@@ -246,6 +253,6 @@ canvas {
 }
 
 .v-btn {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 </style>

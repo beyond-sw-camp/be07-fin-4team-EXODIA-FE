@@ -136,8 +136,8 @@ export default {
 
 .badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: 16px;
+  right: 8px;
   background-color: red;
   color: white;
   border-radius: 50%;

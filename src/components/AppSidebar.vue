@@ -100,6 +100,7 @@
                 <v-icon @click="toggleProjectVisibility"> {{ showProject ? 'mdi-chevron-up' :
                   'mdi-chevron-down' }}</v-icon>
               </v-list-item>
+
               <div v-if="showProject">
                 <v-list>
                   <v-list-item v-for="(type, index) in typeOptions" :key="index" @click="$router.push({
@@ -157,7 +158,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/mypage')" class="myp">
+        <!-- <div v-if="currentPage.startsWith('/mypage')" class="myp">
           <div class="menu-item" >
             <span style="font-size:20px; font-weight:800">마이페이지</span>
               <ul style="margin-bottom: 20px;">
@@ -167,8 +168,7 @@
                 <li @click="$router.push('/mypage/evalutionList')" class="mypage-item">인사평가</li>
               </ul>
           </div>
-  
-        </div>
+        </div> -->
       </aside>
     </div>
   </aside>

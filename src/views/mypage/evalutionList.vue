@@ -1,4 +1,5 @@
 <template>
+  <div class="main-view">
   <v-container fluid>
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
       <v-tab @click="navigateTab(0)">프로필</v-tab>
@@ -87,6 +88,7 @@
       </v-tab-item>
     </v-tabs-items>
   </v-container>
+</div>
 </template>
 
 <script>
@@ -232,6 +234,11 @@ export default {
 </script>
 
 <style scoped>
+.main-view {
+  margin-left: -150px;
+  margin-top: -50px;
+  padding: -50px;
+}
 /* 헤더 탭 여백 */
 .header-tabs {
   margin-bottom: 30px;
