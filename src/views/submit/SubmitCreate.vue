@@ -1,5 +1,4 @@
 <template>
-
     <v-col cols="3">
         <v-row>
             <v-select v-model="submitType" variant="underlined" :items="submitTypes" item-text="typeName"
@@ -14,9 +13,6 @@
     <div v-if="showVacationTemplate">
         <VacationTemplate />
     </div>
-
-
-
 </template>
 
 <script>
@@ -61,7 +57,6 @@ export default {
     },
 };
 </script>
-
 <style scoped>
 * {
     font-size: 14px;

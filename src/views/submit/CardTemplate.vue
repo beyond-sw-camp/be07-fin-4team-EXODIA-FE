@@ -1,20 +1,32 @@
 <template>
-    <h1 style="margin:35px 0">법인 카드 신청</h1>
+    <h1 style="margin:35px 0; font-weight:800">법인 카드 신청</h1>
     <v-row justify="justify-space-around">
-        <v-col cols="9">
+
+        <v-col cols="8">
+            <v-row>
+                <v-col cols="2">
+                    <v-list-subheader>신청인</v-list-subheader>
+                </v-col>
+                <v-col cols="4">
+                    <v-text-field disabled>이예나</v-text-field>
+                </v-col>
+                <v-col cols="2">
+                    <v-list-subheader>부서</v-list-subheader>
+                </v-col>
+                <v-col cols="4">
+                    <v-text-field disabled>인사팀</v-text-field>
+                </v-col>
+            </v-row>
             <v-row>
                 <v-col cols="2">
                     <v-list-subheader>신청일</v-list-subheader>
                 </v-col>
-
                 <v-col cols="10">
-                    <v-date-input label="Date of birth" prepend-icon="" variant="outlined"
-                        persistent-placeholder></v-date-input>
-                    <!-- <v-text-field label="사용 기간" v-model="formData.사용기간"></v-text-field> -->
-
+                    <!-- <v-date-input label="Date of birth" prepend-icon="" variant="outlined"
+                        persistent-placeholder></v-date-input> -->
+                    <v-text-field label="신청일" v-model="formData.신청일"></v-text-field>
                 </v-col>
             </v-row>
-
             <v-row>
                 <v-col cols="2">
                     <v-list-subheader>사용 기간</v-list-subheader>
@@ -76,11 +88,11 @@
             </v-row>
         </v-col>
 
-        <v-col cols="3">
-            <v-card>
+        <v-col cols="4">
+            <v-card style="background-color: rgba(123, 86, 86, 0.3);">
                 <v-card-title>결재 라인</v-card-title>
-                <v-list>
-                    <v-list-item v-for="user in users" :key="user.id" draggable="true" @dragstart="onDragStart(user)"
+                <v-list style="background-color: rgba(123, 86, 86, 0.3);">
+                    <v-list-item v-for=" user in users" :key="user.id" draggable="true" @dragstart="onDragStart(user)"
                         class="draggable-item">
                         <v-list-item-content>{{ user.name }}</v-list-item-content>
                     </v-list-item>
@@ -92,8 +104,8 @@
                     <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
                         <v-list-item-content>{{ droppedUser.name }} - {{ droppedUser.positionName
                             }}</v-list-item-content>
-                        <v-btn icon color="red" @click="removeUser(index)">
-                            <v-icon>mdi-close</v-icon>
+                        <v-btn icon @click="removeUser(index)">
+                            <v-icon style="border:none">mdi-close</v-icon>
                         </v-btn>
                     </v-list-item>
                 </v-list>
@@ -189,6 +201,10 @@ export default {
 </script>
 
 <style scoped>
+*:not(h1) {
+    font-size: 14px;
+}
+
 .draggable-item {
     cursor: grab;
     margin: 5px;
@@ -197,7 +213,7 @@ export default {
 
 .drop-zone {
     min-height: 200px;
-    border: 2px dashed #3f51b5;
+    border: 2px dashed #7A5656;
     padding: 20px;
 }
 </style>
