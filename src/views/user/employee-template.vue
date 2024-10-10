@@ -13,7 +13,6 @@
       <v-card-text>
         <v-form ref="form" @submit.prevent="submitForm">
           <v-row>
-            <!-- 사번 및 이름 -->
             <v-col cols="12" md="6">
               <v-text-field v-model="userDetail.userNum" label="사번" :readonly="isEditMode || isDetailMode" required />
             </v-col>
@@ -21,7 +20,6 @@
               <v-text-field v-model="userDetail.name" label="이름" :readonly="isDetailMode" required />
             </v-col>
 
-            <!-- 부서 선택 -->
             <v-col cols="12" md="6">
               <v-select
                 v-model="userDetail.departmentId"
@@ -34,7 +32,6 @@
               />
             </v-col>
 
-            <!-- 직급 선택 -->
             <v-col cols="12" md="6">
               <v-select
                 v-model="userDetail.positionId"
@@ -47,7 +44,6 @@
               />
             </v-col>
 
-            <!-- 이메일 및 전화번호 -->
             <v-col cols="12" md="6">
               <v-text-field v-model="userDetail.email" label="이메일" :readonly="isDetailMode" />
             </v-col>
@@ -55,7 +51,6 @@
               <v-text-field v-model="userDetail.phone" label="전화번호" :readonly="isDetailMode" />
             </v-col>
 
-            <!-- 고용 유형 및 잔여 휴가 -->
             <v-col cols="12" md="6">
               <v-select
                 v-model="userDetail.hireType"
@@ -68,12 +63,10 @@
               <v-text-field v-model="userDetail.annualLeave" label="잔여 휴가" :readonly="isDetailMode" />
             </v-col>
 
-            <!-- 관리자용 세부 정보 조회 버튼 -->
             <v-col cols="12">
               <v-btn @click="openAdminCodeDialog" color="primary" v-if="!isDetailMode">세부 정보 조회</v-btn>
             </v-col>
 
-            <!-- 프로필 이미지 업로드 -->
             <v-col cols="12">
               <v-file-input
                 label="프로필 이미지 업로드"
@@ -84,7 +77,6 @@
               <v-img v-if="previewImageSrc" :src="previewImageSrc" max-width="200" />
             </v-col>
 
-            <!-- 버튼들 -->
             <v-col cols="12" class="d-flex justify-space-between">
               <v-btn @click="goBack" outlined>목록으로</v-btn>
               <v-btn v-if="!isDetailMode" type="submit" color="primary">{{ isEditMode ? '수정 완료' : '등록 완료' }}</v-btn>
@@ -94,7 +86,6 @@
       </v-card-text>
     </v-card>
 
-    <!-- 관리자 코드 입력을 위한 Dialog -->
     <v-dialog v-model="isAdminDialogOpen" persistent max-width="400px">
       <v-card>
         <v-card-title class="headline">관리자 코드 입력</v-card-title>
@@ -108,7 +99,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- 관리자 코드가 성공적으로 입력되면 표시할 추가 세부 정보 -->
     <v-card v-if="isAdmin && !isDetailMode" class="mt-5">
       <v-card-title>세부 정보</v-card-title>
       <v-card-text>
@@ -266,55 +256,46 @@ export default {
       }
     },
     async submitForm() {
-      try {
-        console.log("Submitting with departmentId:", this.userDetail.departmentId);
-        console.log("Submitting with positionId:", this.userDetail.positionId);
+  try {
+    const formData = new FormData();
+    formData.append('userNum', this.userDetail.userNum);
+    formData.append('name', this.userDetail.name);
+    formData.append('departmentId', this.userDetail.departmentId);
+    formData.append('positionId', this.userDetail.positionId);
+    formData.append('email', this.userDetail.email);
+    formData.append('phone', this.userDetail.phone);
+    formData.append('hireType', this.userDetail.hireType);
+    formData.append('annualLeave', this.userDetail.annualLeave);
 
-        const formData = new FormData();
-        formData.append('userNum', this.userDetail.userNum);
-        formData.append('name', this.userDetail.name);
-        formData.append('departmentId', this.userDetail.departmentId);
-        formData.append('positionId', this.userDetail.positionId);
-        formData.append('email', this.userDetail.email);
-        formData.append('phone', this.userDetail.phone);
-        formData.append('hireType', this.userDetail.hireType);
-        formData.append('annualLeave', this.userDetail.annualLeave);
+    // 프로필 이미지가 있는 경우
+    if (this.userDetail.profileImage) {
+      formData.append('profileImage', this.userDetail.profileImage);
+    }
 
-        // 관리자 세부 정보를 포함
-        if (this.isAdmin) {
-          formData.append('password', this.userDetail.password);
-          formData.append('address', this.userDetail.address);
-          formData.append('socialNum', this.userDetail.socialNum);
-        }
-
-        if (this.userDetail.profileImage) {
-          formData.append('profileImage', this.userDetail.profileImage);
-        }
-
-        const token = localStorage.getItem("token");
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          }
-        };
-
-        if (this.isEditMode) {
-          await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
-          alert("수정 완료");
-        } else {
-          await axios.post("/user/register", formData, config);
-          alert("등록 완료");
-        }
-
-        this.$router.push("/employee-management");
-      } catch (error) {
-        console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
-        if (error.response) {
-          alert(error.response.data.status_message);
-        }
+    const token = localStorage.getItem("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
       }
-    },
+    };
+
+    if (this.isEditMode) {
+      await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
+      alert("수정 완료");
+    } else {
+      await axios.post("/user/register", formData, config);
+      alert("등록 완료");
+    }
+
+    this.$router.push("/employee-management");
+  } catch (error) {
+    console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
+    if (error.response) {
+      alert(error.response.data.status_message);
+    }
+  }
+},
     goBack() {
       this.$router.push("/employee-management");
     },
