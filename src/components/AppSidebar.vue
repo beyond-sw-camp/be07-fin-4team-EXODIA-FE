@@ -66,6 +66,111 @@
         <v-icon class="icon">mdi-account-cog</v-icon>
         <span>직원 관리</span>
       </div>
+      
+      <aside v-if="isSubSidebarVisible" class="sub-sidebar">
+
+        <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
+        <div v-if="currentPage.startsWith('/video')" class="subside-menu">
+          <div class="menu-item">
+            <span @click="$router.push('/video/create')">방 생성</span>
+          </div>
+          <div class="menu-item">
+            <span @click="$router.push('/video/rooms')">방 목록</span>
+          </div>
+        </div>
+
+        <div v-if="currentPage.startsWith('/document')" class="subside-menu">
+          <div class="menu-item">
+            <span style="font-size:20px; font-weight:800">팀 문서함</span>
+            <v-btn class="createBtn" @click="$router.push('/document/create')">
+              문서 등록
+            </v-btn>
+            <v-list>
+              <v-list-item @click="$router.push('/document')">
+                <v-list-item-title>전체 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$router.push('/document/list/updated')">
+                <v-list-item-title>최근 업데이트 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$router.push('/document/list/viewed')">
+                <v-list-item-title>최근 조회 문서</v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <span>프로젝트</span>
+                <v-icon @click="toggleProjectVisibility"> {{ showProject ? 'mdi-chevron-up' :
+                  'mdi-chevron-down' }}</v-icon>
+              </v-list-item>
+
+              <div v-if="showProject">
+                <v-list>
+                  <v-list-item v-for="(type, index) in typeOptions" :key="index" @click="$router.push({
+                    name: 'DocumentTypeList', state: {
+                      id: index + 1
+                    }
+                  })">
+                    <v-list-item-title>{{ type }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-list>
+          </div>
+        </div>
+
+        <div v-if="currentPage.startsWith('/board')" class="subside-menu">
+          <div class="menu-item">
+            <span>게시판</span>
+            <ul>
+              <li @click="$router.push('/board/write')">게시물 작성</li>
+              <li @click="$router.push('/board/list')">게시물 목록</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>Q&A</span>
+            <ul>
+              <li @click="$router.push('/qna/write')">질문 작성</li>
+              <li @click="$router.push('/qna/list')">질문 목록</li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          v-if="currentPage.includes('/employee-management') || currentPage.includes('/salary-management') || currentPage.includes('/department-management')"
+          class="menu">
+          <div class="menu-item">
+            <span>직원 관리</span>
+            <ul>
+              <li @click="$router.push('/employee-management')">직원 목록</li>
+              <li @click="$router.push('/employee-management/create')">직원 등록</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>급여 관리</span>
+            <ul>
+              <li @click="$router.push('/salary-management')">직원 급여 목록</li>
+              <li @click="$router.push('/salary-management/manage')">급여일 관리</li>
+            </ul>
+          </div>
+          <div class="menu-item">
+            <span>부서 관리</span>
+            <ul>
+              <li @click="$router.push('/department-management')">부서 조회</li>
+            </ul>
+          </div>
+        </div>
+
+        <div v-if="currentPage.startsWith('/mypage')" class="myp">
+          <div class="menu-item" >
+            <span style="font-size:20px; font-weight:800">마이페이지</span>
+              <ul style="margin-bottom: 20px;">
+                <li @click="$router.push('/mypage/userProfile')" class="mypage-item">프로필</li>
+                <li @click="$router.push('/mypage/evalutionFrame')" class="mypage-item">평가리스트</li>
+                <li @click="$router.push('/mypage/spinWheel')" class="mypage-item">오늘의점심</li>
+                <li @click="$router.push('/mypage/evalutionList')" class="mypage-item">인사평가</li>
+              </ul>
+          </div>
+  
+        </div>
+      </aside>
     </div>
   </aside>
 
@@ -225,4 +330,33 @@ export default {
   align-items: flex-start;
   height: 100%;
 }
+
+.v-list {
+  background-color: #357a38;
+  color: #ffffff;
+}
+
+.createBtn {
+  margin: 10px 0;
+  width: 150px;
+  border: none;
+
+
+}
+.myp {
+  width: 150px;
+}
+.mypage-item {
+  margin: 20px;
+  list-style-type: none;
+  cursor: none;
+  transition: margin 0.3s ease;
+}
+
+.mypage-item:hover {
+  margin: 30px;
+  margin-left: 40px;
+  font-weight:700;
+}
 </style>
+

@@ -3,8 +3,9 @@
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
 
       <v-tab @click="navigateTab(0)">프로필</v-tab>
-      <v-tab @click="navigateTab(1)">인사 평가</v-tab>
+      <v-tab @click="navigateTab(1)">평가리스트</v-tab>
       <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
+      <v-tab @click="navigateTab(3)">인사평가</v-tab>
     </v-tabs>
 
     <v-tabs-items v-model="activeTab">
@@ -23,9 +24,9 @@
           </v-col>
 
           <v-col cols="12" md="7" class="profile-info">
-            <v-card class="info-card" >
+            <v-card class="info-card">
               <v-card-text>
-                <v-simple-table>
+                <table class="custom-table">
                   <thead>
                     <tr>
                       <th style="width: 30%;">항목</th>
@@ -54,63 +55,69 @@
                       <td>{{ userProfile?.joinDate || 'N/A' }}</td>
                     </tr>
                   </tbody>
-                </v-simple-table>
+                </table>
               </v-card-text>
             </v-card>
           </v-col>
+
         </v-row>
 
 
         <v-row class="leave-info-table" justify="" style="margin-top: 10px;">
           <v-col cols="8" md="6">
-            <v-card >
-              <v-simple-table style="text-align: center;">
-                <thead>
-                  <tr style="justify-content: center; width: 100%;">
-                    <th>잔여 휴가</th>
-                    <th>사용 휴가</th>
-                    <th>병가</th>
-                    <th>결근</th>
-                    <th>유연 근무제</th>
-                    <th>근무 일수</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
-                    <td>{{ usedLeave || 'N/A' }}일</td>
-                    <td>{{ sickLeave || 'N/A' }}일</td>
-                    <td>{{ absentDays || 'N/A' }}일</td>
-                    <td>{{ flexWork || 'N/A' }}</td>
-                    <td>{{ workDays || 'N/A' }}일</td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
+            <v-card>
+              <v-card-text>
+                <table class="custom-leave-table">
+                  <thead>
+                    <tr>
+                      <th>잔여 휴가</th>
+                      <th>사용 휴가</th>
+                      <th>병가</th>
+                      <th>결근</th>
+                      <th>유연 근무제</th>
+                      <th>근무 일수</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
+                      <td>{{ usedLeave || 'N/A' }}일</td>
+                      <td>{{ sickLeave || 'N/A' }}일</td>
+                      <td>{{ absentDays || 'N/A' }}일</td>
+                      <td>{{ flexWork || 'N/A' }}</td>
+                      <td>{{ workDays || 'N/A' }}일</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="8" md="4">
-            <v-card >
-              <v-simple-table style="text-align: center;">
-                <thead>
-                  <tr style="justify-content: center;">
-                    <th>출근시간</th>
-                    <th>퇴근시간</th>
-                    <th>주차누적근무</th>
-                    <th>주차초과근무</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
-                    <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
-                    <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
-                    <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
+          <v-col cols="8" md="5">
+            <v-card>
+              <v-card-text>
+                <table class="custom-attendance-table">
+                  <thead>
+                    <tr>
+                      <th>출근시간</th>
+                      <th>퇴근시간</th>
+                      <th>주차누적근무</th>
+                      <th>주차초과근무</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
+                      <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
+                      <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
+                      <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </v-card-text>
             </v-card>
           </v-col>
+
 
 
         </v-row>
@@ -121,15 +128,17 @@
         </v-row>
       </v-tab-item>
 
-      <!-- 인사 평가 -->
+      
       <v-tab-item v-if="activeTab === 1">
-        <h3>인사 평가</h3>
+        <!-- 평가리스트 -->
+      </v-tab-item>      
+      <v-tab-item v-if="activeTab === 2">
+        <!-- 오늘의 점심 -->
+      </v-tab-item>
+      <v-tab-item v-if="activeTab === 3">
+        <!-- 인사평가 -->
       </v-tab-item>
 
-      <!-- 오늘의 점심 -->
-      <v-tab-item v-if="activeTab === 2">
-        <h3>오늘의 점심 추천</h3>
-      </v-tab-item>
     </v-tabs-items>
   </v-container>
 </template>
@@ -137,7 +146,7 @@
 <script>
 import axios from 'axios';
 import moment from 'moment'; // 날짜 계산에 사용할 라이브러리
-import AttendanceRecord from './attendance.vue'; // 타임라인 컴포넌트 import
+import AttendanceRecord from './attendance.vue';
 
 export default {
   name: "UserProfile",
@@ -161,14 +170,16 @@ export default {
       },
       tabs: [
         { label: "프로필" },
-        { label: "인사 평가" },
-        { label: "오늘의 점심" }
+        { label: "평가리스트" },
+        { label: "오늘의 점심" },
+        { label: "인사평가"}
       ],
       defaultProfileImage: 'https://via.placeholder.com/150'
     };
   },
   mounted() {
     this.fetchUserProfile();
+    this.fetchTodayAttendance(); //
   },
   
   methods: {
@@ -219,11 +230,36 @@ export default {
         console.error('유저 정보 가져오기 실패:', error);
       }
     },
+// 출 퇴근 기록 예시(ver1)
+async fetchTodayAttendance() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/today`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = response.data;
+      // 출퇴근 시간 데이터 바인딩
+      this.attendanceData.clockInTime = data.clockInTime || 'N/A';
+      this.attendanceData.clockOutTime = data.clockOutTime || 'N/A';
+      this.attendanceData.weeklyWorkHours = data.weeklyWorkHours || 'N/A';
+      this.attendanceData.weeklyOvertimeHours = data.weeklyOvertimeHours || 'N/A';
+
+    } catch (error) {
+      console.error('오늘의 출퇴근 기록을 가져오는 중 오류 발생:', error);
+    }
+  },
+
+
     navigateTab(index) {
       if (index === 1) {
-        this.$router.push('/mypage/evalution');
+        this.$router.push('/mypage/evalutionFrame');
       } else if (index === 2) {
         this.$router.push('/mypage/spinWheel');
+      } else if (index === 3) {
+        this.$router.push('/mypage/evalutionList');
       } else {
         this.activeTab = index;
       }
@@ -357,5 +393,69 @@ td:first-child {
 
 .v-progress-linear {
   height: 30px;
+}
+
+
+.custom-table {
+  width: 100%; /* v-col 크기와 동일하게 맞추기 */
+  table-layout: fixed; /* 테이블 셀의 고정된 너비 설정 */
+  border-collapse: collapse; /* 경계선 중복 제거 */
+}
+
+.custom-table th,
+.custom-table td {
+  
+  padding: 10px; /* 셀 내 패딩 추가 */
+}
+
+.custom-table th {
+  
+  background-color: #f0f0f0;
+  font-weight: bold;
+  text-align: left;
+  border: 1px solid #e0e0e0;
+}
+
+.custom-table td:first-child {
+  
+  font-weight: bold;
+  color: #666;
+}
+
+.custom-leave-table {
+  width: 100%; /* v-col 크기와 동일하게 설정 */
+  table-layout: fixed; /* 셀 너비 고정 */
+  border-collapse: collapse; /* 테두리 중복 제거 */
+  text-align: center; /* 텍스트 중앙 정렬 */
+  background-color: #ffffff;
+}
+
+.custom-leave-table th,
+.custom-leave-table td {
+  padding: 10px; /* 셀 내 패딩 */
+  
+}
+
+.custom-leave-table th {
+  background-color: #f0f0f0; /* 헤더 배경색 */
+  font-weight: bold;
+  text-align: center;
+}
+.custom-attendance-table {
+  width: 100%; /* v-col 크기와 동일하게 설정 */
+  table-layout: fixed; /* 셀 너비 고정 */
+  border-collapse: collapse; /* 테두리 중복 제거 */
+  text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+.custom-attendance-table th,
+.custom-attendance-table td {
+  padding: 10px; /* 셀 내 패딩 */
+}
+
+.custom-attendance-table th {
+  background-color: #f0f0f0; /* 헤더 배경색 */
+  font-weight: bold;
+  text-align: center;
 }
 </style>
