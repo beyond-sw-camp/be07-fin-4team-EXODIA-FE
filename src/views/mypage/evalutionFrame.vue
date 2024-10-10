@@ -1,4 +1,5 @@
 <template>
+  <div class="main-view">
   <v-container fluid>
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
       <v-tab @click="navigateTab(0)">프로필</v-tab>
@@ -15,6 +16,9 @@
       <v-tab-item v-if="activeTab === 1">
         <v-row>
           <v-col>
+            <h3>인사평가 입력</h3>
+            <br>
+            <span>* 사용자는 인사평가를 위해서 자신의 특색을 갖춘 리스트로 입력하세요</span>
             <v-simple-table dense>
               <thead>
                 <tr>
@@ -33,7 +37,7 @@
                   <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
                     {{ item.midCategoryName }}
                   </td>
-                  <td style="border: 1px solid #e0e0e0;">
+                  <td style="border: 1px solid #e0e0e0;" width="700">
                     <!-- 소분류 입력 필드 -->
                     <v-text-field
                       v-model="item.subEvalutionContent"
@@ -41,24 +45,22 @@
                       outlined
                       dense
                       :disabled="item.saved && !item.editable"
-                      :style="{ width: '800px', marginRight: '20px', color: '#000000', float: 'left', border: 'none'}"
+                      :style="{ width: '600px', marginRight: '10px', color: '#000000', float: 'left', border: 'none'}"
                     />
-
-                    
                     <v-btn icon @click="toggleEditAndSave(item, index)" style="justify-content: center; width: 30px; height: 30px; margin-top: 15px; margin-right: 10px; background-color: transparent; box-shadow: none;">
                       <v-icon>{{ item.editable ? 'mdi-check' : 'mdi-pencil' }}</v-icon>
                     </v-btn>
                   </td>
                   <td style="border: 1px solid #e0e0e0; text-align: center;">
                     <!-- 평가 선택 -->
-                    <v-select
+                    <v-row
                       v-model="item.grade"
-                      :items="['A', 'B', 'C', 'D', 'E']"
+                      :items="[]"
                       label=""
                       dense
                       style="width: 100px; background-color: #FFFFFF; border: none"
                       :disabled="item.saved && !item.editable"
-                    ></v-select>
+                    ></v-row>
                   </td>
                   <!-- 수정 및 저장 버튼 추가 -->
                   <td style="text-align: center; border: 1px solid #e0e0e0;">
@@ -87,6 +89,7 @@
       </v-tab-item>
     </v-tabs-items>
   </v-container>
+</div>
 </template>
 
 <script>
@@ -195,7 +198,7 @@ export default {
       try {
         await axios.post(`${process.env.VUE_APP_API_BASE_URL}/sub-evalution/create-multiple`, payload, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}` // Bearer Token을 헤더에 추가
+            Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
 
@@ -231,7 +234,13 @@ export default {
 </script>
 
 <style scoped>
+
 /* 헤더 탭 여백 */
+.main-view {
+  margin-left: -150px;
+  /* margin-top: -50px; */
+  padding: -50px;
+}
 .header-tabs {
     margin-bottom: 30px;
   }
