@@ -1,7 +1,9 @@
 import mypageList from '@/views/mypage/userProfile.vue'
 import AttendanceRecord from '@/views/mypage/attendance.vue';
+import evalutionFrame from '@/views/mypage/evalutionFrame.vue';
 import SpinWheel from '@/views/mypage/SpinWheel.vue';
-import evalutionList from '@/views/mypage/evalution.vue';
+import evalutionList from '@/views/mypage/evalutionList.vue';
+import UserAttendance from '@/views/mypage/userAttendance.vue';
 
 export const mypageRouter = [
     {
@@ -15,14 +17,24 @@ export const mypageRouter = [
         component: AttendanceRecord,
     },
     {
+        path: '/mypage/evalutionFrame',
+        name: 'evalutionFrame',
+        component: evalutionFrame,
+    },
+    {
         path: '/mypage/spinWheel',
         name: 'SpinWheel',
         component: SpinWheel,
     },
     {
-        path: '/mypage/evalution',
+        path: '/mypage/evalutionList',
         name: 'evalutionList',
         component: evalutionList,
+    },
+    {
+        path: '/mypage/userAttendance',
+        name: 'userAttendance',
+        component: UserAttendance,
     }
 
 

@@ -78,7 +78,7 @@
             <v-select
               v-model="selectedMeetingRoom"
               :items="meetingRooms"
-              item-text="name"
+              item-title="name"
               item-value="id"
               label="회의실 선택"
               required

@@ -9,7 +9,9 @@ export default {
   methods: {
     checkHrDepartment() {
       const currentUser = auth.getCurrentUser();
-      if (currentUser && currentUser.departmentId === '4') { 
+      // if (currentUser && currentUser.departmentId === '4') { 
+      console.log('Current User:', currentUser); 
+        if (currentUser && currentUser.departmentId == 4) { 
         this.isHrDepartment = true;
       } else {
         this.isHrDepartment = false;
