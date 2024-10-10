@@ -2,31 +2,32 @@
   <v-container class="board-container">
     <h1 class="board-title">{{ boardTitle }}</h1>
 
-    <!-- 게시판 상단 검색 폼 -->
-    <v-form ref="form" class="d-flex mb-4">
-      <!-- 검색 범위 선택 -->
-      <v-col cols="12" md="2">
-        <v-select
-          v-model="searchType"
-          :items="searchOptions"
-          item-title="text"
-          item-value="value"
-          label="검색 범위"
-          required
-        ></v-select>
-      </v-col>
+<!-- 게시판 상단 검색 폼 -->
+<v-form ref="form" class="search-form d-flex mb-4">
+  <!-- 검색 범위 선택 -->
+  <v-col cols="12" md="2">
+    <v-select
+      v-model="searchType"
+      :items="searchOptions"
+      item-title="text"
+      item-value="value"
+      label="검색 범위"
+      required
+    ></v-select>
+  </v-col>
 
-      <!-- 검색어 입력 -->
-      <v-col cols="12" md="8">
-        <v-text-field
-          v-model="searchQuery"
-          label="검색어를 입력하세요."
-          append-icon="mdi-magnify"
-          @click:append="performSearch"
-          required
-        ></v-text-field>
-      </v-col>
-    </v-form>
+  <!-- 검색어 입력 -->
+  <v-col cols="12" md="8">
+    <v-text-field
+      v-model="searchQuery"
+      label="검색어를 입력하세요."
+      append-icon="mdi-magnify"
+      @click:append="performSearch"
+      required
+    ></v-text-field>
+  </v-col>
+</v-form>
+
 
     <!-- 게시글 목록 테이블 -->
     <table class="tbl_list">
@@ -167,9 +168,9 @@ onPageChange(newPage) {
 
     setBoardTitle() {
       // URL에서 가져온 category 값을 기준으로 제목 설정
-      if (this.category === 'FAMILY_EVENT') {
+      if (this.category === 'familyevent') {
         this.boardTitle = '경조사';
-      } else if (this.category === 'NOTICE') {
+      } else if (this.category === 'notice') {
         this.boardTitle = '공지사항';
       } else {
         this.boardTitle = '게시판';
@@ -201,137 +202,165 @@ onPageChange(newPage) {
 </script>
 
 <style scoped>
+/* 전체 배경 및 컨테이너 스타일 */
+.board-container {
+  background-color: #f9fafb; /* 부드러운 회색 배경 */
+  padding: 20px;
+  border-radius: 12px;
+}
+
+/* 제목 섹션 스타일 */
+.board-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #000000; 
+  border-bottom: 2px solid #000000; 
+  padding-bottom: 10px;
+}
+
+/* 검색 바 스타일 */
+.search-form {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* 왼쪽으로 정렬 */
+  gap: 10px; /* 검색 범위와 검색어 입력 간의 간격 */
+  margin-bottom: 20px; /* 폼 하단의 여백 */
+}
+
+.v-select,
+.v-text-field {
+  flex: none; /* 크기를 고정 */
+  width: auto; /* 내용에 따라 너비 조정 */
+  margin-right: 20px; /* 입력 필드 간의 간격 */
+}
+
+/* v-select와 v-text-field 내부 스타일 */
+.v-select .v-input__control,
+.v-text-field .v-input__control {
+  border: none;
+  background: transparent;
+}
+
+/* 테이블 전체 스타일 */
+.tbl_list {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 500px;
+}
+
+/* 테이블 헤더와 셀 스타일 */
+.tbl_list th,
+.tbl_list td {
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid #000000; /* 연한 회색 하단 선 */
+}
+
+/* 테이블 헤더 스타일 */
+.tbl_list th {
+  background-color: #949494; /* 헤더 배경색 */
+  font-weight: bold;
+  color: #000000; /* 헤더 텍스트 색상 */
+}
+
+/* 테이블 행 스타일 */
+.tbl_list tr:hover {
+  background-color: #f1f8e9; /* 행 호버 시 연한 녹색 배경 */
+}
+
+/* "필독" 표시 스타일 */
+.tbl_list td .important {
+  background-color: #ff5252; /* 빨간색 배경 */
+  color: white;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* 작성하기 버튼 스타일 */
 .btn_write {
   padding: 10px 20px;
-  background-color: #4caf50;
+  background-color: #81c784; /* 연한 녹색 배경 */
   color: white;
   border: none;
   cursor: pointer;
   border-radius: 8px;
   font-size: 16px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 버튼 그림자 */
+  transition: background-color 0.3s ease;
 }
 
+/* 작성하기 버튼 호버 스타일 */
 .btn_write:hover {
-  background-color: #388e3c;
+  background-color: #66bb6a; /* 호버 시 진한 녹색 배경 */
 }
 
-.inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+/* 페이지네이션 스타일 */
+.v-pagination {
+  margin-top: 20px;
 }
 
-.board-title {
-  font-size: 24px;
+/* 페이지네이션 항목 스타일 */
+.v-pagination .v-pagination__item {
+  border: none;
+  color: #66bb6a; /* 페이지네이션 항목 색상 */
+}
+
+/* 현재 페이지의 페이지네이션 스타일 */
+.v-pagination .v-pagination__item--active {
   font-weight: bold;
-  margin-bottom: 20px;
+  background-color: #c5e1a5; /* 현재 페이지 표시 배경 */
+  color: white;
 }
 
-.tbl_list {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-
-.tbl_list th,
-.tbl_list td {
-  border: none; /* 모든 테두리 제거 */
-  padding: 10px;
-  text-align: left;
-}
-
-/* 테두리 스타일을 유지하려면 아래 코드 사용 */
-.tbl_list th {
-  background-color: #f4f4f4;
-}
-
-.tbl_list tr:not(:last-child) td {
-  border-bottom: 1px solid #ccc; /* 하단 선만 유지 */
-}
-
-.text_left {
-  text-align: left;
-}
-
-.subject {
-  cursor: pointer;
-  color: #333;
-  text-decoration: none;
-}
-
-.subject:hover {
-  text-decoration: underline;
-}
-
+/* 버튼 및 기타 스타일 */
 .btn_adm_control {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 14px;
   padding: 5px 10px;
-  border-radius: 4px;
-  transition: background-color 0.3s, color 0.3s;
   border-radius: 8px;
+  transition: background-color 0.3s, color 0.3s;
 }
 
+/* 버튼 호버 스타일 */
 .btn_adm_control:hover {
-  background-color: #ccc;
+  background-color: #f1f1f1;
 }
 
-.btn_board_modify {
-  background-color: #6cb1ff;
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 4px;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn_board_modify:hover {
-  background-color: #007bff;
-}
-
-.btn_board_del {
-  background-color: #f57380;
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 4px;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn_board_del:hover {
-  background-color: #dc3545;
-}
-
-.conLayer {
-  display: inline-block;
-  background-color: white;
-  border: 1px solid #ccc;
-  position: absolute;
-  z-index: 1;
-  right: 0;
-  padding: 5px;
-}
-
-.btnWrap {
-  text-align: right;
-  margin-top: 20px;
-}
-
-.btn_write {
-  padding: 10px 20px;
-  background-color: #f27885;
-  color: #fff;
-  border: none;
+/* 테이블 내 링크 스타일 */
+.subject {
   cursor: pointer;
-  border-radius: 4px;
+  color: #33691e; /* 녹색 톤의 링크 */
+  text-decoration: none;
 }
 
-.btn_write:hover {
-  background-color: #fa5263;
+/* 링크 호버 스타일 */
+.subject:hover {
+  text-decoration: underline;
+  color: #66bb6a;
 }
 
+/* 테이블 내 글씨 색상 및 강조 */
+.tbl_list th,
+.tbl_list td {
+  color: #004d40; /* 진한 초록색 텍스트 */
+}
+
+/* 번호 컬럼 스타일 */
+.tbl_list tr td:first-child {
+  text-align: center; /* 번호 컬럼 가운데 정렬 */
+}
+
+/* 테이블 셀 텍스트 정렬 */
+.tbl_list tr td {
+  vertical-align: middle; /* 텍스트 중앙 정렬 */
+}
+
+/* 페이지네이션 스타일 */
 .pagingWrap ul {
   list-style: none;
   padding: 0;
@@ -344,6 +373,7 @@ onPageChange(newPage) {
   display: inline-block;
 }
 
+/* 페이지네이션 링크 스타일 */
 .pagingWrap li a {
   margin: 0 5px;
   text-decoration: none;
@@ -351,24 +381,10 @@ onPageChange(newPage) {
   cursor: pointer;
 }
 
+/* 현재 페이지의 링크 스타일 */
 .pagingWrap li a.active {
   font-weight: bold;
-  color: #0056b3;
-}
-
-.pagingWrap .btn_paging_start:before {
-  content: "<<";
-}
-
-.pagingWrap .btn_paging_prev:before {
-  content: "<";
-}
-
-.pagingWrap .btn_paging_next:before {
-  content: ">";
-}
-
-.pagingWrap .btn_paging_end:before {
-  content: ">>";
+  color: #33691e; /* 진한 녹색 */
 }
 </style>
+

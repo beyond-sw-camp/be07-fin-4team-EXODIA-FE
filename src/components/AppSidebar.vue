@@ -115,20 +115,20 @@
           </div>
         </div>
 
-        <div v-if="currentPage.startsWith('/board')" class="subside-menu">
-          <div class="menu-item">
-            <span>게시판</span>
-            <ul>
-              <li @click="$router.push('/board/write')">게시물 작성</li>
-              <li @click="$router.push('/board/list')">게시물 목록</li>
-            </ul>
+        <div v-if="currentPage.startsWith('/board/') || currentPage.startsWith('/qna')" class="subside-menu">
+          <!-- 공지사항 섹션 -->
+          <div class="menu-item section-item" @click="$router.push('/board/notice/list')">
+            <span style="font-size: 16px; font-weight: 700;">공지사항</span>
           </div>
-          <div class="menu-item">
-            <span>Q&A</span>
-            <ul>
-              <li @click="$router.push('/qna/write')">질문 작성</li>
-              <li @click="$router.push('/qna/list')">질문 목록</li>
-            </ul>
+        
+          <!-- 경조사 섹션 -->
+          <div class="menu-item section-item" @click="$router.push('/board/familyevent/list')">
+            <span style="font-size: 16px; font-weight: 700;">경조사</span>
+          </div>
+        
+          <!-- Q&A 섹션 -->
+          <div class="menu-item section-item" @click="$router.push('/qna/list')">
+            <span style="font-size: 16px; font-weight: 700;">Q&A</span>
           </div>
         </div>
 
