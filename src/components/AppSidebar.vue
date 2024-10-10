@@ -1,59 +1,72 @@
 <template>
   <aside class="sidebar">
     <div class="menu">
-      <div class="menu-item" @click="toggleSubSidebar">
-        <v-icon class="icon">mdi-menu</v-icon>
-        <span class="tooltip">메뉴 더 보기</span>
+      <div class="logo" @click="$router.push('/')">
+        <img :src="require('@/assets/exodia.png')" alt="Logo" />
       </div>
 
-      <div class="menu-item" @click="$router.push('/')">
-        <v-icon class="icon">mdi-home</v-icon>
-        <span class="tooltip">홈</span>
+      <!-- 메뉴를 헤더에 넣을지 사이드바에 넣을지 아니면 뺴버릴지 -->
+      <div class="menu-item" @click="toggleSubSidebar">
+        <v-icon class="icon">mdi-menu</v-icon>
+        <span>메뉴</span>
       </div>
-      <div class="menu-item" @click="$router.push('/mypage/userProfile')">
-        <v-icon class="icon">mdi-account</v-icon>
-        <span class="tooltip">마이페이지</span>
+
+      <!-- 게시판 -->
+      <div class="menu-item" @click="$router.push('/board/notice/List')"
+        :class="{ 'active': $route.path.startsWith('/board') }">
+        <v-icon class="icon">mdi-format-list-bulleted</v-icon>
+        <span>게시판</span>
       </div>
-      <div class="menu-item" @click="$router.push('/calendar/calendarList')">
-        <v-icon class="icon">mdi-calendar</v-icon>
-        <span class="tooltip">캘린더</span>
+
+      <!-- 문서 관리 -->
+      <div class="menu-item" @click="$router.push('/document')"
+        :class="{ 'active': $route.path.startsWith('/document') }">
+        <v-icon class="icon">mdi-folder-file-outline</v-icon>
+        <span>문서 관리</span>
       </div>
-      <div class="menu-item" @click="$router.push('/board/notice/List')">
-        <v-icon class="icon">mdi-book-open-variant</v-icon>
-        <span class="tooltip">공지사항</span>
-      </div>
-      <div class="menu-item" @click="$router.push('/board/familyevent/List')">
-        <v-icon class="icon">mdi-book-open-variant</v-icon>
-        <span class="tooltip">경조사</span>
-      </div>
-      <div class="menu-item" @click="$router.push('/document')">
-        <v-icon class="icon">mdi-email</v-icon>
-        <span class="tooltip">문서 관리</span>
-      </div>
-      <div class="menu-item" @click="$router.push('/reservation/reservationList')">
+
+      <!-- 예약 -->
+      <div class="menu-item" @click="$router.push('/reservation/reservationList')"
+        :class="{ 'active': $route.path.startsWith('/reservation') }">
         <v-icon class="icon">mdi-timer-sand</v-icon>
-        <span class="tooltip">예약</span>
+        <span>예약</span>
       </div>
-      <div class="menu-item" @click="$router.push('/approval')">
+
+      <!-- 결재 -->
+      <div class="menu-item" @click="$router.push('/submit')" :class="{ 'active': $route.path.startsWith('/submit') }">
         <v-icon class="icon">mdi-pencil-box</v-icon>
-        <span class="tooltip">결재</span>
+        <span>전자 결재</span>
       </div>
-      <div class="menu-item" @click="$router.push('/messenger')">
-        <v-icon class="icon">mdi-message-text</v-icon>
-        <span class="tooltip">메신저</span>
+
+
+      <!-- 메신저 -->
+      <div class="menu-item" @click="$router.push('/messenger')"
+        :class="{ 'active': $route.path.startsWith('/messenger') }">
+        <v-icon class="icon">mdi-forum-outline</v-icon>
+        <span>메신저</span>
       </div>
-      <div class="menu-item" @click="$router.push('/video/rooms')">
+
+      <!-- 화상회의 -->
+      <div class="menu-item" @click="$router.push('/video/rooms')"
+        :class="{ 'active': $route.path.startsWith('/video') }">
         <v-icon class="icon">mdi-video</v-icon>
-        <span class="tooltip">화상회의</span>
+        <span>화상회의</span>
       </div>
-      <div class="menu-item" @click="$router.push('/organization')">
+
+      <!-- 조직도 -->
+      <div class="menu-item" @click="$router.push('/organization')"
+        :class="{ 'active': $route.path.startsWith('/organization') }">
         <v-icon class="icon">mdi-account-group</v-icon>
-        <span class="tooltip">조직도</span>
+        <span>조직도</span>
       </div>
-      <div v-if="isHrDepartment" class="menu-item" @click="$router.push('/employee-management')">
+
+      <!-- 직원관리 -->
+      <div v-if="isHrDepartment" class="menu-item" @click="$router.push('/employee-management')"
+        :class="{ 'active': $route.path.startsWith('/employee-management') }">
         <v-icon class="icon">mdi-account-cog</v-icon>
-        <span class="tooltip">직원 관리</span>
+        <span>직원 관리</span>
       </div>
+      
       <aside v-if="isSubSidebarVisible" class="sub-sidebar">
 
         <!-- <aside v-if="isSubSidebarVisible || currentPage.includes('/employee-management') || currentPage.includes('/salary-management')" class="sub-sidebar"> -->
@@ -143,9 +156,24 @@
             </ul>
           </div>
         </div>
+
+        <div v-if="currentPage.startsWith('/mypage')" class="myp">
+          <div class="menu-item" >
+            <span style="font-size:20px; font-weight:800">마이페이지</span>
+              <ul style="margin-bottom: 20px;">
+                <li @click="$router.push('/mypage/userProfile')" class="mypage-item">프로필</li>
+                <li @click="$router.push('/mypage/evalutionFrame')" class="mypage-item">평가리스트</li>
+                <li @click="$router.push('/mypage/spinWheel')" class="mypage-item">오늘의점심</li>
+                <li @click="$router.push('/mypage/evalutionList')" class="mypage-item">인사평가</li>
+              </ul>
+          </div>
+  
+        </div>
       </aside>
     </div>
   </aside>
+
+
 </template>
 
 
@@ -158,7 +186,7 @@ export default {
     return {
       token: localStorage.getItem('token') || null,
 
-      isSubSidebarVisible: false,
+      isSubSidebarVisible: true,
       currentPage: '',
       isHrDepartment: false,
       selectedType: '',
@@ -208,7 +236,7 @@ export default {
 
 <style scoped>
 :root {
-  --sidebar-width: 4%;
+  --sidebar-width: 13%;
   --sub-sidebar-width: 15%;
   --header-height: 60px;
 }
@@ -216,20 +244,19 @@ export default {
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  background-color: #4CAF50;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 2000;
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: center;
+  font-size: 14px;
 }
 
 .sub-sidebar {
   width: var(--sub-sidebar-width);
   height: 100vh;
-  background-color: #357a38;
   position: fixed;
   top: 8vh;
   left: var(--sidebar-width);
@@ -238,7 +265,6 @@ export default {
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 20px;
 }
 
 .menu {
@@ -251,45 +277,48 @@ export default {
 
 .menu-item {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  color: #ffffff;
+  align-items: center;
+  justify-content: start;
+  color: #444444;
   cursor: pointer;
   transition: background-color 0.3s;
   width: 100%;
+  padding: 10px;
 }
 
 .menu-item .icon {
-  font-size: 2vw;
+  font-size: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #ffffff;
+  color: #444444;
+  padding-right: 13px;
 }
 
-.tooltip {
-  position: absolute;
-  left: calc(100% + 10px);
-  transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 4px;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  z-index: 3000;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
 
-.menu-item:hover .tooltip {
-  opacity: 1;
+.menu-item:hover {
+  opacity: 0.5;
   visibility: visible;
 }
 
-.menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.v-list {
+  color: #444444;
+}
+
+
+.logo img {
+  height: 6vh;
+}
+
+.menu-item.active {
+  color: #7A5656;
+  font-weight: 700;
+  border-bottom: 1px solid #7A5656;
+
+}
+
+.menu-item.active>.icon {
+  color: #7A5656;
 }
 
 .subside-menu {
@@ -313,4 +342,20 @@ export default {
 
 
 }
+.myp {
+  width: 150px;
+}
+.mypage-item {
+  margin: 20px;
+  list-style-type: none;
+  cursor: none;
+  transition: margin 0.3s ease;
+}
+
+.mypage-item:hover {
+  margin: 30px;
+  margin-left: 40px;
+  font-weight:700;
+}
 </style>
+
