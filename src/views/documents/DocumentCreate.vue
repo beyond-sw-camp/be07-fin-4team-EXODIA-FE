@@ -93,8 +93,13 @@ export default {
                 };
                 const submitData = new FormData();
                 submitData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
-                submitData.append("file", this.selectedFile);
 
+                if (this.selectedFile == null) {
+                    alert("파일을 선택해주세요.");
+                    return;
+                }
+
+                submitData.append("file", this.selectedFile);
                 await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/uploadFile`, submitData,
                     { headers: { Authorization: `Bearer ${this.token}` } }
                 );
