@@ -34,16 +34,18 @@
         <tr>
           <th scope="col">번호</th>
           <th scope="col">제목</th>
-          <th scope="col">작성자</th>
+          <th scope="col">작성자</th> <!-- 컬럼명 유지 -->
           <th scope="col">작성일</th>
+          <th scope="col">조회수</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(item, index) in boardItems" :key="item.id">
           <td>{{ index + 1 + (currentPage - 1) * itemsPerPage }}</td>
           <td @click="goToDetail(item.id)" class="text_left subject">{{ item.title }}</td>
-          <td>{{ item.user_num }}</td>
+          <td>관리자</td> <!-- 작성자를 모두 '관리자'로 표시 -->
           <td>{{ formatDate(item.createdAt) }}</td>
+          <td>{{ item.hits }}</td>
         </tr>
       </tbody>
     </table>
@@ -61,11 +63,13 @@
 
     <!-- 페이지네이션 -->
     <v-pagination
-      v-model="currentPage"
-      :length="totalPages"
-      @input="fetchBoardItems"
-      class="my-4"
+    v-model="currentPage"
+    :length="totalPages"
+    @change="onPageChange"
+    class="my-4"
     ></v-pagination>
+  
+
   </v-container>
 </template>
 
@@ -99,12 +103,9 @@ export default {
     };
   },
   watch: {
-    // 카테고리가 변경될 때마다 목록을 가져오도록 설정
-    '$route.params.category': function(newCategory) {
-      this.category = newCategory || 'NOTICE';
-      this.currentPage = 1; // 페이지를 첫 페이지로 초기화
-      this.setBoardTitle(); // 제목 설정
-      this.fetchBoardItems(); // 게시글 목록 가져오기
+    currentPage(newPage, oldPage) {
+      console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
+      this.fetchBoardItems();
     }
   },
   created() {
@@ -129,54 +130,41 @@ export default {
     },
     async fetchBoardItems() {
   try {
+    // API 요청 파라미터를 설정할 때 currentPage 값을 명시적으로 지정
     const params = {
-      page: this.currentPage - 1,
+      page: this.currentPage - 1, // 페이지 번호를 0부터 시작하기 위해 1을 뺍니다.
       size: this.itemsPerPage,
       searchType: this.searchType,
-      searchQuery: this.searchQuery,
+      searchQuery: this.searchQuery || '', // 검색어가 없을 때 빈 문자열로 처리
     };
-
+    console.log("fetchBoardItems 호출됨 - currentPage:", this.currentPage); // currentPage 확인
+    console.log("API 요청 파라미터:", params); // 요청 파라미터 확인
     
-    console.log("Category:", this.category); // category 값 출력
-
-    // 경로에 카테고리 값을 포함한 URL 설정
     const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.category.toLowerCase()}/list`;
-
-    console.log("Category:", this.category); // category 값 출력
-    console.log("Fetch Board Items URL:", apiUrl); // URL 로그 출력
-
-    // 요청 시 URL과 파라미터를 확인할 수 있도록 콘솔에 출력
-    console.log("Request URL:", apiUrl, "with params:", params);
-
     const response = await axios.get(apiUrl, { params });
-
-    // 서버에서 반환된 응답이 올바른지 확인
-    console.log("Response Data:", response.data);
-
-    const result = response.data.result;
-    if (result && result.content) {
+    console.log("응답 데이터 전체:", response.data);
+    
+    // 응답 데이터 처리
+    if (response.data && response.data.result) {
+      const result = response.data.result;
       this.boardItems = result.content;
       this.totalPages = result.totalPages;
-    } else {
-      console.error("올바르지 않은 데이터 형식입니다:", response.data);
     }
   } catch (error) {
     console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
-
-    // 에러 응답을 좀 더 자세히 확인
-    if (error.response) {
-      console.error("Error Response Data:", error.response.data);
-      console.error("Error Response Status:", error.response.status);
-    }
-
-    if (error.response && error.response.status === 401) {
-      alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
-      localStorage.removeItem("token");
-      this.$router.push("/login");
-    }
   }
-}
-,
+},
+onPageChange(newPage) {
+  console.log("onPageChange 메서드 호출됨 - 새로운 페이지 번호:", newPage);
+  this.currentPage = newPage;
+  this.$nextTick(() => {
+    console.log("onPageChange - nextTick 후 currentPage:", this.currentPage);
+    this.fetchBoardItems(); // 페이지가 변경될 때 게시글 목록을 다시 불러옵니다.
+  });
+},
+
+
+
     setBoardTitle() {
       // URL에서 가져온 category 값을 기준으로 제목 설정
       if (this.category === 'FAMILY_EVENT') {
@@ -211,7 +199,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .btn_write {
