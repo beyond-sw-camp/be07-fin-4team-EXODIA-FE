@@ -1,3 +1,5 @@
+meetReservation
+
 <template>
   <v-container fluid class="timeline-container">
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
@@ -12,15 +14,15 @@
     </v-tabs>
 
     <!-- 날짜 선택 버튼들 -->
-    <v-row justify="center" class="my-3">
+    <v-row justify="center" class="my-3" >
       <v-btn @click="prevDay" icon>
         <v-icon>mdi-chevron-left</v-icon> <!-- Left arrow icon -->
       </v-btn>
 
-      <h2>{{ formattedDate(selectedDate) }}</h2>
+      <h2 style="font-size: 20px; text-align: center;">{{ formattedDate(selectedDate) }}</h2>
 
       <v-btn @click="nextDay" icon>
-        <v-icon>mdi-chevron-right</v-icon> <!-- Right arrow icon -->
+        <v-icon class="custum-right">mdi-chevron-right</v-icon>
       </v-btn>
 
       <v-btn @click="setToday">오늘</v-btn>
@@ -383,8 +385,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 18px;
-  margin-bottom: -10px;
+  font-size: 11px;
+  margin-bottom: -30px;
 }
 
 .timeline-row {
@@ -418,5 +420,10 @@ export default {
   background-color: #f5f5f5;
   height: 50px;
   text-align: center;
+}
+
+.custom-right {
+  background-color: #f5f5f5;
+  box-shadow: none;
 }
 </style>
