@@ -41,7 +41,7 @@ export default {
 
 <style>
 :root {
-  --sidebar-width: 4%;
+  --sidebar-width: 13%;
   --header-height: 60px;
 }
 
@@ -59,23 +59,23 @@ export default {
 
 .header {
   height: var(--header-height);
-  background-color: #e6f1e3;
   display: flex;
   align-items: center;
   padding: 0 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: calc(100% - var(--sidebar-width));
   position: fixed;
   top: 0;
   left: var(--sidebar-width);
-  z-index: 500; 
+  z-index: 500;
 }
 
 .main-content {
   flex: 1;
   margin-top: var(--header-height);
-  padding: 20px;
+  padding: 50px 200px;
+  margin-right: 40px;
   background-color: #f5f5f5;
+  border-radius: 25px;
   overflow-y: auto;
 }
 </style>
