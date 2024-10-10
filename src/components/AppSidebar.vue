@@ -76,12 +76,37 @@
 
     <!-- 서브사이드: 게시판 -->
     <div v-if="hoveredMenu === 'board'">
-      게시판 서브사이드바
+      <v-row @click="$router.push('/board/list')">
+        공지사항
+      </v-row>
+      <v-row @click="$router.push('/board/list')">
+        경조사
+      </v-row>
+      <v-row @click="$router.push('/qna/list')">
+        Q&A
+      </v-row>
     </div>
 
     <!-- 서브사이드: 문서 관리 -->
     <div v-if="hoveredMenu === 'document'">
-      문서 관리 서브사이드바
+      <v-row>
+        팀 문서함
+      </v-row>
+      <v-row>
+        <v-btn class="createBtn" @click="$router.push('/document/create')">
+          문서 등록
+        </v-btn>
+      </v-row>
+
+      <v-row @click="$router.push('/document')">
+        전체 문서함
+      </v-row>
+      <v-row @click="$router.push('/document/list/updated')">
+        최근 업데이트 문서함
+      </v-row>
+      <v-row @click="$router.push('/document/list/viewed')">
+        최근 조회 문서함
+      </v-row>
     </div>
 
     <!-- 서브사이드: 예약 -->
