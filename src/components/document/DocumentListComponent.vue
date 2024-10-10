@@ -6,18 +6,24 @@
     <!-- 검색 옵션 -->
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
         <v-col cols="6">
-            <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" @input="filterDocuments"
+            <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="filterDocuments"
                 style="margin-bottom: 20px;"></v-text-field>
         </v-col>
         <v-col cols="4" sm="2">
-            <v-btn color="primary" @click="searchFilter(searchQuery)">
+            <v-btn @click="searchFilter(searchQuery)">
                 검색
             </v-btn>
         </v-col>
     </v-row>
 
     <!-- 문서 리스트 -->
-    <div v-if="this.documents.length > 0" :class="{ 'drawer-open': drawer }">
+    <div v-if="this.documents == null">
+        <v-row justify="center" :class="{ 'drawer-open': drawer }">
+            데이터가 존재하지 않습니다.
+        </v-row>
+    </div>
+
+    <div v-else :class="{ 'drawer-open': drawer }">
         <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center; ">
             <v-col cols="12">
                 <v-row class="mb-2"
@@ -30,7 +36,7 @@
                     <v-col cols="2"><strong>조회수</strong></v-col>
                 </v-row>
 
-                <v-row v-for="(document, index) in localDocuments" :key="document.id" class="document" oulined
+                <v-row v-for="(document, index) in documents" :key="document.id" class="document" oulined
                     @click="openDrawer(document.id)"
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
@@ -44,11 +50,7 @@
         </v-row>
     </div>
 
-    <div v-else>
-        <v-row justify="center" :class="{ 'drawer-open': drawer }">
-            데이터가 존재하지 않습니다.
-        </v-row>
-    </div>
+
 
     <!-- 페이징 -->
     <v-pagination v-model="page" :length="totalPages" @input="fetchDocuments"></v-pagination>
@@ -122,6 +124,9 @@
 
                     <v-timeline dense v-if="showHistory">
                         <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
+                            <div>
+
+                            </div>
                             <v-card>
                                 <v-card-text style="margin-bottom:0; padding:0">
                                     <div class="fileName">
