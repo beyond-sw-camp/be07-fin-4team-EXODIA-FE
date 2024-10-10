@@ -5,15 +5,15 @@
         :class="{ 'active': $route.path.startsWith('/calendar') }">
         <v-icon class="icon">mdi-calendar</v-icon>
       </div>
-      
+
       <!-- 알림 아이콘 클릭 시 알림 페이지로 이동 -->
       <div class="notification-icon" @click="goToNotifications">
         <v-icon class="icon">mdi-bell</v-icon>
 
         <!-- 읽지 않은 알림 개수 표시 -->
         <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
-      </div>      
-      
+      </div>
+
       <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
         <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
           style="width: 100%; height: 100%; object-fit: cover;" />
@@ -94,14 +94,14 @@ export default {
   margin: 30px;
 }
 
-.icons > .icon {
-  font-size: 4vh; 
+.icons>.icon {
+  font-size: 4vh;
   cursor: pointer;
   font-size: 25px;
 }
 
 
-.icons > v-avatar {
+.icons>v-avatar {
   margin-left: 4vw;
   height: 5vh;
   width: 5vh;
@@ -126,9 +126,9 @@ export default {
 .icon-item.active>.icon {
   color: #7A5656;
 }
-  
+
 .notification-icon {
-  font-size: 2vh; 
+  font-size: 2vh;
   margin-right: 1vh;
   position: relative;
   cursor: pointer;
