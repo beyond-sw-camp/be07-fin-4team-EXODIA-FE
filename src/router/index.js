@@ -21,20 +21,7 @@ const routes = [
     name: 'Home',
     component: HomePage,
   },
-<<<<<<< HEAD
-  ...userRouter,
-  ...videoRouter,
-  ...documentRouter,
-  ...mypageRouter,
-  ...reservationRouter,
-  ...boardRouter,
-  ...calendarRouter,
-  ...positionRouter,
-  ...qnaRouter,
-  ...notificationRouter,
-  ...submitRouter,
-  ...chatRouter,
-=======
+
   {
     path: '/login',
     name: 'Login',
@@ -51,8 +38,7 @@ const routes = [
       ...notificationRouter,
       ...submitRouter,
       ...chatRouter,
-
->>>>>>> 047dd701b26383b2365906cda60914526b093de2
+      ...qnaRouter,
 ];
 
 const router = createRouter({
