@@ -3,7 +3,6 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 import axios from 'axios';
-
 import { createVuetify } from 'vuetify'; 
 import * as components from 'vuetify/components'; 
 import * as directives from 'vuetify/directives';
@@ -13,12 +12,9 @@ import adapter from 'webrtc-adapter';
 import vuetify from './plugins/vuetify';
 import adapter from 'webrtc-adapter';
 
-
-
-// 전역으로 adapter 사용 설정
 window.adapter = adapter;
 
-// Axios 기본 설정
+
 axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8087';
 const token = localStorage.getItem('token');
 if (token) {
@@ -34,13 +30,12 @@ const vuetify = createVuetify({
 
 const app = createApp(App);
 
-// Axios 전역 속성 설정
+
 app.config.globalProperties.$axios = axios;
 
-// Vue 플러그인 사용 설정
 app.use(router);
 app.use(store);
-app.use(vuetify); // Vuetify 플러그인 사용 설정
+app.use(vuetify); 
 
-// 애플리케이션 마운트
+
 app.mount('#app');
