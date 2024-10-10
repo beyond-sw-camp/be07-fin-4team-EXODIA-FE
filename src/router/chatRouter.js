@@ -4,20 +4,20 @@ import ChatRoomList from '@/views/chat/ChatRoomList.vue';
 
 export const chatRouter = [
     {
-        path: '/chat/create',
-        name: 'chatRoomCreatePage',
+        path: '/chatRoom/create',
+        name: 'ChatRoomCreatePage',
         component: ChatRoomCreate,
     },
 
     {
-        path: '/chat/list',
-        name: 'chatRoomList',
+        path: '/chatRoom/list/:userNum',
+        name: 'ChatRoomListPage',
         component: ChatRoomList,
     },
 
     {
         path: '/chatRoom/:id',
-        name: 'ChatRoom',
+        name: 'ChatRoomViewPage',
         component: ChatRoomView,
         // props: route => ({
         //   roomId: Number(route.params.roomId), 

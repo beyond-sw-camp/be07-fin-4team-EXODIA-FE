@@ -143,10 +143,11 @@ export default {
                 if (this.fileList.length > 0) { // 파일이 있으면.
                     try {
                         const presignedUrls = await this.getPresignedURL();
-                        console.log(presignedUrls);
 
                         // 각 파일에 대해 Presigned URL을 이용하여 S3에 업로드 -> s3 url만 남는다.
                         const uploadedFileUrls = await Promise.all(this.fileList.map(file => this.uploadFileToS3(file.file, presignedUrls[file.name])));
+                        console.log("s3에 파일 올라가면");
+                        console.log(uploadedFileUrls);
 
                         // 파일 중 업로드가 실패한 파일이 있으면 필터링
                         const successfulUploads = uploadedFileUrls.filter(url => url !== null);
@@ -159,6 +160,10 @@ export default {
                                 chatFileUrl: url,
                             }));
                         }
+
+                        console.log("메타데이터 가공");
+                        console.log(this.fileRes);
+
                     } catch (error) {
                         console.error('Upload failed:', error);
                     }
@@ -171,6 +176,9 @@ export default {
                     message: this.messageToSend,
                     files: this.fileRes,
                 };
+                
+                console.log("백으로 보내는");
+                console.log(messageReq);
 
                 this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
 
@@ -187,7 +195,6 @@ export default {
         // presignedUrl 생성
         async getPresignedURL() {
             const reqFiles = this.fileList.map(file => ({ chatFileName: file.name, fileSize: file.size}));
-            console.log(reqFiles);
             const response = await axios.post(
                 `${process.env.VUE_APP_API_BASE_URL}/file/presigned-urls`, reqFiles
             );

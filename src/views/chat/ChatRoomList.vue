@@ -76,7 +76,7 @@ export default {
         }
     },
     created(){
-        this.userNum = localStorage.getItem('userNum');
+        this.userNum = this.$route.params.userNum;
         this.loadChatRoom();
     },
     methods: {
@@ -89,7 +89,7 @@ export default {
                 //     }
                 // });
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/list/${this.userNum}`);
-                this.chatRoomList = response.data.result.content || [];
+                this.chatRoomList = response.data.result || [];
             }catch(e){
                 console.error('채팅방 목록 조회 실패',e);
             }
