@@ -5,7 +5,7 @@
     <v-select
       v-model="selectedPosition"
       :items="positions"
-      item-titke="name"
+      item-title="name"
       item-value="id"
       label="직급별 조회"
       @change="fetchSalariesByPosition"
