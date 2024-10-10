@@ -11,6 +11,7 @@ import { chatRouter } from './chatRouter';
 import { boardRouter } from './boardRouter';
 import { calendarRouter } from './calendarRouter';
 import { positionRouter } from './positionRouter';
+import { qnaRouter } from './qnaRouter';
 import { notificationRouter } from './notificationRouter';
 import { submitRouter } from './submitRouter';
 
@@ -20,23 +21,25 @@ const routes = [
     name: 'Home',
     component: HomePage,
   },
+
   {
     path: '/login',
     name: 'Login',
-    component: LoginPage, 
+    component: LoginPage,
   },
-      ...userRouter,
-      ...videoRouter,
-      ...documentRouter,
-      ...mypageRouter,
-      ...reservationRouter,
-      ...boardRouter,
-      ...calendarRouter,
-      ...positionRouter,
-      ...notificationRouter,
-      ...submitRouter,
-      ...chatRouter,
 
+  ...userRouter,
+  ...videoRouter,
+  ...documentRouter,
+  ...mypageRouter,
+  ...reservationRouter,
+  ...boardRouter,
+  ...calendarRouter,
+  ...positionRouter,
+  ...notificationRouter,
+  ...submitRouter,
+  ...chatRouter,
+  ...qnaRouter,
 ];
 
 const router = createRouter({

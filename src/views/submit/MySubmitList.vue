@@ -102,7 +102,7 @@ export default {
 }
 </script>
 <style scoped>
-*:not(h2) {
+*:not(h1) {
     font-size: 14px;
 }
 
