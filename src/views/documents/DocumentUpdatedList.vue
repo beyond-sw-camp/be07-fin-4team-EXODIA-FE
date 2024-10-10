@@ -1,6 +1,6 @@
 <template>
     <DocumentListComponent pageTitle="최근 업데이트 문서" />
-</template>
+</template> 
 
 <script>
 import DocumentListComponent from '@/components/document/DocumentListComponent.vue';
