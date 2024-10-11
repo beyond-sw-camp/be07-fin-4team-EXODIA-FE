@@ -1,73 +1,88 @@
 <template>
     <v-container class="mt-5">
-      <v-card class="mx-auto salary-slip-card">
+      <v-card class="mx-auto" max-width="600">
         <v-card-title>
-          <h3 class="salary-title">급여 명세서</h3>
+          <h3>급여 명세서</h3>
         </v-card-title>
   
         <v-card-text v-if="salary">
-          <div class="salary-section">
-            <v-row>
-              <v-col cols="6">
-                <strong>사번:</strong> {{ salary.userNum }}
-              </v-col>
-              <v-col cols="6">
-                <strong>이름:</strong> {{ salary.userName }}
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="6">
-                <strong>부서:</strong> {{ salary.departmentName }}
-              </v-col>
-              <v-col cols="6">
-                <strong>직급:</strong> {{ salary.positionName }}
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="6">
-                <strong>기본급:</strong> {{ salary.baseSalary ? salary.baseSalary.toLocaleString() : '정보 없음' }} 원
-              </v-col>
-              <v-col cols="6">
-                <strong>연차:</strong> {{ salary.yearsOfService ? salary.yearsOfService + '년차' : '정보 없음' }}
-              </v-col>
-            </v-row>
-          </div>
+          <v-list>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>사번: {{ salary.userNum }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
   
-          <v-divider></v-divider>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>이름: {{ salary.userName }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
   
-          <div class="tax-section">
-            <h4>세금 항목</h4>
-            <v-row>
-              <v-col cols="6">
-                <strong>국민연금:</strong> 
-                {{ salary.taxAmount && salary.taxAmount.nationalPension ? salary.taxAmount.nationalPension.toLocaleString() : '정보 없음' }} 원
-              </v-col>
-              <v-col cols="6">
-                <strong>건강보험:</strong> 
-                {{ salary.taxAmount && salary.taxAmount.healthInsurance ? salary.taxAmount.healthInsurance.toLocaleString() : '정보 없음' }} 원
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="6">
-                <strong>장기요양보험:</strong> 
-                {{ salary.taxAmount && salary.taxAmount.longTermCare ? salary.taxAmount.longTermCare.toLocaleString() : '정보 없음' }} 원
-              </v-col>
-              <v-col cols="6">
-                <strong>고용보험:</strong> 
-                {{ salary.taxAmount && salary.taxAmount.employmentInsurance ? salary.taxAmount.employmentInsurance.toLocaleString() : '정보 없음' }} 원
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="6">
-                <strong>총 세금:</strong> 
-                {{ salary.taxAmount && salary.taxAmount.totalTax ? salary.taxAmount.totalTax.toLocaleString() : '정보 없음' }} 원
-              </v-col>
-              <v-col cols="6">
-                <strong>최종 연봉:</strong> 
-                {{ salary.finalSalary ? salary.finalSalary.toLocaleString() : '정보 없음' }} 원
-              </v-col>
-            </v-row>
-          </div>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>부서: {{ salary.departmentName }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>직급: {{ salary.positionName }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>기본급: {{ salary.baseSalary.toLocaleString() }} 원</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>연차: {{ salary.yearsOfService }}년차</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-divider></v-divider>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>국민연금: {{ salary.nationalPension ? salary.nationalPension.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>건강보험: {{ salary.healthInsurance ? salary.healthInsurance.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>장기요양보험: {{ salary.longTermCare ? salary.longTermCare.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>고용보험: {{ salary.employmentInsurance ? salary.employmentInsurance.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-divider></v-divider>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>총 세금: {{ salary.totalTax ? salary.totalTax.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>최종 연봉: {{ salary.finalSalary.toLocaleString() }} 원</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
         </v-card-text>
   
         <v-card-text v-else>
@@ -78,6 +93,7 @@
       </v-card>
     </v-container>
   </template>
+  
   
   <script>
   export default {
