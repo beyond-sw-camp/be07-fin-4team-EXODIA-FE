@@ -156,10 +156,10 @@
                     </v-timeline>
 
 
-                    <v-card-title>
+                    <!-- <v-card-title>
                         <span class="headline">댓글</span>
                         <v-divider></v-divider>
-                    </v-card-title>
+                    </v-card-title> -->
 
                     <v-card-actions>
                         <v-spacer></v-spacer>
@@ -307,8 +307,8 @@ export default {
         },
         async revertToVersion(id) {
             try {
-                const url = `${process.env.VUE_APP_API_BASE_URL} /document/rollback / ${id} `;
-                await axios.post(url, { headers: { Authorization: `Bearer ${this.token} ` } });
+                const url = `${process.env.VUE_APP_API_BASE_URL}/document/rollback/${id} `;
+                await axios.post(url);
                 location.reload();
 
             } catch (e) {
