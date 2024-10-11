@@ -81,11 +81,8 @@ export default {
                 submitData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
                 submitData.append("file", this.selectedFile);
 
-                await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/update`, submitData,
-                    { headers: { Authorization: `Bearer ${this.token}` } }
-                );
+                await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/update`, submitData);
                 this.$router.push('/document');
-
             } catch (e) {
                 console.error('파일 업로드 중 오류 발생:', e);
             }
