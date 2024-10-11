@@ -9,6 +9,7 @@
         <v-select
           v-model="searchType"
           :items="searchOptions"
+          variant="underlined"
           item-title="text"
           item-value="value"
           label="검색 범위"
@@ -20,6 +21,8 @@
       <v-col cols="12" md="8">
         <v-text-field
           v-model="searchQuery"
+          variant="outlined"
+
           label="검색어를 입력하세요."
           append-icon="mdi-magnify"
           @click:append="performSearch"
@@ -162,8 +165,14 @@ export default {
       }
     },
     formatDate(date) {
-      const options = { year: "numeric", month: "long", day: "numeric" };
-      return new Date(date).toLocaleDateString(undefined, options);
+      const options = { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      };
+      
+      // toLocaleDateString을 사용하여 형식 변경 (ex: 2024.10.11)
+      return new Date(date).toLocaleDateString('ko-KR', options).replace(/\//g, '.');
     },
     createNewPost() {
       if (!this.isAdmin) {
