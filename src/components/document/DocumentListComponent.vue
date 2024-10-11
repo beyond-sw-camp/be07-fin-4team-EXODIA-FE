@@ -1,26 +1,34 @@
 <template>
     <v-row>
-        <h2 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle }}</h2>
+        <h1 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle }}</h1>
     </v-row>
 
+    <!-- 검색 옵션 -->
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
-        <v-col cols="6" sm="6">
-            <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" @input="filterDocuments"
+        <v-col cols="6">
+            <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="filterDocuments"
                 style="margin-bottom: 20px;"></v-text-field>
         </v-col>
         <v-col cols="4" sm="2">
-            <v-btn color="primary" @click="searchFilter(searchQuery)">
+            <v-btn @click="searchFilter(searchQuery)">
                 검색
             </v-btn>
         </v-col>
     </v-row>
 
-    <div v-if="this.localDocuments.length > 0" :class="{ 'drawer-open': drawer }">
+    <!-- 문서 리스트 -->
+    <div v-if="this.documents == null">
+        <v-row justify="center" :class="{ 'drawer-open': drawer }">
+            데이터가 존재하지 않습니다.
+        </v-row>
+    </div>
+
+    <div v-else :class="{ 'drawer-open': drawer }">
         <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center; ">
-            <v-col cols="12" sm="8">
+            <v-col cols="12">
                 <v-row class="mb-2"
-                    style="background-color:#E6E8EF; border-radius:12px; padding:4px; color:#444444; font-weight:600;">
-                    <v-col cols="1"><strong>#</strong></v-col>
+                    style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
+                    <v-col cols="1"><strong></strong></v-col>
                     <v-col cols="3"><strong>제목</strong></v-col>
                     <v-col cols="2"><strong>프로젝트명</strong></v-col>
                     <v-col cols="2"><strong>작성자</strong></v-col>
@@ -28,7 +36,7 @@
                     <v-col cols="2"><strong>조회수</strong></v-col>
                 </v-row>
 
-                <v-row v-for="(document, index) in localDocuments" :key="document.id" class="document" oulined
+                <v-row v-for="(document, index) in documents" :key="document.id" class="document" oulined
                     @click="openDrawer(document.id)"
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
@@ -42,20 +50,10 @@
         </v-row>
     </div>
 
-    <div v-else>
-        <v-row justify="center" :class="{ 'drawer-open': drawer }">
-            데이터가 존재하지 않습니다.
-        </v-row>
-    </div>
 
-    <div class="pagination-controls">
-        <button @click="goToPage(page - 1)" :disabled="page === 1">
-            <v-icon>{{ 'mdi-chevron-left' }}</v-icon>
-        </button>
-        <span> {{ page }} / {{ totalPages }}</span>
-        <button @click="goToPage(page + 1)" :disabled="page === totalPages">
-            <v-icon>{{ 'mdi-chevron-right' }}</v-icon></button>
-    </div>
+
+    <!-- 페이징 -->
+    <v-pagination v-model="page" :length="totalPages" @input="fetchDocuments"></v-pagination>
 
     <!-- 상세 정보 -->
     <v-card>
@@ -126,6 +124,9 @@
 
                     <v-timeline dense v-if="showHistory">
                         <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
+                            <div>
+
+                            </div>
                             <v-card>
                                 <v-card-text style="margin-bottom:0; padding:0">
                                     <div class="fileName">
@@ -175,13 +176,14 @@
             </v-tabs-window>
         </v-navigation-drawer>
     </v-card>
+
 </template>
 
 <script>
 import axios from 'axios'
 
 export default {
-    props: ['pageTitle', 'documents', 'totalPages'],
+    props: ['pageTitle'],
     data() {
         return {
             token: localStorage.getItem('token') || null,
@@ -191,22 +193,49 @@ export default {
             selectedDocument: {},
             tab: '상세보기',
             showHistory: false,
+
             pageId: '',
             page: 1,
-            size: 10,
-            localDocuments: this.documents,
+            pageSize: 10,
+            totalPages: '',
+            documents: {},
         }
     },
     mounted() {
-        const { id } = history.state;
-        this.pageId = id;
+        this.fetchDocuments(this.page);
     },
     watch: {
         documents(newDocuments) {
             this.localDocuments = newDocuments;
+        },
+        page(newPage) {
+            this.fetchDocuments(newPage);
         }
     },
     methods: {
+        async fetchDocuments(newPage) {
+            try {
+                let url = '';
+
+                if (this.pageTitle == '전체문서') {
+                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/all`;
+                } else if (this.pageTitle == '최근 조회 문서') {
+                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewed`;
+                } else if (this.pageTitle == '최근 업데이트 문서') {
+                    url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
+                }
+                const response = await axios.get(url, {
+                    params: {
+                        page: newPage - 1,
+                        size: this.pageSize
+                    }
+                });
+                this.documents = response.data.result.content;
+                this.totalPages = response.data.result.totalPages;
+            } catch (e) {
+                console.error('문서 목록을 가져오는 중 오류 발생:', e);
+            }
+        },
         async openDrawer(id) {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/detail/${id}`;
@@ -214,7 +243,6 @@ export default {
 
                 this.selectedDocument = response.data.result;
                 this.drawer = true;
-
             } catch (e) {
                 console.error('문서 상세 정보를 가져오는 중 오류 발생:', e);
             }
@@ -240,7 +268,6 @@ export default {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-
                 alert("파일 다운로드 성공");
             } catch (e) {
                 console.error('파일 다운로드 중 오류 발생:', e);
@@ -268,7 +295,6 @@ export default {
                 this.localDocuments = response.data.result;
             }
             catch (e) {
-
                 console.error("검색 중 오류 발생: ", e)
             }
         },
@@ -283,7 +309,6 @@ export default {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL} /document/rollback / ${id} `;
                 await axios.post(url, { headers: { Authorization: `Bearer ${this.token} ` } });
-
                 location.reload();
 
             } catch (e) {
@@ -299,18 +324,15 @@ export default {
         toggleHistoryVisibility() {
             this.showHistory = !this.showHistory;
         },
-        goToPage(newPage) {
-            if (newPage >= 1 && newPage <= this.totalPages) {
-                this.page = newPage;
-                // this.fetchDocuments();
-                console.log(this.page)
-                this.$emit('page-changed', newPage);
-            }
-        },
     },
 }
 </script>
+
 <style scoped>
+*:not(h1) {
+    font-size: 14px;
+}
+
 .login-container {
     height: 100vh;
     display: flex;
