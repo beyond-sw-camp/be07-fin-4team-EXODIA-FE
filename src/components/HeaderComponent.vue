@@ -1,6 +1,8 @@
 <template>
   <header class="header">
+
     <div class="icons">
+
       <div class="icon-item" @click="$router.push('/calendar/calendarList')"
         :class="{ 'active': $route.path.startsWith('/calendar') }">
         <v-icon class="icon">mdi-calendar</v-icon>
@@ -14,11 +16,18 @@
         <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
       </div>
 
+      <!-- 채팅방리스트 -->
+      <div class="icon-item">
+        <v-icon class="icon">mdi-chat</v-icon>
+      </div>
+
       <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
         <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
           style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
+
     </div>
+    
   </header>
 </template>
 
