@@ -70,6 +70,7 @@ export default {
         return {
             token: localStorage.getItem('token') || null,
             submitList: [],
+            isMySubmitReq: true,
         }
     },
     mounted() {
@@ -93,8 +94,7 @@ export default {
             return new Date(date).toLocaleTimeString();
         },
         showDetail(submitId) {
-            console.log("showDetail: " + submitId)
-            this.$router.push({ name: 'SubmitDetailComponent', params: { submitId: submitId } })
+            this.$router.push({ name: 'SubmitDetailComponent', params: { submitId: submitId }, query: { isMySubmitReq: this.isMySubmitReq } })
             this.selectedSubmitId = submitId;
         },
 
