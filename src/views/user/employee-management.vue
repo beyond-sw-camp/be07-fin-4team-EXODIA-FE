@@ -35,6 +35,7 @@
       <table class="employee-table">
         <thead>
           <tr>
+            <th>#</th> <!-- 행 번호 추가 -->
             <th>사번</th>
             <th>부서</th>
             <th>이름</th>
@@ -44,7 +45,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in users" :key="user.userNum" @click="viewUser(user)">
+          <tr v-for="(user, index) in users" :key="user.userNum" @click="viewUser(user)">
+            <td>{{ index + 1 }}</td> <!-- 행 번호 표시 -->
             <td>{{ user.userNum }}</td>
             <td>{{ getDepartmentName(user.departmentId) }}</td>
             <td>{{ user.name }}</td>
