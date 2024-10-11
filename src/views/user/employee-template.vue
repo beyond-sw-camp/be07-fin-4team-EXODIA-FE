@@ -260,17 +260,16 @@ export default {
     const formData = new FormData();
     formData.append('userNum', this.userDetail.userNum);
     formData.append('name', this.userDetail.name);
+    formData.append('email', this.userDetail.email);
+    formData.append('address', this.userDetail.address);
+    formData.append('phone', this.userDetail.phone);
+    formData.append('profileImage', this.userDetail.profileImage); // 파일 전송
+    formData.append('hireType', this.userDetail.hireType);
     formData.append('departmentId', this.userDetail.departmentId);
     formData.append('positionId', this.userDetail.positionId);
-    formData.append('email', this.userDetail.email);
-    formData.append('phone', this.userDetail.phone);
-    formData.append('hireType', this.userDetail.hireType);
     formData.append('annualLeave', this.userDetail.annualLeave);
-
-    // 프로필 이미지가 있는 경우
-    if (this.userDetail.profileImage) {
-      formData.append('profileImage', this.userDetail.profileImage);
-    }
+    formData.append('password', this.userDetail.password);
+    formData.append('socialNum', this.userDetail.socialNum);
 
     const token = localStorage.getItem("token");
     const config = {
@@ -296,6 +295,7 @@ export default {
     }
   }
 },
+
     goBack() {
       this.$router.push("/employee-management");
     },
