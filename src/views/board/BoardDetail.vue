@@ -21,7 +21,7 @@
         <v-row>
           <v-col cols="12">
             <ul class="info">
-              <li><strong>작성자: {{ board.userNum }}</strong></li>
+              <li><strong>작성자: {{ board.user_num }}</strong></li>
               <li><strong>작성일:</strong> {{ formatDate(board.createdAt) }}</li>
               <li><strong>조회수:</strong> {{ board.hits }}</li>
               <li><strong>카테고리:</strong> {{ board.category }}</li>
@@ -113,9 +113,10 @@ export default {
   computed: {
     // 댓글 표시 여부를 결정하는 변수 (카테고리가 FAMILY_EVENT일 경우 true)
     isFamilyEventCategory() {
-      return this.board?.category === 'FAMILY_EVENT';
+      return this.board?.category === 'familyevent';
     }
   },
+  props: ['category'],
 
   created() {
     this.checkLoginStatus();
@@ -134,9 +135,13 @@ export default {
     const boardId = this.$route.params.id;
     const userNum = localStorage.getItem('userNum'); // 사용자 번호 가져오기
 
+
     // 서버 요청 시 userNum을 쿼리 파라미터로 함께 전달
     const response = await axios.get(`/board/detail/${boardId}`, { params: { userNum } });
     this.board = response.data.result;
+
+    console.log(JSON.stringify(this.board));
+
 
     // 댓글을 FAMILY_EVENT 카테고리일 때만 설정
     if (this.isFamilyEventCategory) {

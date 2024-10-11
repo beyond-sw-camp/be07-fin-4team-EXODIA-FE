@@ -35,7 +35,7 @@
         <tr>
           <th scope="col">번호</th>
           <th scope="col">제목</th>
-          <th scope="col">작성자</th> <!-- 컬럼명 유지 -->
+          <th scope="col">작성자</th> 
           <th scope="col">작성일</th>
           <th scope="col">조회수</th>
         </tr>
@@ -44,7 +44,7 @@
         <tr v-for="(item, index) in boardItems" :key="item.id">
           <td>{{ index + 1 + (currentPage - 1) * itemsPerPage }}</td>
           <td @click="goToDetail(item.id)" class="text_left subject">{{ item.title }}</td>
-          <td>관리자</td> <!-- 작성자를 모두 '관리자'로 표시 -->
+          <td>관리자</td> 
           <td>{{ formatDate(item.createdAt) }}</td>
           <td>{{ item.hits }}</td>
         </tr>
@@ -86,7 +86,7 @@ export default {
       itemsPerPage: 10, // 페이지당 항목 수
       isAdmin: false, // 관리자인지 여부
       userNum: null, // 현재 로그인된 사용자의 ID
-      category: '', // URL에서 카테고리 가져오기
+      currentCategory: '', // URL에서 카테고리 가져오기
       boardTitle: '',
 
       // 검색 필드 추가
@@ -95,7 +95,7 @@ export default {
       searchOptions: [
         { text: "전체", value: "all" },
         { text: "제목", value: "title" },
-        { text: "작성자", value: "user_num" },
+        { text: "작성자", value: "userNum" },
       ],
       categoryOptions: [
         { text: '공지사항', value: 'NOTICE' },
@@ -103,19 +103,26 @@ export default {
       ],
     };
   },
+  props: ['category'],
   watch: {
     currentPage(newPage, oldPage) {
       console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
       this.fetchBoardItems();
+    },
+    // category가 변경될 때 currentCategory도 변경되도록 설정
+    category(newCategory) {
+      this.currentCategory = newCategory;
+      this.setBoardTitle();
+      this.fetchBoardItems(); // 카테고리 변경 시 게시글 목록을 다시 불러옴
     }
   },
   created() {
     // URL에서 카테고리 값을 가져와 초기 설정
-    this.category = this.$route.params.category || 'NOTICE';
+    this.currentCategory = this.category || 'NOTICE';
     this.checkUserRole(); // 사용자 권한 확인 및 설정
     this.setBoardTitle(); // 초기 제목 설정
     this.fetchBoardItems(); // 컴포넌트 생성 시 게시글 목록을 가져옴
-    this.userId = localStorage.getItem('userId'); // 로컬스토리지에서 userId 가져오기
+    this.userNum = localStorage.getItem('userNum'); // 로컬스토리지에서 userId 가져오기
   },
   methods: {
     checkUserRole() {
@@ -130,47 +137,44 @@ export default {
       this.userNum = localStorage.getItem('userNum');
     },
     async fetchBoardItems() {
-  try {
-    // API 요청 파라미터를 설정할 때 currentPage 값을 명시적으로 지정
-    const params = {
-      page: this.currentPage - 1, // 페이지 번호를 0부터 시작하기 위해 1을 뺍니다.
-      size: this.itemsPerPage,
-      searchType: this.searchType,
-      searchQuery: this.searchQuery || '', // 검색어가 없을 때 빈 문자열로 처리
-    };
-    console.log("fetchBoardItems 호출됨 - currentPage:", this.currentPage); // currentPage 확인
-    console.log("API 요청 파라미터:", params); // 요청 파라미터 확인
-    
-    const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.category.toLowerCase()}/list`;
-    const response = await axios.get(apiUrl, { params });
-    console.log("응답 데이터 전체:", response.data);
-    
-    // 응답 데이터 처리
-    if (response.data && response.data.result) {
-      const result = response.data.result;
-      this.boardItems = result.content;
-      this.totalPages = result.totalPages;
-    }
-  } catch (error) {
-    console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
-  }
-},
-onPageChange(newPage) {
-  console.log("onPageChange 메서드 호출됨 - 새로운 페이지 번호:", newPage);
-  this.currentPage = newPage;
-  this.$nextTick(() => {
-    console.log("onPageChange - nextTick 후 currentPage:", this.currentPage);
-    this.fetchBoardItems(); // 페이지가 변경될 때 게시글 목록을 다시 불러옵니다.
-  });
-},
-
-
-
+      try {
+        // API 요청 파라미터를 설정할 때 currentPage 값을 명시적으로 지정
+        const params = {
+          page: this.currentPage - 1, // 페이지 번호를 0부터 시작하기 위해 1을 뺍니다.
+          size: this.itemsPerPage,
+          searchType: this.searchType,
+          searchQuery: this.searchQuery || '', // 검색어가 없을 때 빈 문자열로 처리
+        };
+        console.log("fetchBoardItems 호출됨 - currentPage:", this.currentPage); // currentPage 확인
+        console.log("API 요청 파라미터:", params); // 요청 파라미터 확인
+        
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory.toLowerCase()}/list`;
+        const response = await axios.get(apiUrl, { params });
+        console.log("응답 데이터 전체:", response.data);
+        
+        // 응답 데이터 처리
+        if (response.data && response.data.result) {
+          const result = response.data.result;
+          this.boardItems = result.content;
+          this.totalPages = result.totalPages;
+        }
+      } catch (error) {
+        console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
+      }
+    },
+    onPageChange(newPage) {
+      console.log("onPageChange 메서드 호출됨 - 새로운 페이지 번호:", newPage);
+      this.currentPage = newPage;
+      this.$nextTick(() => {
+        console.log("onPageChange - nextTick 후 currentPage:", this.currentPage);
+        this.fetchBoardItems(); // 페이지가 변경될 때 게시글 목록을 다시 불러옵니다.
+      });
+    },
     setBoardTitle() {
       // URL에서 가져온 category 값을 기준으로 제목 설정
-      if (this.category === 'familyevent') {
+      if (this.currentCategory === 'familyevent') {
         this.boardTitle = '경조사';
-      } else if (this.category === 'notice') {
+      } else if (this.currentCategory === 'notice') {
         this.boardTitle = '공지사항';
       } else {
         this.boardTitle = '게시판';
@@ -200,6 +204,7 @@ onPageChange(newPage) {
   },
 };
 </script>
+
 
 <style scoped>
 /* 전체 배경 및 컨테이너 스타일 */
@@ -246,7 +251,7 @@ onPageChange(newPage) {
 .tbl_list {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 500px;
+  margin-bottom: 100px;
 }
 
 /* 테이블 헤더와 셀 스타일 */
@@ -260,7 +265,7 @@ onPageChange(newPage) {
 
 /* 테이블 헤더 스타일 */
 .tbl_list th {
-  background-color: #949494; /* 헤더 배경색 */
+  background-color: #a77171; /* 헤더 배경색 */
   font-weight: bold;
   color: #000000; /* 헤더 텍스트 색상 */
 }

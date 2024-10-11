@@ -10,21 +10,25 @@ export const boardRouter = [
     path: '/board/:category/list',
     name: 'BoardList',
     component: BoardList,
+    props: true,
 
   },
   {
     path: '/board/create',
     name: 'BoardCreate',
     component: BoardCreate,
+    props: true,
   },
   {
     path: '/board/update/:id',
     name: 'BoardUpdate',
-    component: BoardUpdate
+    component: BoardUpdate,
+    props: true,
   },
   {
     path: '/board/detail/:id',
     name: 'BoardDetail',
     component: BoardDetail,
+    props: true,
   },
 ];
