@@ -27,14 +27,14 @@
         <!-- Custom Table -->
         <table class="employee-table">
           <thead>
-            <tr>
-              <th>#</th>
+            <tr style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:600;">
+              <th>번호</th>
               <th>사번</th>
               <th>이름</th>
               <th>부서</th>
               <th>직급</th>
               <th>기본급</th>
-              <th>입사일</th>
+              <th>연차</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +83,7 @@ export default {
         const response = await axios.get("/salary");
         this.salaries = response.data;
       } catch (error) {
-        console.error("급여 목록을 가져오는 중 오류가 발생했습니다:", error);
+        console.error("급여 목록을 가져오는 중 오류가 발생했습니다.", error);
       }
     },
     async fetchSalariesByPosition() {
@@ -92,7 +92,7 @@ export default {
           const response = await axios.get(`/salary/byPosition/${this.selectedPosition}`);
           this.salaries = response.data;
         } catch (error) {
-          console.error("직급별 급여 목록을 가져오는 중 오류가 발생했습니다:", error);
+          console.error("직급별 급여 목록을 가져오는 중 오류가 발생했습니다.", error);
         }
       } else {
         this.fetchSalaries();
@@ -103,7 +103,7 @@ export default {
         const response = await axios.get("/positions");
         this.positions = response.data;
       } catch (error) {
-        console.error("직급 목록을 가져오는 중 오류가 발생했습니다:", error);
+        console.error("직급 목록을 가져오는 중 오류가 발생했습니다.", error);
       }
     },
     viewSalaryDetails(userNum) {
@@ -116,7 +116,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .salary-container {
@@ -150,8 +149,8 @@ export default {
 }
 
 .employee-table th {
-  background-color: #f5f5f5;
   font-weight: bold;
+  color: #444444;
 }
 
 .employee-table tr:hover {
@@ -161,9 +160,5 @@ export default {
 
 .table-row {
   transition: background-color 0.3s;
-}
-
-p {
-  text-align: center;
 }
 </style>
