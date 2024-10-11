@@ -8,13 +8,13 @@
                     <v-list-subheader>신청인</v-list-subheader>
                 </v-col>
                 <v-col cols="4">
-                    <v-text-field disabled>이예나</v-text-field>
+                    <v-text-field disabled>{{ this.userName }}</v-text-field>
                 </v-col>
                 <v-col cols="2">
                     <v-list-subheader>부서</v-list-subheader>
                 </v-col>
                 <v-col cols="4">
-                    <v-text-field disabled>인사팀</v-text-field>
+                    <v-text-field disabled>{{ this.departmentName }}</v-text-field>
                 </v-col>
             </v-row>
             <v-row>
@@ -94,7 +94,8 @@
                 <v-list style="background-color: rgba(123, 86, 86, 0.3);">
                     <v-list-item v-for=" user in users" :key="user.id" draggable="true" @dragstart="onDragStart(user)"
                         class="draggable-item">
-                        <v-list-item-content>{{ user.name }}</v-list-item-content>
+                        <v-list-item-content>{{ user.name
+                            }}</v-list-item-content>
                     </v-list-item>
                 </v-list>
             </v-card>
@@ -126,6 +127,10 @@ export default {
         return {
             token: localStorage.getItem('token') || null,
             userNum: localStorage.getItem('userNum') || null,
+            departmentId: localStorage.getItem('departmentId') || null,
+
+            userName: '',
+            departmentName: '',
 
             formData: {
                 신청일: '',
@@ -152,18 +157,35 @@ export default {
     },
     created() {
         this.fetchUsers();
+        this.fetchWriter();
+        this.fetchDepartment();
         this.submitCreateData.submitType = '법인 카드 신청';
     },
     methods: {
         async fetchUsers() {
             try {
-                const response = await axios.get('/user/list');
+                const response = await axios.get(`/user/department-users/${this.departmentId}`);
                 this.users = response.data;
             } catch (e) {
                 console.error('직원 불러오는데 오류 발생:', e);
             }
         },
-
+        async fetchWriter() {
+            try {
+                const response = await axios.get('/user/userName');
+                this.userName = response.data.result;
+            } catch (e) {
+                console.error('회원 정보 불러오는데 오류 발생:', e);
+            }
+        },
+        async fetchDepartment() {
+            try {
+                const response = await axios.get(`/department/name/${this.departmentId}`);
+                this.departmentName = response.data.result;
+            } catch (e) {
+                console.error('회원 정보 불러오는데 오류 발생:', e);
+            }
+        },
         onDragStart(user) {
             this.draggedUser = user;
         },
