@@ -63,84 +63,86 @@
     </v-container>
   </template>
   
-  <script>
-  import axios from "axios";
-  
-  export default {
-    data() {
-      return {
-        selectedTab: 0,
-        reservations: [], // 예약 요청 목록
-      };
-    },
-    methods: {
-      // 예약 목록 가져오기
-      async fetchReservations() {
-        try {
-          const token = localStorage.getItem("token");
-          const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/alllist`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          this.reservations = response.data;
-        } catch (error) {
-          console.error("예약 목록을 가져오는 중 오류 발생:", error);
-          if (error.response?.status === 401) {
-            alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
-            this.$router.push("/login");
-          }
-        }
-      },
-  
-      // 예약 승인
-      async approveReservation(reservationId) {
-        try {
-          const token = localStorage.getItem("token");
-          await axios.put(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/approve/${reservationId}`, null, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          alert("예약이 승인되었습니다.");
-          this.fetchReservations(); // 승인 후 목록을 다시 가져옴
-        } catch (error) {
-          console.error("예약 승인 중 오류 발생:", error);
-        }
-      },
-  
-      // 예약 거절
-      async rejectReservation(reservationId) {
-        try {
-          const token = localStorage.getItem("token");
-          await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/reject/${reservationId}`, null, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          alert("예약이 거절되었습니다.");
-          this.fetchReservations(); // 거절 후 목록을 다시 가져옴
-        } catch (error) {
-          console.error("예약 거절 중 오류 발생:", error);
-        }
-      },
-      goToAdminApprovalChange() {
-            this.selectedTab = 0;
-        },
+<script>
+import axios from "axios";
 
-      goToVehicleReservation() {
-        this.$router.push("/reservation/reservationList");
-      },
+export default {
+  data() {
+    return {
+      selectedTab: 0,
+      reservations: [], // 예약 요청 목록
+    };
+  },
+  methods: {
+    // 예약 목록 가져오기
+    async fetchReservations() {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/alllist`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        this.reservations = response.data;
+      } catch (error) {
+        console.error("예약 목록을 가져오는 중 오류 발생:", error);
+        if (error.response?.status === 401) {
+          alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
+          this.$router.push("/login");
+        }
+      }
     },
-    mounted() {
-      this.fetchReservations(); // 컴포넌트가 마운트될 때 예약 목록을 가져옴
+
+    // 예약 승인
+    async approveReservation(reservationId) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.put(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/approve/${reservationId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        alert("예약이 승인되었습니다.");
+        this.fetchReservations(); // 승인 후 목록을 다시 가져옴
+      } catch (error) {
+        console.error("예약 승인 중 오류 발생:", error);
+      }
     },
-  };
-  </script>
+
+    // 예약 거절
+    async rejectReservation(reservationId) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/reject/${reservationId}`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        alert("예약이 거절되었습니다.");
+        this.fetchReservations();
+      } catch (error) {
+        console.error("예약 거절 중 오류 발생:", error);
+      }
+    },
+
+    goToAdminApprovalChange() {
+      this.selectedTab = 0;
+    },
+
+    goToVehicleReservation() {
+      this.$router.push("/reservation/reservationList");
+    },
+  },
+
+  mounted() {
+    this.fetchReservations();
+  },
+};
+</script>
   
-  <style scoped>
+<style scoped>
   .v-btn {
     margin: 0 10px;
   }
-  </style>
+</style>
   

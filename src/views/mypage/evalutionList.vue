@@ -118,7 +118,7 @@ export default {
       try {
         const positionId = localStorage.getItem('positionId'); // 저장된 positionId 가져오기
 
-        if (positionId === '1') { // '1'이면 팀장
+        if (positionId === '1') { // '1'->팀장
           this.isManager = true;
 
           // 부서원 리스트 가져오기

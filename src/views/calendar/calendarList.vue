@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- FullCalendar Integration -->
     <FullCalendar :options="calendarOptions">
       <template v-slot:eventContent="arg">
         <div>
@@ -10,7 +9,6 @@
       </template>
     </FullCalendar>
 
-    <!-- Event Modal for creating/updating events -->
     <v-dialog v-model="isModalOpen" persistent max-width="500px">
       <v-card>
         <v-card-title>{{ isEditing ? 'Update Event' : 'Create Event' }}</v-card-title>
@@ -27,21 +25,21 @@
               required
             ></v-select>
 
-            <!-- Date and Time Pickers for Start Time -->
             <v-menu v-model="menuStart" :close-on-content-click="false" transition="scale-transition" offset-y>
               <template v-slot:activator="{ attrs }">
                 <v-text-field v-model="formData.startDate" label="Start Date" readonly v-bind="attrs" @click="menuStart = true"></v-text-field>
               </template>
               <v-date-picker v-model="formData.startDate" @input="menuStart = false"></v-date-picker>
             </v-menu>
-            <v-time-picker
-              v-model="formData.startTimeClock"
-              label="Start Time"
-              format="24hr"
-              @input="handleTimeChange('startTimeClock', $event)"
-            ></v-time-picker>
 
-            <!-- Date and Time Pickers for End Time -->
+            <!-- Start Time 입력 필드 -->
+            <v-text-field
+              v-model="formData.startTimeClock"
+              label="Start Time (HH:MM)"
+              placeholder="Enter time in HH:MM format"
+              outlined
+            ></v-text-field>
+
             <v-menu v-model="menuEnd" :close-on-content-click="false" transition="scale-transition" offset-y>
               <template v-slot:activator="{ on, attrs }">
                 <v-text-field v-model="formData.endDate" label="End Date" readonly v-bind="attrs" v-on="on"></v-text-field>
@@ -49,13 +47,13 @@
               <v-date-picker v-model="formData.endDate" @input="menuEnd = false"></v-date-picker>
             </v-menu>
 
-            <!-- End Time Clock -->
-            <v-time-picker
+            <!-- End Time 입력 필드 -->
+            <v-text-field
               v-model="formData.endTimeClock"
-              label="End Time"
-              format="24hr"
-              @input="handleTimeChange('endTimeClock', $event)"
-            ></v-time-picker>
+              label="End Time (HH:MM)"
+              placeholder="Enter time in HH:MM format"
+              outlined
+            ></v-text-field>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -71,6 +69,7 @@
 <script>
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import axios from 'axios';
 
@@ -81,11 +80,29 @@ export default {
   data() {
     return {
       calendarOptions: {
-        plugins: [dayGridPlugin, interactionPlugin],
+        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
-        events: [], // Calendar events will be fetched and set here
+        events: [],
+        locale: 'ko',
+        headerToolbar: {
+          left: 'prev,next today myCustomButton',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        allDaySlot: false,
+        customButtons: {
+          myCustomButton: {
+            text: '이벤트1',
+            click: this.handleCustomButtonClick
+          }
+        },
         dateClick: this.handleDateClick,
-        eventClick: this.handleEventClick
+        eventClick: this.handleEventClick,
+        eventTimeFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }
       },
       isModalOpen: false,
       isEditing: false,
@@ -93,19 +110,18 @@ export default {
         id: null,
         title: '',
         content: '',
-        type: '유저', // 기본값 설정
-        startDate: '', // 날짜
-        startTimeClock: '', // 시간 (clock)
+        type: '유저', 
+        startDate: '',
+        startTimeClock: '',
         endDate: '',
-        endTimeClock: '', // 시간 (clock)
+        endTimeClock: '',
       },
-      eventTypes: ['유저', '부서', '회사일정'], // Event Types Selection
+      eventTypes: ['유저', '부서', '회사일정'],
       menuStart: false,
       menuEnd: false
     };
   },
   methods: {
-    // Fetch all events including holidays and user events
     fetchEvents() {
       axios
         .get(`${process.env.VUE_APP_API_BASE_URL}/calendars/allevents`, {
@@ -120,19 +136,20 @@ export default {
             start: event.startTime,
             end: event.endTime,
             extendedProps: {
-              content: event.content
+              content: event.content,
+              type: event.type
             }
           }));
           this.calendarOptions.events = events;
         })
         .catch((error) => {
-          console.error('Error fetching events:', error);
+          console.error('이벤트 불러오기에 실패하였습니다 : ', error);
         });
     },
     handleTimeChange(type, value) {
       const hours = value.split(':')[0];
       const minutes = value.split(':')[1];
-      const seconds = '00'; // 기본적으로 초는 00으로 설정
+      const seconds = '00'; 
       const formattedTime = `${hours}:${minutes}:${seconds}`;
 
       if (type === 'startTimeClock') {
@@ -141,76 +158,102 @@ export default {
         this.formData.endTimeClock = formattedTime;
       }
     },
-    // Handle clicking a date in the calendar to create a new event
     handleDateClick(info) {
       this.isEditing = false;
       this.formData.startDate = info.dateStr;
       this.formData.startTimeClock = '';
       this.formData.endDate = info.dateStr;
       this.formData.endTimeClock = '';
-      this.formData.title = ''; // Clear previous input
-      this.formData.content = ''; // Clear previous input
-      this.formData.type = '유저'; // 기본적으로 유저로 설정
+      this.formData.title = '';
+      this.formData.content = '';
+      this.formData.type = '유저';
       this.isModalOpen = true;
     },
-    // Handle clicking an existing event to edit it
     handleEventClick(info) {
       this.isEditing = true;
       this.formData.id = info.event.id;
       this.formData.title = info.event.title;
-      this.formData.startDate = info.event.startStr.split('T')[0];
-      this.formData.startTimeClock = info.event.startStr.split('T')[1];
-      this.formData.endDate = info.event.endStr.split('T')[0];
-      this.formData.endTimeClock = info.event.endStr.split('T')[1];
+    
+      if (info.event.startStr) {
+        this.formData.startDate = info.event.startStr.split('T')[0];
+        this.formData.startTimeClock = info.event.startStr.split('T')[1]?.substring(0, 5) || '';
+      } else {
+        this.formData.startDate = '';
+        this.formData.startTimeClock = '';
+      }
+
+      if (info.event.endStr) {
+        this.formData.endDate = info.event.endStr.split('T')[0];
+        this.formData.endTimeClock = info.event.endStr.split('T')[1]?.substring(0, 5) || '';
+      } else {
+        this.formData.endDate = '';
+        this.formData.endTimeClock = '';
+      }
+
       this.formData.content = info.event.extendedProps.content;
-      this.formData.type = info.event.extendedProps.type || '유저'; // 기본값 설정
+      this.formData.type = info.event.extendedProps.type || '유저';
       this.isModalOpen = true;
     },
-    // Handle saving an event (either create or update)
     handleSaveEvent() {
-      const startTime = `${this.formData.startDate}T${this.formData.startTimeClock || '00:00:00'}`;
-      const endTime = `${this.formData.endDate}T${this.formData.endTimeClock || '00:00:00'}`;
+  // startDate와 endDate가 문자열인 경우 Date 객체로 변환
+  const startDate = new Date(this.formData.startDate);
+  const endDate = new Date(this.formData.endDate);
 
-      const url = this.isEditing
-        ? `${process.env.VUE_APP_API_BASE_URL}/calendars/update/${this.formData.id}`
-        : `${process.env.VUE_APP_API_BASE_URL}/calendars/create`;
+  // Date 객체인지 확인 후 처리
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    alert('유효한 날짜를 입력하세요.');
+    return;
+  }
 
-      const method = this.isEditing ? 'put' : 'post';
+  const startTime = `${this.formData.startDate}T${this.formData.startTimeClock || '00:00:00'}`;
+  const endTime = `${this.formData.endDate}T${this.formData.endTimeClock || '00:00:00'}`;
 
-      const payload = {
-        title: this.formData.title,
-        content: this.formData.content,
-        startTime: startTime, // 날짜와 시간이 결합된 문자열
-        endTime: endTime, // 날짜와 시간이 결합된 문자열
-        type: this.formData.type // 선택된 타입을 전달
-      };
+  const url = this.isEditing
+    ? `${process.env.VUE_APP_API_BASE_URL}/calendars/update/${this.formData.id}`
+    : `${process.env.VUE_APP_API_BASE_URL}/calendars/create`;
 
-      axios({
-        method: method,
-        url: url,
-        data: payload,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-        .then(() => {
-          this.isModalOpen = false;
-          this.fetchEvents(); // 이벤트 저장 후 다시 이벤트 목록을 불러옴
-        })
-        .catch((error) => {
-          if (error.response) {
-            console.error('Server Response:', error.response.data);
-            alert(`Error: ${error.response.data.message || '이벤트 저장에 실패했습니다.'}`);
-          } else if (error.request) {
-            console.error('No Response from Server:', error.request);
-          } else {
-            console.error('Error setting up the request:', error.message);
-          }
-        });
+  const method = this.isEditing ? 'put' : 'post';
+
+  const payload = {
+    title: this.formData.title,
+    content: this.formData.content,
+    startTime: startTime,
+    endTime: endTime,
+    type: this.formData.type
+  };
+
+  axios({
+    method: method,
+    url: url,
+    data: payload,
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
     }
+  })
+    .then(() => {
+      this.isModalOpen = false;
+      this.fetchEvents(); 
+    })
+    .catch((error) => {
+      if (error.response) {
+        console.error('Server Response:', error.response.data);
+        alert(`Error: ${error.response.data.message || '이벤트 저장에 실패했습니다.'}`);
+      } else if (error.request) {
+        console.error('서버에서 응답 없음 :', error.request);
+      } else {
+        console.error('요청 설정 중 오류 발생 :', error.message);
+      }
+    });
+}
   },
   mounted() {
-    this.fetchEvents(); // Fetch events when the component is mounted
+    this.fetchEvents();
   }
 };
 </script>
+
+<style scoped>
+.v-btn {
+  margin: 0 10px;
+}
+</style>
