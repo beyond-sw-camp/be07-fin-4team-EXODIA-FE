@@ -16,9 +16,9 @@
       <v-tab-item v-if="activeTab === 1">
         <v-row>
           <v-col>
-            <h3>인사평가 입력</h3>
+            <h3></h3>
             <br>
-            <span>* 사용자는 인사평가를 위해서 자신의 특색을 갖춘 리스트로 입력하세요</span>
+            <span>* 인사평가를 위한 자신의 리스트를 작성하세요</span>
             <v-simple-table dense>
               <thead>
                 <tr>
@@ -123,8 +123,8 @@ export default {
         this.evalutions = response.data.map(item => ({
           ...item,
           subEvalutionId: item.subEvalutionId,
-          subEvalutionContent: item.subEvalutionContent || '', // 소분류가 비어 있으면 빈 값 설정
-          grade: item.grade || '', // 기본 grade 설정
+          subEvalutionContent: item.subEvalutionContent || '',
+          grade: item.grade || '',
           saved: !!item.subEvalutionContent, // content가 null이 아니면 저장됨으로 표시
           editable: !item.saved // 이미 저장된 항목은 수정 불가, 저장되지 않은 항목은 수정 가능
         }));

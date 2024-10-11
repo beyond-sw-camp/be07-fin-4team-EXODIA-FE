@@ -102,8 +102,7 @@
                 <v-card-text>결재자를 선택하시오.</v-card-text>
                 <v-list>
                     <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
-                        <v-list-item-content>{{ droppedUser.name }} - {{ droppedUser.positionName
-                            }}</v-list-item-content>
+                        <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
                         <v-btn icon @click="removeUser(index)">
                             <v-icon style="border:none">mdi-close</v-icon>
                         </v-btn>
@@ -145,7 +144,7 @@ export default {
             submitCreateData: {
                 submitType: '',
                 contents: '',
-                submitUserDtos: []
+                submitUserDtos: [],
             },
 
 
@@ -171,13 +170,14 @@ export default {
         onDrop() {
             if (this.draggedUser && !this.droppedUsers.includes(this.draggedUser)) {
 
-                console.log(this.droppedUsers)
+                console.log("dropped:" + this.droppedUsers)
 
                 this.submitCreateData.submitUserDtos.push({
                     userName: this.draggedUser.name,
-                    position: this.draggedUser.positionName,
-
+                    position: this.draggedUser.positionId,
                 });
+                console.log("position: " + this.draggedUser.positionId);
+
                 this.droppedUsers.push(this.draggedUser);
                 this.draggedUser = null;
             }
@@ -188,7 +188,7 @@ export default {
         async createSubmit() {
             try {
                 this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
-                await axios.post('/submit/create', this.submitCreateData);
+                await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
                 alert("결재 요청이 성공적으로 처리되었습니다.")
                 location.reload();
             } catch (e) {
