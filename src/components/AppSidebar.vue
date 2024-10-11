@@ -63,10 +63,10 @@
 
     <!-- 서브사이드: 게시판 -->
     <div v-if="hoveredMenu === 'board'" class="sub-side-menu-item">
-      <v-row @click="$router.push('/board/list')">
+      <v-row @click="$router.push('/board/notice/list')">
         공지사항
       </v-row>
-      <v-row @click="$router.push('/board/list')">
+      <v-row @click="$router.push('/board/familyevent/list')">
         경조사
       </v-row>
       <v-row @click="$router.push('/qna/list')">

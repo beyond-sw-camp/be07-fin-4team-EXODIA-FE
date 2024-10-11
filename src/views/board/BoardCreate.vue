@@ -68,6 +68,7 @@ export default {
       departmentId: localStorage.getItem('departmentId') // 로컬스토리지에서 departmentId 가져오기
     };
   },
+  props: ['category'],
   mounted() {
     this.checkUserRole();
   },

@@ -11,7 +11,6 @@
             v-model="searchCategory"
             :items="searchCategories"
             label="검색 범위"
-            @change="fetchQuestions" 
           ></v-select>
         </v-col>
         <!-- 검색어 입력 -->
@@ -36,7 +35,6 @@
         <col width="140" />
         <col width="140" />
         <col width="140" />
-        <col width="140" />
       </colgroup>
       <thead>
         <tr>
@@ -45,7 +43,6 @@
           <th>부서명</th>
           <th>작성자</th>
           <th>작성일</th>
-          <th>답변 여부</th>
         </tr>
       </thead>
       <tbody>
@@ -54,11 +51,9 @@
           <td @click="viewDetail(question.id)" class="text_left subject">
             {{ question.title }}
           </td>
-          <!-- 익명 여부에 따른 작성자 정보만 '익명'으로 표시 -->
-          <td>{{ question.departmentName || 'N/A' }}</td>
-          <td>{{ question.anonymous ? '익명' : question.questionUserName }}</td>
+          <td>{{ question.department ? question.department.name : 'N/A' }}</td>
+          <td>{{ question.questionUserName }}</td>
           <td>{{ formatDate(question.createdAt) }}</td>
-          <td>{{ question.answeredAt ? '답변 완료' : '미답변' }}</td>
         </tr>
       </tbody>
     </table>
@@ -72,7 +67,7 @@
     <v-pagination
       v-model="currentPage"
       :length="totalPages"
-      @change="onPageChange" 
+      @input="fetchQuestions"
       class="my-4"
     ></v-pagination>
   </v-container>
@@ -88,91 +83,57 @@ export default {
       currentPage: 1, // 현재 페이지 번호
       totalPages: 1, // 전체 페이지 수
       itemsPerPage: 10, // 페이지당 항목 수
-      searchCategory: "전체", // 검색 카테고리 기본값 (null 대신 기본값을 '전체'로 설정)
+      searchCategory: "전체", // 검색 카테고리 기본값
       searchQuery: "", // 검색어
-      // 검색 카테고리 목록: 전체, 제목, 내용
-      searchCategories: ["전체", "제목", "내용"],
+      searchCategories: ["전체", "제목", "작성자"], // 검색 카테고리 목록
     };
   },
   created() {
     this.fetchQuestions(); // QnA 목록 가져오기
   },
-  watch: {
-    // currentPage 값 변경 시 fetchQuestions 호출
-    currentPage(newPage) {
-      console.log("watch - currentPage 값 변경됨:", newPage);
-      this.fetchQuestions();
-    }
-  },
   methods: {
-    // 페이지 변경 시 호출되는 메서드
-    onPageChange(newPage) {
-      console.log("onPageChange - 새로운 페이지 번호:", newPage);
-      this.currentPage = newPage;
-    },
     // 질문 목록 가져오기
     async fetchQuestions() {
       try {
-        // searchType과 searchQuery 기본값 설정
-        const searchType = this.getSearchType(); // '전체', '제목', '내용' 중 하나가 항상 설정됨
-        const searchQuery = this.searchQuery.trim(); // 공백 제거
-
-        // 빈 문자열이 아닌 경우에만 파라미터로 추가
         const params = {
-          page: this.currentPage - 1, // 페이지 번호를 0부터 시작하기 위해 1을 뺍니다.
+          page: this.currentPage - 1,
           size: this.itemsPerPage,
+          searchType: this.getSearchType(),
+          searchQuery: this.searchQuery,
         };
 
-        // 검색 범위가 '전체'가 아니고 검색어가 있는 경우에만 검색 파라미터 추가
-        if (searchType !== "all" && searchQuery) {
-          params.searchType = searchType;
-          params.searchQuery = searchQuery;
-        }
-
-        // 콘솔 로그 추가: 요청 파라미터 확인
-        console.log("fetchQuestions() - Request Params:", params);
-
-        // 서버 요청
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/list`, { params });
 
-        // 콘솔 로그 추가: 서버 응답 확인
-        console.log("fetchQuestions() - Response Data:", response.data);
-
         const result = response.data.result;
-
         if (result && result.content) {
-          console.log("QnA 목록 데이터:", result.content);
-
           this.questions = result.content;
           this.totalPages = result.totalPages;
         } else {
           console.error("올바르지 않은 데이터 형식입니다:", response.data);
         }
       } catch (error) {
-        // 콘솔 로그 추가: 오류 메시지 확인
         console.error("질문 목록을 불러오는 중 오류가 발생했습니다:", error);
       }
     },
     // 검색 유형 변환
     getSearchType() {
-      // 콘솔 로그 추가: 검색 카테고리 값 확인
-      console.log("getSearchType() - Search Category:", this.searchCategory);
-
       switch (this.searchCategory) {
         case "전체":
           return "all";
         case "제목":
           return "title";
-        case "내용":
-          return "content";
+        case "작성자":
+          return "questionUserName";
         default:
           return "all";
       }
     },
     formatDate(date) {
-      if (!date) return "";
-      const options = { year: "numeric", month: "2-digit", day: "2-digit" };
-      return new Date(date).toLocaleDateString("ko-KR", options);
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}년 ${month}월 ${day}일`;
     },
     createNewQuestion() {
       this.$router.push("/qna/create");
@@ -183,7 +144,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .container {
