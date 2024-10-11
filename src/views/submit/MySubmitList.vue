@@ -3,13 +3,13 @@
         <h1 style="margin:35px 0; font-weight:800">결재 요청 문서</h1>
     </v-row>
 
-    <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
+    <v-row justify="center" style="margin:0; text-align:center;">
         <v-col cols="6" sm="6">
-            <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" @input="filterDocuments"
+            <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
                 style="margin-bottom: 20px;"></v-text-field>
         </v-col>
-        <v-col cols="4" sm="2">
-            <v-btn color="primary" @click="searchFilter(searchQuery)">
+        <v-col cols="6" sm="2">
+            <v-btn class="searchBtn" @click="searchFilter(searchQuery)">
                 검색
             </v-btn>
         </v-col>
@@ -70,6 +70,7 @@ export default {
         return {
             token: localStorage.getItem('token') || null,
             submitList: [],
+            isMySubmitReq: true,
         }
     },
     mounted() {
@@ -93,8 +94,7 @@ export default {
             return new Date(date).toLocaleTimeString();
         },
         showDetail(submitId) {
-            console.log("showDetail: " + submitId)
-            this.$router.push({ name: 'SubmitDetailComponent', params: { submitId: submitId } })
+            this.$router.push({ name: 'SubmitDetailComponent', params: { submitId: submitId }, query: { isMySubmitReq: this.isMySubmitReq } })
             this.selectedSubmitId = submitId;
         },
 

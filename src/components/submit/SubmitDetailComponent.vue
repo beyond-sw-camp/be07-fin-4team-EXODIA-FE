@@ -6,26 +6,26 @@
         <!-- 내용 -->
         <v-col cols="8">
             <v-row>
-                <v-col cols="2">
+                <v-col cols="3">
                     <v-list-subheader>신청인</v-list-subheader>
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="3">
                     <v-list-subheader style="font-weight:700">{{ selectedSubmit.userName }}</v-list-subheader>
                 </v-col>
-                <v-col cols="2">
+                <v-col cols="3">
                     <v-list-subheader>부서</v-list-subheader>
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="3">
                     <v-list-subheader style="font-weight:700">{{ selectedSubmit.department }}</v-list-subheader>
                 </v-col>
             </v-row>
 
             <!-- 결재 상태 -->
             <v-row>
-                <v-col cols="2">
+                <v-col cols="3">
                     <v-list-subheader>상태</v-list-subheader>
                 </v-col>
-                <v-col cols="8">
+                <v-col cols="9">
                     <v-chip class="d-inline-flex align-center" v-bind:class="{
                         'chip-reject': selectedSubmit.submitStatus === 'REJECT',
                         'chip-accept': selectedSubmit.submitStatus === 'ACCEPT'
@@ -35,10 +35,10 @@
 
             <!-- 결재 신청 시간 -->
             <v-row>
-                <v-col cols="2">
+                <v-col cols="3">
                     <v-list-subheader>신청 시간</v-list-subheader>
                 </v-col>
-                <v-col cols="10">
+                <v-col cols="9">
                     <v-list-subheader style="font-weight:700">
                         {{ formatDate(selectedSubmit.submitTime) }}
                         {{ formatLocalTime(selectedSubmit.submitTime) }}
@@ -47,21 +47,23 @@
             </v-row>
 
             <!-- 결재 내용 -->
-
+            <!-- 요청한 경우에는 화면에서 안나오게 처리 필요 -->
             <v-row style="justify-content: space-between">
-                <v-col cols="2">
+                <v-col cols="3">
                     <v-list-subheader>내용</v-list-subheader>
                 </v-col>
-                <div style="border: 1px solid #b9b9b9; border-radius:20px">
-                    <v-col v-for="(value, key) in selectedSubmit.contents" :key="key" cols="12">
-                        {{ key }}: {{ value }}
-                    </v-col>
-                </div>
+                <v-col cols="9">
+                    <div style="border: 1px solid #b9b9b9; border-radius:20px">
+                        <v-col v-for="(value, key) in selectedSubmit.contents" :key="key">
+                            {{ key }}: {{ value }}
+                        </v-col>
+                    </div>
+                </v-col>
             </v-row>
         </v-col>
 
         <!-- 승인 거절 -->
-        <v-col cols="4" v-if="selectedSubmit.submitStatus === 'WAITING'">
+        <v-col cols="4" v-if="selectedSubmit.submitStatus === 'WAITING' && isMySubmitReq == 'false'">
             <strong>승인 여부 선택:</strong>
             <v-radio-group v-model="approvalStatus" mandatory @change="handleApprovalChange(approvalStatus)">
                 <v-radio label="승인" value="ACCEPT"></v-radio>
@@ -80,7 +82,7 @@
     <v-dialog v-model="isRejectReasonDialogVisible" max-width="500px">
         <v-card>
             <v-card-title>
-                <span class="text-h6">반려 사유 입력</span>
+                <h4>반려 사유 입력</h4>
             </v-card-title>
             <v-card-text>
                 <v-text-field label="반려 사유" v-model="reason" :rules="[v => !!v || '반려 사유를 작성하세요']"
@@ -109,11 +111,14 @@ export default {
             reason: '',
             submitId: '',
             isRejectReasonDialogVisible: false,
-
+            isMySubmitReq: true,
         }
     },
     created() {
         this.submitId = this.$route.params.submitId;
+        this.isMySubmitReq = this.$route.query.isMySubmitReq
+
+        console.log(this.isMySubmitReq);
         this.fetchSubmitDetail(this.submitId);
 
     },

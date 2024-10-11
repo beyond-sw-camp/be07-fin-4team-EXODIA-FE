@@ -22,9 +22,10 @@
                     style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
                     <v-col cols="1"><strong> </strong></v-col>
                     <v-col cols="3"><strong>결재 종류</strong></v-col>
-                    <v-col cols="3"><strong>결재 신청인</strong></v-col>
-                    <v-col cols="3"><strong>결재 신청 일시</strong></v-col>
-                    <v-col cols="2"><strong>결재 상태</strong></v-col>
+                    <v-col cols="2"><strong>신청인</strong></v-col>
+                    <v-col cols="2"><strong>신청 일시</strong></v-col>
+                    <v-col cols="2"><strong>처리 일시</strong></v-col>
+                    <v-col cols="2"><strong>상태</strong></v-col>
                 </v-row>
 
                 <v-row v-for="(submit, index) in filteredSubmitList" :key="submit.id" oulined
@@ -32,8 +33,9 @@
                     @click="showDetail(submit.id)">
                     <v-col cols="1">{{ index + 1 }}</v-col>
                     <v-col cols="3">{{ submit.submitType }}</v-col>
-                    <v-col cols="3">{{ submit.department }} {{ submit.userName }} </v-col>
-                    <v-col cols="3">{{ formatDate(submit.submitTime) }}</v-col>
+                    <v-col cols="2">{{ submit.userName }} </v-col>
+                    <v-col cols="2">{{ formatDate(submit.submitTime) }}</v-col>
+                    <v-col cols="2">{{ formatDate(submit.submitTime) }}</v-col>
                     <v-col cols="2">
                         <v-chip class="d-flex justify-center align-center" v-bind:class="{
                             'chip-reject': submit.submitStatus === 'REJECT',
@@ -75,6 +77,7 @@ export default {
             submitList: [],
             selectedSubmit: '',
             searchQuery: '',
+            isMySubmitReq: false,
         }
     },
     mounted() {
@@ -116,8 +119,7 @@ export default {
             return new Date(date).toLocaleTimeString();
         },
         showDetail(submitId) {
-            console.log("showDetail: " + submitId)
-            this.$router.push({ name: 'SubmitDetailComponent', params: { submitId: submitId } })
+            this.$router.push({ name: 'SubmitDetailComponent', params: { submitId: submitId }, query: { isMySubmitReq: this.isMySubmitReq } })
             this.selectedSubmitId = submitId;
         },
         searchFilter() {
