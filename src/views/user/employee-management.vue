@@ -33,9 +33,9 @@
 
     <div v-if="users.length > 0">
       <table class="employee-table">
-        <thead>
-          <tr>
-            <th>#</th> <!-- 행 번호 추가 -->
+        <thead >
+          <tr style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
+            <th>번호</th> <!-- 행 번호 추가 -->
             <th>사번</th>
             <th>부서</th>
             <th>이름</th>
@@ -240,7 +240,6 @@ export default {
 }
 
 .employee-table th {
-  background-color: #f5f5f5;
   font-weight: bold;
 }
 
