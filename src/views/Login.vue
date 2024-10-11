@@ -2,11 +2,13 @@
   <v-container class="login-container">
     <v-row justify="center" align="center">
       <v-col cols="12" sm="8" md="6" class="text-center">
-        <div class="logo-container">
-          <img src="@/assets/exodia.png" alt="Logo" class="logo"/>
-        </div>
+
         <v-card elevation="4" class="login-card">
-          <v-card-title class="headline">로그인</v-card-title>
+          <v-card-title class="headline">
+            <div class="logo-container">
+              <img src="@/assets/exodia.png" alt="Logo" class="logo"/>
+            </div>
+          </v-card-title>
           <v-card-text>
             <v-form @submit.prevent="doLogin">
               <v-text-field
