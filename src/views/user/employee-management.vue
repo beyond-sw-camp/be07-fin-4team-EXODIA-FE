@@ -31,32 +31,37 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col>
-        <v-data-table
-          :headers="headers"
-          :items="users"
-          item-value="userNum"
-          class="elevation-1"
-          @click:row="viewUser"
-          style="width: 100%"
-        >
-          <template v-slot:item="{ item }">
-            <tr @click="viewUser(item)">
-              <td style="padding: 10px;">{{ item.userNum }}</td>
-              <td style="padding: 10px;">{{ getDepartmentName(item.departmentId) }}</td>
-              <td style="padding: 10px;">{{ item.name }}</td>
-              <td style="padding: 10px;">{{ getPositionName(item.positionId) }}</td>
-              <td style="padding: 10px;">{{ item.joinDate }}</td>
-              <td style="padding: 10px;">
-                <v-btn text class="green--text" @click.stop="editUser(item.userNum)">수정</v-btn>
-                <v-btn text class="red--text" @click.stop="openDeleteDialog(item.userNum)">삭제</v-btn>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-col>
-    </v-row>
+    <div v-if="users.length > 0">
+      <table class="employee-table">
+        <thead>
+          <tr>
+            <th>사번</th>
+            <th>부서</th>
+            <th>이름</th>
+            <th>직급</th>
+            <th>입사일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="user in users" :key="user.userNum" @click="viewUser(user)">
+            <td>{{ user.userNum }}</td>
+            <td>{{ getDepartmentName(user.departmentId) }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ getPositionName(user.positionId) }}</td>
+            <td>{{ user.joinDate }}</td>
+            <td>
+              <button class="edit-btn" @click.stop="editUser(user.userNum)">수정</button>
+              <button class="delete-btn" @click.stop="openDeleteDialog(user.userNum)">삭제</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div v-else>
+      <p>직원 데이터가 없습니다.</p>
+    </div>
 
     <v-dialog v-model="deleteDialog" persistent max-width="500">
       <v-card>
@@ -91,16 +96,6 @@ export default {
         { text: "부서", value: "department" },
         { text: "직급", value: "position" },
       ],
-      headers: [
-        { text: "사번", value: "userNum", align: 'center' },
-        { text: "부서", value: "departmentId", align: 'center' },
-        { text: "이름", value: "name", align: 'center' },
-        { text: "직급", value: "positionId", align: 'center' },
-        { text: "입사일", value: "joinDate", align: 'center' },
-        { text: "관리", value: "actions", sortable: false, align: 'center' },
-      ],
-      departments: [], // 부서 목록
-      positions: [], // 직급 목록
       deleteDialog: false,
       deleteInfo: {
         userNum: "",
@@ -132,7 +127,6 @@ export default {
       try {
         const response = await axios.get("/positions");
         this.positions = response.data;
-        console.log("직급 데이터:", this.positions); 
       } catch (error) {
         console.error("직급 목록을 불러오는 중 오류가 발생했습니다:", error);
       }
@@ -184,28 +178,43 @@ export default {
 </script>
 
 <style scoped>
-.v-btn {
-  margin-right: 10px;
-}
-
-.v-data-table__wrapper {
-  text-align: center;
-}
-
-.green--text {
-  color: #4caf50 !important;
-}
-
-.red--text {
-  color: #f44336 !important;
-}
-
-table {
+.employee-table {
   width: 100%;
+  border-collapse: collapse;
 }
 
-td {
-  text-align: center;
+.employee-table th,
+.employee-table td {
   padding: 10px;
+  text-align: left;
+}
+
+.employee-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.employee-table tr:hover {
+  background-color: #f0f0f0;
+}
+
+.edit-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+p {
+  text-align: center;
 }
 </style>

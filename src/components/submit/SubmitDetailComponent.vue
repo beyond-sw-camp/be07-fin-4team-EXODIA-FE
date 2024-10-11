@@ -57,8 +57,6 @@
                         {{ key }}: {{ value }}
                     </v-col>
                 </div>
-
-
             </v-row>
         </v-col>
 
