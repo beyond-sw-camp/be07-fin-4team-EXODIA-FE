@@ -95,7 +95,7 @@ export default {
           console.error("직급별 급여 목록을 가져오는 중 오류가 발생했습니다.", error);
         }
       } else {
-        this.fetchSalaries();
+        this.fetchSalaries(); 
       }
     },
     async fetchPositions() {
