@@ -21,7 +21,7 @@
         <v-row>
           <v-col cols="12">
             <ul class="info">
-              <li><strong>작성자: {{ board.user_num }}</strong></li>
+              <li><strong>작성자: 관리자</strong></li>
               <li><strong>작성일:</strong> {{ formatDate(board.createdAt) }}</li>
               <li><strong>조회수:</strong> {{ board.hits }}</li>
               <li><strong>카테고리:</strong> {{ board.category }}</li>
@@ -191,8 +191,14 @@ export default {
     },
   
     formatDate(date) {
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      return new Date(date).toLocaleDateString(undefined, options);
+      const options = { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      };
+      
+      // toLocaleDateString을 사용하여 형식 변경 (ex: 2024.10.11)
+      return new Date(date).toLocaleDateString('ko-KR', options).replace(/\//g, '.');
     },
     goBack() {
       this.$router.go(-1); // 이전 페이지로 이동
