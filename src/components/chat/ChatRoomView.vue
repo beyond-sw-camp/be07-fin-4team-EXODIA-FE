@@ -8,30 +8,32 @@
     <v-container> <!--전체 채팅방 감싸요-->
 
         <!-- 채팅방 상단 -->
-        <v-app-bar>
-            <template>
-                <v-btn> back </v-btn> <!-- 채팅방리스트로돌아감 -->
-            </template>
-            <v-app-bar-title>{{ chatRoomId }}</v-app-bar-title> <!-- 채팅방 이름 -->
-            <template>
-                <v-form>
-                    <v-text-field placeholder="채팅방 내 검색"></v-text-field>
-                    <v-icon icon="mdi-magnify"></v-icon>
-                </v-form>
-                <v-icon icon="mdi-dots-vertical"></v-icon> <!-- 채팅방메뉴 : 사진모아보기, 파일모아보기, 채팅구성원확인, 채팅방 아예 나가기  // 유저초대?-->
-            </template>
-        </v-app-bar>
+         <v-container class="icons">
+
+            <v-icon class="icon-item icon" @click="goBack">mdi-chevron-left</v-icon> <!-- 채팅방리스트로돌아감 -->
+
+            <span>{{ chatRoomId }}방입니다</span> <!-- 채팅방 이름 -->
+
+            <!-- <v-text-field variant="outlined" placeholder="채팅방 내 검색"></v-text-field> -->
+            <v-icon class="icon-item icon" @click="goBack">mdi-magnify</v-icon>
+
+
+            <v-icon class=" icon-item icon" @click="goBack">mdi-dots-vertical</v-icon><!-- 채팅방메뉴 : 사진모아보기, 파일모아보기, 채팅구성원확인, 채팅방 아예 나가기  // 유저초대?-->
+
+        </v-container>
+
+
 
         <!-- 채팅방 -->
-        <v-container>
+        <v-container >
 
             <div v-for="(chat, index) in chatMessageList" :key="chat.id">
 
                 <!-- 날짜 분리 -->
-                <div v-if="index === 0 || this.isDifferentDay(chat.createdAt, chatMessageList[index - 1].createdAt)">
+                <div v-if="index === 0 || this.isDifferentDay(chat.createAt, chatMessageList[index - 1].createAt)">
                     <div>
                         <hr style="width: 27%; margin:auto;">
-                        <span style="margin:auto;">{{ this.getDay(chat.createdAt) }}</span>
+                        <span style="margin:auto;">{{ this.getDay(chat.createAt) }}</span>
                         <hr style="width: 27%; margin:auto;">
                     </div>
                 </div>
@@ -45,7 +47,7 @@
                         </div>
                         <div>
                             <span>{{ chat.message }}</span>
-                            <span>{{ this.getTime(chat.createdAt) }}</span>
+                            <span>{{ this.getTime(chat.createAt) }}</span>
                         </div>
                     </div>
                 </div>
@@ -60,9 +62,14 @@
                     style="height: 120px; width: 120px; object-fit: cover;">
                 <p class="custom-contents">{{ file.name }}</p>
             </div><!-- 파일미리보기 -->
-            <v-text-field v-model="messageToSend" v-on:keypress.enter="sendMessage"></v-text-field>
-            <v-file-input v-model="files" @change="fileUpdate" multiple>파일</v-file-input>
-            <v-btn @click="sendMessage">전송</v-btn>
+            <v-row>
+                <v-text-field v-model="messageToSend" v-on:keypress.enter="sendMessage"></v-text-field>
+            </v-row>
+            <v-row>
+                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input>파일</v-file-input>
+                <v-btn @click="sendMessage">전송</v-btn>
+            </v-row>
+
         </v-container>
 
     </v-container>
@@ -171,7 +178,7 @@ export default {
                     message: this.messageToSend,
                     files: this.fileRes,
                 };
-            
+
                 this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
 
                 this.messageToSend = ''; // 입력 필드 초기화
@@ -186,7 +193,7 @@ export default {
 
         // presignedUrl 생성
         async getPresignedURL() {
-            const reqFiles = this.fileList.map(file => ({ chatFileName: file.name, fileSize: file.size}));
+            const reqFiles = this.fileList.map(file => ({ chatFileName: file.name, fileSize: file.size }));
             const response = await axios.post(
                 `${process.env.VUE_APP_API_BASE_URL}/file/presigned-urls`, reqFiles
             );
@@ -218,7 +225,7 @@ export default {
 
         // files -> fileList 로 가공
         fileUpdate() {
-            this.fileList = []; // 초기화 후 파일 추가
+            // this.fileList = []; // 초기화 후 파일 추가
             this.files.forEach(file => {
                 this.fileList.push({
                     name: file.name,
@@ -259,13 +266,57 @@ export default {
             const createdTime = new Date(createdAt);
             return `${createdTime.getFullYear()}년 ${createdTime.getMonth() + 1}월 ${createdTime.getDate()}일`;
         },
+
+        goBack() {
+            console.log("goback");
+        },
     }
 }
 
 </script>
 
 <style scoped>
+.icons {
+    display: flex;
+    align-items: center;
+    color: #444444;
+}
+
+.icon {
+    margin-left: 20px;
+    margin: 30px;
+}
+
+.icons>.icon {
+    font-size: 4vh;
+    cursor: pointer;
+    font-size: 25px;
+}
 
 
+.icons>v-avatar {
+    margin-left: 4vw;
+    height: 5vh;
+    width: 5vh;
+}
 
+.icon:hover {
+    opacity: 0.5;
+    visibility: visible;
+}
+
+.icon-item.active {
+    color: #7A5656;
+    font-weight: 700;
+    background-color: rgba(122, 86, 86, 0.2);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    align-content: center;
+}
+
+.icon-item.active>.icon {
+    color: #7A5656;
+}
 </style>

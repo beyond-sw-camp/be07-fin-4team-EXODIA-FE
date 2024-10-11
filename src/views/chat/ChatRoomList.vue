@@ -6,17 +6,13 @@
     <div class="chat-list-overlay">
         <!-- 상단 -->
         <v-row>
-            <div class="icon-item">
-                <v-icon class="icon">mdi-WindowClose</v-icon>
+            <div>
+                <v-icon>mdi-close</v-icon>
             </div>
 
             <!-- 채팅방 검색 -->
             <v-col>
                 <v-form @submit.prevent="searchChatRoom">
-                    <v-col>
-                        <v-select v-model="searchType" :items="searchOptions" item-title="text" item-value="value">
-                        </v-select>
-                    </v-col>
                     <v-col>
                         <v-text-field v-model="searchQuery" label="search"></v-text-field>
                     </v-col>
@@ -66,30 +62,19 @@ export default {
 
             userNum: "",
 
-            searchType: 'optional',
-            searchOptions: [
-                { text: '선택', value: 'optional' },
-                { text: '채팅방명', value: 'chatRoomName' },
-                { text: '채팅유저', value: 'chatUser' },
-            ],
             searchQuery: "", // 채팅방 검색
 
             chatRoomList: [],
         }
     },
     created() {
-        this.userNum = this.$route.params.userNum;
+        // this.userNum = this.$route.params.userNum;
+        this.userNum = localStorage.getItem('userNum');
         this.loadChatRoom();
     },
     methods: {
         async loadChatRoom() {
             try {
-                // const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/list/${this.userNum}`, {
-                //     params: {
-                //         ...(this.searchType === 'chatRoomName' ? { searchName: this.searchQuery } : {}),
-                //         ...(this.searchType === 'chatUser' ? { searchAddress: this.searchQuery } : {})
-                //     }
-                // });
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/list/${this.userNum}`);
                 this.chatRoomList = response.data.result || [];
             } catch (e) {

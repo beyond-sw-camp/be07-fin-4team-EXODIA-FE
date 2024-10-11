@@ -2,6 +2,8 @@ import ChatRoomView from '@/components/chat/ChatRoomView.vue';
 import ChatRoomCreate from '@/components/chat/ChatRoomCreate.vue';
 import ChatRoomList from '@/views/chat/ChatRoomList.vue';
 
+// main에 붙일거라 다 사라질 내용들.
+// test용
 export const chatRouter = [
     {
         path: '/chatRoom/create',
@@ -10,7 +12,7 @@ export const chatRouter = [
     },
 
     {
-        path: '/chatRoom/list/:userNum',
+        path: '/chatRoom/list',
         name: 'ChatRoomListPage',
         component: ChatRoomList,
     },
