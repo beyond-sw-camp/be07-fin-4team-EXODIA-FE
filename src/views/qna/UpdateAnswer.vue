@@ -57,7 +57,7 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/detail/${questionId}`);
         const detail = response.data.result;
-        
+
         // 기존의 답변 내용과 파일 목록을 저장
         this.answer.answerText = detail.answerText || '';
         this.answer.files = detail.aFiles ? detail.aFiles.map(file => ({
@@ -93,6 +93,17 @@ export default {
         formData.append('files', file);
       });
 
+      // 사용자 ID (userNum)를 로컬 스토리지에서 가져옴
+      const userNum = localStorage.getItem("userNum");
+
+      if (!userNum) {
+        alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
+        return;
+      }
+
+      // 사용자 ID 추가
+      formData.append('userNum', userNum);
+
       try {
         await axios.post(
           `${process.env.VUE_APP_API_BASE_URL}/qna/update/answer/${this.$route.params.id}`,
@@ -107,6 +118,7 @@ export default {
         this.$router.push(`/qna/detail/${this.$route.params.id}`);
       } catch (error) {
         alert('답변 수정에 실패했습니다.');
+        console.error(error);
       }
     },
     // 이전 페이지로 돌아가는 메서드

@@ -1,132 +1,126 @@
 <template>
-  <v-container class="mt-5">
-    <v-row>
-      <v-col cols="12">
-        <v-card class="pa-3 mb-4">
-          <h1 class="board-title">QnA 상세 보기</h1>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- 질문 카드와 관련된 내용 -->
-    <v-card class="pa-5" v-if="questionDetail">
-      <div class="d-flex justify-space-between align-center mb-3">
-        <h2 class="text-h4 font-weight-bold">{{ questionDetail.title }}</h2>
-        <div>
-          <!-- 질문 수정 버튼 (질문 작성자만 보이도록 설정) -->
-          <v-btn v-if="isQuestionAuthor" class="mr-2" @click="goToEditQuestion" color="warning">질문 수정</v-btn>
-          <!-- 답변이 작성되지 않은 경우에만 버튼 표시 -->
-          <v-btn v-if="!questionDetail.answerText" @click="goToAnswerPage" color="primary">답변하기</v-btn>
-        </div>
-      </div>
-
-      <!-- 질문 상세 내용 -->
-      <v-row class="mb-5">
-        <v-col cols="12">
-          <v-card flat>
-            <v-card-text>
-              <div class="text-body-1">
-                <p><strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }} | <strong>작성 시간:</strong> {{ formatDate(questionDetail.createdAt) }} | <strong>수정 시간:</strong> {{ formatDate(questionDetail.updatedAt) }}</p>
-              </div>
-              <p class="text-h5"><strong>질문 내용:</strong> <br>{{ questionDetail.questionText }}</p>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- 질문 파일 다운로드 및 미리보기 -->
-      <v-row v-if="questionDetail.qFiles && questionDetail.qFiles.length > 0" class="mb-5">
-        <v-col cols="12">
-          <v-card flat>
-            <v-card-title>질문 첨부 파일</v-card-title>
-            <v-card-text>
-              <v-list>
-                <v-list-item v-for="(file, index) in questionDetail.qFiles" :key="index">
-                  <v-list-item-content>
-                    <!-- 파일이 이미지인 경우 미리보기, 아닌 경우 다운로드 링크로 표시 -->
-                    <v-img v-if="isImage(file.fileName)" :src="file.filePath" class="mb-3" max-width="300" />
-                    <v-list-item-title @click="downloadFile(file.filePath)" class="file-link" v-else>
-                      <v-icon left>mdi-file</v-icon> {{ file.fileName }}
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
+  <v-container class="mt-5 qna-container">
+    <!-- 질문 상세보기 카드 -->
+    <v-card class="pa-4 mb-5" v-if="questionDetail">
+      <v-card-title class="text-h5 font-weight-bold">
+        {{ questionDetail.title }}
+      </v-card-title>
       <v-divider></v-divider>
 
-      <!-- 답변 섹션 -->
-      <v-row v-if="questionDetail.answerText" class="mb-5">
-        <v-col cols="12">
-          <v-card flat>
-            <v-card-title>답변</v-card-title>
-            <v-card-text>
-              <div class="text-body-1">
-                <p><strong>답변자:</strong> {{ questionDetail.answerUserName }} | <strong>답변 시간:</strong> {{ formatDate(questionDetail.answeredAt) }}</p>
-                <p class="text-h5"><strong>답변 내용:</strong> <br>{{ questionDetail.answerText }}</p>
-              </div>
-              <!-- 답변 수정 버튼 (답변 작성자만 보이도록 설정) -->
-              <v-btn v-if="isAnswerAuthor" class="mt-3" @click="goToEditAnswer" color="warning">답변 수정</v-btn>
-            </v-card-text>
+      <v-card-text class="pa-3">
+        <!-- 작성자 정보 -->
+        <div class="d-flex justify-space-between align-center mb-3">
+          <div>
+            <p><strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }}</p>
+            <p><strong>작성 시간:</strong> {{ formatDate(questionDetail.createdAt) }}</p>
+            <p><strong>수정 시간:</strong> {{ formatDate(questionDetail.updatedAt) }}</p>
+          </div>
+          <div>
+            <!-- 수정 및 답변하기 버튼 -->
+            <v-btn v-if="isQuestionAuthor" class="mr-2" @click="goToEditQuestion" color="orange darken-3" small>
+              <v-icon left>mdi-pencil</v-icon> 질문 수정
+            </v-btn>
+            <v-btn v-if="!questionDetail.answerText" @click="goToAnswerPage" color="blue darken-1" small>
+              <v-icon left>mdi-comment-plus</v-icon> 답변하기
+            </v-btn>
+          </div>
+        </div>
 
-            <!-- 답변 파일 다운로드 및 미리보기 -->
-            <v-card-actions v-if="questionDetail.aFiles && questionDetail.aFiles.length > 0">
-              <v-card-title>답변 첨부 파일</v-card-title>
-              <v-card-text>
-                <v-list>
-                  <v-list-item v-for="(file, index) in questionDetail.aFiles" :key="index">
-                    <v-list-item-content>
-                      <!-- 파일이 이미지인 경우 미리보기, 아닌 경우 다운로드 링크로 표시 -->
-                      <v-img v-if="isImage(file.fileName)" :src="file.filePath" class="mb-3" max-width="300" />
-                      <v-list-item-title @click="downloadFile(file.filePath)" class="file-link" v-else>
-                        <v-icon left>mdi-file</v-icon> {{ file.fileName }}
-                      </v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-card-text>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-      </v-row>
+        <!-- 질문 내용 -->
+        <p class="text-h6 font-weight-bold">질문 내용:</p>
+        <p class="text-body-1">{{ questionDetail.questionText }}</p>
 
-      <!-- 댓글 섹션 -->
-      <v-row>
-        <v-divider></v-divider>
-        <v-col cols="12">
-          <h4 class="text-h6 font-weight-bold">댓글</h4>
-          <v-list two-line>
-            <v-list-item v-for="comment in questionDetail.comments" :key="comment.id" class="py-2">
-              <v-list-item-content class="comment-content">
-                <div class="comment-text">
-                  <v-list-item-title class="text-subtitle-1">{{ comment.content }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ comment.userName }} - {{ formatDate(comment.createdAt) }}</v-list-item-subtitle>
-                </div>
-                <v-list-item-action class="action-buttons">
-                  <v-btn small text @click="editComment(comment)">수정</v-btn>
-                  <v-btn small @click="deleteComment(comment.id)">삭제</v-btn>
-                </v-list-item-action>
+        <!-- 질문 첨부 파일 -->
+        <v-card flat v-if="questionDetail.qFiles && questionDetail.qFiles.length > 0" class="mb-4">
+          <v-divider></v-divider>
+          <v-card-title class="text-h6 font-weight-bold">질문 첨부 파일</v-card-title>
+          <v-list>
+            <v-list-item v-for="(file, index) in questionDetail.qFiles" :key="index">
+              <v-list-item-content>
+                <v-list-item-title @click="downloadFile(file.filePath)" class="file-link">
+                  <v-icon left>mdi-file</v-icon> {{ file.fileName }}
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>
-
-          <!-- 댓글 작성 폼 -->
-          <v-form @submit.prevent="submitComment" class="mt-3">
-            <v-textarea label="댓글 작성" v-model="newComment" outlined required></v-textarea>
-            <div class="mt-3 d-flex justify-end">
-              <v-btn class="btn_solid" @click="goBack">목록으로</v-btn>
-              <v-btn type="submit" class="btn_comment_ok">댓글작성</v-btn>
-            </div>
-          </v-form>
-        </v-col>
-      </v-row>
+        </v-card>
+      </v-card-text>
     </v-card>
 
-    <!-- 오류 메시지 -->
-    <v-alert type="error" v-if="error">{{ error }}</v-alert>
+    <!-- 답변 섹션 -->
+    <v-card class="pa-4 mb-5" v-if="questionDetail && questionDetail.answerText">
+      <v-card-title class="text-h6 font-weight-bold">
+        답변
+      </v-card-title>
+      <v-divider></v-divider>
+      <v-card-text class="pa-3">
+        <p><strong>답변자:</strong> {{ questionDetail.answerUserName }}</p>
+        <p><strong>답변 시간:</strong> {{ formatDate(questionDetail.answeredAt) }}</p>
+        <p class="text-body-1">{{ questionDetail.answerText }}</p>
+        <!-- 답변 첨부 파일 -->
+        <v-card flat v-if="questionDetail.aFiles && questionDetail.aFiles.length > 0" class="mb-4">
+          <v-divider></v-divider>
+          <v-card-title class="text-h6 font-weight-bold">답변 첨부 파일</v-card-title>
+          <v-list>
+            <v-list-item v-for="(file, index) in questionDetail.aFiles" :key="index">
+              <v-list-item-content>
+                <v-list-item-title @click="downloadFile(file.filePath)" class="file-link">
+                  <v-icon left>mdi-file</v-icon> {{ file.fileName }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card>
+
+        <!-- 답변 수정 버튼 -->
+        <v-btn v-if="isAnswerAuthor" class="mt-3" @click="goToEditAnswer" color="orange darken-3" small>
+          <v-icon left>mdi-pencil</v-icon> 답변 수정
+        </v-btn>
+      </v-card-text>
+    </v-card>
+
+    <!-- 댓글 섹션 -->
+    <v-card class="pa-4" v-if="questionDetail && questionDetail.comments && questionDetail.comments.length > 0">
+      <v-card-title class="text-h6 font-weight-bold">
+        댓글
+      </v-card-title>
+      <v-divider></v-divider>
+      <v-card-text>
+        <!-- 댓글 목록 -->
+        <v-list two-line>
+          <v-list-item v-for="comment in questionDetail.comments" :key="comment.id" class="py-2">
+            <v-list-item-content>
+              <v-list-item-title class="text-subtitle-1">{{ comment.content }}</v-list-item-title>
+              <v-list-item-subtitle>{{ comment.userName }} - {{ formatDate(comment.createdAt) }}</v-list-item-subtitle>
+            </v-list-item-content>
+            <v-list-item-action v-if="comment.userNum === userNum">
+              <v-btn small text @click="editComment(comment)">수정</v-btn>
+              <v-btn small text color="red" @click="deleteComment(comment.id)">삭제</v-btn>
+            </v-list-item-action>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+
+    <!-- 댓글 작성 폼 -->
+    <v-card v-if="questionDetail" class="pa-4 mt-4">
+      <v-card-title class="text-h6 font-weight-bold">
+        댓글 작성
+      </v-card-title>
+      <v-divider></v-divider>
+      <v-card-text>
+        <v-form @submit.prevent="submitComment" class="mt-3">
+          <v-textarea label="댓글 작성" v-model="newComment" outlined required></v-textarea>
+          <div class="mt-3 d-flex justify-end">
+            <v-btn class="btn_solid mr-2" @click="goBack">목록으로</v-btn>
+            <v-btn type="submit" class="btn_comment_ok" color="blue darken-1">댓글 작성</v-btn>
+          </div>
+        </v-form>
+      </v-card-text>
+    </v-card>
+
+    <!-- 오류 메시지 표시 -->
+    <v-alert type="error" v-if="error" class="mt-4">{{ error }}</v-alert>
   </v-container>
 </template>
 
@@ -143,11 +137,9 @@ export default {
     };
   },
   computed: {
-    // 현재 사용자가 질문의 작성자인지 여부 확인
     isQuestionAuthor() {
       return this.questionDetail && this.questionDetail.questionUserNum === this.userNum;
     },
-    // 현재 사용자가 답변의 작성자인지 여부 확인
     isAnswerAuthor() {
       return this.questionDetail && this.questionDetail.answerUserNum === this.userNum;
     },
@@ -170,7 +162,7 @@ export default {
           this.questionDetail.questionUserName = '익명';
         }
 
-        this.questionDetail.qFiles = response.data.result.qfiles || [];  
+        this.questionDetail.qFiles = response.data.result.qfiles || [];
         this.questionDetail.aFiles = response.data.result.afiles || [];
       } catch (error) {
         this.error = error.response ? error.response.data.message : '질문 정보를 불러오는 중 오류가 발생했습니다.';
@@ -186,9 +178,6 @@ export default {
     goToAnswerPage() {
       const questionId = this.$route.params.id;
       this.$router.push(`/qna/answer/${questionId}`);
-    },
-    isImage(fileName) {
-      return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(fileName);
     },
     async submitComment() {
       const questionId = this.$route.params.id;
@@ -240,9 +229,14 @@ export default {
       this.$router.push('/qna/list');
     },
     formatDate(date) {
-      if (!date) return '';
-      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-      return new Date(date).toLocaleDateString('ko-KR', options);
+      const options = { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      };
+      
+      // toLocaleDateString을 사용하여 형식 변경 (ex: 2024.10.11)
+      return new Date(date).toLocaleDateString('ko-KR', options).replace(/\//g, '.');
     },
     downloadFile(filePath) {
       const link = document.createElement('a');
@@ -259,12 +253,56 @@ export default {
 </script>
 
 <style scoped>
-.v-container {
+/* 전체 컨테이너 스타일 */
+.qna-container {
   max-width: 900px;
   margin: 0 auto;
 }
-.v-list-item-title.file-link {
+
+/* 제목 및 질문 섹션 스타일 */
+.board-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #3f51b5;
+  margin-bottom: 20px;
+}
+
+/* 파일 링크 스타일 */
+.file-link {
   cursor: pointer;
-  color: green;
+  color: #007bff;
+  text-decoration: underline;
+}
+
+/* 답변 카드 스타일 */
+.answer-card {
+  background-color: #e3f2fd;
+}
+
+/* 댓글 관련 스타일 */
+.comment-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* 댓글 작성 및 버튼 스타일 */
+.btn_solid {
+  background-color: #1976d2;
+  color: #fff;
+}
+
+.btn_comment_ok {
+  background-color: #43a047;
+  color: #fff;
+}
+
+.v-btn:hover {
+  opacity: 0.8;
 }
 </style>

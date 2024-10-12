@@ -67,41 +67,42 @@ export default {
   },
   methods: {
     async doLogin() {
-      try {
-        const loginData = {
-          userNum: this.userNum,
-          password: this.password,
-        };
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/user/login`, loginData);
-        const token = response.data.result;
+  try {
+    const loginData = {
+      userNum: this.userNum,
+      password: this.password,
+    };
+    const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/user/login`, loginData);
+    
+    const token = response.data.result;
+    if (!token || typeof token !== 'string') {
+      throw new Error('토큰이 없습니다. 로그인에 실패했습니다.');
+    }
 
-        if (!token || typeof token !== 'string') {
-          throw new Error('토큰이 없습니다. 로그인에 실패했습니다.');
-        }
+    const decodedToken = jwtDecode(token);
+    const userNum = decodedToken.sub;
+    const departmentId = decodedToken.department_id;
+    const positionId = decodedToken.position_id;
 
-        const decodedToken = jwtDecode(token);
-        const userNum = decodedToken.sub;
-        const departmentId = decodedToken.department_id;
-        const positionId = decodedToken.position_id;
+    localStorage.setItem('token', token);
+    localStorage.setItem('userNum', userNum);
+    localStorage.setItem('departmentId', departmentId);
+    localStorage.setItem('positionId', positionId);
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('userNum', userNum);
-        localStorage.setItem('departmentId', departmentId);
-        localStorage.setItem('positionId', positionId);
+    if (this.rememberUserNum) {
+      localStorage.setItem('savedUserNum', this.userNum);
+    } else {
+      localStorage.removeItem('savedUserNum');
+    }
 
-        if (this.rememberUserNum) {
-          localStorage.setItem('savedUserNum', this.userNum);
-        } else {
-          localStorage.removeItem('savedUserNum');
-        }
+    alert('로그인 성공');
+    this.$router.push('/');
+  } catch (e) {
+    const error_message = e.response?.data?.status_message || '로그인에 실패했습니다.';
+    alert(error_message);
+  }
+},
 
-        alert('로그인 성공');
-        this.$router.push('/');
-      } catch (e) {
-        const error_message = e.response?.data?.status_message || '로그인에 실패했습니다.';
-        alert(error_message);
-      }
-    },
   },
 };
 </script>
