@@ -72,7 +72,7 @@ export default {
 .main-content {
   flex: 1;
   margin-top: var(--header-height);
-  padding: 50px 200px;
+  padding: 20px 140px;
   margin-right: 40px;
   background-color: #f5f5f5;
   border-radius: 25px;
