@@ -27,7 +27,7 @@
       </v-avatar>
 
     </div>
-    
+
   </header>
 </template>
 
@@ -89,18 +89,20 @@ export default {
   position: fixed;
   left: var(--sidebar-width);
   top: 0;
-  font-size: 14px;
+  font-size: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 0 0 #bcbcbc;
+  color: #ffffff;
 }
 
 .icons {
   display: flex;
   align-items: center;
-  color: #444444;
+  color: #777777;
 }
 
 .icon {
-  margin-left: 20px;
-  margin: 30px;
+  margin-left: 25px;
 }
 
 .icons>.icon {
