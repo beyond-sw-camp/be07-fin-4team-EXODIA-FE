@@ -90,15 +90,15 @@
                 <v-card style="background-color: rgba(123, 86, 86, 0.3);">
                     <v-card-title>결재 라인</v-card-title>
                     <v-list style="background-color: rgba(123, 86, 86, 0.3);">
-                        <v-list-item v-for=" user in users" :key="user.id" draggable="true"
-                            @dragstart="onDragStart(user)" class="draggable-item">
+                        <v-list-item v-for="user in users.filter(u => u.positionId < this.positionId)" :key="user.id"
+                            draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
                             <v-list-item-content>{{ user.name
                                 }}</v-list-item-content>
                         </v-list-item>
                     </v-list>
                 </v-card>
                 <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
-                    <v-card-text>결재자를 선택하시오.</v-card-text>
+                    <v-card-text v-if="droppedUsers.length == 0">결재자를 선택하시오.</v-card-text>
                     <v-list>
                         <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
                             <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
@@ -128,6 +128,7 @@ export default {
             token: localStorage.getItem('token') || null,
             userNum: localStorage.getItem('userNum') || null,
             departmentId: localStorage.getItem('departmentId') || null,
+            positionId: localStorage.getItem('positionId') || null,
 
             userName: '',
             departmentName: '',
