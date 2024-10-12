@@ -3,13 +3,14 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 import axios from 'axios';
-import { createVuetify } from 'vuetify'; 
-import * as components from 'vuetify/components'; 
-import * as directives from 'vuetify/directives'; 
+import { createVuetify } from 'vuetify';
+import * as components from 'vuetify/components';
+import * as directives from 'vuetify/directives';
 import 'vuetify/styles';
-import '@mdi/font/css/materialdesignicons.css'; 
-import adapter from 'webrtc-adapter'; 
-
+import '@mdi/font/css/materialdesignicons.css';
+import adapter from 'webrtc-adapter';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 
 window.adapter = adapter;
 
@@ -37,10 +38,14 @@ axios.interceptors.request.use(config => {
 
 const app = createApp(App);
 
+app.component('VueDatePicker', VueDatePicker);
+
 app.config.globalProperties.$axios = axios;
 
 app.use(router);
 app.use(store);
+
 app.use(vuetifyInstance);
+
 
 app.mount('#app');
