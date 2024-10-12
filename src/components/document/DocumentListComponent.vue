@@ -115,38 +115,46 @@
 
                         <v-icon class="icon" @click="toggleHistoryVisibility"> {{ showHistory ? 'mdi-chevron-up' :
                             'mdi-chevron-down' }}</v-icon>
-                        <v-divider v-if="!showHistory"></v-divider>
-
-
+                        <v-divider></v-divider>
                     </v-card-title>
 
-                    <v-timeline dense v-if="showHistory">
+                    <v-timeline dense v-if="showHistory" style="margin:10px">
                         <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
-                            <div>
 
-                            </div>
                             <v-card>
-                                <v-card-text style="margin-bottom:0; padding:0">
-                                    <div class="fileName">
-                                        <v-icon left>mdi-file-document-outline</v-icon>
-                                        <span>{{ history.fileName }}</span>
+                                <v-row justify="space-between">
+                                    <v-col>
+                                        <v-card-text style="margin-bottom:0; padding:0">
+                                            <div class="fileName">
+                                                <v-icon left>mdi-file-document-outline</v-icon>
+                                                <span>{{ history.fileName }}</span>
+                                            </div>
+                                        </v-card-text>
+                                    </v-col>
+                                    <v-col>
+                                        <v-card-actions style=" margin:0;">
+                                            <v-btn small text @click="confirmRevert(history.id)" style="font-size:12px">
+                                                복원
+                                            </v-btn>
+                                        </v-card-actions>
+                                    </v-col>
+                                </v-row>
+                                <v-card-text class="userName" style="margin-bottom:5px; padding:0 10px">
+                                    <v-avatar class="icon">
+                                        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
+                                            style="width: 100%; height: 100%; object-fit: cover;" />
+                                    </v-avatar>
+                                    <span style="padding:20px; font-size:14px">{{ history.userName }}</span>
+                                </v-card-text>
+
+                                <v-card-text style="margin-bottom:0; padding:10px">
+                                    <div>
+                                        <span>설명: {{ history.description }}</span>
                                     </div>
                                 </v-card-text>
 
-                                <v-card-text class="userName" style="margin-bottom:0; padding:0">
-                                    <!-- <v-avatar left size="24">
-                                        <img :src="history.userAvatar" alt="User Avatar" />
-                                    </v-avatar> -->
-                                    <span style="padding:20px;">{{ history.userName }}</span>
-                                </v-card-text>
 
-                                <v-card-actions style=" margin:0;">
-                                    <v-btn small text color="primary" @click="confirmRevert(history.id)">
-                                        복원
-                                    </v-btn>
-                                </v-card-actions>
                             </v-card>
-
                             <template v-slot:opposite>
                                 <div class="fileModifiedDate">{{ formatDate(history.updatedAt) }}</div>
                             </template>
@@ -216,9 +224,9 @@ export default {
             token: localStorage.getItem('token') || null,
 
             title: '',
-            drawer: false,
+            drawer: true,
             selectedDocument: {},
-            tab: '상세보기',
+            tab: '히스토리',
             showHistory: false,
 
             pageId: '',
@@ -409,50 +417,16 @@ v-card-title,
     object-fit: cover;
 }
 
-.headline {
-    font-size: 14px;
-}
-
-.tabs>.v-btn {
-    font-size: 14px;
-}
-
-
-.v-btn {
-    font-size: 12px;
-}
-
-
-
-.v-card-text>.v-row:first-child {
-    font-size: 14px;
-}
-
-.v-card-text>.v-row:last-child {
-    font-size: 16px;
-}
-
 .v-card-text {
     margin-bottom: 20px;
 }
 
-
 .detailFileName {
-    font-size: 20px;
     margin: 20px 0 0;
 }
 
 .fileName {
-    font-size: 13px;
     margin: 10px;
-}
-
-.userName {
-    font-size: 13px;
-}
-
-.fileModifiedDate {
-    font-size: 10px;
 }
 
 .v-timeline--vertical.v-timeline {
