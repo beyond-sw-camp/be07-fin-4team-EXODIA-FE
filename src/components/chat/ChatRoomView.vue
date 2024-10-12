@@ -8,69 +8,76 @@
     <v-container> <!--전체 채팅방 감싸요-->
 
         <!-- 채팅방 상단 -->
-         <v-container class="icons">
-
-            <v-icon class="icon-item icon" @click="goBack">mdi-chevron-left</v-icon> <!-- 채팅방리스트로돌아감 -->
-
-            <span>{{ chatRoomId }}방입니다</span> <!-- 채팅방 이름 -->
-
-            <!-- <v-text-field variant="outlined" placeholder="채팅방 내 검색"></v-text-field> -->
-            <v-icon class="icon-item icon" @click="goBack">mdi-magnify</v-icon>
-
-
-            <v-icon class=" icon-item icon" @click="goBack">mdi-dots-vertical</v-icon><!-- 채팅방메뉴 : 사진모아보기, 파일모아보기, 채팅구성원확인, 채팅방 아예 나가기  // 유저초대?-->
-
-        </v-container>
-
+        <v-row class="chat-room-header">
+            <v-col cols="1">
+                <v-icon class="icon" @click="goBack">mdi-chevron-left</v-icon> <!-- 뒤로가기 -->
+            </v-col>
+            <v-col cols="8" class="chat-room-title">
+                <span class="chat-room-name">{{ chatRoomId }}</span>
+            </v-col>
+            <v-col cols="3" class="header-icons">
+                <v-icon class="icon">mdi-magnify</v-icon> <!-- 검색 -->
+                <v-icon class="icon">mdi-dots-vertical</v-icon> <!-- 메뉴 -->
+            </v-col>
+        </v-row>
 
 
-        <!-- 채팅방 -->
-        <v-container >
 
+        <!-- 채팅 내용 -->
+        <div class="chat-content">
             <div v-for="(chat, index) in chatMessageList" :key="chat.id">
-
-                <!-- 날짜 분리 -->
-                <div v-if="index === 0 || this.isDifferentDay(chat.createAt, chatMessageList[index - 1].createAt)">
-                    <div>
-                        <hr style="width: 27%; margin:auto;">
-                        <span style="margin:auto;">{{ this.getDay(chat.createAt) }}</span>
-                        <hr style="width: 27%; margin:auto;">
+                <!-- 날짜 구분 -->
+                <div v-if="index === 0 || isDifferentDay(chat.createAt, chatMessageList[index - 1].createAt)">
+                    <div class="date-divider">
+                        <span class="date-text">{{ getDay(chat.createAt) }}</span>
                     </div>
                 </div>
 
-                <div> <!-- 채팅메세지들 감싸요 -->
-                    <div>
-                        <div v-if="index === 0 || chat.senderNum != chatMessageList[index - 1].senderNum"
-                            style="margin-bottom: 20px;">
-                            <span v-if="chat.senderNum != this.chatSenderNum">{{ chat.senderName }}</span>
-                            <span v-if="chat.senderNum == this.chatSenderNum">나</span>
-                        </div>
-                        <div>
-                            <span>{{ chat.message }}</span>
-                            <span>{{ this.getTime(chat.createAt) }}</span>
-                        </div>
-                    </div>
-                </div>
+                <!-- 메시지 -->
+                <div :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
+                    <v-row v-if="chat.senderNum !== chatSenderNum" class="message-row">
+                        <!-- <v-avatar class="profile-avatar">
+                            <img :src="chat.profileImage" alt="프로필 이미지" />
+                        </v-avatar> -->
+                        <v-col>
+                            <span class="sender-name">{{ chat.senderName }}</span>
+                        </v-col>
+                        <v-col v-if="chat.messageType == 'TALK'">
+                            <div class="message-text">{{ chat.message }}</div>
+                        </v-col>
+                        <v-col v-if="chat.messageType == 'FILE'">
+                            <div class="message-text">파일입니다.</div>
+                        </v-col>
+                    </v-row>
 
+                    <v-row v-if="chat.senderNum === chatSenderNum" class="message-row my-row">
+                        <v-col v-if="chat.messageType == 'TALK'">
+                            <div class="message-text">{{ chat.message }}</div>
+                        </v-col>
+                        <v-col v-if="chat.messageType == 'FILE'">
+                            <div class="message-text">내가 보낸 파일입니다.</div>
+                        </v-col>
+                    </v-row>
+
+                    <!-- 시간 -->
+                    <span class="message-time">{{ getTime(chat.createAt) }}</span>
+                </div>
             </div>
-        </v-container>
+        </div>
 
-        <!-- 채팅입력 -->
-        <v-container>
-            <div v-for="(file, index) in fileList" :key="index">
-                <img :src="file.imageUrl" @error="e => e.target.src = require('@/assets/user.png')"
-                    style="height: 120px; width: 120px; object-fit: cover;">
-                <p class="custom-contents">{{ file.name }}</p>
-            </div><!-- 파일미리보기 -->
+        <!-- 채팅 입력 -->
+        <v-container class="input-container">
             <v-row>
-                <v-text-field v-model="messageToSend" v-on:keypress.enter="sendMessage"></v-text-field>
+                <v-text-field style="height: 200px;" v-model="messageToSend" v-on:keypress.enter="sendMessage"></v-text-field>
             </v-row>
             <v-row>
-                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input>파일</v-file-input>
-                <v-btn @click="sendMessage">전송</v-btn>
+                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input prepend-icon="mdi-paperclip">
+                    파일 전송
+                </v-file-input>
+                <v-btn class="send-btn" @click="sendMessage">전송</v-btn>
             </v-row>
-
         </v-container>
+
 
     </v-container>
 </template>
@@ -276,47 +283,113 @@ export default {
 </script>
 
 <style scoped>
-.icons {
+.chat-room-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: space-between;
+}
+
+.chat-room-header {
     display: flex;
     align-items: center;
-    color: #444444;
+    padding: 10px;
+    background-color: #e9f4e4;
+    border-bottom: 1px solid #ccc;
+}
+
+.chat-room-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.chat-room-title {
+    display: flex;
+    align-items: center;
+}
+
+.chat-room-name {
+    margin-left: 10px;
+}
+
+.header-icons {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .icon {
-    margin-left: 20px;
-    margin: 30px;
-}
-
-.icons>.icon {
-    font-size: 4vh;
     cursor: pointer;
-    font-size: 25px;
+    margin-right: 10px;
 }
 
-
-.icons>v-avatar {
-    margin-left: 4vw;
-    height: 5vh;
-    width: 5vh;
+.chat-content {
+    flex: 1;
+    padding: 10px;
+    height: 500px;
+    overflow-y: auto;
 }
 
-.icon:hover {
-    opacity: 0.5;
-    visibility: visible;
+.date-divider {
+    text-align: center;
+    margin: 20px 0;
 }
 
-.icon-item.active {
-    color: #7A5656;
-    font-weight: 700;
-    background-color: rgba(122, 86, 86, 0.2);
+.date-text {
+    background-color: #e9e9e9;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.my-message {
+    text-align: right;
+}
+
+.other-message {
+    text-align: left;
+}
+
+.message-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.my-row {
+    justify-content: flex-end;
+}
+
+.profile-avatar img {
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    justify-content: center;
-    align-content: center;
 }
 
-.icon-item.active>.icon {
-    color: #7A5656;
+.sender-name {
+    font-weight: bold;
+}
+
+.message-text {
+    background-color: #e0f7fa;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 60%;
+    display: inline-block;
+}
+
+.message-time {
+    font-size: 0.8em;
+    color: gray;
+}
+
+.input-container {
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-top: 1px solid #ccc;
+}
+
+.send-btn {
+    background-color: #4CAF50;
+    color: white;
 }
 </style>
