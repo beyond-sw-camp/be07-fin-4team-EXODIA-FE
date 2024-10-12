@@ -30,10 +30,9 @@
                     style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
                     <v-col cols="1"><strong></strong></v-col>
                     <v-col cols="3"><strong>제목</strong></v-col>
-                    <v-col cols="2"><strong>프로젝트명</strong></v-col>
+                    <v-col cols="3"><strong>프로젝트명</strong></v-col>
+                    <v-col cols="3"><strong>등록일</strong></v-col>
                     <v-col cols="2"><strong>작성자</strong></v-col>
-                    <v-col cols="2"><strong>등록일</strong></v-col>
-                    <v-col cols="2"><strong>조회수</strong></v-col>
                 </v-row>
 
                 <v-row v-for="(document, index) in documents" :key="document.id" class="document" oulined
@@ -41,10 +40,9 @@
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
                     <v-col cols="3">{{ document.fileName }}</v-col>
-                    <v-col cols="2">{{ document.type }}</v-col>
+                    <v-col cols="3">{{ document.type }}</v-col>
+                    <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
                     <v-col cols="2">{{ document.userName }}</v-col>
-                    <v-col cols="2">{{ formatDate(document.createdAt) }}</v-col>
-                    <v-col cols="1">{{ document.views || 34 }}</v-col>
                 </v-row>
             </v-col>
         </v-row>
