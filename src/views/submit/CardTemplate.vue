@@ -22,8 +22,7 @@
                         <v-list-subheader>신청일</v-list-subheader>
                     </v-col>
                     <v-col cols="9">
-                        <VueDatePicker v-model="date"></VueDatePicker>
-                        <!-- <v-text-field label="신청일" v-model="formData.신청일"></v-text-field> -->
+                        <VueDatePicker v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"></VueDatePicker>
                     </v-col>
                 </v-row>
                 <v-row>
@@ -191,15 +190,10 @@ export default {
         },
         onDrop() {
             if (this.draggedUser && !this.droppedUsers.includes(this.draggedUser)) {
-
-                console.log("dropped:" + this.droppedUsers)
-
                 this.submitCreateData.submitUserDtos.push({
                     userName: this.draggedUser.name,
                     position: this.draggedUser.positionId,
                 });
-                console.log("position: " + this.draggedUser.positionId);
-
                 this.droppedUsers.push(this.draggedUser);
                 this.draggedUser = null;
             }
@@ -209,6 +203,7 @@ export default {
         },
         async createSubmit() {
             try {
+                this.formData.신청일 = this.formatDate(this.formatDate.신청일) + " " + this.formatLocalTime(this.formatDate.신청일);
                 this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
                 await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
                 alert("결재 요청이 성공적으로 처리되었습니다.")
@@ -216,8 +211,13 @@ export default {
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }
+        },
+        formatDate(date) {
+            return new Date(date).toLocaleDateString();
+        },
+        formatLocalTime(date) {
+            return new Date(date).toLocaleTimeString();
         }
-
     },
 }
 </script>
