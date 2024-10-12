@@ -153,11 +153,40 @@
                         </v-timeline-item>
                     </v-timeline>
 
-
-                    <!-- <v-card-title>
+                    <!-- 댓글 -->
+                    <v-card-title>
                         <span class="headline">댓글</span>
-                        <v-divider></v-divider>
-                    </v-card-title> -->
+                        <v-icon class="icon" @click="toggleCommentsVisibility"> {{ showComments ? 'mdi-chevron-up' :
+                            'mdi-chevron-down' }}</v-icon>
+                    </v-card-title>
+
+                    <div v-if="showComments" class="comments">
+                        <v-row v-if="this.comments.length > 0">
+                            <v-col cols="12" v-for="(comment, index) in this.comments" :key="index">
+                                <v-row class="comments-item">
+                                    <v-col cols=1>
+                                        <v-avatar class="icon" size="24">
+                                            <img src="@/assets/user.png"
+                                                style="width: 100%; height: 100%; object-fit: cover;" />
+                                        </v-avatar>
+                                    </v-col>
+                                    <v-col cols="5">{{ comment.userName }}</v-col>
+                                    <v-col cols="5" style="font-size:12px">{{ formatDate(comment.createdAt) }} {{
+                                        formatLocalTime(comment.createdAt) }}</v-col>
+                                </v-row>
+                                <v-row cols="12" style="padding-left:50px">
+                                    {{ comment.contents }}
+                                </v-row>
+                                <v-divider v-if="!showHistory"></v-divider>
+                            </v-col>
+                        </v-row>
+                        <v-row v-else>
+                            <v-col cols=" 12">
+                                <p>댓글이 없습니다.</p>
+                            </v-col>
+                        </v-row>
+                    </div>
+
 
                     <v-card-actions>
                         <v-spacer></v-spacer>
@@ -197,6 +226,9 @@ export default {
             pageSize: 10,
             totalPages: '',
             documents: {},
+
+            comments: {},
+            showComments: true,
         }
     },
     mounted() {
@@ -234,6 +266,15 @@ export default {
                 console.error('문서 목록을 가져오는 중 오류 발생:', e);
             }
         },
+        async fetchComments(id) {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/comment/document/list/${id}`;
+                const response = await axios.get(url);
+                this.comments = response.data.result;
+            } catch (e) {
+                console.error('문서 목록을 가져오는 중 오류 발생:', e);
+            }
+        },
         async openDrawer(id) {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/detail/${id}`;
@@ -241,6 +282,8 @@ export default {
 
                 this.selectedDocument = response.data.result;
                 this.drawer = true;
+
+                this.fetchComments(id);
             } catch (e) {
                 console.error('문서 상세 정보를 가져오는 중 오류 발생:', e);
             }
@@ -322,14 +365,15 @@ export default {
         toggleHistoryVisibility() {
             this.showHistory = !this.showHistory;
         },
+        toggleCommentsVisibility() {
+            this.showComments = !this.showComments;
+        },
     },
 }
 </script>
 
 <style scoped>
-*:not(h1) {
-    font-size: 14px;
-}
+*:not(h1) {}
 
 .login-container {
     height: 100vh;
@@ -417,5 +461,15 @@ v-card-title,
 
 .v-divider {
     margin: 20px 0;
+}
+
+.comments {
+    padding: 20px 10px;
+}
+
+.comments-item {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
 }
 </style>
