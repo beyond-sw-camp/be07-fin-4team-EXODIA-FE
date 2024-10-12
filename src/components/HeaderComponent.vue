@@ -90,15 +90,15 @@ export default {
   left: var(--sidebar-width);
   top: 0;
   font-size: 20px;
-  background-color: #7A5656;
-  box-shadow: 0 1px 0 0 #777777;
+  background-color: #ffffff;
+  box-shadow: 0 1px 0 0 #bcbcbc;
   color: #ffffff;
 }
 
 .icons {
   display: flex;
   align-items: center;
-  color: #ffffff;
+  color: #777777;
 }
 
 .icon {

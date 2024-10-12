@@ -5,7 +5,7 @@
       <div class="main-layout">
         <HeaderComponent />
         <div class="main-content">
-          <v-card style="padding:70px; border-radius:10px">
+          <v-card style="padding:40px; border-radius:10px">
             <router-view />
           </v-card>
         </div>
@@ -43,7 +43,7 @@ export default {
 
 <style>
 :root {
-  --sidebar-width: 20%;
+  --sidebar-width: 15%;
   --header-height: 60px;
 }
 
@@ -74,7 +74,7 @@ export default {
 .main-content {
   flex: 1;
   margin-top: var(--header-height);
-  padding: 70px 160px;
+  padding: 50px 80px;
   background-color: #f5f5f5;
   border-radius: 25px;
   overflow-y: auto;

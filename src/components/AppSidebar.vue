@@ -2,7 +2,7 @@
   <aside class="sidebar">
     <div class="menu">
       <div class="logo" @click="$router.push('/')">
-        <img :src="require('@/assets/exodia.png')" alt="Logo" />
+        <img :src="require('@/assets/exodia_new.png')" alt="Logo" />
       </div>
 
       <div v-on:mouseleave="hideSubsidebar()">
@@ -24,7 +24,7 @@
 
 
       <!-- 사이드: 문서 관리 -->
-      <div class="menu-item" @click="toggleMenu('document')" :class="{ 'active': $route.path.startsWith('/submit') }"
+      <div class="menu-item" @click="toggleMenu('document')" :class="{ 'active': $route.path.startsWith('/document') }"
         @mouseover="showSubSidebar('document')">
         <v-icon class="icon">mdi-folder-file-outline</v-icon>
         <span>파일 관리</span>
@@ -37,11 +37,8 @@
 
       <!-- 서브사이드: 문서 관리 -->
       <div v-show="expandedMenu === 'document' || hoveredMenu === 'document'" class="sub-side-menu">
-        <v-row style="font-weight:700; font-size:16px;">
-          팀 파일함
-        </v-row>
         <v-row>
-          <v-btn class="createBtn" @click="$router.push('/document/create')">
+          <v-btn style="color:#ffffff" @click="$router.push('/document/create')">
             파일 등록
           </v-btn>
         </v-row>
@@ -84,7 +81,7 @@
       <!-- 서브사이드: 결재 -->
       <div v-show="expandedMenu === 'submit' || hoveredMenu === 'submit'" class="sub-side-menu">
         <v-row>
-          <v-btn class="createBtn" @click="$router.push('/submit')">
+          <v-btn style="color:#ffffff" @click="$router.push('/submit')">
             결재 생성
           </v-btn>
         </v-row>
@@ -106,7 +103,7 @@
       <!-- 서브사이드: 화상 회의 -->
       <div v-show="expandedMenu === 'video' || hoveredMenu === 'video'" class="sub-side-menu">
         <v-row>
-          <v-btn class="createBtn" @click="$router.push('/video/create')">
+          <v-btn style="color:#ffffff" @click="$router.push('/video/create')">
             화상 회의 생성
           </v-btn>
         </v-row>
@@ -138,7 +135,7 @@
           직원 관리
         </v-row>
         <v-row>
-          <v-btn class="createBtn" @click="$router.push('/employee-management/create')">
+          <v-btn style="color:#ffffff" @click="$router.push('/employee-management/create')">
             직원 등록
           </v-btn>
         </v-row>
@@ -161,7 +158,6 @@
           부서 조회
         </v-row>
       </div>
-
     </div>
   </aside>
 
@@ -243,7 +239,7 @@ export default {
 
 <style scoped>
 :root {
-  --sidebar-width: 20%;
+  --sidebar-width: 15%;
   --sub-sidebar-width: 15%;
   --header-height: 60px;
 }
@@ -262,8 +258,10 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  padding-left: 30px;
   z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-content: center;
   overflow-y: auto;
 }
 
@@ -298,18 +296,17 @@ export default {
 }
 
 .sub-side-menu {
-  padding-left: 80px;
+  padding-left: 30px;
 }
 
 .sub-side-menu>.v-row {
   font-size: 16px;
   padding: 10px;
   color: #ffffff;
-
 }
 
 .logo img {
-  height: 6vh;
+  height: 12vh;
 }
 
 .myp {
