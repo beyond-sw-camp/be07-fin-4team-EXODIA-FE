@@ -5,7 +5,9 @@
       <div class="main-layout">
         <HeaderComponent />
         <div class="main-content">
-          <router-view />
+          <v-card style="padding:70px; border-radius:10px">
+            <router-view />
+          </v-card>
         </div>
       </div>
     </div>
@@ -17,7 +19,7 @@
 
 <script>
 import { useRoute } from 'vue-router';
-import { computed } from 'vue'; 
+import { computed } from 'vue';
 import HeaderComponent from './components/HeaderComponent.vue';
 import AppSidebar from './components/AppSidebar.vue';
 
@@ -28,7 +30,7 @@ export default {
     AppSidebar,
   },
   setup() {
-    const route = useRoute(); 
+    const route = useRoute();
 
     const isLoginPage = computed(() => route.path === '/login');
 
@@ -41,7 +43,7 @@ export default {
 
 <style>
 :root {
-  --sidebar-width: 13%;
+  --sidebar-width: 20%;
   --header-height: 60px;
 }
 
@@ -72,8 +74,7 @@ export default {
 .main-content {
   flex: 1;
   margin-top: var(--header-height);
-  padding: 50px 200px;
-  margin-right: 40px;
+  padding: 70px 160px;
   background-color: #f5f5f5;
   border-radius: 25px;
   overflow-y: auto;

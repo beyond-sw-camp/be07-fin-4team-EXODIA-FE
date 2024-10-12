@@ -5,166 +5,166 @@
         <img :src="require('@/assets/exodia.png')" alt="Logo" />
       </div>
 
-      <!-- 사이드: 게시판 -->
-      <div class="menu-item" @click="$router.push('/board/notice/List')"
-        :class="{ 'active': $route.path.startsWith('/board') }" @mouseover="showSubSidebar('board')">
-        <v-icon class="icon">mdi-format-list-bulleted</v-icon>
-        <span>게시판</span>
+      <div v-on:mouseleave="hideSubsidebar()">
+        <!-- 사이드: 게시판 -->
+        <div class="menu-item" @click="toggleMenu('board')" :class="{ 'active': $route.path.startsWith('/board') }"
+          @mouseover="showSubSidebar('board')">
+          <v-icon class="icon">mdi-format-list-bulleted</v-icon>
+          <span>게시판</span>
+        </div>
+
+        <!-- 서브사이드: 게시판 -->
+        <div v-show="expandedMenu === 'board' || hoveredMenu === 'board'" class="sub-side-menu">
+          <v-row @click="$router.push('/board/notice/list')">공지사항</v-row>
+          <v-row @click="$router.push('/board/familyevent/list')">경조사</v-row>
+          <v-row @click="$router.push('/qna/list')">Q&A</v-row>
+        </div>
       </div>
 
+
+
       <!-- 사이드: 문서 관리 -->
-      <div class="menu-item" @click="$router.push('/document')"
-        :class="{ 'active': $route.path.startsWith('/document') }" @mouseover="showSubSidebar('document')">
+      <div class="menu-item" @click="toggleMenu('document')" :class="{ 'active': $route.path.startsWith('/submit') }"
+        @mouseover="showSubSidebar('document')">
         <v-icon class="icon">mdi-folder-file-outline</v-icon>
-        <span>문서 관리</span>
+        <span>파일 관리</span>
+      </div>
+      <!-- <div class="menu-item" @click="toggleMenu('document')" :class="{ 'active': $route.path.startsWith('/document') }"
+        @mouseover="showSubSidebar('document')">
+        <v-icon class="icon">mdi-folder-file-outline</v-icon>
+        <span>파일 관리</span>
+      </div> -->
+
+      <!-- 서브사이드: 문서 관리 -->
+      <div v-show="expandedMenu === 'document' || hoveredMenu === 'document'" class="sub-side-menu">
+        <v-row style="font-weight:700; font-size:16px;">
+          팀 파일함
+        </v-row>
+        <v-row>
+          <v-btn class="createBtn" @click="$router.push('/document/create')">
+            파일 등록
+          </v-btn>
+        </v-row>
+
+        <v-row @click="$router.push('/document')">
+          전체 파일
+        </v-row>
+        <v-row @click="$router.push('/document/list/updated')">
+          최근 업데이트 파일
+        </v-row>
+        <v-row @click="$router.push('/document/list/viewed')">
+          최근 조회 파일
+        </v-row>
       </div>
 
       <!-- 사이드: 예약 -->
-      <div class="menu-item" @click="$router.push('/reservation/reservationList')"
-        :class="{ 'active': $route.path.startsWith('/reservation') }" @mouseover="showSubSidebar('reservation')">
+      <div class="menu-item" @click="toggleMenu('reservation')"
+        :class="{ 'active': $route.path.startsWith('/reservation/reservationList') }"
+        @mouseover="showSubSidebar('reservation')">
         <v-icon class="icon">mdi-timer-sand</v-icon>
         <span>예약</span>
       </div>
 
+      <!-- 서브사이드: 예약 -->
+      <div v-show="expandedMenu === 'reservation' || hoveredMenu === 'reservation'" class="sub-side-menu">
+        <v-row @click="$router.push('/reservation/meetReservationList')">
+          회의실 예약
+        </v-row>
+        <v-row @click="$router.push('/reservation/reservationList')">
+          법인 차량 예약 </v-row>
+      </div>
+
       <!-- 사이드: 결재 -->
-      <div class="menu-item" @click="$router.push('/submit')" :class="{ 'active': $route.path.startsWith('/submit') }"
+      <div class="menu-item" @click="toggleMenu('submit')" :class="{ 'active': $route.path.startsWith('/submit') }"
         @mouseover="showSubSidebar('submit')">
         <v-icon class="icon">mdi-pencil-box</v-icon>
         <span>전자 결재</span>
       </div>
 
+      <!-- 서브사이드: 결재 -->
+      <div v-show="expandedMenu === 'submit' || hoveredMenu === 'submit'" class="sub-side-menu">
+        <v-row>
+          <v-btn class="createBtn" @click="$router.push('/submit')">
+            결재 생성
+          </v-btn>
+        </v-row>
+        <v-row @click="$router.push('/submit/list')">
+          결재 할 문서
+        </v-row>
+        <v-row @click="$router.push('/submit/list/my')">
+          결재 요청 문서
+        </v-row>
+      </div>
+
       <!-- 사이드: 화상 회의 -->
-      <div class="menu-item" @click="$router.push('/video/rooms')"
-        :class="{ 'active': $route.path.startsWith('/video') }" @mouseover="showSubSidebar('video')">
+      <div class="menu-item" @click="toggleMenu('video')" :class="{ 'active': $route.path.startsWith('/video') }"
+        @mouseover="showSubSidebar('video')">
         <v-icon class="icon">mdi-video</v-icon>
         <span>화상회의</span>
       </div>
 
+      <!-- 서브사이드: 화상 회의 -->
+      <div v-show="expandedMenu === 'video' || hoveredMenu === 'video'" class="sub-side-menu">
+        <v-row>
+          <v-btn class="createBtn" @click="$router.push('/video/create')">
+            화상 회의 생성
+          </v-btn>
+        </v-row>
+        <v-row @click="$router.push('/video/rooms')">
+          화상 회의 목록
+        </v-row>
+      </div>
+
+
       <!-- 사이드: 조직도 -->
-      <div class="menu-item" @click="$router.push('/organization')"
+      <div class="menu-item" @click="toggleMenu('organization')"
         :class="{ 'active': $route.path.startsWith('/organization') }" @mouseover="showSubSidebar('borganizationoard')">
         <v-icon class="icon">mdi-account-group</v-icon>
         <span>조직도</span>
       </div>
 
       <!-- 사이드: 직원관리 -->
-      <div v-if="isHrDepartment" class="menu-item" @click="$router.push('/employee-management')"
+      <div v-if="isHrDepartment" class="menu-item" @click="toggleMenu('employee-management')"
         :class="{ 'active': $route.path.startsWith('/employee-management') }"
         @mouseover="showSubSidebar('employee-management')">
         <v-icon class="icon">mdi-account-cog</v-icon>
         <span>직원 관리</span>
       </div>
+      <!-- 서브사이드: 직원관리 -->
+      <div
+        v-show="expandedMenu === 'employee-management' || hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management'"
+        class="sub-side-menu">
+        <v-row style="font-weight:700; font-size:16px;">
+          직원 관리
+        </v-row>
+        <v-row>
+          <v-btn class="createBtn" @click="$router.push('/employee-management/create')">
+            직원 등록
+          </v-btn>
+        </v-row>
+        <v-row @click="$router.push('/employee-management')">
+          직원 목록
+        </v-row>
+        <v-row style="font-weight:700; font-size:16px;">
+          급여 관리
+        </v-row>
+        <v-row @click="$router.push('/salary-management')">
+          직원 급여 목록
+        </v-row>
+        <v-row @click="$router.push('/salary-management/manage')">
+          급여일 관리
+        </v-row>
+        <v-row style="font-weight:700; font-size:16px;">
+          부서 관리
+        </v-row>
+        <v-row @click="$router.push('/department-management')">
+          부서 조회
+        </v-row>
+      </div>
+
     </div>
   </aside>
 
-
-  <aside v-show="isSubSidebarVisible" class=" sub-sidebar" @mouseover="keepSubSidebarVisible"
-    @mouseleave="hideSubSidebar">
-
-    <!-- 서브사이드: 게시판 -->
-    <div v-if="hoveredMenu === 'board'" class="sub-side-menu-item">
-      <v-row @click="$router.push('/board/notice/list')">
-        공지사항
-      </v-row>
-      <v-row @click="$router.push('/board/familyevent/list')">
-        경조사
-      </v-row>
-      <v-row @click="$router.push('/qna/list')">
-        Q&A
-      </v-row>
-    </div>
-
-    <!-- 서브사이드: 문서 관리 -->
-    <div v-if="hoveredMenu === 'document'" class="sub-side-menu-item">
-      <v-row style="font-weight:700; font-size:16px;">
-        팀 문서
-      </v-row>
-      <v-row>
-        <v-btn class="createBtn" @click="$router.push('/document/create')">
-          문서 등록
-        </v-btn>
-      </v-row>
-
-      <v-row @click="$router.push('/document')">
-        전체 문서
-      </v-row>
-      <v-row @click="$router.push('/document/list/updated')">
-        최근 업데이트 문서
-      </v-row>
-      <v-row @click="$router.push('/document/list/viewed')">
-        최근 조회 문서
-      </v-row>
-    </div>
-
-    <!-- 서브사이드: 예약 -->
-    <div v-if="hoveredMenu === 'reservation'" class="sub-side-menu-item">
-      <v-row @click="$router.push('/reservation/meetReservationList')">
-        회의실 예약
-      </v-row>
-      <v-row @click="$router.push('/reservation/reservationList')">
-        법인 차량 예약 </v-row>
-    </div>
-
-    <!-- 서브사이드: 결재 -->
-    <div v-if="hoveredMenu === 'submit'" class="sub-side-menu-item">
-      <v-row>
-        <v-btn class="createBtn" @click="$router.push('/submit')">
-          결재 생성
-        </v-btn>
-      </v-row>
-      <v-row @click="$router.push('/submit/list')">
-        결재 할 문서
-      </v-row>
-      <v-row @click="$router.push('/submit/list/my')">
-        결재 요청 문서
-      </v-row>
-    </div>
-
-    <!-- 서브사이드: 화상 회의 -->
-    <div v-if="hoveredMenu === 'video'" class="sub-side-menu-item">
-      <v-row>
-        <v-btn class="createBtn" @click="$router.push('/video/create')">
-          화상 회의 생성
-        </v-btn>
-      </v-row>
-      <v-row @click="$router.push('/video/rooms')">
-        화상 회의 목록
-      </v-row>
-    </div>
-
-    <!-- 서브사이드: 직원관리 -->
-    <div
-      v-if="hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management'"
-      class="sub-side-menu-item">
-      <v-row style="font-weight:700; font-size:16px;">
-        직원 관리
-      </v-row>
-      <v-row>
-        <v-btn class="createBtn" @click="$router.push('/employee-management/create')">
-          직원 등록
-        </v-btn>
-      </v-row>
-      <v-row @click="$router.push('/employee-management')">
-        직원 목록
-      </v-row>
-      <v-row style="font-weight:700; font-size:16px;">
-        급여 관리
-      </v-row>
-      <v-row @click="$router.push('/salary-management')">
-        직원 급여 목록
-      </v-row>
-      <v-row @click="$router.push('/salary-management/manage')">
-        급여일 관리
-      </v-row>
-      <v-row style="font-weight:700; font-size:16px;">
-        부서 관리
-      </v-row>
-      <v-row @click="$router.push('/department-management')">
-        부서 조회
-      </v-row>
-    </div>
-
-  </aside>
 </template>
 
 
@@ -185,7 +185,10 @@ export default {
       typeOptions: [],
       hoveredMenu: '',
       isHoveringSidebar: false,
+      expandedMenu: null,
+
     };
+
   },
   methods: {
     toggleProjectVisibility() {
@@ -211,18 +214,15 @@ export default {
       this.isSubSidebarVisible = true;
       this.isHoveringSidebar = true;
     },
-    // 사이드바 사라짐
-    hideSubSidebar() {
-      this.hoveredMenu = '';
-      this.isSubSidebarVisible = false;
-      this.isHoveringSidebar = false;
+    hideSubsidebar() {
+      this.expandedMenu = null;
     },
-    // 사이드바 유지
-    keepSubSidebarVisible() {
-      this.isSubSidebarVisible = true;
-      this.isHoveringSidebar = true;
-    }
+    toggleMenu(menu) {
+      this.expandedMenu = this.expandedMenu === menu ? null : menu;
+      console.log(this.expandedMenu);
+    },
   },
+
   watch: {
     $route(to) {
       this.currentPage = to.path;
@@ -243,13 +243,13 @@ export default {
 
 <style scoped>
 :root {
-  --sidebar-width: 13%;
+  --sidebar-width: 20%;
   --sub-sidebar-width: 15%;
   --header-height: 60px;
 }
 
-* {
-  font-size: 14px;
+*:not(.menu-itm) {
+  background-color: #7A5656;
 }
 
 .v-row {
@@ -262,90 +262,55 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
+  padding-left: 30px;
   z-index: 2000;
-  display: flex;
-  align-items: start;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.sub-sidebar {
-  background-color: rgba(122, 86, 86, 0.2);
-  width: 180px;
-  height: 100vh;
-  position: fixed;
-  top: 8vh;
-  left: var(--sidebar-width);
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  border-radius: 25px;
-  padding: 25px;
+  overflow-y: auto;
 }
 
 .menu {
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
+  justify-content: flex-start;
+  align-content: center;
   height: 100%;
+  padding-top: 20px;
 }
 
 .menu-item {
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  color: #444444;
-  cursor: pointer;
+  color: #ffffff;
   transition: background-color 0.3s;
   width: 100%;
-  padding: 10px;
+  padding: 30px;
   position: relative;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .menu-item .icon {
   font-size: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #444444;
-  padding-right: 13px;
+  color: #ffffff;
+  padding-right: 15px;
 }
 
-.menu-item:hover {
-  opacity: 0.5;
-  visibility: visible;
-}
 
 .menu-item.active {
-  color: #7A5656;
   font-weight: 700;
-  border-bottom: 1px solid #7A5656;
 }
 
-.menu-item.active>.icon {
-  color: #7A5656;
+.sub-side-menu {
+  padding-left: 80px;
 }
 
-.v-list {
-  color: #444444;
+.sub-side-menu>.v-row {
+  font-size: 16px;
+  padding: 10px;
+  color: #ffffff;
+
 }
 
 .logo img {
   height: 6vh;
 }
-
-.subside-menu {
-  display: flex;
-  margin-top: 20px;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  height: 100%;
-}
-
 
 .myp {
   width: 150px;
@@ -362,18 +327,5 @@ export default {
   margin: 30px;
   margin-left: 40px;
   font-weight: 700;
-}
-
-.sub-side-menu-item {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-}
-
-.sub-side-menu-item>.v-row,
-.sub-side-menu-item>.v-btn {
-  padding: 10px;
 }
 </style>
