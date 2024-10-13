@@ -39,7 +39,7 @@
                     @click="openDrawer(document.id)"
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
-                    <v-col cols="3">{{ document.fileName }}</v-col>
+                    <v-col cols="3" class="ellipsis-text">{{ document.fileName }}</v-col>
                     <v-col cols="3">{{ document.type }}</v-col>
                     <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
                     <v-col cols="2">{{ document.userName }}</v-col>
@@ -139,6 +139,7 @@
                                         </v-card-actions>
                                     </v-col>
                                 </v-row>
+
                                 <v-card-text class="userName" style="margin-bottom:5px; padding:0 10px">
                                     <v-avatar class="icon">
                                         <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
@@ -152,9 +153,8 @@
                                         <span>설명: {{ history.description }}</span>
                                     </div>
                                 </v-card-text>
-
-
                             </v-card>
+
                             <template v-slot:opposite>
                                 <div class="fileModifiedDate">{{ formatDate(history.updatedAt) }}</div>
                             </template>
@@ -166,6 +166,14 @@
                         <span class="headline">댓글</span>
                         <v-icon class="icon" @click="toggleCommentsVisibility"> {{ showComments ? 'mdi-chevron-up' :
                             'mdi-chevron-down' }}</v-icon>
+                        <v-row>
+                            <v-col cols="9">
+                                <v-text-field label="댓글을 입력하세요." variant="outlined" v-model="comment"></v-text-field>
+                            </v-col>
+                            <v-col cols="3">
+                                <v-btn @click="submitComments(this.selectedDocument.id)">저장</v-btn>
+                            </v-col>
+                        </v-row>
                     </v-card-title>
 
                     <div v-if="showComments" class="comments">
@@ -222,6 +230,7 @@ export default {
     data() {
         return {
             token: localStorage.getItem('token') || null,
+            userNum: localStorage.getItem('userNum') || null,
 
             title: '',
             drawer: true,
@@ -237,6 +246,7 @@ export default {
 
             comments: {},
             showComments: true,
+            commentInput: '',
         }
     },
     mounted() {
@@ -274,13 +284,35 @@ export default {
                 console.error('문서 목록을 가져오는 중 오류 발생:', e);
             }
         },
-        async fetchComments(id) {
+        async fetchComments() {
             try {
-                const url = `${process.env.VUE_APP_API_BASE_URL}/comment/document/list/${id}`;
+                const url = `${process.env.VUE_APP_API_BASE_URL}/comment/document/list/${this.selectedDocument.id}`;
                 const response = await axios.get(url);
                 this.comments = response.data.result;
             } catch (e) {
-                console.error('문서 목록을 가져오는 중 오류 발생:', e);
+                console.error('댓글 목록 가져오는 중 오류 발생:', e);
+            }
+        },
+        async submitComments(id) {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/comment/document/create`;
+
+                const createData = {
+                    documentId: id,
+                    userNum: this.userNum,
+                    contents: this.comment
+                };
+
+                await axios.post(url, createData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                alert("댓글 작성이 성공적으로 처리되었습니다.");
+                this.comment = '';
+                this.fetchComments();
+            } catch (e) {
+                console.error('댓글 등록 중 오류 발생:', e);
             }
         },
         async openDrawer(id) {
@@ -291,7 +323,7 @@ export default {
                 this.selectedDocument = response.data.result;
                 this.drawer = true;
 
-                this.fetchComments(id);
+                this.fetchComments();
             } catch (e) {
                 console.error('문서 상세 정보를 가져오는 중 오류 발생:', e);
             }
@@ -407,6 +439,14 @@ v-card-title,
 .v-card-subtitle {
     display: flex;
     align-items: center;
+}
+
+.ellipsis-text {
+    /* 말줄임 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .v-tabs-window {
