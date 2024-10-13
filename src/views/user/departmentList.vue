@@ -72,13 +72,12 @@
             <v-col cols="8">
               <p>{{ user.name }}</p>
               <p>사번: {{ user.userNum }}</p>
-              <p>직급: {{ user.positionName }}</p>
+              <p>직급: {{ getPositionName(user.positionId) }}</p>
             </v-col>
           </v-row>
         </v-card>
       </div>
     </transition>
-
 
     <!-- 부서 추가/수정 다이얼로그 -->
     <v-dialog v-model="dialog" max-width="500">
@@ -114,13 +113,14 @@ export default {
     return {
       hierarchy: [],
       users: [],
-      defaultProfile: '/assets/default-profile.png',
+      defaultProfile: '/assets/default-profile.png', // 기본 프로필 이미지 경로
       departmentForm: { id: null, name: '', parentId: null },
       parentOptions: [],
       dialog: false,
       isEdit: false,
       editMode: false,
       draggedItem: null,
+      positions: [], // 직급 리스트
     };
   },
   methods: {
@@ -151,6 +151,18 @@ export default {
       } catch (error) {
         console.error('Error fetching users for department:', error);
       }
+    },
+    async fetchPositions() {
+      try {
+        const response = await axios.get('/positions');
+        this.positions = response.data;
+      } catch (error) {
+        console.error('Error fetching positions:', error);
+      }
+    },
+    getPositionName(positionId) {
+      const position = this.positions.find(pos => pos.id === positionId);
+      return position ? position.name : '알 수 없음'; // 직급 이름을 찾아서 반환
     },
     toggleEditMode() {
       this.editMode = !this.editMode;
@@ -230,12 +242,12 @@ export default {
   },
   mounted() {
     this.fetchHierarchy();
+    this.fetchPositions(); 
   },
 };
 </script>
 
 <style scoped>
-/* 계층 구조 및 노드 스타일 개선 */
 .tree-item {
   position: relative;
 }

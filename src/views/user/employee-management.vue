@@ -9,33 +9,29 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col cols="12" md="4">
-        <v-select
-          v-model="searchType"
-          :items="searchOptions"
-          item-title="text"
-          item-value="value"
-          label="검색 기준"
-          required
-        ></v-select>
-      </v-col>
-      <v-col cols="12" md="8">
+    <!-- 검색 옵션 (주신 코드에 맞춰 디자인 변경) -->
+    <v-row justify="center" style="margin:0; text-align:center;">
+      <v-col cols="6">
         <v-text-field
           v-model="searchQuery"
-          label="검색어를 입력하세요."
-          append-icon="mdi-magnify"
-          @click:append="performSearch"
-          required
+          placeholder="검색어를 입력하세요"
+          variant="underlined"
+          @input="performSearch"
+          style="margin-bottom: 20px;"
         ></v-text-field>
+      </v-col>
+      <v-col cols="4" sm="2">
+        <v-btn @click="performSearch(searchQuery)">
+          검색
+        </v-btn>
       </v-col>
     </v-row>
 
     <div v-if="users.length > 0">
       <table class="employee-table">
-        <thead >
-          <tr style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
-            <th>번호</th> <!-- 행 번호 추가 -->
+        <thead>
+          <tr style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
+            <th>번호</th>
             <th>사번</th>
             <th>부서</th>
             <th>이름</th>
@@ -46,7 +42,7 @@
         </thead>
         <tbody>
           <tr v-for="(user, index) in users" :key="user.userNum" @click="viewUser(user)">
-            <td>{{ index + 1 }}</td> <!-- 행 번호 표시 -->
+            <td>{{ index + 1 }}</td>
             <td>{{ user.userNum }}</td>
             <td>{{ getDepartmentName(user.departmentId) }}</td>
             <td>{{ user.name }}</td>
@@ -90,31 +86,24 @@ export default {
   name: "EmployeeManagement",
   data() {
     return {
-      users: [], // 직원 목록을 저장
-      searchQuery: "", // 검색어 저장
-      searchType: "all", // 검색 기준 (이름, 부서, 직급)
-      searchOptions: [
-        { text: "전체", value: "all" },
-        { text: "이름", value: "name" },
-        { text: "부서", value: "department" },
-        { text: "직급", value: "position" },
-      ],
-      departments: [], // 부서 목록 저장
-      positions: [], // 직급 목록 저장
-      deleteDialog: false, // 삭제 확인 Dialog의 상태
+      users: [], 
+      departments: [], 
+      positions: [], 
+      searchQuery: "", 
+      deleteDialog: false, 
       deleteInfo: {
-        userNum: "", // 삭제하려는 직원의 사번
-        reason: "", // 삭제 사유
+        userNum: "", 
+        reason: "", 
       },
-      adminCode: "", // 관리자 코드
-      correctAdminCode: "12341234", // 실제 관리자 코드
+      adminCode: "",
+      correctAdminCode: "12341234", 
     };
   },
   methods: {
     async fetchUsers() {
       try {
         const response = await axios.get("/user/list");
-        this.users = response.data; // 서버에서 가져온 직원 목록을 저장
+        this.users = response.data;
       } catch (error) {
         console.error("직원 목록을 불러오는 중 오류가 발생했습니다:", error);
       }
@@ -123,7 +112,7 @@ export default {
     async fetchDepartments() {
       try {
         const response = await axios.get("/department");
-        this.departments = response.data; // 부서 목록을 서버에서 가져와 저장
+        this.departments = response.data;
       } catch (error) {
         console.error("부서 목록을 불러오는 중 오류가 발생했습니다:", error);
       }
@@ -132,35 +121,26 @@ export default {
     async fetchPositions() {
       try {
         const response = await axios.get("/positions");
-        this.positions = response.data; // 직급 목록을 서버에서 가져와 저장
+        this.positions = response.data;
       } catch (error) {
         console.error("직급 목록을 불러오는 중 오류가 발생했습니다:", error);
       }
     },
 
     getDepartmentName(departmentId) {
-      if (this.departments && this.departments.length > 0) {
-        const department = this.departments.find((dept) => dept.id === departmentId);
-        return department ? department.name : "알 수 없음";
-      }
-      return "알 수 없음"; // 부서가 아직 로드되지 않았을 때 기본값 처리
+      const department = this.departments.find((dept) => dept.id === departmentId);
+      return department ? department.name : "알 수 없음";
     },
 
     getPositionName(positionId) {
-      if (this.positions && this.positions.length > 0) {
-        const position = this.positions.find((pos) => pos.id === positionId);
-        return position ? position.name : "알 수 없음";
-      }
-      return "알 수 없음"; // 직급이 아직 로드되지 않았을 때 기본값 처리
+      const position = this.positions.find((pos) => pos.id === positionId);
+      return position ? position.name : "알 수 없음";
     },
 
     async performSearch() {
       try {
         const response = await axios.get("/user/search", {
-          params: {
-            search: this.searchQuery,
-            searchType: this.searchType,
-          },
+          params: { search: this.searchQuery },
         });
         this.users = response.data;
       } catch (error) {
@@ -183,8 +163,8 @@ export default {
     },
 
     openDeleteDialog(userNum) {
-      this.deleteInfo.userNum = userNum; // 삭제하려는 직원의 사번 설정
-      this.deleteDialog = true; // 삭제 Dialog를 표시
+      this.deleteInfo.userNum = userNum;
+      this.deleteDialog = true;
     },
 
     async confirmDelete() {
@@ -194,20 +174,16 @@ export default {
       }
 
       try {
-        const token = localStorage.getItem("token"); // 사용자 토큰을 로컬 스토리지에서 가져옴
-        const response = await axios.delete("/user/delete", {
+        const token = localStorage.getItem("token");
+        await axios.delete("/user/delete", {
           data: {
             userNum: this.deleteInfo.userNum,
             reason: this.deleteInfo.reason,
           },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response);
-
         alert("직원 삭제가 완료되었습니다.");
-        this.fetchUsers(); // 삭제 후 직원 목록 새로고침
+        this.fetchUsers();
         this.closeDeleteDialog();
       } catch (error) {
         console.error("삭제 중 오류가 발생했습니다:", error);
@@ -216,11 +192,13 @@ export default {
     },
 
     closeDeleteDialog() {
-      this.deleteDialog = false; // 삭제 Dialog 닫기
+      this.deleteDialog = false;
     },
   },
+
+  // 컴포넌트가 마운트될 때 호출되는 함수
   mounted() {
-    this.fetchUsers(); // 컴포넌트가 마운트되면 직원 목록을 불러옴
+    this.fetchUsers(); // 직원 목록을 불러옴
     this.fetchDepartments(); // 부서 목록을 불러옴
     this.fetchPositions(); // 직급 목록을 불러옴
   },
