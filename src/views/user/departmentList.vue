@@ -2,60 +2,49 @@
   <div class="department-container">
     <h1>부서 관리</h1>
 
-    <!-- 편집 모드 토글 및 부서 추가 버튼 -->
     <div class="button-group">
-      <button v-if="editMode" @click="openCreateDialog">부서 추가</button>
-      <button @click="toggleEditMode">{{ editMode ? '편집 완료' : '편집' }}</button>
-      <button v-if="editMode" @click="cancelEdit">취소</button>
+      <button v-if="editMode" @click="openCreateDialog" class="primary-btn">부서 추가</button>
+      <button @click="toggleEditMode" class="secondary-btn">{{ editMode ? '편집 완료' : '편집' }}</button>
+      <button v-if="editMode" @click="cancelEdit" class="cancel-btn">취소</button>
     </div>
 
-    <!-- 부서 계층 트리 -->
-    <div class="tree-container">
-      <ul>
+    <!-- 트리 구조를 보여주는 UI -->
+    <div class="tree-wrapper">
+      <ul class="tree-root">
         <li v-for="department in hierarchy" :key="department.id" class="tree-item">
-          <div class="tree-node" :style="getNodeStyle(department, 0)"
+          <div
+            class="tree-node"
+            :style="getNodeStyle(department)"
             :draggable="editMode"
             @dragstart="dragStart(department)"
             @dragover.prevent
             @drop="drop(department)"
-            @click="editMode ? openEditDialog(department) : fetchUsersByDepartment(department.id)">
-            <v-icon>mdi-office-building</v-icon> 
-            {{ department.name || '이름 없음' }}
-            <v-icon v-if="editMode" @click.stop="deleteDepartment(department.id)">mdi-delete</v-icon>
+            @click="editMode ? openEditDialog(department) : fetchUsersByDepartment(department.id)"
+          >
+            <strong>{{ department.name || '이름 없음' }}</strong>
+            <button v-if="editMode" class="delete-btn" @click.stop="deleteDepartment(department.id)">삭제</button>
           </div>
-          <ul v-if="department.children && department.children.length">
+          <ul v-if="department.children && department.children.length" class="children-nodes">
             <li v-for="child in department.children" :key="child.id" class="tree-item">
-              <div class="tree-node" :style="getNodeStyle(child, 1)"
+              <div
+                class="tree-node child-node"
+                :style="getNodeStyle(child)"
                 :draggable="editMode"
                 @dragstart="dragStart(child)"
                 @dragover.prevent
                 @drop="drop(child)"
-                @click="editMode ? openEditDialog(child) : fetchUsersByDepartment(child.id)">
-                <v-icon>mdi-arrow-right</v-icon>
-                {{ child.name || '이름 없음' }}
-                <v-icon v-if="editMode" @click.stop="deleteDepartment(child.id)">mdi-delete</v-icon>
+                @click="editMode ? openEditDialog(child) : fetchUsersByDepartment(child.id)"
+              >
+                - {{ child.name || '이름 없음' }}
+                <button v-if="editMode" class="delete-btn" @click.stop="deleteDepartment(child.id)">삭제</button>
               </div>
-              <ul v-if="child.children && child.children.length">
-                <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
-                  <div class="tree-node" :style="getNodeStyle(subChild, 2)"
-                    :draggable="editMode"
-                    @dragstart="dragStart(subChild)"
-                    @dragover.prevent
-                    @drop="drop(subChild)"
-                    @click="editMode ? openEditDialog(subChild) : fetchUsersByDepartment(subChild.id)">
-                    <v-icon>mdi-subdirectory-arrow-right</v-icon>
-                    {{ subChild.name || '이름 없음' }}
-                    <v-icon v-if="editMode" @click.stop="deleteDepartment(subChild.id)">mdi-delete</v-icon>
-                  </div>
-                </li>
-              </ul>
             </li>
           </ul>
         </li>
       </ul>
     </div>
 
-    <!-- 사용자 리스트 -->
+    <!-- 사용자 정보 표시 패널 -->
     <transition name="slide-fade">
       <div class="user-list" v-if="users.length">
         <h3>사용자 정보</h3>
@@ -86,7 +75,7 @@
             label="상위 부서"
             v-model="departmentForm.parentId"
             :items="parentOptions"
-            item-title="name"
+            item-text="name"
             item-value="id"
           ></v-select>
         </v-card-text>
@@ -108,14 +97,14 @@ export default {
     return {
       hierarchy: [],
       users: [],
-      defaultProfile: 'https://example.com/default-profile.png', // 기본 프로필 이미지
+      defaultProfile: 'https://example.com/default-profile.png', // 기본 프로필 이미지 URL
       departmentForm: { id: null, name: '', parentId: null },
       parentOptions: [],
       dialog: false,
       isEdit: false,
       editMode: false,
       draggedItem: null,
-      positions: [],
+      positions: [], // 직급 리스트
     };
   },
   methods: {
@@ -156,11 +145,11 @@ export default {
       }
     },
     getPositionName(positionId) {
-      const position = this.positions.find(pos => pos.id === positionId);
+      const position = this.positions.find((pos) => pos.id === positionId);
       return position ? position.name : '알 수 없음';
     },
     getProfileImage(profileImage) {
-      return profileImage || this.defaultProfile;
+      return profileImage || this.defaultProfile; // 프로필 이미지가 없을 경우 기본 이미지 반환
     },
     toggleEditMode() {
       this.editMode = !this.editMode;
@@ -221,20 +210,41 @@ export default {
         console.error('부서 삭제 중 오류 발생:', error);
       }
     },
-    getNodeStyle(department, depth) {
-      const colors = ['#81d4fa', '#4fc3f7', '#0288d1'];
-      const color = colors[depth % colors.length];
-      return {
-        cursor: this.editMode ? 'move' : 'pointer',
-        opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.5 : 1,
-        backgroundColor: color,
-        padding: '15px',
-        margin: '10px',
-        borderRadius: '10px',
-        boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.2)',
-        textAlign: 'center',
-        transition: 'all 0.3s ease',
-      };
+    getNodeStyle(department) {
+      // 최상단 부모와 자식 노드를 구분하기 위한 스타일 구분
+      return department.parentId
+        ? {
+            backgroundColor: '#f2f2f2',
+            border: '1px solid #007bff',
+            padding: '10px',
+            margin: '5px',
+            borderRadius: '8px',
+            cursor: this.editMode ? 'move' : 'pointer',
+            opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.6 : 1,
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
+            color: '#333',
+            textAlign: 'center',
+            display: 'inline-block',
+            minWidth: '150px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          }
+        : {
+            backgroundColor: '#e0f7fa',
+            border: '2px solid #007bff',
+            padding: '15px',
+            margin: '10px',
+            borderRadius: '10px',
+            cursor: this.editMode ? 'move' : 'pointer',
+            opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.6 : 1,
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
+            color: '#007bff',
+            textAlign: 'center',
+            display: 'inline-block',
+            minWidth: '200px',
+            boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
+          };
     },
   },
   mounted() {
@@ -245,13 +255,51 @@ export default {
 </script>
 
 <style scoped>
+.department-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.tree-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.children-nodes {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.tree-item {
+  list-style-type: none;
+}
+
+.tree-node {
+  text-align: center;
+}
+
+.user-list {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+}
+
 .user-card {
-  max-width: 240px;
-  margin: 10px;
+  max-width: 200px;
   padding: 10px;
-  border-radius: 12px;
-  background-color: #fafafa;
-  box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .profile-image {
@@ -259,67 +307,38 @@ export default {
   border-radius: 50%;
 }
 
-.user-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  font-size: 14px;
-}
-
-.tree-container {
-  padding: 20px;
-}
-
-.tree-node {
-  padding: 12px;
-  margin: 5px;
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  min-width: 180px;
-  text-align: center;
-  transition: background-color 0.3s;
-}
-
-.tree-node:hover {
-  background-color: #e0e0e0;
-}
-
-ul {
-  list-style-type: none;
-  padding-left: 20px;
-}
-
-.button-group {
-  margin-bottom: 20px;
-}
-
-.button-group button {
-  margin-right: 10px;
+.primary-btn,
+.secondary-btn,
+.cancel-btn {
   padding: 10px 15px;
   border: none;
-  background-color: #4caf50;
-  color: white;
+  border-radius: 5px;
+  margin-right: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
 
-.button-group button:hover {
-  background-color: #45a049;
+.primary-btn {
+  background-color: #28a745;
+  color: white;
 }
 
-.user-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+.secondary-btn {
+  background-color: #007bff;
+  color: white;
 }
 
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: opacity 0.5s ease;
+.cancel-btn {
+  background-color: #dc3545;
+  color: white;
 }
-.slide-fade-enter,
-.slide-fade-leave-to {
-  opacity: 0;
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin-top: 10px;
 }
 </style>
