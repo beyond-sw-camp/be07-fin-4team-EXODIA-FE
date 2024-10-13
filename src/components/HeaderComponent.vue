@@ -1,24 +1,14 @@
 <template>
   <header class="header">
-    <div class="left-icons">
-      <!-- 로그인 연장 버튼 -->
-      <v-btn color="grey lighten-2" small @click="extendSession">로그인 연장</v-btn>
-      <span v-if="timeRemaining > 0" class="token-time">남은 시간: {{ formattedTimeRemaining }}</span>
-
-      <!-- 로그아웃 버튼 -->
-      <v-btn color="grey lighten-2" small @click="logout">로그아웃</v-btn>
-    </div>
-
     <div class="icons">
-      <!-- 달력 아이콘 -->
-      <div class="icon-item" @click="$router.push('/calendar/calendarList')"
-        :class="{ 'active': $route.path.startsWith('/calendar') }">
+      <div class="icon-item" @click="$router.push('/calendar/calendarList')" :class="{ 'active': $route.path.startsWith('/calendar') }">
         <v-icon class="icon">mdi-calendar</v-icon>
       </div>
 
       <!-- 알림 아이콘 클릭 시 알림 페이지로 이동 -->
       <div class="notification-icon" @click="goToNotifications">
         <v-icon class="icon">mdi-bell</v-icon>
+
         <!-- 읽지 않은 알림 개수 표시 -->
         <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
       </div>
@@ -28,10 +18,19 @@
         <v-icon class="icon">mdi-chat</v-icon>
       </div>
 
-      <!-- 프로필 아이콘 -->
       <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
         <img src="@/assets/user.png" alt="User Avatar" class="user-avatar" style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
+
+      <!-- 로그인 연장 버튼과 토큰 유효시간 표시 -->
+      <!-- <v-btn color="primary" class="mx-2" @click="extendSession">로그인 연장</v-btn> -->
+      <v-btn class="mx-2" text style="background-color: transparent; color: blue;" @click="extendSession">로그인 연장</v-btn>
+
+
+      <span v-if="timeRemaining > 0">남은 시간: {{ formattedTimeRemaining }}</span>
+
+      <!-- 로그아웃 버튼 -->
+      <!-- <v-btn color="error" @click="logout">로그아웃</v-btn> -->
     </div>
   </header>
 </template>
@@ -49,10 +48,12 @@ export default {
     };
   },
   created() {
+    // 컴포넌트 생성 시 읽지 않은 알림 개수를 가져옴
     this.fetchUnreadCount();
     this.calculateTokenTimeRemaining();
   },
   methods: {
+    // 읽지 않은 알림 개수를 가져오는 메서드
     async fetchUnreadCount() {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/unread-count`, {
@@ -64,10 +65,12 @@ export default {
       }
     },
 
+    // 알림 페이지로 이동
     goToNotifications() {
       this.$router.push('/notification/notificationList');
     },
 
+    // 인증 헤더 가져오기
     getAuthHeaders() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -110,6 +113,7 @@ export default {
       this.$router.push('/login');
     },
 
+    // 토큰 유효시간 계산
     calculateTokenTimeRemaining() {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -120,6 +124,7 @@ export default {
 
       this.timeRemaining = expirationTime - currentTime;
 
+      // 남은 시간 갱신
       if (this.timeRemaining > 0) {
         setTimeout(() => this.calculateTokenTimeRemaining(), 1000); // 매 초마다 업데이트
       } else {
@@ -128,6 +133,7 @@ export default {
     },
   },
   computed: {
+    // 남은 시간을 "분:초" 형식으로 변환
     formattedTimeRemaining() {
       const minutes = Math.floor(this.timeRemaining / 60);
       const seconds = this.timeRemaining % 60;
@@ -140,7 +146,7 @@ export default {
 <style scoped>
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
   align-items: center;
   height: 8vh;
   z-index: 1000;
@@ -149,11 +155,6 @@ export default {
   left: var(--sidebar-width);
   top: 0;
   font-size: 14px;
-}
-
-.left-icons {
-  display: flex;
-  align-items: center;
 }
 
 .icons {
@@ -172,7 +173,6 @@ export default {
   cursor: pointer;
   font-size: 25px;
 }
-
 
 .icons>v-avatar {
   margin-left: 4vw;
@@ -220,13 +220,7 @@ export default {
 
 .v-btn {
   margin-left: 10px;
-  font-size: 12px;
-  background-color: #f0f0f0 !important;
+  
 }
 
-.token-time {
-  margin-left: 10px;
-  font-size: 14px;
-  color: #888;
-}
 </style>

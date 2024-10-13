@@ -10,7 +10,7 @@
 
     <!-- 트리 구조를 보여주는 UI -->
     <div class="tree-container">
-      <ul class="tree">
+      <ul>
         <li v-for="department in hierarchy" :key="department.id" class="tree-item">
           <div
             class="tree-node"
@@ -21,7 +21,6 @@
             @drop="drop(department)"
             @click="editMode ? openEditDialog(department) : fetchUsersByDepartment(department.id)"
           >
-            <i class="fas fa-building"></i> <!-- 부모 아이콘 추가 -->
             {{ department.name || '이름 없음' }}
             <button v-if="editMode" @click.stop="deleteDepartment(department.id)">삭제</button>
           </div>
@@ -36,7 +35,6 @@
                 @drop="drop(child)"
                 @click="editMode ? openEditDialog(child) : fetchUsersByDepartment(child.id)"
               >
-                <i class="fas fa-sitemap"></i> <!-- 자식 아이콘 추가 -->
                 {{ child.name || '이름 없음' }}
                 <button v-if="editMode" @click.stop="deleteDepartment(child.id)">삭제</button>
               </div>
@@ -51,7 +49,6 @@
                     @drop="drop(subChild)"
                     @click="editMode ? openEditDialog(subChild) : fetchUsersByDepartment(subChild.id)"
                   >
-                    <i class="fas fa-users"></i> <!-- 하위 자식 아이콘 추가 -->
                     {{ subChild.name || '이름 없음' }}
                     <button v-if="editMode" @click.stop="deleteDepartment(subChild.id)">삭제</button>
                   </div>
@@ -75,30 +72,37 @@
             <v-col cols="8">
               <p>{{ user.name }}</p>
               <p>사번: {{ user.userNum }}</p>
-              <p>직급: {{ user.positionName }}</p> <!-- 직급 정보 표시 -->
+              <p>직급: {{ user.positionName }}</p>
             </v-col>
           </v-row>
         </v-card>
       </div>
     </transition>
 
+
     <!-- 부서 추가/수정 다이얼로그 -->
-    <div v-if="dialog" class="dialog-container">
-      <div class="dialog-card">
-        <h3>{{ isEdit ? '부서 수정' : '부서 추가' }}</h3>
-        <input v-model="departmentForm.name" placeholder="부서 이름" class="dialog-input" />
-        <select v-model="departmentForm.parentId" class="dialog-select">
-          <option value="" disabled>부모 부서 선택</option>
-          <option v-for="option in parentOptions" :value="option.id" :key="option.id">
-            {{ option.name }}
-          </option>
-        </select>
-        <div class="dialog-buttons">
-          <button class="save-button" @click="saveDepartment">{{ isEdit ? '수정' : '추가' }}</button>
-          <button class="cancel-button" @click="closeDialog">취소</button>
-        </div>
-      </div>
-    </div>
+    <v-dialog v-model="dialog" max-width="500">
+      <v-card>
+        <v-card-title>
+          <span class="headline">{{ isEdit ? '부서 수정' : '부서 추가' }}</span>
+        </v-card-title>
+        <v-card-text>
+          <v-text-field label="부서명" v-model="departmentForm.name"></v-text-field>
+          <v-select
+            label="상위 부서"
+            v-model="departmentForm.parentId"
+            :items="parentOptions"
+            item-text="name"
+            item-value="id"
+          ></v-select>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" text @click="saveDepartment">{{ isEdit ? '수정' : '추가' }}</v-btn>
+          <v-btn color="red darken-1" text @click="closeDialog">취소</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -110,7 +114,7 @@ export default {
     return {
       hierarchy: [],
       users: [],
-      defaultProfile: '/src/assets/default-profile.png', // 기본 프로필 경로 수정
+      defaultProfile: '/assets/default-profile.png',
       departmentForm: { id: null, name: '', parentId: null },
       parentOptions: [],
       dialog: false,
@@ -174,7 +178,6 @@ export default {
       if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
         this.draggedItem.parentId = parentDepartment.id;
         await axios.put(`/department/${this.draggedItem.id}`, {
-          name: this.draggedItem.name,  // 이름 유지
           parentId: parentDepartment.id,
         });
         this.fetchHierarchy();
@@ -232,7 +235,14 @@ export default {
 </script>
 
 <style scoped>
-/* 계층 구조 및 노드 스타일 개선 */
+.department-container {
+  margin: 20px;
+}
+
+.tree-container {
+  padding: 20px;
+}
+
 .tree-item {
   position: relative;
 }
@@ -266,6 +276,72 @@ ul {
 
 .button-group {
   margin-bottom: 20px;
+}
+
+.button-group button {
+  margin-right: 10px;
+  padding: 10px 15px;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button-group button:hover {
+  background-color: #45a049;
+}
+
+.dialog-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  width: 300px;
+}
+
+.dialog-input,
+.dialog-select {
+  margin-bottom: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.save-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 .user-list {
