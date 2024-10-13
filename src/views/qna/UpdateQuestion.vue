@@ -1,43 +1,51 @@
 <template>
-  <v-container class="mt-5">
+  <v-container class="mt-5 white-background qna-container">
     <v-form @submit.prevent="updateQuestion">
       <!-- 질문 제목 -->
-      <v-text-field
-        label="제목"
-        v-model="question.title"
-        required
-        outlined
-        dense
-      ></v-text-field>
+      <div class="pa-4 white-background mb-4">
+        <v-text-field
+          label="제목"
+          v-model="question.title"
+          required
+          outlined
+          dense
+        ></v-text-field>
+      </div>
 
       <!-- 질문 내용 -->
-      <v-textarea
-        label="질문 내용"
-        v-model="question.questionText"
-        required
-        outlined
-        dense
-      ></v-textarea>
+      <div class="pa-4 white-background mb-4">
+        <v-textarea
+          label="질문 내용"
+          v-model="question.questionText"
+          required
+          outlined
+          dense
+        ></v-textarea>
+      </div>
 
       <!-- 익명 여부 체크박스 -->
-      <v-checkbox
-        v-model="question.anonymous"
-        label="익명으로 작성"
-        :value="!!question.anonymous"
-      ></v-checkbox>
+      <div class="pa-4 white-background mb-4">
+        <v-checkbox
+          v-model="question.anonymous"
+          label="익명으로 작성"
+          :value="!!question.anonymous"
+        ></v-checkbox>
+      </div>
 
       <!-- 파일 선택 -->
-      <v-file-input
-        label="파일 선택 (선택사항)"
-        @change="onFileChange"
-        accept="*/*"
-        multiple
-        outlined
-        dense
-      ></v-file-input>
+      <div class="pa-4 white-background mb-4">
+        <v-file-input
+          label="파일 선택 (선택사항)"
+          @change="onFileChange"
+          accept="*/*"
+          multiple
+          outlined
+          dense
+        ></v-file-input>
+      </div>
 
       <!-- 기존 및 새 파일 목록 미리보기 -->
-      <div v-if="previewFiles.length > 0">
+      <div class="pa-4 white-background mb-4" v-if="previewFiles.length > 0">
         <p>첨부 파일 목록:</p>
         <ul>
           <li v-for="(file, index) in previewFiles" :key="index">{{ file.name }}</li>
@@ -47,8 +55,11 @@
       <!-- 미리보기 이미지 -->
       <v-img v-if="previewImageSrc" :src="previewImageSrc" max-width="200" class="my-3"/>
 
-      <v-btn type="submit" color="primary">수정 완료</v-btn>
-      <v-btn color="secondary" @click="goBack">취소</v-btn>
+      <!-- 제출 및 취소 버튼 -->
+      <div class="pa-4 white-background mb-4">
+        <v-btn type="submit" color="primary">수정 완료</v-btn>
+        <v-btn color="secondary" @click="goBack">취소</v-btn>
+      </div>
     </v-form>
   </v-container>
 </template>
@@ -134,6 +145,17 @@ export default {
         formData.append('files', file);
       });
 
+      // 사용자 ID (userNum)를 로컬 스토리지에서 가져옴
+      const userNum = localStorage.getItem("userNum");
+
+      if (!userNum) {
+        alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
+        return;
+      }
+
+      // 사용자 ID 추가
+      formData.append('userNum', userNum);
+
       try {
         await axios.post(
           `${process.env.VUE_APP_API_BASE_URL}/qna/update/question/${this.$route.params.id}`,
@@ -164,7 +186,17 @@ export default {
 .v-container {
   max-width: 800px;
   margin: 0 auto;
+  background-color: #ffffff; /* 전체 컨테이너 배경색 흰색으로 설정 */
+  padding: 20px;
+  border-radius: 12px;
 }
+
+/* 각 섹션의 배경을 흰색으로 설정 */
+.white-background {
+  background-color: #ffffff;
+}
+
+/* 마진 설정 */
 .my-3 {
   margin-top: 1rem;
   margin-bottom: 1rem;
