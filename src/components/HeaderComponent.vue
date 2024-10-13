@@ -1,8 +1,16 @@
 <template>
   <header class="header">
+    <div class="left-icons">
+      <!-- 로그인 연장 버튼 -->
+      <v-btn color="grey lighten-2" small @click="extendSession">로그인 연장</v-btn>
+      <span v-if="timeRemaining > 0" class="token-time">남은 시간: {{ formattedTimeRemaining }}</span>
+
+      <!-- 로그아웃 버튼 -->
+      <v-btn color="grey lighten-2" small @click="logout">로그아웃</v-btn>
+    </div>
 
     <div class="icons">
-
+      <!-- 달력 아이콘 -->
       <div class="icon-item" @click="$router.push('/calendar/calendarList')"
         :class="{ 'active': $route.path.startsWith('/calendar') }">
         <v-icon class="icon">mdi-calendar</v-icon>
@@ -11,7 +19,6 @@
       <!-- 알림 아이콘 클릭 시 알림 페이지로 이동 -->
       <div class="notification-icon" @click="goToNotifications">
         <v-icon class="icon">mdi-bell</v-icon>
-
         <!-- 읽지 않은 알림 개수 표시 -->
         <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
       </div>
@@ -21,18 +28,11 @@
         <v-icon class="icon">mdi-chat</v-icon>
       </div>
 
+      <!-- 프로필 아이콘 -->
       <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
-        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
-          style="width: 100%; height: 100%; object-fit: cover;" />
+        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar" style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
-
-      <!-- 로그인 연장 버튼 -->
-      <v-btn color="primary" @click="extendSession">로그인 연장</v-btn>
-
-      <!-- 로그아웃 버튼 -->
-      <v-btn color="error" @click="logout">로그아웃</v-btn>
     </div>
-    
   </header>
 </template>
 
@@ -45,14 +45,14 @@ export default {
   data() {
     return {
       unreadCount: 0, // 읽지 않은 알림 개수
+      timeRemaining: 0, // 토큰의 남은 유효기간
     };
   },
   created() {
-    // 컴포넌트 생성 시 읽지 않은 알림 개수를 가져옴
     this.fetchUnreadCount();
+    this.calculateTokenTimeRemaining();
   },
   methods: {
-    // 읽지 않은 알림 개수를 가져오는 메서드
     async fetchUnreadCount() {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/unread-count`, {
@@ -64,12 +64,10 @@ export default {
       }
     },
 
-    // 알림 페이지로 이동
     goToNotifications() {
       this.$router.push('/notification/notificationList');
     },
 
-    // 인증 헤더 가져오기
     getAuthHeaders() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -98,6 +96,7 @@ export default {
         const newToken = response.data.result;
         localStorage.setItem('token', newToken);
         alert('로그인 연장이 완료되었습니다.');
+        this.calculateTokenTimeRemaining(); // 유효시간 갱신
       } catch (error) {
         console.error('세션 연장 중 오류 발생:', error);
         alert('세션 연장 중 오류가 발생했습니다.');
@@ -109,15 +108,39 @@ export default {
       localStorage.clear();
       alert('로그아웃 되었습니다.');
       this.$router.push('/login');
+    },
+
+    calculateTokenTimeRemaining() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const decodedToken = jwtDecode(token);
+      const currentTime = Math.floor(Date.now() / 1000); // 현재 시간 (초 단위)
+      const expirationTime = decodedToken.exp; // 토큰 만료 시간 (초 단위)
+
+      this.timeRemaining = expirationTime - currentTime;
+
+      if (this.timeRemaining > 0) {
+        setTimeout(() => this.calculateTokenTimeRemaining(), 1000); // 매 초마다 업데이트
+      } else {
+        this.logout(); // 토큰이 만료되면 로그아웃
+      }
+    },
+  },
+  computed: {
+    formattedTimeRemaining() {
+      const minutes = Math.floor(this.timeRemaining / 60);
+      const seconds = this.timeRemaining % 60;
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
-  }
+  },
 };
 </script>
 
 <style scoped>
 .header {
   display: flex;
-  justify-content: end;
+  justify-content: space-between;
   align-items: center;
   height: 8vh;
   z-index: 1000;
@@ -126,6 +149,11 @@ export default {
   left: var(--sidebar-width);
   top: 0;
   font-size: 14px;
+}
+
+.left-icons {
+  display: flex;
+  align-items: center;
 }
 
 .icons {
@@ -188,5 +216,17 @@ export default {
   border-radius: 50%;
   padding: 4px 8px;
   font-size: 0.8rem;
+}
+
+.v-btn {
+  margin-left: 10px;
+  font-size: 12px;
+  background-color: #f0f0f0 !important;
+}
+
+.token-time {
+  margin-left: 10px;
+  font-size: 14px;
+  color: #888;
 }
 </style>
