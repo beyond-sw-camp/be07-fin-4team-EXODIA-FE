@@ -100,10 +100,12 @@ export default {
     // 답변 작성 또는 수정
     async submitAnswer() {
       const questionId = this.$route.params.id;
+      const userNum = localStorage.getItem("userNum"); // 사용자 ID를 로컬 스토리지에서 가져옴
       try {
         // 서버로 전송할 FormData 객체 생성
         const formData = new FormData();
         formData.append('answerText', this.newAnswerText); // DTO에서 필요한 answerText 필드 추가
+        formData.append('userNum', userNum); // 사용자 ID를 FormData에 추가
 
         // 첨부된 파일들을 FormData에 추가
         if (this.answerFiles && this.answerFiles.length > 0) {

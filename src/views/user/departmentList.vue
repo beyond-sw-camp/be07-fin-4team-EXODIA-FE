@@ -235,8 +235,9 @@ export default {
 </script>
 
 <style scoped>
-.department-container {
-  margin: 20px;
+/* 계층 구조 및 노드 스타일 개선 */
+.tree-item {
+  position: relative;
 }
 
 .tree-container {
