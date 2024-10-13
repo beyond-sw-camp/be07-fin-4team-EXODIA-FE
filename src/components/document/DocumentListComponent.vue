@@ -29,8 +29,7 @@
                 <v-row class="mb-2"
                     style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
                     <v-col cols="1"><strong></strong></v-col>
-                    <v-col cols="3"><strong>제목</strong></v-col>
-                    <v-col cols="3"><strong>프로젝트명</strong></v-col>
+                    <v-col cols="6"><strong>제목</strong></v-col>
                     <v-col cols="3"><strong>등록일</strong></v-col>
                     <v-col cols="2"><strong>작성자</strong></v-col>
                 </v-row>
@@ -39,8 +38,7 @@
                     @click="openDrawer(document.id)"
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
-                    <v-col cols="3" class="ellipsis-text">{{ document.fileName }}</v-col>
-                    <v-col cols="3">{{ document.type }}</v-col>
+                    <v-col cols="6" class="ellipsis-text">{{ document.fileName }}</v-col>
                     <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
                     <v-col cols="2">{{ document.userName }}</v-col>
                 </v-row>
@@ -68,10 +66,6 @@
                         <v-row class="detailFileName">{{ selectedDocument.fileName }}</v-row>
                     </v-card-title>
                     <v-divider></v-divider>
-                    <v-card-text>
-                        <v-row>프로젝트명</v-row>
-                        <v-row>{{ selectedDocument.documentType }}</v-row>
-                    </v-card-text>
                     <v-card-text>
                         <v-row>생성 날짜</v-row>
                         <v-row>{{ formatDate(selectedDocument.createAt) }}</v-row>
@@ -127,7 +121,7 @@
                                         <v-card-text style="margin-bottom:0; padding:0">
                                             <div class="fileName">
                                                 <v-icon left>mdi-file-document-outline</v-icon>
-                                                <span>{{ history.fileName }}</span>
+                                                <span class="ellipsis-text">{{ history.fileName }}</span>
                                             </div>
                                         </v-card-text>
                                     </v-col>
@@ -233,7 +227,7 @@ export default {
             userNum: localStorage.getItem('userNum') || null,
 
             title: '',
-            drawer: true,
+            drawer: false,
             selectedDocument: {},
             tab: '히스토리',
             showHistory: false,
