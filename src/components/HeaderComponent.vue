@@ -26,6 +26,11 @@
           style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
 
+      <!-- 로그인 연장 버튼 -->
+      <v-btn color="primary" @click="extendSession">로그인 연장</v-btn>
+
+      <!-- 로그아웃 버튼 -->
+      <v-btn color="error" @click="logout">로그아웃</v-btn>
     </div>
     
   </header>
@@ -33,6 +38,7 @@
 
 <script>
 import axios from "axios";
+import { jwtDecode } from 'jwt-decode';
 
 export default {
   name: 'HeaderComponent',
@@ -74,7 +80,37 @@ export default {
         Authorization: `Bearer ${token}`,
       };
     },
-  },
+
+    // 로그인 연장
+    async extendSession() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('로그인이 되어 있지 않습니다.');
+          return;
+        }
+
+        const decodedToken = jwtDecode(token);
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/user/refresh-token`, {
+          userNum: decodedToken.sub
+        });
+
+        const newToken = response.data.result;
+        localStorage.setItem('token', newToken);
+        alert('로그인 연장이 완료되었습니다.');
+      } catch (error) {
+        console.error('세션 연장 중 오류 발생:', error);
+        alert('세션 연장 중 오류가 발생했습니다.');
+      }
+    },
+
+    // 로그아웃
+    logout() {
+      localStorage.clear();
+      alert('로그아웃 되었습니다.');
+      this.$router.push('/login');
+    }
+  }
 };
 </script>
 

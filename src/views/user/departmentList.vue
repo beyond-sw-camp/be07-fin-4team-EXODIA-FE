@@ -21,7 +21,7 @@
             @drop="drop(department)"
             @click="editMode ? openEditDialog(department) : fetchUsersByDepartment(department.id)"
           >
-            <i class="fas fa-building"></i> <!-- 아이콘 추가 -->
+            <i class="fas fa-building"></i> <!-- 부모 아이콘 추가 -->
             {{ department.name || '이름 없음' }}
             <button v-if="editMode" @click.stop="deleteDepartment(department.id)">삭제</button>
           </div>
@@ -36,7 +36,7 @@
                 @drop="drop(child)"
                 @click="editMode ? openEditDialog(child) : fetchUsersByDepartment(child.id)"
               >
-                <i class="fas fa-sitemap"></i> <!-- 아이콘 추가 -->
+                <i class="fas fa-sitemap"></i> <!-- 자식 아이콘 추가 -->
                 {{ child.name || '이름 없음' }}
                 <button v-if="editMode" @click.stop="deleteDepartment(child.id)">삭제</button>
               </div>
@@ -51,7 +51,7 @@
                     @drop="drop(subChild)"
                     @click="editMode ? openEditDialog(subChild) : fetchUsersByDepartment(subChild.id)"
                   >
-                    <i class="fas fa-users"></i> <!-- 아이콘 추가 -->
+                    <i class="fas fa-users"></i> <!-- 하위 자식 아이콘 추가 -->
                     {{ subChild.name || '이름 없음' }}
                     <button v-if="editMode" @click.stop="deleteDepartment(subChild.id)">삭제</button>
                   </div>
@@ -75,7 +75,7 @@
             <v-col cols="8">
               <p>{{ user.name }}</p>
               <p>사번: {{ user.userNum }}</p>
-              <p>직급: {{ user.positionName }}</p>
+              <p>직급: {{ user.positionName }}</p> <!-- 직급 정보 표시 -->
             </v-col>
           </v-row>
         </v-card>
@@ -110,7 +110,7 @@ export default {
     return {
       hierarchy: [],
       users: [],
-      defaultProfile: '/assets/default-profile.png',
+      defaultProfile: '/src/assets/default-profile.png', // 기본 프로필 경로 수정
       departmentForm: { id: null, name: '', parentId: null },
       parentOptions: [],
       dialog: false,
@@ -174,6 +174,7 @@ export default {
       if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
         this.draggedItem.parentId = parentDepartment.id;
         await axios.put(`/department/${this.draggedItem.id}`, {
+          name: this.draggedItem.name,  // 이름 유지
           parentId: parentDepartment.id,
         });
         this.fetchHierarchy();
@@ -231,14 +232,7 @@ export default {
 </script>
 
 <style scoped>
-.department-container {
-  margin: 20px;
-}
-
-.tree-container {
-  padding: 20px;
-}
-
+/* 계층 구조 및 노드 스타일 개선 */
 .tree-item {
   position: relative;
 }
@@ -272,72 +266,6 @@ ul {
 
 .button-group {
   margin-bottom: 20px;
-}
-
-.button-group button {
-  margin-right: 10px;
-  padding: 10px 15px;
-  border: none;
-  background-color: #4caf50;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.button-group button:hover {
-  background-color: #45a049;
-}
-
-.dialog-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.dialog-card {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  width: 300px;
-}
-
-.dialog-input,
-.dialog-select {
-  margin-bottom: 10px;
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.dialog-buttons {
-  display: flex;
-  justify-content: space-between;
-}
-
-.save-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.cancel-button {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-  border-radius: 5px;
 }
 
 .user-list {
