@@ -60,22 +60,24 @@
       </ul>
     </div>
 
-    <!-- 사용자 정보 표시 패널 -->
+    <!-- 사용자 정보 표시 패널 (카드 형식으로 디자인 개선) -->
     <transition name="slide-fade">
       <div class="user-list" v-if="users.length">
         <h3>사용자 정보</h3>
-        <v-card v-for="user in users" :key="user.userNum" class="mb-3">
-          <v-row>
-            <v-col cols="4">
-              <img :src="user.profileImage || defaultProfile" alt="profile" style="width:100%;" />
-            </v-col>
-            <v-col cols="8">
-              <p>{{ user.name }}</p>
-              <p>사번: {{ user.userNum }}</p>
-              <p>직급: {{ getPositionName(user.positionId) }}</p>
-            </v-col>
-          </v-row>
-        </v-card>
+        <v-row v-for="user in users" :key="user.userNum" class="mb-3">
+          <v-col cols="12">
+            <v-card class="user-card">
+              <v-img :src="user.profileImage || defaultProfile" alt="profile" class="profile-img"></v-img>
+              <v-card-title>{{ user.name }}</v-card-title>
+              <v-card-subtitle>사번: {{ user.userNum }}</v-card-subtitle>
+              <v-card-subtitle>직급: {{ getPositionName(user.positionId) }}</v-card-subtitle>
+              <v-card-actions>
+                <v-btn color="primary" text @click="editUser(user.userNum)">수정</v-btn>
+                <v-btn color="error" text @click="openDeleteDialog(user.userNum)">삭제</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+        </v-row>
       </div>
     </transition>
 
@@ -113,7 +115,7 @@ export default {
     return {
       hierarchy: [],
       users: [],
-      defaultProfile: '/assets/default-profile.png', // 기본 프로필 이미지 경로
+      defaultProfile: 'src/assets/user.png', // 기본 프로필 경로 설정
       departmentForm: { id: null, name: '', parentId: null },
       parentOptions: [],
       dialog: false,
@@ -162,12 +164,19 @@ export default {
     },
     getPositionName(positionId) {
       const position = this.positions.find(pos => pos.id === positionId);
-      return position ? position.name : '알 수 없음'; // 직급 이름을 찾아서 반환
+      return position ? position.name : '알 수 없음';
+    },
+    editUser(userNum) {
+      this.$router.push(`/employee-management/edit/${userNum}`);
+    },
+    openDeleteDialog(userNum) {
+      this.deleteInfo.userNum = userNum;
+      this.deleteDialog = true;
     },
     toggleEditMode() {
       this.editMode = !this.editMode;
       if (!this.editMode) {
-        this.fetchHierarchy(); // 편집 모드 종료 시 계층 데이터 새로고침
+        this.fetchHierarchy();
       }
     },
     openCreateDialog() {
@@ -242,7 +251,7 @@ export default {
   },
   mounted() {
     this.fetchHierarchy();
-    this.fetchPositions(); 
+    this.fetchPositions();
   },
 };
 </script>
@@ -305,58 +314,6 @@ ul {
   background-color: #45a049;
 }
 
-.dialog-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.dialog-card {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  width: 300px;
-}
-
-.dialog-input,
-.dialog-select {
-  margin-bottom: 10px;
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.dialog-buttons {
-  display: flex;
-  justify-content: space-between;
-}
-
-.save-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.cancel-button {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
 .user-list {
   position: fixed;
   right: 0;
@@ -367,6 +324,21 @@ ul {
   box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
   padding: 20px;
   overflow-y: auto;
+}
+
+.profile-img {
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.user-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 350px;
+  text-align: center;
+  padding: 20px;
 }
 
 .slide-fade-enter-active,
