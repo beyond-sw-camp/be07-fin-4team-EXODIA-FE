@@ -272,8 +272,6 @@ async fetchTodayAttendance() {
 
 <style scoped>
 .main-view {
-  margin-left: -150px;
-  
   padding: -50px;
 }
 /* 헤더 탭 여백 */

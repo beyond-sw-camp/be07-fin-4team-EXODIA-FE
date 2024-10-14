@@ -20,7 +20,7 @@
         </v-btn-toggle>
 
         <!-- 알림 리스트 -->
-        <v-list style="background-color: #f5f5f5;">
+        <v-list style="background-color: #ffffff;">
           <v-list-item-group>
             <v-list-item
               v-for="notification in filteredNotifications"

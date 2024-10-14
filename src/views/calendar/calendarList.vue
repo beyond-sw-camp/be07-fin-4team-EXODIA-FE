@@ -11,13 +11,13 @@
 
     <v-dialog v-model="isModalOpen" persistent max-width="500px">
       <v-card>
-        <v-card-title>{{ isEditing ? 'Update Event' : 'Create Event' }}</v-card-title>
+        <v-card-title>{{ isEditing ? '일정 수정' : '일정 추가' }}</v-card-title>
         <v-card-text>
           <v-form ref="form">
             <v-text-field v-model="formData.title" label="Title" required></v-text-field>
             <v-text-field v-model="formData.content" label="Content" required></v-text-field>
 
-            <!-- Type Selection -->
+            <!-- 타입 선택 -->
             <v-select
               v-model="formData.type"
               :items="eventTypes"

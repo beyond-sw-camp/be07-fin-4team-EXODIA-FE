@@ -237,7 +237,7 @@ export default {
 
 /* 헤더 탭 여백 */
 .main-view {
-  margin-left: -150px;
+  /* margin-left: -150px; */
   /* margin-top: -50px; */
   padding: -50px;
 }
