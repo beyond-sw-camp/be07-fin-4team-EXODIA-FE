@@ -13,12 +13,14 @@
             item-title="name"
             item-value="id"
             label="직급별 조회"
+            @change="fetchSalariesByPosition"
             outlined
           />
         </v-col>
 
         <v-col cols="12" md="6" class="text-right">
           <v-btn color="primary" @click="fetchSalaries">전체 조회</v-btn>
+          <v-btn color="secondary" @click="openSetSalaryDateDialog">급여일 설정</v-btn>
         </v-col>
       </v-row>
 
@@ -59,57 +61,86 @@
           급여 데이터를 찾을 수 없습니다.
         </v-alert>
       </div>
+
+      <!-- 급여일 설정 다이얼로그 -->
+      <v-dialog v-model="salaryDateDialog" max-width="500">
+        <v-card>
+          <v-card-title>급여일 설정</v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col cols="12">
+                <v-date-picker v-model="selectedSalaryDate" label="급여일 선택" />
+              </v-col>
+            </v-row>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" @click="setSalaryDate">저장</v-btn>
+            <v-btn color="secondary" @click="salaryDateDialog = false">취소</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-card-text>
   </v-container>
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
 
 export default {
-  name: "SalaryManagement",
+  name: 'SalaryManagement',
   data() {
     return {
-      salaries: [], // 급여 데이터
-      positions: [], // 직급 목록
-      selectedPosition: null, // 선택된 직급
+      salaries: [],
+      positions: [],
+      selectedPosition: null,
+      salaryDateDialog: false,
+      selectedSalaryDate: null,
     };
-  },
-  watch: {
-    selectedPosition(newPosition) {
-      this.fetchSalariesByPosition(newPosition);
-    },
   },
   methods: {
     async fetchSalaries() {
       try {
-        const response = await axios.get("/salary");
+        const response = await axios.get('/salary');
         this.salaries = response.data;
       } catch (error) {
-        console.error("급여 목록을 가져오는 중 오류가 발생했습니다.", error);
+        console.error('급여 목록을 가져오는 중 오류가 발생했습니다.', error);
       }
     },
-    async fetchSalariesByPosition(positionId) {
-      if (positionId) {
+    async fetchSalariesByPosition() {
+      if (this.selectedPosition) {
         try {
-          const response = await axios.get(`/salary/byPosition/${positionId}`);
+          const response = await axios.get(`/salary/byPosition/${this.selectedPosition}`);
           this.salaries = response.data;
-          console.log("직급별 급여 조회 성공:", this.salaries);
         } catch (error) {
-          console.error("직급별 급여 목록을 가져오는 중 오류가 발생했습니다.", error);
+          console.error('직급별 급여 목록을 가져오는 중 오류가 발생했습니다.', error);
         }
+      } else {
+        this.fetchSalaries();
       }
     },
     async fetchPositions() {
       try {
-        const response = await axios.get("/positions");
+        const response = await axios.get('/positions');
         this.positions = response.data;
       } catch (error) {
-        console.error("직급 목록을 가져오는 중 오류가 발생했습니다.", error);
+        console.error('직급 목록을 가져오는 중 오류가 발생했습니다.', error);
       }
     },
     viewSalaryDetails(userNum) {
       this.$router.push(`/salary/detail/${userNum}`);
+    },
+    openSetSalaryDateDialog() {
+      this.salaryDateDialog = true;
+    },
+    async setSalaryDate() {
+      try {
+        await axios.post('/salary/setDate', { salaryDate: this.selectedSalaryDate });
+        this.salaryDateDialog = false;
+        alert('급여일이 성공적으로 설정되었습니다.');
+      } catch (error) {
+        console.error('급여일 설정 중 오류가 발생했습니다.', error);
+      }
     },
   },
   mounted() {
@@ -118,3 +149,35 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.salary-container {
+  margin: 20px;
+}
+
+.v-card-title {
+  padding-bottom: 10px;
+  font-weight: bold;
+}
+
+.v-card-text {
+  padding-top: 0;
+}
+
+.v-btn {
+  margin-right: 10px;
+}
+
+.v-row {
+  margin-bottom: 10px;
+}
+
+.table-row {
+  transition: background-color 0.3s;
+  cursor: pointer;
+}
+
+.table-row:hover {
+  background-color: #fafafa;
+}
+</style>
