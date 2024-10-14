@@ -8,9 +8,9 @@
       <v-btn v-if="editMode" @click="cancelEdit" color="error">취소</v-btn>
     </div>
 
-    <!-- 트리 구조 UI -->
+    <!-- 트리 구조 -->
     <div class="tree-container">
-      <ul>
+      <ul class="tree-root">
         <DepartmentNode
           v-for="department in hierarchy"
           :key="department.id"
@@ -29,13 +29,13 @@
     <transition name="slide-fade">
       <div class="user-list" v-if="users.length">
         <h3>사용자 정보</h3>
-        <v-card v-for="user in users" :key="user.userNum" class="mb-3">
+        <v-card v-for="user in users" :key="user.userNum" class="user-card mb-3">
           <v-row>
             <v-col cols="4">
-              <img :src="user.profileImage || defaultProfile" alt="profile" style="width:100%;" />
+              <img :src="user.profileImage || defaultProfile" alt="profile" class="user-profile" />
             </v-col>
             <v-col cols="8">
-              <p>{{ user.name }}</p>
+              <p class="user-name">{{ user.name }}</p>
               <p>사번: {{ user.userNum }}</p>
               <p>직급: {{ getPositionName(user.positionId) }}</p>
             </v-col>
@@ -56,7 +56,7 @@
             label="상위 부서"
             v-model="departmentForm.parentId"
             :items="parentOptions"
-            item-title="name"
+            item-text="name"
             item-value="id"
           ></v-select>
         </v-card-text>
@@ -119,6 +119,7 @@ export default {
         this.users = response.data;
       } catch (error) {
         console.error('Error fetching users for department:', error);
+        this.users = [];  // 오류 발생 시 빈 배열 반환
       }
     },
     async fetchPositions() {
@@ -159,7 +160,7 @@ export default {
       if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
         await axios.put(`/department/${this.draggedItem.id}`, {
           name: this.draggedItem.name,
-          parentId: parentDepartment.id
+          parentId: parentDepartment.id,
         });
         this.fetchHierarchy();
       }
@@ -201,46 +202,94 @@ export default {
 </script>
 
 <style scoped>
+/* 더 은은한 색상과 간결한 디자인 */
 .tree-container {
   padding: 20px;
-  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.tree-root {
+  list-style-type: none;
+  padding-left: 20px;
 }
 
 .tree-node {
-  display: inline-block;
   padding: 15px;
-  margin: 10px;
   background-color: #f0f0f0;
-  border-radius: 8px;
+  border: 1px solid #cccccc;
+  border-radius: 10px;
+  margin: 15px;
+  min-width: 200px;
+  max-width: 200px;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: inline-block;
 }
 
-.tree-node:hover {
-  transform: scale(1.05);
+.tree-node:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -20px;
+  width: 20px;
+  height: 2px;
+  background-color: #d0d0d0;
+}
+
+.tree-node:after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 2px;
+  height: 20px;
+  background-color: #d0d0d0;
 }
 
 .button-group {
   margin-bottom: 20px;
 }
 
+/* 사용자 리스트 카드 스타일 */
 .user-list {
   position: fixed;
   right: 0;
   top: 0;
   width: 400px;
   height: 100%;
-  background-color: #f5f5f5;
-  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
+  background-color: #fafafa;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   overflow-y: auto;
+}
+
+.user-card {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: transform 0.2s;
+}
+
+.user-card:hover {
+  transform: scale(1.05);
+}
+
+.user-profile {
+  width: 100%;
+  border-radius: 50%;
+}
+
+.user-name {
+  font-weight: bold;
+  font-size: 1.2em;
 }
 
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: opacity 0.5s ease;
 }
+
 .slide-fade-enter,
 .slide-fade-leave-to {
   opacity: 0;

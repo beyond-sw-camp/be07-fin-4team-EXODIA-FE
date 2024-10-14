@@ -22,6 +22,15 @@
 
             <v-col cols="12" md="6">
               <v-select
+                v-model="userDetail.gender"
+                :items="genderOptions"
+                label="성별"
+                :disabled="isDetailMode"
+              />
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <v-select
                 v-model="userDetail.departmentId"
                 :items="departmentOptions"
                 item-title="name"
@@ -128,6 +137,7 @@ export default {
       userDetail: {
         userNum: '',
         name: '',
+        gender: '', // 성별 필드 추가
         departmentId: null,
         positionId: null,
         email: '',
@@ -139,6 +149,7 @@ export default {
         address: '',
         socialNum: '',
       },
+      genderOptions: ['M', 'W'], // 성별 선택 옵션 추가
       departmentOptions: [],
       positionOptions: [],
       hireTypeOptions: ['정규직', '계약직', '인턴', '파트타임'],
@@ -256,46 +267,46 @@ export default {
       }
     },
     async submitForm() {
-  try {
-    const formData = new FormData();
-    formData.append('userNum', this.userDetail.userNum);
-    formData.append('name', this.userDetail.name);
-    formData.append('email', this.userDetail.email);
-    formData.append('address', this.userDetail.address);
-    formData.append('phone', this.userDetail.phone);
-    formData.append('profileImage', this.userDetail.profileImage); // 파일 전송
-    formData.append('hireType', this.userDetail.hireType);
-    formData.append('departmentId', this.userDetail.departmentId);
-    formData.append('positionId', this.userDetail.positionId);
-    formData.append('annualLeave', this.userDetail.annualLeave);
-    formData.append('password', this.userDetail.password);
-    formData.append('socialNum', this.userDetail.socialNum);
+      try {
+        const formData = new FormData();
+        formData.append('userNum', this.userDetail.userNum);
+        formData.append('name', this.userDetail.name);
+        formData.append('email', this.userDetail.email);
+        formData.append('address', this.userDetail.address);
+        formData.append('phone', this.userDetail.phone);
+        formData.append('profileImage', this.userDetail.profileImage); // 파일 전송
+        formData.append('hireType', this.userDetail.hireType);
+        formData.append('departmentId', this.userDetail.departmentId);
+        formData.append('positionId', this.userDetail.positionId);
+        formData.append('annualLeave', this.userDetail.annualLeave);
+        formData.append('password', this.userDetail.password);
+        formData.append('socialNum', this.userDetail.socialNum);
+        formData.append('gender', this.userDetail.gender); // 성별 필드 추가
 
-    const token = localStorage.getItem("token");
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          }
+        };
+
+        if (this.isEditMode) {
+          await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
+          alert("수정 완료");
+        } else {
+          await axios.post("/user/register", formData, config);
+          alert("등록 완료");
+        }
+
+        this.$router.push("/employee-management");
+      } catch (error) {
+        console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
+        if (error.response) {
+          alert(error.response.data.status_message);
+        }
       }
-    };
-
-    if (this.isEditMode) {
-      await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
-      alert("수정 완료");
-    } else {
-      await axios.post("/user/register", formData, config);
-      alert("등록 완료");
-    }
-
-    this.$router.push("/employee-management");
-  } catch (error) {
-    console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
-    if (error.response) {
-      alert(error.response.data.status_message);
-    }
-  }
-},
-
+    },
     goBack() {
       this.$router.push("/employee-management");
     },
