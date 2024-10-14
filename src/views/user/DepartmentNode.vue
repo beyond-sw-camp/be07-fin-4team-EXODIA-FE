@@ -11,8 +11,12 @@
         <v-icon :class="getIconForDepth(depth)" class="node-icon"></v-icon>
         <span class="node-content">{{ department.name || '이름 없음' }}</span>
         <div class="node-actions" v-if="editMode">
-          <button @click.stop="$emit('edit-department', department)">편집</button>
-          <button @click.stop="$emit('delete-department', department.id)">삭제</button>
+          <v-btn icon small @click.stop="$emit('edit-department', department)">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn icon small @click.stop="$emit('delete-department', department.id)">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
         </div>
       </div>
       <ul v-if="department.children && department.children.length" class="children-nodes">
@@ -41,27 +45,27 @@
     },
     methods: {
       getNodeStyle(depth) {
-        // 세련된 디자인을 위한 은은한 중립적 색상 및 테두리 추가
-        const colors = ['#f2f2f2', '#e6e6e6', '#d9d9d9']; 
+        const colors = ['#f9f9f9', '#e6e6e6', '#d9d9d9'];
         const color = colors[depth % colors.length];
         return {
           cursor: this.editMode ? 'move' : 'pointer',
           backgroundColor: color,
-          padding: '20px',
-          margin: '20px 0',
+          padding: '15px',
+          margin: '15px 0',
           borderRadius: '12px',
           textAlign: 'center',
           border: '1px solid #ccc',
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
           transition: 'all 0.3s ease',
           position: 'relative',
-          width: '180px', // 고정된 너비
+          width: '200px',
           minHeight: '50px',
+          fontSize: '14px',
         };
       },
       getIconForDepth(depth) {
-        const icons = ['mdi-office-building', 'mdi-domain', 'mdi-account-group'];
-        return icons[depth % icons.length]; // 각 depth별로 다른 아이콘 제공
+        const icons = ['mdi-office-building', 'mdi-domain', 'mdi-account-group', 'mdi-folder', 'mdi-folder-open'];
+        return icons[depth % icons.length];
       },
     },
   };
@@ -76,33 +80,7 @@
   
   .children-nodes {
     list-style-type: none;
-    padding-left: 40px;
-    display: block; /* 자식 노드를 세로로 정렬 */
-  }
-  
-  .tree-node::before {
-    content: '';
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    width: 2px;
-    height: 20px;
-    background-color: #b0b0b0;
-  }
-  
-  .tree-node::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    width: 2px;
-    height: 20px;
-    background-color: #b0b0b0;
-  }
-  
-  .node-content {
-    font-size: 1rem;
-    color: #333;
+    padding-left: 20px;
   }
   
   .node-icon {
@@ -110,21 +88,17 @@
     vertical-align: middle;
   }
   
+  .node-content {
+    font-size: 1rem;
+    color: #333;
+  }
+  
   .node-actions {
-    margin-top: 10px;
+    margin-top: 5px;
   }
   
-  .node-actions button {
+  .node-actions v-btn {
     margin-left: 5px;
-    background-color: #f0f0f0;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .node-actions button:hover {
-    background-color: #e0e0e0;
   }
   </style>
   

@@ -72,7 +72,7 @@
 
 <script>
 import axios from 'axios';
-import DepartmentNode from './DepartmentNode.vue'; // 부서 노드 컴포넌트
+import DepartmentNode from './DepartmentNode.vue';
 
 export default {
   data() {
@@ -119,7 +119,7 @@ export default {
         this.users = response.data;
       } catch (error) {
         console.error('Error fetching users for department:', error);
-        this.users = [];  // 오류 발생 시 빈 배열 반환
+        this.users = []; // 오류 발생 시 빈 배열 반환
       }
     },
     async fetchPositions() {
@@ -202,7 +202,6 @@ export default {
 </script>
 
 <style scoped>
-/* 더 은은한 색상과 간결한 디자인 */
 .tree-container {
   padding: 20px;
   display: flex;
@@ -211,64 +210,39 @@ export default {
 
 .tree-root {
   list-style-type: none;
-  padding-left: 20px;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .tree-node {
-  padding: 15px;
-  background-color: #f0f0f0;
-  border: 1px solid #cccccc;
-  border-radius: 10px;
-  margin: 15px;
-  min-width: 200px;
-  max-width: 200px;
-  text-align: center;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  position: relative;
-  display: inline-block;
-}
-
-.tree-node:before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -20px;
-  width: 20px;
-  height: 2px;
-  background-color: #d0d0d0;
-}
-
-.tree-node:after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 2px;
-  height: 20px;
-  background-color: #d0d0d0;
+  margin: 10px 0;
 }
 
 .button-group {
   margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
 }
 
-/* 사용자 리스트 카드 스타일 */
 .user-list {
   position: fixed;
   right: 0;
   top: 0;
   width: 400px;
   height: 100%;
-  background-color: #fafafa;
+  background-color: #f7f7f7;
   box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   overflow-y: auto;
 }
 
 .user-card {
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
-  transition: transform 0.2s;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  overflow: hidden;
 }
 
 .user-card:hover {
@@ -282,7 +256,7 @@ export default {
 
 .user-name {
   font-weight: bold;
-  font-size: 1.2em;
+  font-size: 1.2rem;
 }
 
 .slide-fade-enter-active,
