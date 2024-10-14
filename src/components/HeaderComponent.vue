@@ -136,6 +136,7 @@ export default {
 
 .icon-item.active>.icon {
   color: #7A5656;
+  left: -20px;
 }
 
 .notification-icon {
@@ -147,8 +148,9 @@ export default {
 
 .badge {
   position: absolute;
-  top: 16px;
-  right: 8px;
+  top: -13px;
+  /* top: 16px; */
+  /* right: 8px; */
   background-color: red;
   color: white;
   border-radius: 50%;

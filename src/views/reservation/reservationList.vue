@@ -31,16 +31,18 @@
               <v-icon>mdi-chevron-left</v-icon> <!-- Left arrow icon -->
             </v-btn>
 
-            <!-- Date Display -->
             <h2>{{ formattedDate(selectedDate) }}</h2>
 
             <!-- Right Arrow Button for Next Day -->
             <v-btn @click="nextDay" icon>
               <v-icon>mdi-chevron-right</v-icon> <!-- Right arrow icon -->
             </v-btn>
+            
+            <!-- 오늘 버튼 -->
+            <v-btn class="ml-4" @click="setToday" color="primary" outlined>오늘</v-btn>
 
-            <!-- Button to Set Today's Date -->
-            <v-btn @click="setToday">오늘</v-btn>
+            <!-- 장기 예약 버튼 -->
+            <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn>
           </v-row>
 
           <!-- Vehicle Availability Table -->
@@ -57,6 +59,11 @@
                 <td>{{ vehicle.carType }}</td>
                 <td>{{ vehicle.carNum }}</td>
                 <td>
+                  <v-btn @click="isCarModalOpen(vehicle)" color="primary">
+                    차량 정보
+                  </v-btn>
+                </td>
+                <td>
                   <v-btn v-if="vehicle.status === 'AVAILABLE'" color="green" @click="createReservation(vehicle.carId)">
                     예약 가능
                   </v-btn>
@@ -67,6 +74,75 @@
               </tr>
             </tbody>
           </v-table>
+
+          <v-dialog v-model="isCarModalOpen" persistent max-width="600px">
+            <v-card>
+              <v-card-title>
+                <span>{{ selectedCar.carType }} ({{ selectedCar.carNum }})</span>
+              </v-card-title>
+              <v-card-text>
+                <p>인승: {{ selectedCar.seatingCapacity }}</p>
+                <p>배기량: {{ selectedCar.engineDisplacement }}L</p>
+                <v-img :src="selectedCar.carImage" alt="차량 이미지"></v-img>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn color="blue darken-1" text @click="isCarModalOpen = false">닫기</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
+          <!-- 장기 예약 모달창 -->
+          <v-dialog v-model="isLongTermReservationModalOpen" persistent max-width="500px">
+            <v-card>
+              <v-card-title>
+                <span>장기 차량 예약</span>
+              </v-card-title>
+              <v-card-text>
+                <v-form ref="form">
+                  <!-- 차량 선택 -->
+                  <v-select
+                    v-model="selectedVehicle"
+                    :items="vehicles.map(vehicle => ({ title: vehicle.carNum, value: vehicle.carId }))"
+                    label="차량 선택"
+                    required
+                  ></v-select>
+
+                  <!-- 시작 날짜 선택 -->
+                  <v-menu v-model="menuStart" :close-on-content-click="false" transition="scale-transition" offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="startDate"
+                        label="시작 날짜"
+                        
+                        v-bind="attrs"
+                        v-on="on"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker v-model="startDate" @input="menuStart = false"></v-date-picker>
+                  </v-menu>
+
+                  <!-- 끝 날짜 선택 -->
+                  <v-menu v-model="menuEnd" :close-on-content-click="false" transition="scale-transition" offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="endDate"
+                        label="끝 날짜"
+                        
+                        v-bind="attrs"
+                        v-on="on"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker v-model="endDate" @input="menuEnd = false"></v-date-picker>
+                  </v-menu>
+                </v-form>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="submitLongTermReservation">예약</v-btn>
+                <v-btn color="red darken-1" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-container>
       </v-tab-item>
     </v-tabs-items>
@@ -83,7 +159,16 @@ export default {
       selectedTab: 0, // 탭 상태: 0이 차량 예약, 1이 회의실 예약
       selectedDate: new Date(), // Default to today's date
       vehicles: [], // 차량 데이터
-      userName: "", // 사용자 이름
+
+      isCarModalOpen: false, // 차량 모달 상태
+      selectedCar: {}, // 선택된 차량 정보
+
+      isLongTermReservationModalOpen: false, // 장기 예약 모달 상태
+      startDate: null, // 장기 예약 시작 날짜
+      endDate: null, // 장기 예약 끝 날짜
+      selectedVehicle: null, // 선택된 차량
+      menuStart: false,
+      menuEnd: false,
     };
   },
   computed: {
@@ -104,6 +189,21 @@ export default {
       const weekDay = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
       return `${year}-${month}-${day} (${weekDay})`;
     },
+
+    async fetchCarList() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/car/list`);
+        this.vehicles = response.data;
+      } catch (error) {
+        console.error("Error fetching car list:", error);
+      }
+    },
+        openCarModal(vehicle) {
+      this.selectedCar = vehicle;
+      this.isCarModalOpen = true;
+    },
+
+
     async fetchVehicleAvailability(date) {
       try {
         const token = localStorage.getItem("token");
@@ -148,10 +248,7 @@ export default {
         }
       }
     },
-    goToAdminPage() {
-      // 관리자 페이지로 이동
-      this.$router.push("/reservation/adminCarResList");
-    },
+    // 차량 예약 메서드 추가
     async createReservation(carId) {
       try {
         const token = localStorage.getItem("token");
@@ -160,6 +257,7 @@ export default {
         const reservationData = {
           carId: carId,
           startDate: this.selectedDate.toISOString().split("T")[0], // 현재 선택된 날짜
+          endDate: this.selectedDate.toISOString().split("T")[0], 
         };
 
         await axios.post(
@@ -187,6 +285,54 @@ export default {
         }
       }
     },
+    // 장기 예약을 위한 모달 열기
+    openLongTermReservationModal() {
+      this.isLongTermReservationModalOpen = true;
+    },
+    // 장기 예약 제출
+    async submitLongTermReservation() {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!this.startDate || !this.endDate || !this.selectedVehicle) {
+          alert("모든 필드를 선택해 주세요.");
+          return;
+        }
+
+        const reservationData = {
+          carId: this.selectedVehicle,
+          startDate: this.startDate,
+          endDate: this.endDate,
+        };
+
+        await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/reservation/car/create`,
+          reservationData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        // 예약 성공 시 알림
+        alert("장기 예약이 완료되었습니다.");
+
+        // 차량 상태 업데이트
+        this.fetchVehicleAvailability(this.selectedDate);
+
+        // 모달 닫기
+        this.isLongTermReservationModalOpen = false;
+      } catch (error) {
+        console.error("Error during long-term reservation:", error);
+        if (error.response?.status === 401) {
+          alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
+          this.$router.push("/login");
+        } else {
+          alert("장기 예약 중 오류가 발생했습니다. 다시 시도해 주세요.");
+        }
+      }
+    },
     setToday() {
       this.selectedDate = new Date();
       this.fetchVehicleAvailability(this.selectedDate);
@@ -203,19 +349,20 @@ export default {
       this.selectedDate = prevDay;
       this.fetchVehicleAvailability(this.selectedDate);
     },
-    // 차량 예약 페이지로 이동하는 함수
     goToVehicleReservation() {
       this.selectedTab = 0;
-      // 필요하면 추가 로직 작성 가능
     },
-    // 회의실 예약 페이지로 이동하는 함수
     goToMeetingRoomReservation() {
       this.$router.push("/reservation/meetReservationList"); // 회의실 예약 페이지로 라우팅
+    },
+    goToAdminPage() {
+      this.$router.push("/reservation/adminCarResList"); // 관리자 페이지로 이동
     },
   },
   mounted() {
     this.fetchUserInfo(); // 컴포넌트가 마운트될 때 유저 정보를 가져옴
-    this.fetchVehicleAvailability(this.selectedDate); // 차량 예약 상태를 가져옴
+    this.fetchVehicleAvailability(new Date()); // 차량 예약 상태를 가져옴
+    this.fetchCarList();
   },
 };
 </script>
