@@ -202,35 +202,73 @@ export default {
 </script>
 
 <style scoped>
-.tree-container {
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-}
-
 .tree-root {
   list-style-type: none;
   padding-left: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start; /* 왼쪽 정렬 */
 }
 
 .tree-node {
+  position: relative;
+  display: inline-block;
   margin: 10px 0;
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+}
+
+.children-nodes {
+  list-style-type: none;
+  padding-left: 30px; /* 부모와 자식 간 간격을 더 줌 */
+  position: relative;
+}
+
+.tree-node::before {
+  content: '';
+  position: absolute;
+  left: -15px; /* 부모와 자식 간 연결선을 더 명확히 함 */
+  top: 50%;
+  width: 15px;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.tree-node::after {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: #ccc;
+}
+
+.tree-item:first-child .tree-node::after {
+  top: 50%; /* 첫 번째 자식에게는 상단 연결선 생략 */
+}
+
+.tree-item:last-child .tree-node::after {
+  bottom: 50%; /* 마지막 자식에게는 하단 연결선 생략 */
 }
 
 .button-group {
-  margin-bottom: 20px;
   display: flex;
   gap: 10px;
+  justify-content: center; /* 버튼 그룹을 가운데 정렬 */
+  margin-bottom: 20px;
 }
 
 .user-list {
   position: fixed;
   right: 0;
   top: 0;
-  width: 400px;
+  width: 300px;
   height: 100%;
   background-color: #f7f7f7;
   box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
@@ -238,34 +276,4 @@ export default {
   overflow-y: auto;
 }
 
-.user-card {
-  border-radius: 10px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
-  overflow: hidden;
-}
-
-.user-card:hover {
-  transform: scale(1.05);
-}
-
-.user-profile {
-  width: 100%;
-  border-radius: 50%;
-}
-
-.user-name {
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.slide-fade-enter,
-.slide-fade-leave-to {
-  opacity: 0;
-}
 </style>

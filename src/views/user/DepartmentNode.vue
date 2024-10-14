@@ -45,26 +45,27 @@
     },
     methods: {
       getNodeStyle(depth) {
-        const colors = ['#f9f9f9', '#e6e6e6', '#d9d9d9'];
+        const colors = ['#f3f4f6', '#e5e7eb', '#d1d5db']; // 세련된 그레이톤
         const color = colors[depth % colors.length];
         return {
           cursor: this.editMode ? 'move' : 'pointer',
           backgroundColor: color,
-          padding: '15px',
-          margin: '15px 0',
-          borderRadius: '12px',
-          textAlign: 'center',
-          border: '1px solid #ccc',
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          padding: '10px 20px',
+          margin: '10px 0',
+          borderRadius: '8px',
+          textAlign: 'left',
+          border: '1px solid #d1d5db',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
           transition: 'all 0.3s ease',
+          width: '250px',
           position: 'relative',
-          width: '200px',
-          minHeight: '50px',
-          fontSize: '14px',
+          fontSize: '1rem',
+          display: 'flex',
+          alignItems: 'center',
         };
       },
       getIconForDepth(depth) {
-        const icons = ['mdi-office-building', 'mdi-domain', 'mdi-account-group', 'mdi-folder', 'mdi-folder-open'];
+        const icons = ['mdi-office-building', 'mdi-domain', 'mdi-account-group', 'mdi-folder-open', 'mdi-account-supervisor'];
         return icons[depth % icons.length];
       },
     },
@@ -74,31 +75,35 @@
   <style scoped>
   .tree-node {
     list-style: none;
+    margin-left: 30px;
     position: relative;
-    margin-left: 40px;
   }
   
   .children-nodes {
-    list-style-type: none;
+    list-style: none;
     padding-left: 20px;
+    border-left: 2px solid #ccc; /* 부모-자식 간 연결 선 */
   }
   
   .node-icon {
-    margin-right: 8px;
+    margin-right: 10px;
     vertical-align: middle;
+    color: #4a90e2; /* 아이콘 색상 */
   }
   
   .node-content {
-    font-size: 1rem;
-    color: #333;
-  }
-  
-  .node-actions {
-    margin-top: 5px;
+    flex-grow: 1;
+    color: #2c3e50;
   }
   
   .node-actions v-btn {
     margin-left: 5px;
   }
+  
+  .node-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
   </style>
   
