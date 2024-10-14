@@ -34,10 +34,10 @@
             <v-col cols="4">
               <img :src="user.profileImage || defaultProfile" alt="profile" class="user-profile" />
             </v-col>
-            <v-col cols="8">
+            <v-col cols="8" class="user-details">
               <p class="user-name">{{ user.name }}</p>
-              <p>사번: {{ user.userNum }}</p>
-              <p>직급: {{ getPositionName(user.positionId) }}</p>
+              <p class="user-title">사번: {{ user.userNum }}</p>
+              <p class="user-title">직급: {{ getPositionName(user.positionId) }}</p>
             </v-col>
           </v-row>
         </v-card>
@@ -56,7 +56,7 @@
             label="상위 부서"
             v-model="departmentForm.parentId"
             :items="parentOptions"
-            item-text="name"
+            item-title="name"
             item-value="id"
           ></v-select>
         </v-card-text>
@@ -116,10 +116,10 @@ export default {
     async fetchUsersByDepartment(departmentId) {
       try {
         const response = await axios.get(`/department/${departmentId}/users`);
-        this.users = response.data;
+        this.users = response.data.filter(user => user.departmentId === departmentId);
       } catch (error) {
         console.error('Error fetching users for department:', error);
-        this.users = []; // 오류 발생 시 빈 배열 반환
+        this.users = []; 
       }
     },
     async fetchPositions() {
@@ -264,16 +264,46 @@ export default {
   margin-bottom: 20px;
 }
 
-.user-list {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 300px;
-  height: 100%;
-  background-color: #f7f7f7;
-  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  overflow-y: auto;
+.user-card {
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  background-color: #ffffff;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
+.user-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.user-profile {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.user-details p {
+  margin: 0;
+  color: #666;
+}
+
+.user-details .user-title {
+  font-size: 14px;
+  font-weight: normal;
+  color: #777;
+}
 </style>
