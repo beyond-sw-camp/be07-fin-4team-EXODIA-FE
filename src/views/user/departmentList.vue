@@ -3,64 +3,29 @@
     <h1>부서 관리</h1>
 
     <div class="button-group">
-      <button v-if="editMode" @click="openCreateDialog">부서 추가</button>
-      <button @click="toggleEditMode">{{ editMode ? '편집 완료' : '편집' }}</button>
-      <button v-if="editMode" @click="cancelEdit">취소</button>
+      <v-btn v-if="editMode" @click="openCreateDialog" color="primary">부서 추가</v-btn>
+      <v-btn @click="toggleEditMode" color="success">{{ editMode ? '편집 완료' : '편집' }}</v-btn>
+      <v-btn v-if="editMode" @click="cancelEdit" color="error">취소</v-btn>
     </div>
 
-    <!-- 트리 구조를 보여주는 UI -->
+    <!-- 트리 구조 UI -->
     <div class="tree-container">
       <ul>
-        <li v-for="department in hierarchy" :key="department.id" class="tree-item">
-          <div
-            class="tree-node"
-            :style="getNodeStyle(department, 0)"
-            :draggable="editMode"
-            @dragstart="dragStart(department)"
-            @dragover.prevent
-            @drop="drop(department)"
-            @click="editMode ? openEditDialog(department) : fetchUsersByDepartment(department.id)"
-          >
-            {{ department.name || '이름 없음' }}
-            <button v-if="editMode" @click.stop="deleteDepartment(department.id)">삭제</button>
-          </div>
-          <ul v-if="department.children && department.children.length" class="children-nodes">
-            <li v-for="child in department.children" :key="child.id" class="tree-item">
-              <div
-                class="tree-node"
-                :style="getNodeStyle(child, 1)"
-                :draggable="editMode"
-                @dragstart="dragStart(child)"
-                @dragover.prevent
-                @drop="drop(child)"
-                @click="editMode ? openEditDialog(child) : fetchUsersByDepartment(child.id)"
-              >
-                {{ child.name || '이름 없음' }}
-                <button v-if="editMode" @click.stop="deleteDepartment(child.id)">삭제</button>
-              </div>
-              <ul v-if="child.children && child.children.length" class="children-nodes">
-                <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
-                  <div
-                    class="tree-node"
-                    :style="getNodeStyle(subChild, 2)"
-                    :draggable="editMode"
-                    @dragstart="dragStart(subChild)"
-                    @dragover.prevent
-                    @drop="drop(subChild)"
-                    @click="editMode ? openEditDialog(subChild) : fetchUsersByDepartment(subChild.id)"
-                  >
-                    {{ subChild.name || '이름 없음' }}
-                    <button v-if="editMode" @click.stop="deleteDepartment(subChild.id)">삭제</button>
-                  </div>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </li>
+        <DepartmentNode
+          v-for="department in hierarchy"
+          :key="department.id"
+          :department="department"
+          :depth="0"
+          :editMode="editMode"
+          @drag-start="dragStart"
+          @drop="drop"
+          @edit-department="openEditDialog"
+          @fetch-users="fetchUsersByDepartment"
+        />
       </ul>
     </div>
 
-    <!-- 사용자 정보 표시 패널 -->
+    <!-- 사용자 리스트 패널 -->
     <transition name="slide-fade">
       <div class="user-list" v-if="users.length">
         <h3>사용자 정보</h3>
@@ -91,7 +56,7 @@
             label="상위 부서"
             v-model="departmentForm.parentId"
             :items="parentOptions"
-            item-text="name"
+            item-title="name"
             item-value="id"
           ></v-select>
         </v-card-text>
@@ -107,6 +72,7 @@
 
 <script>
 import axios from 'axios';
+import DepartmentNode from './DepartmentNode.vue'; // 부서 노드 컴포넌트
 
 export default {
   data() {
@@ -122,6 +88,9 @@ export default {
       draggedItem: null,
       positions: [],
     };
+  },
+  components: {
+    DepartmentNode,
   },
   methods: {
     async fetchHierarchy() {
@@ -188,10 +157,9 @@ export default {
     },
     async drop(parentDepartment) {
       if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
-        // 업데이트 시 name도 함께 전송
         await axios.put(`/department/${this.draggedItem.id}`, {
-          name: this.draggedItem.name, // 이름도 유지
-          parentId: parentDepartment.id,
+          name: this.draggedItem.name,
+          parentId: parentDepartment.id
         });
         this.fetchHierarchy();
       }
@@ -224,22 +192,6 @@ export default {
         console.error('Error deleting department:', error);
       }
     },
-    getNodeStyle(department, depth) {
-      const colors = ['#ffeb3b', '#64b5f6', '#81c784'];
-      const color = colors[depth % colors.length];
-      return {
-        cursor: this.editMode ? 'move' : 'pointer',
-        opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.5 : 1,
-        backgroundColor: color,
-        padding: '15px',
-        margin: '10px',
-        borderRadius: '10px',
-        boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.2)',
-        textAlign: 'center',
-        transition: 'all 0.3s ease',
-        position: 'relative',
-      };
-    },
   },
   mounted() {
     this.fetchHierarchy();
@@ -248,126 +200,49 @@ export default {
 };
 </script>
 
-
 <style scoped>
-.department-container {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-}
-
-.button-group {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.tree-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow-y: auto;
-  max-height: 100vh;
-  transition: transform 0.3s ease;
-}
-
-.tree-shifted {
-  transform: translateX(-350px);
-}
-
-.children-nodes {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-.tree-item {
-  list-style-type: none;
+.tree-container {
+  padding: 20px;
+  margin: 0 auto;
 }
 
 .tree-node {
+  display: inline-block;
+  padding: 15px;
+  margin: 10px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
   text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.tree-node:hover {
+  transform: scale(1.05);
+}
+
+.button-group {
+  margin-bottom: 20px;
 }
 
 .user-list {
   position: fixed;
   right: 0;
   top: 0;
-  width: 300px;
+  width: 400px;
   height: 100%;
-  background-color: #f8f9fa;
+  background-color: #f5f5f5;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
   padding: 20px;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
   overflow-y: auto;
 }
 
-.user-card {
-  max-width: 200px;
-  padding: 10px;
-  border-radius: 10px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: opacity 0.5s ease;
 }
-
-.profile-image {
-  width: 100%;
-  border-radius: 50%;
-}
-
-.primary-btn,
-.secondary-btn,
-.cancel-btn {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  margin-right: 10px;
-  cursor: pointer;
-}
-
-.primary-btn {
-  background-color: #28a745;
-  color: white;
-}
-
-.secondary-btn {
-  background-color: #007bff;
-  color: white;
-}
-
-.cancel-btn {
-  background-color: #dc3545;
-  color: white;
-}
-
-.delete-btn {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  padding: 5px 10px;
-  margin-top: 10px;
-}
-
-@media screen and (max-width: 768px) {
-  .tree-wrapper {
-    max-height: 100vh;
-  }
-
-  .user-list {
-    width: 100%;
-    height: 50vh;
-  }
-
-  .primary-btn,
-  .secondary-btn {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 10px;
-  }
+.slide-fade-enter,
+.slide-fade-leave-to {
+  opacity: 0;
 }
 </style>

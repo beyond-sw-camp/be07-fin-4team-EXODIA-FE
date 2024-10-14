@@ -244,4 +244,8 @@ export default {
 p {
   text-align: center;
 }
+
+thead {
+  border-radius: 12px;
+}
 </style>

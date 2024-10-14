@@ -34,7 +34,7 @@
     props: {
       department: Object,
       depth: Number,
-      editMode: Boolean
+      editMode: Boolean,
     },
     methods: {
       getNodeStyle(depth) {
@@ -48,8 +48,8 @@
           borderRadius: '10px',
           textAlign: 'center',
         };
-      }
-    }
+      },
+    },
   };
   </script>
   
