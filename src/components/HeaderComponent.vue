@@ -23,7 +23,6 @@
       </v-avatar>
 
 
-    </div>
 
       <!-- 로그인 연장 버튼과 토큰 유효시간 표시 -->
       <!-- <v-btn color="primary" class="mx-2" @click="extendSession">로그인 연장</v-btn> -->
@@ -35,6 +34,7 @@
       <!-- 로그아웃 버튼 -->
       <!-- <v-btn color="error" @click="logout">로그아웃</v-btn> -->
     </div>
+
   </header>
 
 
