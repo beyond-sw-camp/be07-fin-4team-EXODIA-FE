@@ -14,13 +14,16 @@
       </div>
 
       <!-- 채팅방리스트 -->
-    <div class="icon-item">
-        <v-icon class="icon">mdi-chat</v-icon>
+      <div class="icon-item">
+        <v-icon class="icon" @click="showChatRoomList">mdi-chat</v-icon>
       </div>
 
       <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
         <img src="@/assets/user.png" alt="User Avatar" class="user-avatar" style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
+
+
+    </div>
 
       <!-- 로그인 연장 버튼과 토큰 유효시간 표시 -->
       <!-- <v-btn color="primary" class="mx-2" @click="extendSession">로그인 연장</v-btn> -->
@@ -33,11 +36,14 @@
       <!-- <v-btn color="error" @click="logout">로그아웃</v-btn> -->
     </div>
   </header>
+
+
 </template>
 
 <script>
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
+
 
 export default {
   name: 'HeaderComponent',
@@ -82,6 +88,11 @@ export default {
       };
     },
 
+    // 채팅룸 리스트 열기
+    showChatRoomList() {
+      window.open("/chatRoom/list", "_blank", "width=480, height=720")
+    },
+    
     // 로그인 연장
     async extendSession() {
       try {
@@ -141,6 +152,7 @@ export default {
     }
   },
 };
+
 </script>
 
 <style scoped>
