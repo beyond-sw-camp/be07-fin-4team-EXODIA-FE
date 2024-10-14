@@ -231,7 +231,7 @@ export default {
 
 <style scoped>
 .main-view {
-  margin-left: -150px;
+  /* margin-left: -150px; */
   /* margin-top: -50px; */
   padding: -50px;
 }

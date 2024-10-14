@@ -1,6 +1,6 @@
 <template>
   <v-container class="mt-5 salary-container">
-    <v-card class="mx-auto" max-width="1000">
+    <!-- <v-card class="mx-auto" max-width="1000"> -->
       <v-card-title>
         <h3>급여 관리</h3>
       </v-card-title>
@@ -25,35 +25,36 @@
         </v-row>
 
         <!-- Custom Table -->
-        <table class="employee-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>사번</th>
-              <th>이름</th>
-              <th>부서</th>
-              <th>직급</th>
-              <th>기본급</th>
-              <th>입사일</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
+        <v-row justify="center" class="mt-4">
+          <v-col cols="12">
+            <v-row
+              class="mb-2"
+              style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;"
+            >
+              <v-col cols="1">번호</v-col>
+              <v-col cols="2">사번</v-col>
+              <v-col cols="2">이름</v-col>
+              <v-col cols="3">부서</v-col>
+              <v-col cols="2">직급</v-col>
+              <v-col cols="2">기본급</v-col>
+            </v-row>
+
+            <v-row
               v-for="(salary, index) in salaries"
               :key="salary.userNum"
-              @click="viewSalaryDetails(salary.userNum)"
               class="table-row"
+              @click="viewSalaryDetails(salary.userNum)"
+              style="border-bottom: 1px solid #ddd; padding: 5px; font-weight:500;"
             >
-              <td>{{ index + 1 }}</td>
-              <td>{{ salary.userNum }}</td>
-              <td>{{ salary.userName }}</td>
-              <td>{{ salary.departmentName }}</td>
-              <td>{{ salary.positionName }}</td>
-              <td>{{ salary.baseSalary.toLocaleString() }} 원</td>
-              <td>{{ salary.yearsOfService }}년차</td>
-            </tr>
-          </tbody>
-        </table>
+              <v-col cols="1">{{ index + 1 }}</v-col>
+              <v-col cols="2">{{ salary.userNum }}</v-col>
+              <v-col cols="2">{{ salary.userName }}</v-col>
+              <v-col cols="3">{{ salary.departmentName }}</v-col>
+              <v-col cols="2">{{ salary.positionName }}</v-col>
+              <v-col cols="2">{{ salary.baseSalary.toLocaleString() }} 원</v-col>
+            </v-row>
+          </v-col>
+        </v-row>
 
         <div v-if="salaries.length === 0">
           <v-alert type="info" class="mt-3">
@@ -61,7 +62,7 @@
           </v-alert>
         </div>
       </v-card-text>
-    </v-card>
+    <!-- </v-card> -->
   </v-container>
 </template>
 
@@ -83,7 +84,7 @@ export default {
         const response = await axios.get("/salary");
         this.salaries = response.data;
       } catch (error) {
-        console.error("급여 목록을 가져오는 중 오류가 발생했습니다:", error);
+        console.error("급여 목록을 가져오는 중 오류가 발생했습니다.", error);
       }
     },
     async fetchSalariesByPosition() {
@@ -92,10 +93,10 @@ export default {
           const response = await axios.get(`/salary/byPosition/${this.selectedPosition}`);
           this.salaries = response.data;
         } catch (error) {
-          console.error("직급별 급여 목록을 가져오는 중 오류가 발생했습니다:", error);
+          console.error("직급별 급여 목록을 가져오는 중 오류가 발생했습니다.", error);
         }
       } else {
-        this.fetchSalaries();
+        this.fetchSalaries(); 
       }
     },
     async fetchPositions() {
@@ -103,7 +104,7 @@ export default {
         const response = await axios.get("/positions");
         this.positions = response.data;
       } catch (error) {
-        console.error("직급 목록을 가져오는 중 오류가 발생했습니다:", error);
+        console.error("직급 목록을 가져오는 중 오류가 발생했습니다.", error);
       }
     },
     viewSalaryDetails(userNum) {
@@ -116,7 +117,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .salary-container {
@@ -136,34 +136,20 @@ export default {
   margin-right: 10px;
 }
 
-.employee-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.employee-table th,
-.employee-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.employee-table th {
-  background-color: #f5f5f5;
-  font-weight: bold;
-}
-
-.employee-table tr:hover {
-  background-color: #fafafa;
-  cursor: pointer;
+.v-row {
+  margin-bottom: 10px;
 }
 
 .table-row {
   transition: background-color 0.3s;
+  cursor: pointer;
 }
 
-p {
-  text-align: center;
+.table-row:hover {
+  background-color: #fafafa;
+}
+
+.v-btn--icon {
+  font-size: 20px;
 }
 </style>

@@ -2,68 +2,80 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1>직원 목록</h1>
+        <h1 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle || '직원 목록' }}</h1>
       </v-col>
       <v-col class="d-flex justify-end">
         <v-btn color="primary" @click="goToCreate">직원 생성</v-btn>
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col cols="12" md="4">
+    <!-- 검색 옵션 -->
+    <v-row justify="center" style="margin:0; text-align:center;">
+      <v-col cols="6">
         <v-select
           v-model="searchType"
           :items="searchOptions"
-          item-title="text"
+          item-title="label"
           item-value="value"
-          label="검색 기준"
-          required
+          label="검색 기준 선택"
+          outlined
         ></v-select>
       </v-col>
-      <v-col cols="12" md="8">
+      <v-col cols="6">
         <v-text-field
           v-model="searchQuery"
-          label="검색어를 입력하세요."
-          append-icon="mdi-magnify"
-          @click:append="performSearch"
-          required
+          placeholder="검색어를 입력하세요"
+          variant="underlined"
+          @input="performSearch"
+          style="margin-bottom: 20px;"
         ></v-text-field>
+      </v-col>
+      <v-col cols="4" sm="2">
+        <v-btn @click="performSearch(searchQuery)">
+          검색
+        </v-btn>
       </v-col>
     </v-row>
 
-    <div v-if="users.length > 0">
-      <table class="employee-table">
-        <thead>
-          <tr>
-            <th>#</th> <!-- 행 번호 추가 -->
-            <th>사번</th>
-            <th>부서</th>
-            <th>이름</th>
-            <th>직급</th>
-            <th>입사일</th>
-            <th>관리</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(user, index) in users" :key="user.userNum" @click="viewUser(user)">
-            <td>{{ index + 1 }}</td> <!-- 행 번호 표시 -->
-            <td>{{ user.userNum }}</td>
-            <td>{{ getDepartmentName(user.departmentId) }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ getPositionName(user.positionId) }}</td>
-            <td>{{ user.joinDate }}</td>
-            <td>
-              <button class="edit-btn" @click.stop="editUser(user.userNum)">수정</button>
-              <button class="delete-btn" @click.stop="openDeleteDialog(user.userNum)">삭제</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- 직원 목록 테이블 -->
+    <v-row justify="center">
+      <v-col cols="12">
+        <v-row
+          class="mb-2"
+          style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;"
+        >
+          <v-col cols="1">번호</v-col>
+          <v-col cols="2">사번</v-col>
+          <v-col cols="3">부서</v-col>
+          <v-col cols="2">이름</v-col>
+          <v-col cols="2">직급</v-col>
+          <v-col cols="2">입사일</v-col>
+          <v-col cols="1">관리</v-col>
+        </v-row>
 
-    <div v-else>
-      <p>직원 데이터가 없습니다.</p>
-    </div>
+        <v-row
+          v-for="(user, index) in users"
+          :key="user.userNum"
+          @click="viewUser(user)"
+          style="border-bottom: 1px solid #e7e4e4; padding:5px; font-weight:500;"
+        >
+          <v-col cols="1">{{ index + 1 }}</v-col>
+          <v-col cols="2">{{ user.userNum }}</v-col>
+          <v-col cols="3">{{ getDepartmentName(user.departmentId) }}</v-col>
+          <v-col cols="2">{{ user.name }}</v-col>
+          <v-col cols="2">{{ getPositionName(user.positionId) }}</v-col>
+          <v-col cols="2">{{ user.joinDate }}</v-col>
+          <v-col cols="1">
+            <v-btn icon @click.stop="editUser(user.userNum)">
+              <v-icon color="blue">mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn icon @click.stop="openDeleteDialog(user.userNum)">
+              <v-icon color="red">mdi-delete</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
 
     <!-- 삭제 다이얼로그 -->
     <v-dialog v-model="deleteDialog" persistent max-width="500">
@@ -90,103 +102,84 @@ export default {
   name: "EmployeeManagement",
   data() {
     return {
-      users: [], // 직원 목록을 저장
-      searchQuery: "", // 검색어 저장
-      searchType: "all", // 검색 기준 (이름, 부서, 직급)
+      users: [],
+      departments: [],
+      positions: [],
+      searchQuery: "",
+      searchType: "all", // 기본 검색 유형
       searchOptions: [
-        { text: "전체", value: "all" },
-        { text: "이름", value: "name" },
-        { text: "부서", value: "department" },
-        { text: "직급", value: "position" },
+        { label: "이름", value: "name" },
+        { label: "부서", value: "department" },
+        { label: "직급", value: "position" },
+        { label: "전체", value: "all" },
       ],
-      departments: [], // 부서 목록 저장
-      positions: [], // 직급 목록 저장
-      deleteDialog: false, // 삭제 확인 Dialog의 상태
+      deleteDialog: false,
       deleteInfo: {
-        userNum: "", // 삭제하려는 직원의 사번
-        reason: "", // 삭제 사유
+        userNum: "",
+        reason: "",
       },
-      adminCode: "", // 관리자 코드
-      correctAdminCode: "12341234", // 실제 관리자 코드
+      adminCode: "",
+      correctAdminCode: "12341234",
     };
   },
   methods: {
     async fetchUsers() {
       try {
         const response = await axios.get("/user/list");
-        this.users = response.data; // 서버에서 가져온 직원 목록을 저장
+        this.users = response.data;
       } catch (error) {
         console.error("직원 목록을 불러오는 중 오류가 발생했습니다:", error);
       }
     },
-
     async fetchDepartments() {
       try {
         const response = await axios.get("/department");
-        this.departments = response.data; // 부서 목록을 서버에서 가져와 저장
+        this.departments = response.data;
       } catch (error) {
         console.error("부서 목록을 불러오는 중 오류가 발생했습니다:", error);
       }
     },
-
     async fetchPositions() {
       try {
         const response = await axios.get("/positions");
-        this.positions = response.data; // 직급 목록을 서버에서 가져와 저장
+        this.positions = response.data;
       } catch (error) {
         console.error("직급 목록을 불러오는 중 오류가 발생했습니다:", error);
       }
     },
-
     getDepartmentName(departmentId) {
-      if (this.departments && this.departments.length > 0) {
-        const department = this.departments.find((dept) => dept.id === departmentId);
-        return department ? department.name : "알 수 없음";
-      }
-      return "알 수 없음"; // 부서가 아직 로드되지 않았을 때 기본값 처리
+      const department = this.departments.find((dept) => dept.id === departmentId);
+      return department ? department.name : "알 수 없음";
     },
-
     getPositionName(positionId) {
-      if (this.positions && this.positions.length > 0) {
-        const position = this.positions.find((pos) => pos.id === positionId);
-        return position ? position.name : "알 수 없음";
-      }
-      return "알 수 없음"; // 직급이 아직 로드되지 않았을 때 기본값 처리
+      const position = this.positions.find((pos) => pos.id === positionId);
+      return position ? position.name : "알 수 없음";
     },
-
     async performSearch() {
       try {
         const response = await axios.get("/user/search", {
-          params: {
-            search: this.searchQuery,
-            searchType: this.searchType,
-          },
+          params: { search: this.searchQuery, searchType: this.searchType },
         });
         this.users = response.data;
       } catch (error) {
         console.error("검색 중 오류가 발생했습니다:", error);
       }
     },
-
     viewUser(item) {
       if (item && item.userNum) {
         this.$router.push(`/employee-management/detail/${item.userNum}`);
       }
     },
-
     goToCreate() {
       this.$router.push("/employee-management/create");
     },
-
     editUser(userNum) {
       this.$router.push(`/employee-management/edit/${userNum}`);
     },
-
     openDeleteDialog(userNum) {
-      this.deleteInfo.userNum = userNum; // 삭제하려는 직원의 사번 설정
-      this.deleteDialog = true; // 삭제 Dialog를 표시
+      this.deleteInfo.userNum = userNum;
+      this.deleteDialog = true;
     },
-
     async confirmDelete() {
       if (this.adminCode !== this.correctAdminCode) {
         alert("잘못된 관리자 코드입니다.");
@@ -194,40 +187,43 @@ export default {
       }
 
       try {
-        const token = localStorage.getItem("token"); // 사용자 토큰을 로컬 스토리지에서 가져옴
-        const response = await axios.delete("/user/delete", {
+        const token = localStorage.getItem("token");
+        await axios.delete("/user/delete", {
           data: {
             userNum: this.deleteInfo.userNum,
             reason: this.deleteInfo.reason,
           },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response);
-
         alert("직원 삭제가 완료되었습니다.");
-        this.fetchUsers(); // 삭제 후 직원 목록 새로고침
+        this.fetchUsers();
         this.closeDeleteDialog();
       } catch (error) {
         console.error("삭제 중 오류가 발생했습니다:", error);
         alert("삭제 중 오류가 발생했습니다.");
       }
     },
-
     closeDeleteDialog() {
-      this.deleteDialog = false; // 삭제 Dialog 닫기
+      this.deleteDialog = false;
     },
   },
   mounted() {
-    this.fetchUsers(); // 컴포넌트가 마운트되면 직원 목록을 불러옴
-    this.fetchDepartments(); // 부서 목록을 불러옴
-    this.fetchPositions(); // 직급 목록을 불러옴
+    this.fetchUsers();
+    this.fetchDepartments();
+    this.fetchPositions();
   },
 };
 </script>
 
 <style scoped>
+.v-row {
+  margin-bottom: 20px;
+}
+
+.v-btn {
+  font-size: 14px;
+}
+
 .employee-table {
   width: 100%;
   border-collapse: collapse;
@@ -240,7 +236,6 @@ export default {
 }
 
 .employee-table th {
-  background-color: #f5f5f5;
   font-weight: bold;
 }
 
@@ -248,23 +243,19 @@ export default {
   background-color: #f0f0f0;
 }
 
-.edit-btn {
-  background: none;
-  color: #4caf50;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
+thead {
+  border-radius: 12px;
 }
 
-.delete-btn {
-  background: none;
-  color: #f44336;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
+.v-dialog .v-card {
+  padding: 20px;
 }
 
-p {
-  text-align: center;
+.v-card-text {
+  margin-bottom: 10px;
+}
+
+.v-btn--icon {
+  font-size: 20px;
 }
 </style>

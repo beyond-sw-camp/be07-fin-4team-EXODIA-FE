@@ -80,6 +80,7 @@ export default {
     }
 
     const decodedToken = jwtDecode(token);
+    console.log(decodedToken);
     const userNum = decodedToken.sub;
     const departmentId = decodedToken.department_id;
     const positionId = decodedToken.position_id;
