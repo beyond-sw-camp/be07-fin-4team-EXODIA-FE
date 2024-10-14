@@ -1,6 +1,6 @@
 <!-- 채팅방 이름, 작성. 유저 검색(이름, 사번) 추가, 삭제 -->
 <template>
-    <v-dialog max-width="500px">
+    <v-container max-width="500px">
         <!-- 채팅 상대 선택 화면 -->
         <v-container v-if="showChatUser" class="create-container">
             <v-row>
@@ -12,7 +12,7 @@
             <!-- 검색창 및 돋보기 아이콘 -->
             <v-row>
                 <v-col cols="10">
-                    <v-text-field v-model="searchQuery" placeholder="이름 또는 사번으로 검색"></v-text-field>
+                    <v-text-field v-model="searchQuery" placeholder="부서, 이름, 사번으로 검색"></v-text-field>
                 </v-col>
                 <v-col cols="2">
                     <v-icon @click="searchUser">mdi-magnify</v-icon>
@@ -20,7 +20,7 @@
             </v-row>
 
             <!-- 검색된 유저 리스트 -->
-            <v-row  v-for="(userInfos, index) in userList" :key="index" class="user-row">
+            <v-row v-for="(userInfos, index) in userList" :key="index" class="user-row">
                 <!-- <v-col cols="2">
                     <v-avatar>
                         <img :src="user.profileImage" alt="user avatar">
@@ -87,19 +87,20 @@
                 </v-col>
             </v-row>
         </v-container>
-    </v-dialog>
+    </v-container>
 </template>
 
 <script>
 import axios from 'axios';
+// import { alertProps } from 'element-plus';
 
 export default {
     data() {
         return {
-            showChatUser: null,
-            showChatRoomName: null,
+            showChatUser: null, // 채팅유저 선택 제어
+            showChatRoomName: null, // 채팅방명 제어
 
-            searchQuery: "",
+            searchQuery: "", // 유저 선택 검색어
 
             chatroomData: {
                 roomName: "",
@@ -162,21 +163,32 @@ export default {
         async createChatRoom() {
             try {
                 this.chatroomData.userNums = this.selectdUser.map(num => num.userNum);
-                console.log(this.chatroomData);
                 const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/create`, this.chatroomData);
                 console.log(response);
-                // this.$router.push("/chat/list");
+                if (response.data.result.existCheck) {
+                    alert("이미 존재하는 채팅방입니다.");
+                    this.$emit('update:dialog', false);
+                    this.$emit('update:check', true);
+                    // window.location.href='/chatRoom/list';
+                    window.location.reload('chatRoom/list');
+                } else {
+                    alert("채팅방이 생성 성공");
+                    this.$emit('update:dialog', false);
+                    this.$emit('update:check', true);
+                    window.location.href='/chatRoom/list';
+                }
             } catch (e) {
                 console.error("채팅방 생성 실패", e);
             }
         },
 
-        closeCreate(){
+        closeCreate() {
             this.showChatUser = true;
             this.showChatRoomName = false;
             this.selectdUser = [];
             this.chatroomData.userNums = [];
-            this.$emit('update:dialog');
+            this.$emit('update:dialog', false);
+            this.$emit('update:check', true);
         }
 
     }
@@ -184,9 +196,7 @@ export default {
 </script>
 
 <style scoped>
-
-.create-container{
+.create-container {
     background-color: #f0f0f0;
 }
-
 </style>

@@ -1,5 +1,5 @@
 <!-- 채팅방 하나의 화면 -->
-<!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기, 채팅 이미지 모아보기 -->
+<!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기 -->
 <!--채팅 날짜 구분해서 채팅메세지 불러오기 / 나와 구성원 구분하여 띄워주기 / 구성원 프로필사진 : 메세지-->
 <!-- 채팅입력창, 파일 보내기, 이미지 보내기-->
 
@@ -40,7 +40,7 @@
                             <img :src="chat.profileImage" alt="프로필 이미지" />
                         </v-avatar> -->
                         <v-col>
-                            <span class="sender-name">{{ chat.senderName }}</span>
+                            <span class="sender-name">{{chat.senderDepName}} {{ chat.senderName }}{{ chat.senderPosName }}님</span>
                         </v-col>
                         <v-col v-if="chat.messageType == 'TALK'">
                             <div class="message-text">{{ chat.message }}</div>
@@ -65,10 +65,19 @@
             </div>
         </div>
 
+        <div class="image-group">
+            <div v-for="(file, index) in fileList" :key="index" class="image-container">
+                <v-icon color="red" class="close-icon" @click="deleteImage(index)">mdi-close-circle</v-icon>
+                <img :src="file.fileUrl" @error="e => e.target.src = require('@/assets/user.png')"
+                    style="height: 120px; width: 120px; object-fit: cover;">
+                <p class="custom-contents">{{ file.name }}</p>
+            </div>
+        </div>
         <!-- 채팅 입력 -->
         <v-container class="input-container">
             <v-row>
-                <v-text-field style="height: 200px;" v-model="messageToSend" v-on:keypress.enter="sendMessage"></v-text-field>
+                <v-text-field style="height: 200px;" v-model="messageToSend"
+                    v-on:keypress.enter="sendMessage"></v-text-field>
             </v-row>
             <v-row>
                 <v-file-input v-model="files" @change="fileUpdate" multiple hide-input prepend-icon="mdi-paperclip">
@@ -96,8 +105,7 @@ export default {
     data() {
         return {
             stompClient: null,
-            chatRoomId: this.chatRoomIdProp,
-            // chatRoomName: "", // 채팅방 이름
+            chatRoomId: this.chatRoomIdProp, // 채팅방 id
             chatMessageList: [], // 주고받은 채팅내역
 
             chatSenderNum: '', // 채팅방을 여는 사람 == 채팅보내는 사람
@@ -106,12 +114,11 @@ export default {
             fileList: [], // files를 가공한 리스트.
             fileRes: null, // 메세지와 함께 보내기 위한 파일메타데이터(name, s3url)
 
-            // messageType: '', // 메세지 타입 // TALK, FILE
             messageToSend: '', // 메세지입력란
         }
     },
     async created() {
-        this.chatRoomId= this.chatRoomIdProp;
+        this.chatRoomId = this.chatRoomIdProp;
         this.chatSenderNum = localStorage.getItem('userNum');
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
         if (response.data) {
@@ -237,10 +244,14 @@ export default {
                     size: file.size,
                     type: file.type,
                     file,
-                    imageUrl: URL.createObjectURL(file)
+                    fileUrl: URL.createObjectURL(file)
                 })
             });
             this.files = null;
+        },
+
+        deleteImage(index){
+            this.fileList.splice(index, 1);
         },
 
         // 보내는 시간
@@ -391,4 +402,40 @@ export default {
     background-color: #4CAF50;
     color: white;
 }
+
+.image-group {
+    display: flex;
+    flex-direction: row;
+    width: 120px;
+    max-height: 180px;
+}
+
+.custom-contents {
+    max-width: 120px;
+    /* 제목의 최대 너비를 설정 */
+    overflow: hidden;
+    /* 내용이 넘칠 경우 숨김 처리 */
+    text-overflow: ellipsis !important;
+    /* 넘치는 텍스트에 '...' 추가 (이거 적용안됨 이후 수정필요)*/
+    white-space: nowrap;
+    /* 텍스트 줄 바꿈 방지 */
+}
+
+.image-container {
+    position: relative; /* 아이콘과 이미지를 겹치게 하기 위해 부모에 relative 추가 */
+    display: inline-block; /* 여러 이미지를 가로로 정렬 */
+}
+
+.close-icon {
+    position: absolute;
+    top: 5px; /* 이미지 위쪽에서 5px */
+    left: 5px; /* 이미지 왼쪽에서 5px */
+    z-index: 1; /* 이미지보다 아이콘이 위에 표시되도록 z-index 설정 */
+    cursor: pointer; /* 클릭 가능하게 설정 */
+}
+
+.image-container img {
+    display: block;
+}
+
 </style>

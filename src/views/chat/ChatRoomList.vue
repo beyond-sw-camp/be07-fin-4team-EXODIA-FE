@@ -60,7 +60,9 @@
      :chatRoomUserNumsProp="chatRoomUserNums">
     </ChatRoomView>
 
-    <ChatRoomCreate v-model="createChatRoom" @update:dialog="createChatRoom = $event">
+    <ChatRoomCreate v-if="createChatRoom"
+    @update:dialog="createChatRoom = $event"
+    @update:check="chatRoomListCheck=$event">
     </ChatRoomCreate>
 
 </template>
@@ -79,16 +81,18 @@ export default {
         return {
 
             userNum: "",
-            searchQuery: "", // 채팅방 검색
-            chatRoomList: [],
+            chatRoomList: [], // 채팅방 리스트
 
-            createChatRoom: false,
-            
-            searchBar: false,
-            searchIcon: true,
+            createChatRoom: false, // 채팅방 생성 제어
 
-            chatRoomListCheck: true,
-            chatRoomCheck: false,
+            searchQuery: "", // 채팅방 검색어
+            searchBar: false, // 검색바 제어
+            searchIcon: true, // 검색아이콘 제어
+
+            chatRoomListCheck: true, // 채팅방 리스트 제어
+            chatRoomCheck: false, // 채팅방 제어
+
+            // 채팅리스트에서 채팅방으로 넘겨주는 값.
             chatRoomId: null,
             chatRoomName: "",
             chatRoomUserNums: []
@@ -128,6 +132,7 @@ export default {
 
         openCreateChatRoom() { // 채팅방 생성창 열기
             this.createChatRoom = true;
+            this.chatRoomListCheck= false;
         },
 
         closeChatList() { // 채팅방 리스트 닫기

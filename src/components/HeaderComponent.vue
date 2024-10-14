@@ -27,12 +27,13 @@
       </v-avatar>
 
     </div>
-    <v-card>
+    <!-- <v-card>
       <v-navigation-drawer v-model="drawer" location="right" temporary width="380">
         <chat-room-list-view @update:dialog="drawer = $event">
         </chat-room-list-view>
       </v-navigation-drawer>
-    </v-card>
+    </v-card> -->
+
   </header>
 
 
@@ -40,17 +41,17 @@
 
 <script>
 import axios from "axios";
-import ChatRoomListView from '@/views/chat/ChatRoomList.vue'
+// import ChatRoomListView from '@/views/chat/ChatRoomList.vue'
 
 export default {
   name: 'HeaderComponent',
-  components: {
-    ChatRoomListView,
-  },
+  // components: {
+  //   ChatRoomListView,
+  // },
   data() {
     return {
       unreadCount: 0, // 읽지 않은 알림 개수
-      drawer: false, // 채팅 열림.
+      drawer: false, // 채팅 열림 제어.
     };
   },
   created() {
@@ -89,7 +90,8 @@ export default {
 
     // 채팅룸 리스트 열기
     showChatRoomList() {
-      this.drawer = true;
+      // this.drawer = true;
+      window.open("/chatRoom/list", "_blank", "width=480, height=720")
     },
   },
 };

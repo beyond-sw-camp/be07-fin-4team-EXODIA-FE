@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <div v-if="!isLoginPage" class="app-container">
+    <div v-if="!isLoginPage && !isChatRoomListPage" class="app-container">
       <AppSidebar />
       <div class="main-layout">
         <HeaderComponent />
@@ -33,9 +33,11 @@ export default {
     const route = useRoute();
 
     const isLoginPage = computed(() => route.path === '/login');
+    const isChatRoomListPage = computed(() => route.path === '/chatRoom/list');
 
     return {
       isLoginPage,
+      isChatRoomListPage,
     };
   },
 };
