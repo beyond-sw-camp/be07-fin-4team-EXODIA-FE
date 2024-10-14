@@ -20,6 +20,7 @@
               <v-text-field v-model="userDetail.name" label="이름" :readonly="isDetailMode" required />
             </v-col>
 
+            <!-- 성별 선택 -->
             <v-col cols="12" md="6">
               <v-select
                 v-model="userDetail.gender"
@@ -29,6 +30,7 @@
               />
             </v-col>
 
+            <!-- 부서 선택 -->
             <v-col cols="12" md="6">
               <v-select
                 v-model="userDetail.departmentId"
@@ -41,6 +43,7 @@
               />
             </v-col>
 
+            <!-- 직급 선택 -->
             <v-col cols="12" md="6">
               <v-select
                 v-model="userDetail.positionId"
@@ -53,13 +56,17 @@
               />
             </v-col>
 
+            <!-- 이메일 -->
             <v-col cols="12" md="6">
               <v-text-field v-model="userDetail.email" label="이메일" :readonly="isDetailMode" />
             </v-col>
+
+            <!-- 전화번호 -->
             <v-col cols="12" md="6">
               <v-text-field v-model="userDetail.phone" label="전화번호" :readonly="isDetailMode" />
             </v-col>
 
+            <!-- 고용 유형 선택 -->
             <v-col cols="12" md="6">
               <v-select
                 v-model="userDetail.hireType"
@@ -68,14 +75,28 @@
                 :disabled="isDetailMode"
               />
             </v-col>
+
+            <!-- 잔여 휴가 -->
             <v-col cols="12" md="6">
               <v-text-field v-model="userDetail.annualLeave" label="잔여 휴가" :readonly="isDetailMode" />
             </v-col>
 
+            <!-- 상태 선택 -->
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="userDetail.status"
+                :items="statusOptions"
+                label="상태"
+                :disabled="isDetailMode"
+              />
+            </v-col>
+
+            <!-- 관리자 코드 버튼 -->
             <v-col cols="12">
               <v-btn @click="openAdminCodeDialog" color="primary" v-if="!isDetailMode">세부 정보 조회</v-btn>
             </v-col>
 
+            <!-- 프로필 이미지 업로드 -->
             <v-col cols="12">
               <v-file-input
                 label="프로필 이미지 업로드"
@@ -86,6 +107,7 @@
               <v-img v-if="previewImageSrc" :src="previewImageSrc" max-width="200" />
             </v-col>
 
+            <!-- 저장 버튼 -->
             <v-col cols="12" class="d-flex justify-space-between">
               <v-btn @click="goBack" outlined>목록으로</v-btn>
               <v-btn v-if="!isDetailMode" type="submit" color="primary">{{ isEditMode ? '수정 완료' : '등록 완료' }}</v-btn>
@@ -137,7 +159,8 @@ export default {
       userDetail: {
         userNum: '',
         name: '',
-        gender: '', // 성별 필드 추가
+        gender: '', 
+        status: '', 
         departmentId: null,
         positionId: null,
         email: '',
@@ -149,7 +172,8 @@ export default {
         address: '',
         socialNum: '',
       },
-      genderOptions: ['M', 'W'], // 성별 선택 옵션 추가
+      genderOptions: ['M', 'W'], 
+      statusOptions: ['휴직', '퇴사', '재직', '계약만료'], 
       departmentOptions: [],
       positionOptions: [],
       hireTypeOptions: ['정규직', '계약직', '인턴', '파트타임'],
@@ -158,10 +182,10 @@ export default {
       isDetailMode: false,
       isRegisterMode: false,
       dataLoaded: false,
-      isAdmin: false,  // 관리자 코드 입력 성공 여부
-      isAdminDialogOpen: false,  // 관리자 코드 입력 Dialog 상태
-      adminCode: '',  // 입력한 관리자 코드
-      correctAdminCode: '12341234',  // 실제 관리자 코드
+      isAdmin: false,
+      isAdminDialogOpen: false,
+      adminCode: '',
+      correctAdminCode: '12341234',
     };
   },
   methods: {
@@ -247,7 +271,6 @@ export default {
       if (this.adminCode === this.correctAdminCode) {
         this.isAdmin = true;
         this.isAdminDialogOpen = false;
-        // 관리자 세부 정보를 서버로부터 가져옵니다.
         this.fetchAdminDetails();
       } else {
         alert('잘못된 관리자 코드입니다.');
@@ -255,7 +278,6 @@ export default {
     },
     async fetchAdminDetails() {
       try {
-        // 서버에서 관리자용 세부 정보를 가져오는 API를 호출합니다.
         const response = await axios.get(`/user/admin-details/${this.userDetail.userNum}`);
         if (response.data) {
           this.userDetail.password = response.data.password;
@@ -274,7 +296,7 @@ export default {
         formData.append('email', this.userDetail.email);
         formData.append('address', this.userDetail.address);
         formData.append('phone', this.userDetail.phone);
-        formData.append('profileImage', this.userDetail.profileImage); // 파일 전송
+        formData.append('profileImage', this.userDetail.profileImage);
         formData.append('hireType', this.userDetail.hireType);
         formData.append('departmentId', this.userDetail.departmentId);
         formData.append('positionId', this.userDetail.positionId);
@@ -282,6 +304,7 @@ export default {
         formData.append('password', this.userDetail.password);
         formData.append('socialNum', this.userDetail.socialNum);
         formData.append('gender', this.userDetail.gender); // 성별 필드 추가
+        formData.append('status', this.userDetail.status); // 상태 필드 추가
 
         const token = localStorage.getItem("token");
         const config = {
