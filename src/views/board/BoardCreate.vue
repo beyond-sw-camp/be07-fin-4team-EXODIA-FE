@@ -1,13 +1,11 @@
 <template>
-  <v-container class="mt-5">
-    <v-card>
-      <v-card-title>
-        <h3>글쓰기</h3>
-      </v-card-title>
+  <div class="write-container">
+    <h3 class="write-title">글쓰기</h3>
 
-      <v-card-text>
-        <v-form ref="form" @submit.prevent="submitForm">
-          <!-- 게시판 선택 -->
+    <v-form ref="form" @submit.prevent="submitForm" class="write-form">
+      <v-row>
+        <!-- 게시판 선택 -->
+        <v-col cols="3">
           <v-select
             v-model="selectedCategory"
             :items="categories"
@@ -15,39 +13,74 @@
             item-value="value"
             label="게시판 선택"
             required
+            solo
+            flat
+            hide-details
+            class="category-select"
           ></v-select>
+        </v-col>
 
-          <!-- 제목 -->
+        <!-- 제목 -->
+        <v-col cols="9">
           <v-text-field
-            label="제목"
             v-model="title"
-            required
+            placeholder="제목을 입력하세요."
+            solo
+            hide-details
+            flat
+            class="title-input"
           />
+        </v-col>
+      </v-row>
 
-          <!-- 내용 -->
-          <v-textarea
-            label="내용"
-            v-model="content"
-            rows="10"
-            required
-          />
+      <!-- 내용 (에디터 툴바 및 내용 필드) -->
+      <div class="editor-toolbar">
+        <v-toolbar flat dense>
+          <v-btn icon @click="formatText('bold')">
+            <v-icon>mdi-format-bold</v-icon>
+          </v-btn>
+          <v-btn icon @click="formatText('italic')">
+            <v-icon>mdi-format-italic</v-icon>
+          </v-btn>
+          <v-btn icon @click="formatText('underline')">
+            <v-icon>mdi-format-underline</v-icon>
+          </v-btn>
+          <v-btn icon @click="formatText('justifyLeft')">
+            <v-icon>mdi-format-align-left</v-icon>
+          </v-btn>
+          <v-btn icon @click="formatText('justifyCenter')">
+            <v-icon>mdi-format-align-center</v-icon>
+          </v-btn>
+          <v-btn icon @click="formatText('justifyRight')">
+            <v-icon>mdi-format-align-right</v-icon>
+          </v-btn>
+          <v-btn icon @click="formatText('insertUnorderedList')">
+            <v-icon>mdi-format-list-bulleted</v-icon>
+          </v-btn>
+          <v-btn icon @click="formatText('insertOrderedList')">
+            <v-icon>mdi-format-list-numbered</v-icon>
+          </v-btn>
+        </v-toolbar>
+      </div>
 
-          <!-- 파일 첨부 -->
-          <v-file-input
-            v-model="files"
-            label="파일첨부"
-            accept="image/*, application/pdf, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            multiple
-          />
+      <!-- 내용 입력 필드 -->
+      <div id="editor" class="content-input" contenteditable="true"></div>
 
-          <div class="btnWrap">
-            <v-btn text @click="cancel">취소</v-btn>
-            <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
-          </div>
-        </v-form>
-      </v-card-text>
-    </v-card>
-  </v-container>
+      <!-- 파일 첨부 -->
+      <v-file-input
+        v-model="files"
+        label="파일첨부"
+        accept="image/*, application/pdf, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        multiple
+        flat
+      />
+
+      <div class="btnWrap">
+        <v-btn text @click="cancel">취소</v-btn>
+        <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
+      </div>
+    </v-form>
+  </div>
 </template>
 
 <script>
@@ -57,18 +90,16 @@ export default {
   data() {
     return {
       title: '',
-      content: '',
-      files: [], // 파일 배열
+      files: [],
       selectedCategory: null,
       categories: [
         { value: 'NOTICE', title: '공지사항' },
         { value: 'FAMILY_EVENT', title: '경조사' },
-      ], // 게시판 목록을 저장할 배열
-      userNum: localStorage.getItem('userNum'), // 로컬스토리지에서 userNum 가져오기
-      departmentId: localStorage.getItem('departmentId') // 로컬스토리지에서 departmentId 가져오기
+      ],
+      userNum: localStorage.getItem('userNum'),
+      departmentId: localStorage.getItem('departmentId'),
     };
   },
-  props: ['category'],
   mounted() {
     this.checkUserRole();
   },
@@ -81,68 +112,97 @@ export default {
       }
     },
     async submitForm() {
-  if (this.departmentId !== '4') {
-    alert('관리자만 작성할 수 있습니다.');
-    return;
-  }
+      if (this.departmentId !== '4') {
+        alert('관리자만 작성할 수 있습니다.');
+        return;
+      }
 
-  const formData = new FormData();
-  formData.append('title', this.title);
-  formData.append('content', this.content);
-  formData.append('category', this.selectedCategory); // 선택된 카테고리를 formData에 추가
-  formData.append('userNum', this.userNum); // 사용자 사번 추가
+      const content = document.getElementById('editor').innerHTML; // 에디터의 내용 가져오기
 
-  // 파일 배열을 FormData에 추가
-  if (this.files && this.files.length > 0) {
-    this.files.forEach((file) => {
-      formData.append('files', file); // 'files'라는 키로 파일을 추가
-    });
-  }
+      const formData = new FormData();
+      formData.append('title', this.title);
+      formData.append('content', content); // 에디터에서 가져온 HTML을 content로 사용
+      formData.append('category', this.selectedCategory);
+      formData.append('userNum', this.userNum);
 
-  try {
-    const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`; // 서버 URL 수정
-    const response = await axios.post(apiUrl, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${localStorage.getItem('token')}`, // Bearer 토큰 추가
-      },
-    });
-    console.log('저장 성공:', response.data);
+      if (this.files && this.files.length > 0) {
+        this.files.forEach((file) => {
+          formData.append('files', file);
+        });
+      }
 
-    // 작성 완료 후 카테고리별로 다른 페이지로 이동
-    if (this.selectedCategory === 'NOTICE') {
-      this.$router.push({ path: '/board/notice/list' });
-    } else if (this.selectedCategory === 'FAMILY_EVENT') {
-      this.$router.push({ path: '/board/familyevent/list' });
-    } else {
-      // 기본 BoardList 페이지로 이동 (예비 처리)
-      this.$router.push({ name: 'BoardList' });
-    }
-  } catch (error) {
-    console.error('저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
-    alert('게시글 저장에 실패했습니다.');
-  }
-}
-,
+      try {
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`;
+        const response = await axios.post(apiUrl, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        console.log('저장 성공:', response.data);
+
+        if (this.selectedCategory === 'NOTICE') {
+          this.$router.push({ path: '/board/notice/list' });
+        } else if (this.selectedCategory === 'FAMILY_EVENT') {
+          this.$router.push({ path: '/board/familyevent/list' });
+        } else {
+          this.$router.push({ name: 'BoardList' });
+        }
+      } catch (error) {
+        console.error('저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
+        alert('게시글 저장에 실패했습니다.');
+      }
+    },
     cancel() {
       this.$router.go(-1);
+    },
+    formatText(command) {
+      document.execCommand(command, false, null); // 텍스트 서식 변경을 위한 execCommand
     },
   },
 };
 </script>
 
 <style scoped>
-.v-container {
-  max-width: 800px;
+.write-container {
+  max-width: 1700px;
+  margin: auto;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.write-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 100px; /* 간격을 넓히기 위해 margin-bottom을 100px로 설정 */
+}
+
+.write-form {
   margin: auto;
 }
+
+.category-select,
+.title-input {
+  margin: 10px 0;
+}
+
+.editor-toolbar {
+  margin-bottom: 10px;
+}
+
+.content-input {
+  min-height: 200px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+  padding: 10px;
+  outline: none;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
 .btnWrap {
   display: flex;
   justify-content: flex-end;
   margin-top: 20px;
-}
-.my-3 {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
 }
 </style>
