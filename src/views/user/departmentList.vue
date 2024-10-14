@@ -2,6 +2,7 @@
   <div class="department-container">
     <h1>부서 관리</h1>
 
+    <!-- 버튼 그룹 -->
     <div class="button-group">
       <button v-if="editMode" @click="openCreateDialog" class="primary-btn">부서 추가</button>
       <button @click="toggleEditMode" class="secondary-btn">{{ editMode ? '편집 완료' : '편집' }}</button>
@@ -38,6 +39,23 @@
                 - {{ child.name || '이름 없음' }}
                 <button v-if="editMode" class="delete-btn" @click.stop="deleteDepartment(child.id)">삭제</button>
               </div>
+              <!-- 자식의 자식들까지 처리 -->
+              <ul v-if="child.children && child.children.length" class="children-nodes">
+                <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
+                  <div
+                    class="tree-node"
+                    :style="getNodeStyle(subChild)"
+                    :draggable="editMode"
+                    @dragstart="dragStart(subChild)"
+                    @dragover.prevent
+                    @drop="drop(subChild)"
+                    @click="editMode ? openEditDialog(subChild) : fetchUsersByDepartment(subChild.id)"
+                  >
+                    -- {{ subChild.name || '이름 없음' }}
+                    <button v-if="editMode" class="delete-btn" @click.stop="deleteDepartment(subChild.id)">삭제</button>
+                  </div>
+                </li>
+              </ul>
             </li>
           </ul>
         </li>
@@ -97,14 +115,14 @@ export default {
     return {
       hierarchy: [],
       users: [],
-      defaultProfile: 'https://example.com/default-profile.png', // 기본 프로필 이미지 URL
+      defaultProfile: 'https://example.com/default-profile.png',
       departmentForm: { id: null, name: '', parentId: null },
       parentOptions: [],
       dialog: false,
       isEdit: false,
       editMode: false,
       draggedItem: null,
-      positions: [], // 직급 리스트
+      positions: [],
     };
   },
   methods: {
@@ -149,7 +167,7 @@ export default {
       return position ? position.name : '알 수 없음';
     },
     getProfileImage(profileImage) {
-      return profileImage || this.defaultProfile; // 프로필 이미지가 없을 경우 기본 이미지 반환
+      return profileImage || this.defaultProfile;
     },
     toggleEditMode() {
       this.editMode = !this.editMode;
@@ -211,40 +229,22 @@ export default {
       }
     },
     getNodeStyle(department) {
-      // 최상단 부모와 자식 노드를 구분하기 위한 스타일 구분
-      return department.parentId
-        ? {
-            backgroundColor: '#f2f2f2',
-            border: '1px solid #007bff',
-            padding: '10px',
-            margin: '5px',
-            borderRadius: '8px',
-            cursor: this.editMode ? 'move' : 'pointer',
-            opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.6 : 1,
-            transition: 'all 0.3s ease',
-            fontWeight: 'bold',
-            color: '#333',
-            textAlign: 'center',
-            display: 'inline-block',
-            minWidth: '150px',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-          }
-        : {
-            backgroundColor: '#e0f7fa',
-            border: '2px solid #007bff',
-            padding: '15px',
-            margin: '10px',
-            borderRadius: '10px',
-            cursor: this.editMode ? 'move' : 'pointer',
-            opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.6 : 1,
-            transition: 'all 0.3s ease',
-            fontWeight: 'bold',
-            color: '#007bff',
-            textAlign: 'center',
-            display: 'inline-block',
-            minWidth: '200px',
-            boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
-          };
+      return {
+        padding: '15px 20px',
+        margin: '10px',
+        borderRadius: '10px',
+        backgroundColor: '#f9f9f9',
+        border: '1px solid #ccc',
+        cursor: this.editMode ? 'move' : 'pointer',
+        opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.6 : 1,
+        transition: 'all 0.3s ease',
+        fontWeight: 'bold',
+        color: '#007bff',
+        textAlign: 'center',
+        display: 'inline-block',
+        minWidth: '200px',
+        boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
+      };
     },
   },
   mounted() {
@@ -261,17 +261,26 @@ export default {
   justify-content: center;
 }
 
+.button-group {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
 .tree-wrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto; /* 세로 스크롤 추가 */
+  max-height: 80vh; /* 트리 최대 높이 제한 */
 }
 
 .children-nodes {
   display: flex;
   justify-content: center;
   margin-top: 10px;
+  flex-wrap: wrap; /* 자식 노드가 화면 너비를 넘으면 다음 줄로 내려가도록 */
 }
 
 .tree-item {
