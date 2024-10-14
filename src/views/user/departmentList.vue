@@ -2,57 +2,55 @@
   <div class="department-container">
     <h1>부서 관리</h1>
 
-    <!-- 버튼 그룹 -->
     <div class="button-group">
-      <button v-if="editMode" @click="openCreateDialog" class="primary-btn">부서 추가</button>
-      <button @click="toggleEditMode" class="secondary-btn">{{ editMode ? '편집 완료' : '편집' }}</button>
-      <button v-if="editMode" @click="cancelEdit" class="cancel-btn">취소</button>
+      <button v-if="editMode" @click="openCreateDialog">부서 추가</button>
+      <button @click="toggleEditMode">{{ editMode ? '편집 완료' : '편집' }}</button>
+      <button v-if="editMode" @click="cancelEdit">취소</button>
     </div>
 
     <!-- 트리 구조를 보여주는 UI -->
-    <div class="tree-wrapper">
-      <ul class="tree-root">
+    <div class="tree-container">
+      <ul>
         <li v-for="department in hierarchy" :key="department.id" class="tree-item">
           <div
             class="tree-node"
-            :style="getNodeStyle(department)"
+            :style="getNodeStyle(department, 0)"
             :draggable="editMode"
             @dragstart="dragStart(department)"
             @dragover.prevent
             @drop="drop(department)"
             @click="editMode ? openEditDialog(department) : fetchUsersByDepartment(department.id)"
           >
-            <strong>{{ department.name || '이름 없음' }}</strong>
-            <button v-if="editMode" class="delete-btn" @click.stop="deleteDepartment(department.id)">삭제</button>
+            {{ department.name || '이름 없음' }}
+            <button v-if="editMode" @click.stop="deleteDepartment(department.id)">삭제</button>
           </div>
           <ul v-if="department.children && department.children.length" class="children-nodes">
             <li v-for="child in department.children" :key="child.id" class="tree-item">
               <div
-                class="tree-node child-node"
-                :style="getNodeStyle(child)"
+                class="tree-node"
+                :style="getNodeStyle(child, 1)"
                 :draggable="editMode"
                 @dragstart="dragStart(child)"
                 @dragover.prevent
                 @drop="drop(child)"
                 @click="editMode ? openEditDialog(child) : fetchUsersByDepartment(child.id)"
               >
-                - {{ child.name || '이름 없음' }}
-                <button v-if="editMode" class="delete-btn" @click.stop="deleteDepartment(child.id)">삭제</button>
+                {{ child.name || '이름 없음' }}
+                <button v-if="editMode" @click.stop="deleteDepartment(child.id)">삭제</button>
               </div>
-              <!-- 자식의 자식들까지 처리 -->
               <ul v-if="child.children && child.children.length" class="children-nodes">
                 <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
                   <div
                     class="tree-node"
-                    :style="getNodeStyle(subChild)"
+                    :style="getNodeStyle(subChild, 2)"
                     :draggable="editMode"
                     @dragstart="dragStart(subChild)"
                     @dragover.prevent
                     @drop="drop(subChild)"
                     @click="editMode ? openEditDialog(subChild) : fetchUsersByDepartment(subChild.id)"
                   >
-                    -- {{ subChild.name || '이름 없음' }}
-                    <button v-if="editMode" class="delete-btn" @click.stop="deleteDepartment(subChild.id)">삭제</button>
+                    {{ subChild.name || '이름 없음' }}
+                    <button v-if="editMode" @click.stop="deleteDepartment(subChild.id)">삭제</button>
                   </div>
                 </li>
               </ul>
@@ -66,12 +64,12 @@
     <transition name="slide-fade">
       <div class="user-list" v-if="users.length">
         <h3>사용자 정보</h3>
-        <v-card v-for="user in users" :key="user.userNum" class="user-card mb-3">
+        <v-card v-for="user in users" :key="user.userNum" class="mb-3">
           <v-row>
             <v-col cols="4">
-              <img :src="getProfileImage(user.profileImage)" alt="profile" class="profile-image" />
+              <img :src="user.profileImage || defaultProfile" alt="profile" style="width:100%;" />
             </v-col>
-            <v-col cols="8" class="user-details">
+            <v-col cols="8">
               <p>{{ user.name }}</p>
               <p>사번: {{ user.userNum }}</p>
               <p>직급: {{ getPositionName(user.positionId) }}</p>
@@ -115,7 +113,7 @@ export default {
     return {
       hierarchy: [],
       users: [],
-      defaultProfile: 'https://example.com/default-profile.png',
+      defaultProfile: '/assets/default-profile.png',
       departmentForm: { id: null, name: '', parentId: null },
       parentOptions: [],
       dialog: false,
@@ -132,7 +130,7 @@ export default {
         this.hierarchy = response.data;
         this.parentOptions = this.flattenHierarchy(this.hierarchy);
       } catch (error) {
-        console.error('부서 계층 구조를 가져오는 중 오류:', error);
+        console.error('Error fetching department hierarchy:', error);
       }
     },
     flattenHierarchy(departments) {
@@ -151,7 +149,7 @@ export default {
         const response = await axios.get(`/department/${departmentId}/users`);
         this.users = response.data;
       } catch (error) {
-        console.error('부서별 사용자 정보를 가져오는 중 오류:', error);
+        console.error('Error fetching users for department:', error);
       }
     },
     async fetchPositions() {
@@ -159,15 +157,12 @@ export default {
         const response = await axios.get('/positions');
         this.positions = response.data;
       } catch (error) {
-        console.error('직급 목록을 가져오는 중 오류 발생:', error);
+        console.error('Error fetching positions:', error);
       }
     },
     getPositionName(positionId) {
       const position = this.positions.find((pos) => pos.id === positionId);
       return position ? position.name : '알 수 없음';
-    },
-    getProfileImage(profileImage) {
-      return profileImage || this.defaultProfile;
     },
     toggleEditMode() {
       this.editMode = !this.editMode;
@@ -193,8 +188,9 @@ export default {
     },
     async drop(parentDepartment) {
       if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
-        this.draggedItem.parentId = parentDepartment.id;
+        // 업데이트 시 name도 함께 전송
         await axios.put(`/department/${this.draggedItem.id}`, {
+          name: this.draggedItem.name, // 이름도 유지
           parentId: parentDepartment.id,
         });
         this.fetchHierarchy();
@@ -217,7 +213,7 @@ export default {
         this.closeDialog();
         this.fetchHierarchy();
       } catch (error) {
-        console.error('부서 저장 중 오류 발생:', error);
+        console.error('Error saving department:', error);
       }
     },
     async deleteDepartment(departmentId) {
@@ -225,25 +221,23 @@ export default {
         await axios.delete(`/department/${departmentId}`);
         this.fetchHierarchy();
       } catch (error) {
-        console.error('부서 삭제 중 오류 발생:', error);
+        console.error('Error deleting department:', error);
       }
     },
-    getNodeStyle(department) {
+    getNodeStyle(department, depth) {
+      const colors = ['#ffeb3b', '#64b5f6', '#81c784'];
+      const color = colors[depth % colors.length];
       return {
-        padding: '15px 20px',
+        cursor: this.editMode ? 'move' : 'pointer',
+        opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.5 : 1,
+        backgroundColor: color,
+        padding: '15px',
         margin: '10px',
         borderRadius: '10px',
-        backgroundColor: '#f9f9f9',
-        border: '1px solid #ccc',
-        cursor: this.editMode ? 'move' : 'pointer',
-        opacity: this.draggedItem && this.draggedItem.id === department.id ? 0.6 : 1,
-        transition: 'all 0.3s ease',
-        fontWeight: 'bold',
-        color: '#007bff',
+        boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.2)',
         textAlign: 'center',
-        display: 'inline-block',
-        minWidth: '200px',
-        boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
+        transition: 'all 0.3s ease',
+        position: 'relative',
       };
     },
   },
@@ -254,11 +248,14 @@ export default {
 };
 </script>
 
+
 <style scoped>
 .department-container {
-  margin-top: 30px;
+  margin-top: 10px;
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .button-group {
@@ -272,15 +269,20 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto; /* 세로 스크롤 추가 */
-  max-height: 80vh; /* 트리 최대 높이 제한 */
+  overflow-y: auto;
+  max-height: 100vh;
+  transition: transform 0.3s ease;
+}
+
+.tree-shifted {
+  transform: translateX(-350px);
 }
 
 .children-nodes {
   display: flex;
   justify-content: center;
   margin-top: 10px;
-  flex-wrap: wrap; /* 자식 노드가 화면 너비를 넘으면 다음 줄로 내려가도록 */
+  flex-wrap: wrap;
 }
 
 .tree-item {
@@ -349,5 +351,23 @@ export default {
   cursor: pointer;
   padding: 5px 10px;
   margin-top: 10px;
+}
+
+@media screen and (max-width: 768px) {
+  .tree-wrapper {
+    max-height: 100vh;
+  }
+
+  .user-list {
+    width: 100%;
+    height: 50vh;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+  }
 }
 </style>
