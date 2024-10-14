@@ -67,7 +67,7 @@
         </v-container>
 
         <!-- 채팅방 이름 작성 화면 -->
-        <v-container v-if="showChatRoomName">
+        <v-container v-if="showChatRoomName" class="create-container">
             <v-row>
                 <v-col cols="12">
                     <h3>채팅방 이름</h3>

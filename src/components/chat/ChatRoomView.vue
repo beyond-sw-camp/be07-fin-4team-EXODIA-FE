@@ -13,7 +13,7 @@
                 <v-icon class="icon" @click="goBack">mdi-chevron-left</v-icon> <!-- 뒤로가기 -->
             </v-col>
             <v-col cols="8" class="chat-room-title">
-                <span class="chat-room-name">{{ chatRoomId }}</span>
+                <span class="chat-room-name">{{ chatRoomNameProp }}</span>
             </v-col>
             <v-col cols="3" class="header-icons">
                 <v-icon class="icon">mdi-magnify</v-icon> <!-- 검색 -->
@@ -89,15 +89,14 @@ import SockJS from 'sockjs-client'
 
 export default {
     props: [
-        'chatRoomIdProp' // ⭐⭐⭐ 채팅방 리스트에서 채팅방 id, name, userNums 받자.=
+        'chatRoomIdProp',
+        'chatRoomNameProp',
+        'chatRoomUserNumsProp'
     ],
-    components: {
-
-    },
     data() {
         return {
             stompClient: null,
-            chatRoomId: null, // ⭐⭐⭐ this.$route.params.id, // props 로 처리할지 params->axios.get로 처리할지..
+            chatRoomId: this.chatRoomIdProp,
             // chatRoomName: "", // 채팅방 이름
             chatMessageList: [], // 주고받은 채팅내역
 
@@ -112,8 +111,7 @@ export default {
         }
     },
     async created() {
-        // this.chatRoomId = this.chatRoomIdProp; // ⭐⭐⭐ props 로 처리할지 params 로 처리할지.. ⭐⭐⭐
-        this.chatRoomId = this.$route.params.id;
+        this.chatRoomId= this.chatRoomIdProp;
         this.chatSenderNum = localStorage.getItem('userNum');
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
         if (response.data) {
@@ -275,7 +273,8 @@ export default {
         },
 
         goBack() {
-            console.log("goback");
+            this.$emit('update:dialog', false);
+            this.$emit('update:check', true);
         },
     }
 }
