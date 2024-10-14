@@ -36,13 +36,14 @@
             </v-col>
             <v-col cols="8" class="user-details">
               <p class="user-name">{{ user.name }}</p>
-              <p class="user-title">사번: {{ user.userNum }}</p>
-              <p class="user-title">직급: {{ getPositionName(user.positionId) }}</p>
+              <p>사번: {{ user.userNum }}</p>
+              <p>직급: {{ getPositionName(user.positionId) }}</p>
             </v-col>
           </v-row>
         </v-card>
       </div>
     </transition>
+    
 
     <!-- 부서 추가/수정 다이얼로그 -->
     <v-dialog v-model="dialog" max-width="500">
@@ -113,15 +114,25 @@ export default {
       departments.forEach(recurse);
       return flat;
     },
-    async fetchUsersByDepartment(departmentId) {
-      try {
-        const response = await axios.get(`/department/${departmentId}/users`);
-        this.users = response.data.filter(user => user.departmentId === departmentId);
-      } catch (error) {
-        console.error('Error fetching users for department:', error);
-        this.users = []; 
-      }
-    },
+
+  async fetchUsersByDepartment(departmentId) {
+    try {
+      console.log("Selected departmentId:", departmentId);
+      
+      const response = await axios.get(`/department/${departmentId}/users`);
+      
+      console.log("Fetched users for departmentId:", departmentId, response.data);
+
+      this.users = response.data.filter(user => user.departmentId === departmentId);
+
+      console.log("Filtered users:", this.users);
+
+    } catch (error) {
+      console.error('Error fetching users for department:', error);
+      this.users = []; 
+    }
+  },
+
     async fetchPositions() {
       try {
         const response = await axios.get('/positions');
@@ -276,6 +287,20 @@ export default {
   margin-bottom: 10px;
 }
 
+.user-list {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 400px;
+  height: 100%;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  transition: transform 0.3s ease-in-out;
+}
+
+
 .user-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
@@ -306,4 +331,13 @@ export default {
   font-weight: normal;
   color: #777;
 }
+
+.user-list-enter-active, .user-list-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
 </style>

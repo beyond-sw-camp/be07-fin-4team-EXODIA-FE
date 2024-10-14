@@ -6,7 +6,7 @@
         @dragstart="$emit('drag-start', department)"
         @dragover.prevent
         @drop="$emit('drop', department)"
-        @click="editMode ? $emit('edit-department', department) : $emit('fetch-users', department.id)"
+        @click="$emit('fetch-users', department.id)" 
       >
         <v-icon :class="getIconForDepth(depth)" class="node-icon"></v-icon>
         <span class="node-content">{{ department.name || '이름 없음' }}</span>
@@ -29,11 +29,12 @@
           @drag-start="$emit('drag-start', child)"
           @drop="$emit('drop', child)"
           @edit-department="$emit('edit-department', child)"
-          @fetch-users="$emit('fetch-users', child.id)"
+          @fetch-users="$emit('fetch-users', child.id)" 
         />
       </ul>
     </li>
-</template>
+  </template>
+  
 
 <script>
 export default {
