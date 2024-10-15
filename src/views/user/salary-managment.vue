@@ -36,6 +36,7 @@
             <v-col cols="2">이름</v-col>
             <v-col cols="3">부서</v-col>
             <v-col cols="2">직급</v-col>
+            <v-col cols="1">연차</v-col>
             <v-col cols="2">기본급</v-col>
           </v-row>
 
@@ -51,6 +52,7 @@
             <v-col cols="2">{{ salary.userName }}</v-col>
             <v-col cols="3">{{ salary.departmentName }}</v-col>
             <v-col cols="2">{{ salary.positionName }}</v-col>
+            <v-col cols="1">{{ salary.yearsOfService }} 년</v-col>
             <v-col cols="2">{{ salary.baseSalary.toLocaleString() }} 원</v-col>
           </v-row>
         </v-col>
@@ -98,6 +100,11 @@ export default {
       selectedSalaryDate: null,
     };
   },
+  watch: {
+    selectedPosition(newPosition) {
+      this.fetchSalariesByPosition(newPosition);
+    },
+  },
   methods: {
     async fetchSalaries() {
       try {
@@ -107,18 +114,31 @@ export default {
         console.error('급여 목록을 가져오는 중 오류가 발생했습니다.', error);
       }
     },
-    async fetchSalariesByPosition() {
-      if (this.selectedPosition) {
+    // async fetchSalariesByPosition() {
+    //   if (this.selectedPosition) {
+    //     try {
+    //       const response = await axios.get(`/salary/byPosition/${this.selectedPosition}`);
+    //       this.salaries = response.data;
+    //     } catch (error) {
+    //       console.error('직급별 급여 목록을 가져오는 중 오류가 발생했습니다.', error);
+    //     }
+    //   } else {
+    //     this.fetchSalaries();
+    //   }
+    // },
+
+    async fetchSalariesByPosition(positionId) {
+      if (positionId) {
         try {
-          const response = await axios.get(`/salary/byPosition/${this.selectedPosition}`);
+          const response = await axios.get(`/salary/byPosition/${positionId}`);
           this.salaries = response.data;
+          console.log("직급별 급여 조회 성공:", this.salaries);
         } catch (error) {
-          console.error('직급별 급여 목록을 가져오는 중 오류가 발생했습니다.', error);
+          console.error("직급별 급여 목록을 가져오는 중 오류가 발생했습니다.", error);
         }
-      } else {
-        this.fetchSalaries();
       }
     },
+
     async fetchPositions() {
       try {
         const response = await axios.get('/positions');
@@ -133,20 +153,36 @@ export default {
     openSetSalaryDateDialog() {
       this.salaryDateDialog = true;
     },
+
+    formatDate(date) {
+      if (!date) return '';
+      const d = new Date(date);
+      let month = '' + (d.getMonth() + 1);
+      let day = '' + d.getDate();
+      const year = d.getFullYear();
+
+      if (month.length < 2) month = '0' + month;
+      if (day.length < 2) day = '0' + day;
+
+      return [year, month, day].join('-');
+    },
+
     async setSalaryDate() {
       try {
-        const payload = {
-          eventType: 'salary', 
-          eventDate: this.selectedSalaryDate 
-        };
-        await axios.post('/eventDate/setDate', payload);
+        if (!this.selectedSalaryDate) {
+          throw new Error('날짜가 선택되지 않았습니다.');
+        }
+        const formattedDate = this.formatDate(this.selectedSalaryDate);
+        console.log('Selected Salary Date:', this.selectedSalaryDate);
+        console.log('Formatted Salary Date:', formattedDate);
+
+        await axios.post('/eventDate/setDate', { eventDate: formattedDate, eventType: 'salary' });
         this.salaryDateDialog = false;
         alert('급여일이 성공적으로 설정되었습니다.');
       } catch (error) {
         console.error('급여일 설정 중 오류가 발생했습니다.', error);
       }
-    },
-
+    }
   },
   mounted() {
     this.fetchSalaries();
