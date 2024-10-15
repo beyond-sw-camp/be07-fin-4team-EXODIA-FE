@@ -135,13 +135,18 @@ export default {
     },
     async setSalaryDate() {
       try {
-        await axios.post('/salary/setDate', { salaryDate: this.selectedSalaryDate });
+        const payload = {
+          eventType: 'salary', 
+          eventDate: this.selectedSalaryDate 
+        };
+        await axios.post('/eventDate/setDate', payload);
         this.salaryDateDialog = false;
         alert('급여일이 성공적으로 설정되었습니다.');
       } catch (error) {
         console.error('급여일 설정 중 오류가 발생했습니다.', error);
       }
     },
+
   },
   mounted() {
     this.fetchSalaries();
