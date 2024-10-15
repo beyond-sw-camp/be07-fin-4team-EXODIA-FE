@@ -11,9 +11,33 @@
           style="margin-left: 30px;"
         ></v-select>
       </v-col>
-    </v-row>
 
-    <!-- Timeline Header with Hours -->
+      <v-col cols="10" md ="4">
+        <v-btn
+        color="primary"
+          @click="workIn"
+          :disabled="isWorkIn"
+          style="height: 55px;"
+        >
+         출근
+        </v-btn>
+    
+        <!-- 퇴근 버튼 -->
+        <v-btn
+          color="error"
+          @click="workOut"
+        
+          style="margin-left: 10px; height:55px"
+        >
+          퇴근
+        </v-btn>
+        <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
+      </v-col>
+
+    </v-row>
+      <!-- 출근 버튼 -->
+      
+    <!-- 타임라인 헤더 -->
     <v-row class="hours-row">
       <v-col cols="1">
         <div class="header-cell"></div>
@@ -67,6 +91,12 @@ export default {
       clockOutTime: null, // 오늘 퇴근 시간
       weeklyWorkHours: 0, // 금주차 누적 근무 시간
       weeklyOvertimeHours: 0, // 금주차 초과 근무 시간
+
+      /* 출퇴근 버튼 관련 */
+      isWorkIn: false,  // 출근 여부
+      isWorkOut: false, // 퇴근 여부
+      message: "",      // 알림 메시지
+      alertType: "info" // 알림 메시지 유형
     };
   },
   watch: {
@@ -83,6 +113,55 @@ export default {
     this.emitAttendanceData(); // 데이터 전송
   },
   methods: {
+    // 출근 API 호출
+    async workIn() {
+      try {
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, {}, {
+          headers: this.getAuthHeaders()
+        });
+        this.message = response.data.message;
+        this.alertType = "success";
+        this.isWorkIn = true;  // 출근 완료
+        location.reload();
+      } catch (error) {
+        this.message = "출근 기록 중 오류 발생";
+        this.alertType = "error";
+        console.error(error);
+      }
+    },
+  
+      // 퇴근 API 호출
+    async workOut() {
+      try {
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, {}, {
+          headers: this.getAuthHeaders()
+        });
+        this.message = response.data.message;
+        this.alertType = "success";
+        this.isWorkOut = true;  // 퇴근 완료
+        location.reload();
+      } catch (error) {
+        this.message = "퇴근 기록 중 오류 발생";
+        this.alertType = "error";
+        console.error(error);
+      }
+    },
+  
+      // JWT 인증 헤더 설정
+    getAuthHeaders() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("토큰이 없습니다. 로그인이 필요합니다.");
+        return {};
+      }
+      return {
+        Authorization: `Bearer ${token}`,
+      };
+    },
+  
+  created() {
+    // 페이지 로딩 시 초기화 작업을 할 수 있음
+  },
 
     emitAttendanceData() {
       this.$emit('update-attendance', {
@@ -97,14 +176,14 @@ export default {
 
 
     getISOWeekNumber(date) {
-    const thursday = new Date(date.getTime());
-    thursday.setDate(date.getDate() + (4 - (date.getDay() || 7)));
-    
-    const yearStart = new Date(thursday.getFullYear(), 0, 1);
-    const weekNumber = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
-    
-    return weekNumber;
-  },
+      const thursday = new Date(date.getTime());
+      thursday.setDate(date.getDate() + (4 - (date.getDay() || 7)));
+      
+      const yearStart = new Date(thursday.getFullYear(), 0, 1);
+      const weekNumber = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
+      
+      return weekNumber;
+    },
     // 선택된 주차의 데이터를 API에서 가져오는 함수
     async fetchWeeklyDetails() {
       if (!this.selectedWeek) return;
@@ -176,32 +255,34 @@ export default {
     // 근무 시간이 있는지 확인하는 함수
     isWorkHour(day, hour) {
       const dayData = this.attendanceData[day];
-      if (dayData) {
-        const startHour = new Date(dayData.inTime).getHours();
-        const endHour = new Date(dayData.outTime).getHours();
-        return hour >= startHour && hour < endHour;
+      console.log(day, dayData); // dayData 확인용 로그
+      if (!dayData || !dayData.inTime || !dayData.outTime) {
+        return false;
       }
-      return false; // 근무 시간이 없는 경우
+
+      const startHour = new Date(dayData.inTime).getHours();
+      const endHour = new Date(dayData.outTime).getHours();
+      return hour >= startHour && hour < endHour;
     },
 
     // 시간대별 색상 설정 메서드
     getTimeColor(day, hour) {
-  const dayData = this.attendanceData[day];
-  if (dayData) {
-    const inTime = new Date(dayData.inTime).getHours();
-    const outTime = new Date(dayData.outTime).getHours();
-    
-    // hour가 근무 시간 범위 내에 있는 경우에만 색상을 결정
-    if (hour >= inTime && hour < outTime) {
-      const hoursWorked = dayData.hoursWorked;
-      return hoursWorked > 8 ? '#4CAF50' : '#D8EACA'; // 초과 근무는 초록색, 일반 근무는 연한 초록색
-    }
+      const dayData = this.attendanceData[day];
+      if (dayData) {
+        const inTime = new Date(dayData.inTime).getHours();
+        const outTime = new Date(dayData.outTime).getHours();
+        
+        // hour가 근무 시간 범위 내에 있는 경우에만 색상을 결정
+        if (hour >= inTime && hour < outTime) {
+          const hoursWorked = dayData.hoursWorked;
+          return hoursWorked > 8 ? 'brown' : 'brown';
+        }
+      }
+      return 'white'; // 근무 시간이 아닌 경우
+    },
+
+
   }
-  return 'white'; // 근무 시간이 아닌 경우
-},
-
-
-  },
 };
 </script>
 
