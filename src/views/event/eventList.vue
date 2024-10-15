@@ -1,192 +1,106 @@
 <template>
     <v-container>
-      <h1>일정 관리</h1>
-      
-      <!-- Event list and creation form -->
       <v-row>
         <v-col>
+          <h1>일정 관리</h1>
+        </v-col>
+      </v-row>
+  
+      <!-- Event 목록 -->
+      <v-row>
+        <v-col cols="12">
           <v-select
-            v-model="newEvent.eventType"
+            v-model="selectedEventType"
             :items="eventTypes"
             label="이벤트 타입 선택"
             outlined
           ></v-select>
         </v-col>
-        <v-col>
-          <v-menu
-            v-model="menu"
-            :close-on-content-click="false"
-            transition="scale-transition"
-            offset-y
-            min-width="290px"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-text-field
-                v-model="newEvent.eventDate"
-                label="이벤트 날짜 선택"
-                readonly
-                v-bind="attrs"
-                v-on="on"
-              ></v-text-field>
-            </template>
-            <v-date-picker v-model="newEvent.eventDate" @input="menu = false"></v-date-picker>
-          </v-menu>
-        </v-col>
-        <v-col>
-          <v-btn color="primary" @click="createEventDate">일정 추가</v-btn>
-        </v-col>
-      </v-row>
-  
-      <!-- Existing event dates -->
-      <v-row>
         <v-col cols="12">
-          <v-simple-table>
-            <thead>
-              <tr>
-                <th>이벤트 타입</th>
-                <th>날짜</th>
-                <th>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="event in eventDates" :key="event.id">
-                <td>{{ event.eventType }}</td>
-                <td>{{ event.eventDate }}</td>
-                <td>
-                  <v-btn icon @click="editEvent(event)">
-                    <v-icon>mdi-pencil</v-icon>
-                  </v-btn>
-                  <v-btn icon @click="deleteEvent(event.id)">
-                    <v-icon color="red">mdi-delete</v-icon>
-                  </v-btn>
-                </td>
-              </tr>
-            </tbody>
-          </v-simple-table>
+          <v-date-picker v-model="selectedDate" label="날짜 선택"></v-date-picker>
+        </v-col>
+        <v-col cols="12">
+          <v-btn color="primary" @click="setEventDate">이벤트 날짜 설정</v-btn>
         </v-col>
       </v-row>
   
-      <!-- Edit Event Modal -->
-      <v-dialog v-model="editDialog" max-width="500">
-        <v-card>
-          <v-card-title>
-            <span class="headline">일정 수정</span>
-          </v-card-title>
-          <v-card-text>
-            <v-select
-              v-model="editEventForm.eventType"
-              :items="eventTypes"
-              label="이벤트 타입"
-            ></v-select>
-            <v-menu
-              v-model="menuEdit"
-              :close-on-content-click="false"
-              transition="scale-transition"
-              offset-y
-              min-width="290px"
+      <!-- History 목록 -->
+      <v-row v-if="eventHistories.length">
+        <v-col cols="12">
+          <h3>이벤트 변경 내역</h3>
+          <v-list dense>
+            <v-list-item
+              v-for="history in eventHistories"
+              :key="history.id"
             >
-              <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                  v-model="editEventForm.eventDate"
-                  label="이벤트 날짜"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-                ></v-text-field>
-              </template>
-              <v-date-picker v-model="editEventForm.eventDate" @input="menuEdit = false"></v-date-picker>
-            </v-menu>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="primary" @click="updateEventDate">수정</v-btn>
-            <v-btn @click="editDialog = false">취소</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+              <v-list-item-content>
+                <v-list-item-title>{{ history.changeDate }}에 {{ history.userNum }}에 의해 변경됨</v-list-item-title>
+                <v-list-item-subtitle>변경된 범위: {{ history.eventRange }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-col>
+      </v-row>
     </v-container>
   </template>
   
   <script>
-  import axios from "axios";
+  import axios from 'axios';
   
   export default {
     data() {
       return {
-        eventDates: [],  // List of all event dates
-        eventTypes: ["급여일 관리", "인사평가 관리"],  // Event types
-        newEvent: { eventType: "", eventDate: "" },  // Data for new event
-        editEventForm: { id: null, eventType: "", eventDate: "" },  // Data for editing an event
-        menu: false,
-        menuEdit: false,
-        editDialog: false,
+        eventTypes: ['salary', 'evaluation'],
+        selectedEventType: '',
+        selectedDate: null,
+        eventHistories: [],
       };
     },
     methods: {
-      // Fetch all event dates from the backend
-      async fetchEventDates() {
+      async setEventDate() {
+        const userNum = localStorage.getItem('userNum');
+        if (!userNum) {
+          alert('로그인 정보가 없습니다.');
+          return;
+        }
+  
         try {
-          const response = await axios.get("/eventDate/getAll");
-          this.eventDates = response.data;
+          await axios.post('/eventDate/setDate', {
+            eventType: this.selectedEventType,
+            eventDate: this.selectedDate,
+            userNum: userNum
+          });
+          alert('이벤트 날짜가 설정되었습니다.');
+          this.fetchEventHistory();
         } catch (error) {
-          console.error("Failed to fetch event dates:", error);
+          console.error('날짜 설정 중 오류 발생:', error);
         }
       },
   
-      // Create a new event date
-      async createEventDate() {
+      async fetchEventHistory() {
         try {
-          const payload = {
-            eventType: this.newEvent.eventType,
-            eventDate: this.newEvent.eventDate
-          };
-          const response = await axios.post("/eventDate/setDate", payload);
-          this.eventDates.push(response.data);
-          this.newEvent = { eventType: "", eventDate: "" };  // Clear input fields
+          const response = await axios.get(`/eventDate/getHistory/${this.selectedEventType}`);
+          this.eventHistories = response.data;
         } catch (error) {
-          console.error("Failed to create event date:", error);
+          console.error('이벤트 히스토리 가져오기 중 오류:', error);
         }
-      },
-  
-      // Open dialog to edit an event date
-      editEvent(event) {
-        this.editEventForm = { ...event };  // Pre-fill the form with the event data
-        this.editDialog = true;
-      },
-  
-      // Update the selected event date
-      async updateEventDate() {
-        try {
-          const payload = {
-            eventType: this.editEventForm.eventType,
-            eventDate: this.editEventForm.eventDate,
-          };
-          await axios.put(`/eventDate/updateDate/${this.editEventForm.id}`, payload);
-          this.fetchEventDates();
-          this.editDialog = false;
-        } catch (error) {
-          console.error("Failed to update event date:", error);
-        }
-      },
-  
-      // Delete an event date
-      async deleteEvent(eventId) {
-        try {
-          await axios.delete(`/eventDate/delete/${eventId}`);
-          this.fetchEventDates();
-        } catch (error) {
-          console.error("Failed to delete event date:", error);
-        }
-      },
+      }
     },
     mounted() {
-      this.fetchEventDates();  // Fetch the event dates when the component is mounted
-    },
+      this.fetchEventHistory();
+    }
   };
   </script>
   
   <style scoped>
-  .tree-container {
-    margin-top: 30px;
+  h1 {
+    margin-bottom: 20px;
+  }
+  
+  .v-list-item {
+    margin-bottom: 10px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
   }
   </style>
   

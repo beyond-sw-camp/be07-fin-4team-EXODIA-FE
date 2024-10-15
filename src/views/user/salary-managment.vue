@@ -168,21 +168,30 @@ export default {
     },
 
     async setSalaryDate() {
-      try {
-        if (!this.selectedSalaryDate) {
-          throw new Error('날짜가 선택되지 않았습니다.');
-        }
-        const formattedDate = this.formatDate(this.selectedSalaryDate);
-        console.log('Selected Salary Date:', this.selectedSalaryDate);
-        console.log('Formatted Salary Date:', formattedDate);
-
-        await axios.post('/eventDate/setDate', { eventDate: formattedDate, eventType: 'salary' });
-        this.salaryDateDialog = false;
-        alert('급여일이 성공적으로 설정되었습니다.');
-      } catch (error) {
-        console.error('급여일 설정 중 오류가 발생했습니다.', error);
-      }
+  try {
+    if (!this.selectedSalaryDate) {
+      throw new Error('날짜가 선택되지 않았습니다.');
     }
+
+    const formattedDate = this.formatDate(this.selectedSalaryDate);
+    const userNum = localStorage.getItem('userNum');
+    if (!userNum) {
+      throw new Error('유저 정보를 찾을 수 없습니다.');
+    }
+
+    await axios.post('/eventDate/setDate', {
+      eventDate: formattedDate,  
+      eventType: 'salary',       
+      userNum: userNum        
+    });
+
+    this.salaryDateDialog = false;
+    alert('급여일이 성공적으로 설정되었습니다.');
+  } catch (error) {
+    console.error('급여일 설정 중 오류가 발생했습니다.', error);
+  }
+}
+
   },
   mounted() {
     this.fetchSalaries();
