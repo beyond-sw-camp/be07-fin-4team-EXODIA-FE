@@ -34,7 +34,7 @@
             <v-col cols="1">번호</v-col>
             <v-col cols="2">사번</v-col>
             <v-col cols="2">이름</v-col>
-            <v-col cols="3">부서</v-col>
+            <v-col cols="2">부서</v-col>
             <v-col cols="2">직급</v-col>
             <v-col cols="1">연차</v-col>
             <v-col cols="2">기본급</v-col>
@@ -50,7 +50,7 @@
             <v-col cols="1">{{ index + 1 }}</v-col>
             <v-col cols="2">{{ salary.userNum }}</v-col>
             <v-col cols="2">{{ salary.userName }}</v-col>
-            <v-col cols="3">{{ salary.departmentName }}</v-col>
+            <v-col cols="2">{{ salary.departmentName }}</v-col>
             <v-col cols="2">{{ salary.positionName }}</v-col>
             <v-col cols="1">{{ salary.yearsOfService }} 년</v-col>
             <v-col cols="2">{{ salary.baseSalary.toLocaleString() }} 원</v-col>

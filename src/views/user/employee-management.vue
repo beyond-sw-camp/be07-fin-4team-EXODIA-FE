@@ -11,7 +11,7 @@
 
     <!-- 검색 옵션 -->
     <v-row justify="center" style="margin:0; text-align:center;">
-      <v-col cols="6">
+      <v-col cols="3">
         <v-select
           v-model="searchType"
           :items="searchOptions"
@@ -46,11 +46,11 @@
         >
           <v-col cols="1">번호</v-col>
           <v-col cols="2">사번</v-col>
-          <v-col cols="3">부서</v-col>
-          <v-col cols="2">이름</v-col>
+          <v-col cols="2">부서</v-col>
+          <v-col cols="1">이름</v-col>
           <v-col cols="2">직급</v-col>
           <v-col cols="2">입사일</v-col>
-          <v-col cols="1">관리</v-col>
+          <v-col cols="2">관리</v-col>
         </v-row>
 
         <v-row
@@ -61,11 +61,11 @@
         >
           <v-col cols="1">{{ index + 1 }}</v-col>
           <v-col cols="2">{{ user.userNum }}</v-col>
-          <v-col cols="3">{{ getDepartmentName(user.departmentId) }}</v-col>
-          <v-col cols="2">{{ user.name }}</v-col>
+          <v-col cols="2">{{ getDepartmentName(user.departmentId) }}</v-col>
+          <v-col cols="1">{{ user.name }}</v-col>
           <v-col cols="2">{{ getPositionName(user.positionId) }}</v-col>
           <v-col cols="2">{{ user.joinDate }}</v-col>
-          <v-col cols="1">
+          <v-col cols="2">
             <v-btn icon @click.stop="editUser(user.userNum)">
               <v-icon color="blue">mdi-pencil</v-icon>
             </v-btn>
