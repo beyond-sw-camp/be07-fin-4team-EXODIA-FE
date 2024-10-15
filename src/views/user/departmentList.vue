@@ -10,7 +10,7 @@
 
     <!-- 최상위 부서별로 트리 카드로 표시 -->
     <div class="tree-container">
-      <v-card v-for="department in topLevelDepartments" :key="department.id" class="mb-3">
+      <v-card v-for="department in topLevelDepartments" :key="department.id" class="mb-4 tree-card">
         <v-card-title>{{ department.name || '이름 없음' }}</v-card-title>
         <v-card-text>
           <ul class="tree-root">
@@ -24,6 +24,7 @@
                 @drop="drop(department)"
                 @click="fetchUsersByDepartment(department.id)"
               >
+                <v-icon large>{{ getIconForDepth(0) }}</v-icon>
                 {{ department.name || '이름 없음' }}
                 <v-btn v-if="editMode" icon @click.stop="openEditDialog(department)">
                   <v-icon>mdi-pencil</v-icon>
@@ -40,6 +41,7 @@
                     @drop="drop(child)"
                     @click="fetchUsersByDepartment(child.id)"
                   >
+                    <v-icon large>{{ getIconForDepth(1) }}</v-icon>
                     {{ child.name || '이름 없음' }}
                     <v-btn v-if="editMode" icon @click.stop="openEditDialog(child)">
                       <v-icon>mdi-pencil</v-icon>
@@ -56,6 +58,7 @@
                         @drop="drop(subChild)"
                         @click="fetchUsersByDepartment(subChild.id)"
                       >
+                        <v-icon large>{{ getIconForDepth(2) }}</v-icon>
                         {{ subChild.name || '이름 없음' }}
                         <v-btn v-if="editMode" icon @click.stop="openEditDialog(subChild)">
                           <v-icon>mdi-pencil</v-icon>
@@ -75,12 +78,12 @@
     <transition name="slide-fade">
       <div class="user-list" v-if="users.length">
         <h3>사용자 정보</h3>
-        <v-card v-for="user in users" :key="user.userNum" class="user-card mb-3">
+        <v-card v-for="user in users" :key="user.userNum" class="user-card mb-4">
           <v-row>
-            <v-col cols="4">
+            <v-col cols="3">
               <img :src="user.profileImage || defaultProfile" alt="profile" class="user-profile" />
             </v-col>
-            <v-col cols="8" class="user-details">
+            <v-col cols="9" class="user-details">
               <p class="user-name">{{ user.name }}</p>
               <p>사번: {{ user.userNum }}</p>
               <p>직급: {{ getPositionName(user.positionId) }}</p>
@@ -246,15 +249,19 @@ export default {
       }
     },
     getNodeStyle(depth) {
-      const colors = ['#e3f2fd', '#bbdefb', '#90caf9'];
+      const colors = ['#e3f2fd', '#bbdefb', '#90caf9', '#6a95b8', '#4778a1'];
       return {
         backgroundColor: colors[depth % colors.length],
-        padding: '10px 20px',
+        padding: '15px 30px', // 크기 키움
         margin: '10px 0',
         borderRadius: '10px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         textAlign: 'center',
       };
+    },
+    getIconForDepth(depth) {
+      const icons = ['mdi-domain', 'mdi-office-building', 'mdi-account-group', 'mdi-folder'];
+      return icons[depth] || 'mdi-file';
     },
   },
   mounted() {
@@ -263,32 +270,43 @@ export default {
   },
 };
 </script>
-
 <style scoped>
+.tree-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tree-card {
+  margin-right: 20px;
+}
+
 .tree-root {
   list-style-type: none;
   padding-left: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  margin-left: 20px; /* 트리를 살짝 오른쪽으로 */
 }
 
 .tree-node {
   position: relative;
   display: inline-block;
-  margin: 10px 0;
-  padding: 10px 20px;
+  margin: 15px 0;
+  padding: 20px 40px; /* 크기 키움 */
   background-color: #f0f0f0;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  font-size: 16px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* 좀 더 큰 그림자 */
+  font-size: 20px; /* 노드 크기 확장 */
   color: #333;
   text-align: center;
 }
 
 .children-nodes {
   list-style-type: none;
-  padding-left: 30px;
+  padding-left: 40px;
 }
 
 .tree-node::before {
@@ -327,45 +345,45 @@ export default {
 }
 
 .user-card {
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 더 큰 그림자 */
   overflow: hidden;
   background-color: #ffffff;
-  padding: 15px;
+  padding: 20px;
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .user-list {
   position: fixed;
   right: 0;
   top: 0;
-  width: 400px;
+  width: 450px; /* 카드 사이즈 확장 */
   height: 100%;
   background-color: #f8f9fa;
-  padding: 20px;
-  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
+  padding: 30px;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
   overflow-y: auto;
   transition: transform 0.3s ease-in-out;
 }
 
 .user-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-10px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2); /* hover 효과 향상 */
 }
 
 .user-profile {
-  width: 50px;
-  height: 50px;
+  width: 60px; /* 프로필 이미지 사이즈 키움 */
+  height: 60px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 15px;
+  margin-right: 20px;
 }
 
 .user-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   margin-bottom: 5px;
   color: #333;
@@ -379,6 +397,7 @@ export default {
 .user-list-enter-active, .user-list-leave-active {
   transition: all 0.3s ease;
 }
+
 .slide-fade-enter, .slide-fade-leave-to {
   transform: translateX(100%);
   opacity: 0;
