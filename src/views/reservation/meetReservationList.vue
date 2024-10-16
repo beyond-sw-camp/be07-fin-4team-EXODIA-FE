@@ -14,25 +14,32 @@ meetReservation
     </v-tabs>
 
     <!-- 날짜 선택 버튼들 -->
-    <v-row justify="center" class="my-3" >
-      <v-btn @click="prevDay" icon>
-        <v-icon>mdi-chevron-left</v-icon> <!-- Left arrow icon -->
-      </v-btn>
+    <v-row class="my-3 align-center">
+      <!-- 어제 버튼 -->
+      <v-col cols="3">
+        <v-btn @click="prevDay" icon style="box-shadow: none; margin-left: 21%;">
+          <v-icon>mdi-chevron-left</v-icon>
+        </v-btn>
+        <!-- 내일 버튼 -->
+        <v-btn @click="nextDay" icon style="box-shadow: none;">
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+        <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;">Today</v-btn>
+      </v-col>
 
-      <h2 style="font-size: 20px; text-align: center;">{{ formattedDate(selectedDate) }}</h2>
-
-      <v-btn @click="nextDay" icon>
-        <v-icon class="custum-right">mdi-chevron-right</v-icon>
-      </v-btn>
-
-      <v-btn @click="setToday">오늘</v-btn>
+      <!-- 가운데 날짜 -->
+      <v-col cols="6" class="text-center">
+        <h2 style="font-size: 30px;">{{ formattedDate(selectedDate) }}</h2>
+      </v-col>
 
       <!-- 예약 추가 버튼 -->
-      <v-btn color="primary" @click="openReservationDialog">
-        예약 추가
-        <v-icon right>mdi-calendar-plus</v-icon>
-      </v-btn>
+      <v-col cols="3" class="text-right">
+        <v-btn color="rgba(122, 86, 86, 0.2)" @click="openReservationDialog" style="box-shadow: none; margin-right: 14% ">
+          <v-icon right>mdi-calendar-plus</v-icon>
+        </v-btn>
+      </v-col>
     </v-row>
+
 
     <!-- 타임 테이블 -->
     <v-row class="hours-row">
@@ -149,13 +156,10 @@ meetReservation
     </v-dialog>
 
     <!-- 사용자 예약 내역 표시 -->
-    <br>
-    <br>
-    <br>
-  <br>
+
   <v-row>
     <v-col>
-      <h3>내 예약 내역</h3>
+      <h3 style="margin-top: 20px;">내 예약 내역</h3>
       <br>
       
       <!-- 테이블 헤더 -->
@@ -167,8 +171,8 @@ meetReservation
       </v-row>
 
       <!-- 예약 내역 리스트 -->
-      <v-row v-for="(item, index) in userReservations" :key="index" class="document-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
-        <v-col cols="3">{{ item.meetingRoom ? item.meetingRoom.name : '회의실 정보 없음' }}</v-col>
+      <v-row v-for="(item, index) in userReservations" :key="index" class="meetReservation-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+        <v-col cols="3">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
         <!-- 날짜와 시간만 표시하도록 변경 -->
         <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
         <v-col cols="3">{{ formatDateTime(item.endTime) }}</v-col>
@@ -191,8 +195,8 @@ export default {
       selectedDate: new Date(),
       meetingRooms: [],
       reservations: [],
-      userReservations: [], // 사용자 예약 내역을 저장할 배열
       timeSlots: this.generateTimeSlots(),
+      userReservations: [], // 사용자 예약 내역을 저장할 배열
       dialog: false,
       selectedMeetingRoom: null,
       startDate: new Date(), // 시작 날짜
@@ -204,6 +208,10 @@ export default {
     };
   },
   methods: {
+    getMeetingRoomName(meetingRoomId) {
+      const room = this.meetingRooms.find(room => room.id === meetingRoomId);
+      return room ? room.name : '회의실 정보 없음';
+    },
     formatDateTime(dateTime) {
       return moment(dateTime).format('YYYY-MM-DD HH:mm');
     },
@@ -257,6 +265,7 @@ export default {
             date: this.formattedDate(this.selectedDate),
           },
         });
+        console.log("예약 데이터:", response.data);  // 예약 데이터 콘솔 출력
         this.reservations = response.data;
       } catch (error) {
         console.error("예약 정보를 불러오는 중 오류 발생:", error);
@@ -284,14 +293,19 @@ export default {
       }
     },
     isReserved(roomId, timeSlot) {
-      return this.reservations.some(
-        (reservation) =>
-          reservation.meetingRoomId === roomId &&
-          moment(timeSlot, "HH:mm").isBetween(reservation.startTime, reservation.endTime, null, "[)")
-      );
+      // 선택된 날짜를 포함한 full timeSlot 생성
+      const selectedDateFormatted = this.formattedDate(this.selectedDate); // 선택된 날짜(예: 2024-10-17)
+      const fullTimeSlot = moment(`${selectedDateFormatted}T${timeSlot}`, "YYYY-MM-DDTHH:mm"); // 타임슬롯 시간 포함
+
+      return this.reservations.some(reservation => {
+        const startTime = moment(reservation.startTime);
+        const endTime = moment(reservation.endTime);
+
+        return reservation.meetingRoomId === roomId && fullTimeSlot.isBetween(startTime, endTime, null, "[)");
+      });
     },
     getTimeColor(roomId, timeSlot) {
-      return this.isReserved(roomId, timeSlot) ? "#4CAF50" : "#f5f5f5";
+      return this.isReserved(roomId, timeSlot) ? "blue" : "#f5f5f5";
     },
     displayHourLabel(hour, index) {
       return index % 2 === 0 ? parseInt(hour, 10) : '';
@@ -365,6 +379,7 @@ export default {
   mounted() {
     this.fetchMeetingRoomAvailability();
     this.fetchUserReservations(); // 컴포넌트 마운트 시 사용자 예약 내역 가져오기
+    this.fetchReservations();
   },
 };
 </script>
@@ -372,8 +387,9 @@ export default {
 <style scoped>
 .timeline-container {
   background-color: white;
-  border: solid 1px;
-  border: 1px solid #D8EACA;
+  /* border: solid 1px; */
+  /* 외부 선  */
+  border: 1px solid #D8EACA; 
 }
 
 .hours-row {
@@ -383,7 +399,7 @@ export default {
 .hour-label {
   width: calc(100% / 24);
   text-align: center;
-  background-color: #d4d4d4;
+  background-color: rgba(122, 86, 86, 0.2);
   border: 1px solid #B9B9B9;
   padding: 10px;
   margin-bottom: -12px;
@@ -439,14 +455,14 @@ export default {
 
 
 
-.document-row {
+.meetReservation-row {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-/* .document-row:hover {
+.meetReservation-row:hover {
   background-color: #f0f0f0;
-} */
+}
 
 .mb-2 {
   margin-bottom: 20px;
