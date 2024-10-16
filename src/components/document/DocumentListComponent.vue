@@ -1,6 +1,7 @@
 <template>
-
-    <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle }}</h1>
+    <v-row>
+        <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle }}</h1>
+    </v-row>
 
     <!-- 검색 옵션 -->
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
@@ -168,12 +169,13 @@
                         <span class="headline">댓글</span>
                         <v-icon class="icon" @click="toggleCommentsVisibility"> {{ showComments ? 'mdi-chevron-up' :
                             'mdi-chevron-down' }}</v-icon>
-                        <v-row>
+                        <v-row class="mt-4">
                             <v-col cols="9">
                                 <v-text-field label="댓글을 입력하세요." variant="outlined" v-model="comment"></v-text-field>
                             </v-col>
                             <v-col cols="3">
-                                <v-btn @click="submitComments(this.selectedDocument.id)">저장</v-btn>
+                                <v-btn style="background-color:#722121; color:#ffffff;"
+                                    @click="submitComments(this.selectedDocument.id)">저장</v-btn>
                             </v-col>
                         </v-row>
                     </v-card-title>
@@ -322,8 +324,11 @@ export default {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/detail/${id}`;
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
 
+                console.log('Document data:', response.data.result);
+
                 this.selectedDocument = response.data.result;
                 this.drawer = true;
+                console.log("tags: " + this.selectedDocument.tags)
 
                 this.fetchComments();
             } catch (e) {
@@ -487,5 +492,12 @@ v-card-title,
     display: flex;
     justify-content: space-between;
     align-content: center;
+}
+
+.addComment {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+
 }
 </style>

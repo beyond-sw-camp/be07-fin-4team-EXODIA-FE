@@ -70,9 +70,8 @@ export default {
             description: '',
             selectedFile: '',
             documentId: '',
-            tagList: '',
             tagOptions: [],
-
+            tagNames: [],
         }
     },
     mounted() {
@@ -86,10 +85,8 @@ export default {
             try {
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/detail/` + this.documentId, { headers: { Authorization: `Bearer ${this.token}` } });
                 this.document = response.data.result;
-                this.tagList = response.data.result.tags
-                console.log("document: " + document)
+                this.tagNames = response.data.result.tags
 
-                console.log(this.tagList)
             } catch (e) {
                 console.error('문서 디테일 가져오는 중 오류 발생:', e);
             }
@@ -98,7 +95,7 @@ export default {
             try {
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/tags`, { headers: { Authorization: `Bearer ${this.token}` } });
                 this.tagOptions = response.data.result;
-                console.log(this.tagOptions)
+
             } catch (e) {
                 console.error('문서 타입 가져오는 중 오류 발생:', e);
             }
@@ -107,13 +104,14 @@ export default {
             try {
                 const data = {
                     id: this.documentId,
-                    typeName: this.selectedType,
+                    tags: this.tagNames,
                     description: this.description,
                 };
                 const submitData = new FormData();
                 submitData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
                 submitData.append("file", this.selectedFile);
 
+                console.log("data: " + data);
                 await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/update`, submitData);
                 this.$router.push('/document');
             } catch (e) {
