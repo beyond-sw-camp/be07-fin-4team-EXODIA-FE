@@ -108,10 +108,10 @@
                   </thead>
                   <tbody>
                     <tr>
-                      <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
-                      <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
-                      <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
-                      <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
+                      <td>{{ attendanceData.clockInTime || '-' }}</td>
+                      <td>{{ attendanceData.clockOutTime || '-' }}</td>
+                      <td>{{ attendanceData.weeklyWorkHours || '-' }}</td>
+                      <td>{{ attendanceData.weeklyOvertimeHours || '-' }}</td>
                     </tr>
                   </tbody>
                 </table>
