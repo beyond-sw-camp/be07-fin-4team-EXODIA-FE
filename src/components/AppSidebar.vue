@@ -74,11 +74,6 @@
 
       <!-- 서브사이드: 결재 -->
       <div v-show="expandedMenu === 'submit' || hoveredMenu === 'submit'" class="sub-side-menu">
-        <v-row>
-          <v-btn style="color:#ffffff" @click="$router.push('/submit')">
-            결재 생성
-          </v-btn>
-        </v-row>
         <v-row @click="$router.push('/submit/list')">
           결재 할 문서
         </v-row>

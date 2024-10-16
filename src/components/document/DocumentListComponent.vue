@@ -1,16 +1,15 @@
 <template>
-    <v-row>
-        <h1 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle }}</h1>
-    </v-row>
+
+    <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle }}</h1>
 
     <!-- 검색 옵션 -->
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
-        <v-col cols="6">
+        <v-col cols="7">
             <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="filterDocuments"
                 style="margin-bottom: 20px;" append-icon="mdi-magnify"
                 @click:append=searchFilter(searchQuery)></v-text-field>
         </v-col>
-        <v-col cols="3">
+        <v-col cols="2" v-if="this.pageTitle === '전체파일'">
             <v-btn style="background-color:#722121; color:#ffffff;" @click="$router.push('/document/create')">
                 파일 등록
             </v-btn>
@@ -90,7 +89,7 @@
                     <v-card-text>
                         <v-row>파일 다운로드</v-row>
                         <v-row>
-                            <v-btn style="color:#4CAF50" @click="fileDownload(selectedDocument.id)">다운로드</v-btn>
+                            <v-btn style="color:#722121" @click="fileDownload(selectedDocument.id)">다운로드</v-btn>
                         </v-row>
                     </v-card-text>
                     <v-card-text>
@@ -268,7 +267,7 @@ export default {
             try {
                 let url = '';
 
-                if (this.pageTitle == '전체문서') {
+                if (this.pageTitle == '전체파일') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/all`;
                 } else if (this.pageTitle == '최근 조회 문서') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewed`;

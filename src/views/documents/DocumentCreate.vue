@@ -1,6 +1,8 @@
 <template>
+    <v-row>
+        <h1>파일 업로드</h1>
 
-    <h1 style="margin:35px 0; font-weight:800">파일 업로드</h1>
+    </v-row>
     <v-row justify="center">
         <v-col cols="12">
             <v-form>
@@ -11,6 +13,16 @@
                     <v-col cols="8">
                         <v-file-input v-model="selectedFile" label="파일 선택" @change="fileUpdate()">
                         </v-file-input>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols=4>
+                        작성자
+                    </v-col>
+                    <v-col cols="8">
+                        <v-text-field disabled>
+                            {{ this.userName }}
+                        </v-text-field>
                     </v-col>
                 </v-row>
                 <v-row>
@@ -57,17 +69,26 @@ export default {
             tagOptions: [],
             description: '',
             selectedFile: '',
+            userName: '',
         }
     },
     mounted() {
+        this.fetchWriter();
         this.fetchTypes();
     },
     methods: {
+        async fetchWriter() {
+            try {
+                const response = await axios.get('/user/userName');
+                this.userName = response.data.result;
+            } catch (e) {
+                console.error('회원 이름 불러오는데 오류 발생:', e);
+            }
+        },
         async fetchTypes() {
             try {
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/tags`, { headers: { Authorization: `Bearer ${this.token}` } });
                 this.tagOptions = response.data.result;
-                console.log(this.tagOptions)
             } catch (e) {
                 console.error('문서 타입 가져오는 중 오류 발생:', e);
             }
