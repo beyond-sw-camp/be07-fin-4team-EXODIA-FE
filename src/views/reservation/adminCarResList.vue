@@ -4,10 +4,10 @@
     <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3">
       <!-- 차량 예약 탭 -->
         <v-tab @click="goToAdminApprovalChange" class="text-body-1">
-          전체 예약 조회
+          관리자조회
         </v-tab>
       <v-tab @click="goToVehicleReservation" class="text-body-1">
-        법인 차량 예약
+        법인차량예약
       </v-tab>
     </v-tabs>
 
