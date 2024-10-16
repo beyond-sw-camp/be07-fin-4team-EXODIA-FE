@@ -1,21 +1,26 @@
 <template>
   <v-container>
-    <h1 class="text-center">일정 목록</h1>
+    <h1>일정 목록</h1>
 
     <!-- 일정 목록 -->
     <v-row class="mt-4">
       <v-col cols="12">
+        <v-row class="mb-3">
+          <v-col cols="4"><strong>일정명</strong></v-col>
+          <v-col cols="6"><strong>기간</strong></v-col>
+        </v-row>
+
         <v-row v-for="(event, index) in eventList" :key="event.id" class="event-row">
           <!-- 이벤트 정보 -->
           <v-col cols="4">
             <h3 class="event-type">{{ event.eventType }}</h3>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="4">
             <p class="event-date">{{ event.startDate }} ~ {{ event.endDate }}</p>
           </v-col>
 
           <!-- 히스토리 보기 버튼 -->
-          <v-col cols="12">
+          <v-col cols="2">
             <v-btn text @click="toggleHistory(index)">
               <v-icon>{{ event.showHistory ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
               히스토리 보기
@@ -23,7 +28,7 @@
           </v-col>
 
           <!-- 히스토리 토글 -->
-          <v-col cols="12" v-if="event.showHistory" transition="slide-y-transition">
+          <v-col cols="4" v-if="event.showHistory" transition="slide-y-transition">
             <v-card v-for="history in eventHistories" :key="history.id" class="pa-3 mb-3 history-card">
               <v-card-title>
                 {{ history.startDate }} - {{ history.endDate }} 변경됨
@@ -37,39 +42,46 @@
       </v-col>
     </v-row>
 
-    <!-- 일정 생성 -->
+    <v-row>
+      <h1 class="text-center" style="margin-top:5%">일정 생성</h1>
+    </v-row>
+
+    <!-- 일정 생성 화면 -->
     <v-row class="mt-5">
-      <v-col>
-        <h2 class="text-center">새로운 일정 생성</h2>
-      </v-col>
-      <v-col cols="12" md="8" offset-md="2">
-        <v-card class="pa-3">
+      <v-col cols="12" md="10" offset-md="1">
+        <v-card class="pa-5">
           <!-- 이벤트 타입 선택 -->
           <v-select
             v-model="newEventType"
             :items="eventTypes"
             label="이벤트 타입 선택"
             outlined
+            dense
           ></v-select>
 
           <!-- 시작일과 종료일 선택 -->
-          <v-row>
-            <v-col cols="12" md="6">
+          <v-row class="mt-3" justify="space-between">
+            <v-col cols="12" md="5">
               <v-date-picker
                 v-model="newStartDate"
                 :max="newEndDate"
                 label="시작일 선택"
                 full-width
-                color="primary"
+                color="brown"
+                :style="{ width: '100%', height: '350px' }"
+                :input-placeholder="'시작일'"
               ></v-date-picker>
             </v-col>
-            <v-col cols="12" md="6">
+
+            <v-col cols="12" md="5">
               <v-date-picker
                 v-model="newEndDate"
                 :min="newStartDate"
                 label="종료일 선택"
                 full-width
-                color="primary"
+                color="brown"
+                :style="{ width: '100%', height: '350px' }"
+                :input-placeholder="'종료일'"
               ></v-date-picker>
             </v-col>
           </v-row>
@@ -77,8 +89,10 @@
       </v-col>
 
       <!-- 생성 버튼 -->
-      <v-col class="text-center mt-4">
-        <v-btn color="primary" @click="createEvent" large block>이벤트 생성</v-btn>
+      <v-col class="text-right mt-4">
+        <v-btn color="primary" @click="createEvent" large :style="{ width: '200px', right: '30px', bottom: '10%' }">
+          이벤트 생성
+        </v-btn>
       </v-col>
     </v-row>
   </v-container>
