@@ -74,8 +74,11 @@
                 </v-btn>
               </v-col>
               
-              <!-- 차량 종류 -->
-              <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
+                    <!-- 차량 종류 -->
+                    <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
+
+
+      <!-- 차량 번호 -->
 
               <!-- 차량 번호 -->
               <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carNum }}</v-col>
