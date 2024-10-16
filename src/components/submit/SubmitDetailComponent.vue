@@ -56,7 +56,7 @@
                     <div style="border: 1px solid #b9b9b9; border-radius:20px">
                         <v-col v-for="(value, key) in selectedSubmit.contents" :key="key">
                             <div v-if="key === '신청일'">
-                                {{ key }}: {{ formatDate(value) }} {{ formatLocalTime(value) }}
+                                {{ key }}: {{ formatDate(value) }}
                             </div>
                             <div v-else>
                                 {{ key }}:{{ value }}
@@ -79,6 +79,7 @@
                 <v-btn color="primary" @click="submitDecision">
                     제출
                 </v-btn>
+
             </v-col>
         </v-col>
     </v-row>
@@ -138,6 +139,8 @@ export default {
                 if (typeof this.selectedSubmit.contents === 'string') {
                     this.selectedSubmit.contents = JSON.parse(this.selectedSubmit.contents);
                 }
+
+                console.log(this.selectedSubmit.contents);
             } catch (e) {
                 console.error('문서 상세 정보를 가져오는 중 오류 발생:', e);
             }
