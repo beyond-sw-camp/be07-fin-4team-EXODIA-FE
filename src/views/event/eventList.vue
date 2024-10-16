@@ -17,51 +17,81 @@
           dense
           @click:row="selectEvent"
         >
-          <template v-slot:item.actions="{ item }">
+        <template v-slot:[`item.actions`]="{ item }">
             <v-btn color="primary" @click="selectEvent(item)" small>수정</v-btn>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
 
-    <!-- 이벤트 수정 화면 (범위 선택) -->
-    <v-row class="mt-5" v-if="selectedEventType">
+    <!-- 이벤트 수정 화면 -->
+    <v-row class="mt-5">
       <v-col cols="12" class="text-center">
-        <h2>{{ selectedEventType }} 일정 설정</h2>
+        <h2>{{ selectedEventType ? selectedEventType + ' 일정 수정' : '새로운 일정 생성' }}</h2>
       </v-col>
 
-      <!-- 범위 선택 달력 -->
+      <!-- 시작일과 종료일 선택 -->
       <v-col cols="12" md="8" offset-md="2">
         <v-card class="pa-3">
-          <v-date-picker
-            v-model="selectedDateRange"
-            range
-            color="primary"
-            full-width
-            @input="validateDateRange"
-          ></v-date-picker>
+          <v-select
+            v-model="newEventType"
+            :items="eventTypes"
+            label="이벤트 타입 선택"
+            outlined
+          ></v-select>
+
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-date-picker
+                v-model="newStartDate"
+                :max="newEndDate" 
+                label="시작일 선택"
+                full-width
+                color="primary"
+              ></v-date-picker>
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <v-date-picker
+                v-model="newEndDate"
+                :min="newStartDate"
+                label="종료일 선택"
+                full-width
+                color="primary"
+              ></v-date-picker>
+            </v-col>
+          </v-row>
         </v-card>
       </v-col>
 
       <v-col cols="12" class="text-center mt-4">
-        <v-btn color="primary" @click="setEventDate" large block>이벤트 날짜 설정</v-btn>
+        <v-btn color="primary" @click="createOrUpdateEvent" large block>{{ selectedEventType ? '이벤트 수정' : '이벤트 생성' }}</v-btn>
       </v-col>
     </v-row>
 
-    <!-- 히스토리 목록 -->
+    <!-- 히스토리 목록 타임라인 -->
     <v-row v-if="eventHistories.length" class="mt-5">
       <v-col cols="12">
         <h3 class="text-center">이벤트 변경 내역</h3>
-        <v-row>
-          <v-col cols="12" md="8" offset-md="2">
-            <v-card v-for="history in eventHistories" :key="history.id" class="pa-3 mb-3">
-              <v-card-title>{{ history.eventDate }} - {{ history.userNum }}에 의해 변경됨</v-card-title>
-              <v-card-subtitle>
-                변경된 기간: {{ history.startDate }} ~ {{ history.endDate }}
-              </v-card-subtitle>
-            </v-card>
-          </v-col>
-        </v-row>
+        <v-timeline dense>
+          <v-timeline-item
+            v-for="history in eventHistories"
+            :key="history.id"
+            color="primary"
+          >
+            <v-timeline-divider color="primary"></v-timeline-divider>
+            <v-timeline-content>
+              <v-card class="pa-3">
+                <v-card-title>
+                  {{ history.startDate }} ~ {{ history.endDate }}에 {{ history.userNum }}에 의해 변경됨
+                </v-card-title>
+                <v-card-subtitle>
+                  이벤트 범위: {{ history.eventRange }} | 변경자: {{ history.userNum }}
+                </v-card-subtitle>
+              </v-card>
+            </v-timeline-content>
+          </v-timeline-item>
+        </v-timeline>
       </v-col>
     </v-row>
   </v-container>
@@ -79,37 +109,40 @@ export default {
         { text: '종료일', value: 'endDate' },
         { text: '수정', value: 'actions', sortable: false },
       ],
-      eventList: [], // 전체 일정 목록
-      selectedEventType: '', // 선택된 이벤트 타입
-      selectedDateRange: [], // 범위 선택 날짜
+      eventTypes: ['salary', 'evaluation'], // 이벤트 타입 목록
+      eventList: [], // 전체 이벤트 목록
+      newEventType: '', // 새로운 이벤트 타입 선택
+      newStartDate: null, // 시작일 선택
+      newEndDate: null, // 종료일 선택
+      selectedEventId: null, // 선택된 이벤트 ID
       eventHistories: [], // 이벤트 히스토리 목록
     };
   },
   methods: {
-    async setEventDate() {
+    async createOrUpdateEvent() {
       const userNum = localStorage.getItem('userNum');
       if (!userNum) {
         alert('로그인 정보가 없습니다.');
         return;
       }
 
-      const startDate = this.selectedDateRange[0];
-      const endDate = this.selectedDateRange[1] || this.selectedDateRange[0];
+      const startDate = this.newStartDate;
+      const endDate = this.newEndDate || this.newStartDate;
 
       try {
         const formattedStartDate = this.formatDate(startDate);
         const formattedEndDate = this.formatDate(endDate);
 
         await axios.post('/eventDate/setDate', {
-          eventType: this.selectedEventType,
+          eventType: this.newEventType,
           startDate: formattedStartDate,
           endDate: formattedEndDate,
           userNum: userNum,
         });
-        alert('이벤트 날짜가 설정되었습니다.');
-        this.fetchEventHistory();
+        alert('이벤트가 성공적으로 생성되었습니다.');
+        this.fetchEventList(); // 이벤트 목록 갱신
       } catch (error) {
-        console.error('날짜 설정 중 오류 발생:', error);
+        console.error('이벤트 생성 중 오류 발생:', error);
       }
     },
 
@@ -122,19 +155,18 @@ export default {
       }
     },
 
-    selectEvent(item) {
-      this.selectedEventType = item.eventType;
-      this.selectedDateRange = [new Date(item.startDate), new Date(item.endDate)];
-      this.fetchEventHistory();
-    },
-
-    async fetchEventHistory() {
+    async fetchEventHistory(eventId) {
       try {
-        const response = await axios.get(`/eventDate/getHistory/${this.selectedEventType}`);
+        const response = await axios.get(`/eventDate/getHistory/${eventId}`);
         this.eventHistories = response.data;
       } catch (error) {
-        console.error('이벤트 히스토리 가져오기 중 오류:', error);
+        console.error('이벤트 히스토리 가져오기 중 오류 발생:', error);
       }
+    },
+
+    selectEvent(item) {
+      this.selectedEventId = item.id;
+      this.fetchEventHistory(this.selectedEventId);
     },
 
     formatDate(date) {
@@ -149,15 +181,6 @@ export default {
 
       return [year, month, day].join('-');
     },
-
-    validateDateRange() {
-      if (this.selectedDateRange[0] && this.selectedDateRange[1]) {
-        if (this.selectedDateRange[1] < this.selectedDateRange[0]) {
-          alert('종료일은 시작일보다 빨라야 합니다.');
-          this.selectedDateRange[1] = this.selectedDateRange[0];
-        }
-      }
-    },
   },
   mounted() {
     this.fetchEventList();
@@ -168,13 +191,6 @@ export default {
 <style scoped>
 h1 {
   margin-bottom: 20px;
-}
-
-.history-item {
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  padding: 10px;
-  margin-bottom: 10px;
 }
 
 .v-btn {
