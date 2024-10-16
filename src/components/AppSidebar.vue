@@ -129,7 +129,7 @@
       </div>
       <!-- 서브사이드: 직원관리 -->
       <div
-        v-show="expandedMenu === 'employee-management' || hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management'"
+        v-show="expandedMenu === 'employee-management' || hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management' || hoveredMenu === 'eventList'"
         class="sub-side-menu">
         <v-row style="font-weight:700; font-size:16px;">
           직원 관리
@@ -148,8 +148,8 @@
         <v-row @click="$router.push('/salary-management')">
           직원 급여 목록
         </v-row>
-        <v-row @click="$router.push('/salary-management/manage')">
-          급여일 관리
+        <v-row @click="$router.push('/eventList')" style="font-weight:700; font-size:16px;">
+          일정 관리
         </v-row>
         <v-row style="font-weight:700; font-size:16px;">
           부서 관리
