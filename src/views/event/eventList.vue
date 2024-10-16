@@ -1,38 +1,42 @@
 <template>
   <v-container>
+    <v-row class="mt-4 mb-4">
     <h1>일정 목록</h1>
+      <v-col class="text-right">
+        <v-btn color="primary" @click="showDialog = true" large>
+          이벤트 생성
+        </v-btn>
+      </v-col>
+    </v-row>
 
-    <!-- 일정 목록 -->
+
     <v-row class="mt-4">
       <v-col cols="12">
         <v-row class="mb-3">
           <v-col cols="4"><strong>일정명</strong></v-col>
-          <v-col cols="6"><strong>기간</strong></v-col>
-          <v-col cols="2"><strong>히스토리</strong></v-col>
+          <v-col cols="5"><strong>기간</strong></v-col>
+          <v-col cols="3"><strong>히스토리</strong></v-col>
         </v-row>
 
         <v-row v-for="(event, index) in eventList" :key="event.id" class="event-row">
-          <!-- 이벤트 정보 -->
           <v-col cols="4">
             <h3 class="event-type">{{ event.eventType }}</h3>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="5">
             <p class="event-date">{{ event.startDate }} ~ {{ event.endDate }}</p>
           </v-col>
 
-          <!-- 히스토리 보기 버튼 -->
-          <v-col cols="2">
-            <v-btn text @click="toggleHistory(index)">
+          <v-col cols="3" class="text-right">
+            <v-btn text @click="toggleHistory(index, event.id)">
               <v-icon>{{ event.showHistory ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
               히스토리 보기
             </v-btn>
           </v-col>
 
-          <!-- 히스토리 토글: 오른쪽에 표시 -->
-          <v-col cols="12" v-if="event.showHistory" transition="slide-x-transition">
-            <v-row class="history-content">
-              <v-col cols="12" class="history-card" :style="{ display: 'flex', flexDirection: 'row-reverse' }">
-                <v-card v-for="history in eventHistories" :key="history.id" class="pa-3 mb-3">
+          <v-col cols="12" v-if="event.showHistory" transition="slide-y-transition">
+            <v-row class="history-row">
+              <v-col cols="8" offset-md="6" class="history-section">
+                <v-card v-for="history in event.eventHistories" :key="history.id" class="pa-3 mb-3 history-card">
                   <v-card-title>
                     {{ history.startDate }} - {{ history.endDate }} 변경됨
                   </v-card-title>
@@ -47,13 +51,11 @@
       </v-col>
     </v-row>
 
-    <!-- 일정 생성 화면 -->
-    <v-row>
-      <h1 class="text-center" style="margin-top:5%">일정 생성</h1>
-    </v-row>
-    <v-row class="mt-5">
-      <v-col cols="12" md="10" offset-md="1">
-        <v-card class="pa-5">
+    <!-- 일정 생성 모달 -->
+    <v-dialog v-model="showDialog" max-width="1000px">
+      <v-card :style="{ height: '900px' }">
+        <v-card-title>새 일정 생성</v-card-title>
+        <v-card-text>
           <!-- 이벤트 타입 선택 -->
           <v-select
             v-model="newEventType"
@@ -65,40 +67,44 @@
 
           <!-- 시작일과 종료일 선택 -->
           <v-row class="mt-3" justify="space-between">
-            <v-col cols="12" md="5">
+            <v-col cols="12" md="6">
               <v-date-picker
                 v-model="newStartDate"
                 :max="newEndDate"
                 label="시작일 선택"
                 full-width
                 color="brown"
-                :style="{ width: '100%', height: '350px' }"
-                :placeholder="'시작일'"
+                :style="{ width: '100%', height: '450px' }"
+                placeholder="시작일"
               ></v-date-picker>
             </v-col>
 
-            <v-col cols="12" md="5">
+            <v-col cols="12" md="6">
               <v-date-picker
                 v-model="newEndDate"
                 :min="newStartDate"
                 label="종료일 선택"
                 full-width
                 color="brown"
-                :style="{ width: '100%', height: '350px' }"
-                :placeholder="'종료일'"
+                :style="{ width: '100%', height: '450px' }"
+                placeholder="종료일"
               ></v-date-picker>
             </v-col>
           </v-row>
-        </v-card>
-      </v-col>
+        </v-card-text>
 
-      <!-- 생성 버튼 -->
-      <v-col class="text-right mt-4">
-        <v-btn color="primary" @click="createEvent" large :style="{ width: '200px', right: '30px', bottom: '10%' }">
-          이벤트 생성
-        </v-btn>
-      </v-col>
-    </v-row>
+        <!-- 생성 버튼 -->
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="createEvent">
+            저장
+          </v-btn>
+          <v-btn text @click="showDialog = false">
+            취소
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -113,7 +119,7 @@ export default {
       newEventType: '', // 새로운 이벤트 타입 선택
       newStartDate: null, // 시작일 선택
       newEndDate: null, // 종료일 선택
-      eventHistories: [], // 이벤트 히스토리 목록
+      showDialog: false, // 모달창 상태
     };
   },
   methods: {
@@ -139,6 +145,7 @@ export default {
         });
         alert('이벤트가 성공적으로 생성되었습니다.');
         this.fetchEventList(); // 이벤트 목록 갱신
+        this.showDialog = false; // 모달창 닫기
       } catch (error) {
         console.error('이벤트 생성 중 오류 발생:', error);
       }
@@ -147,24 +154,30 @@ export default {
     async fetchEventList() {
       try {
         const response = await axios.get('/eventDate/all');
-        this.eventList = response.data;
+        this.eventList = response.data.map(event => ({
+          ...event,
+          showHistory: false,
+          eventHistories: []
+        }));
       } catch (error) {
         console.error('전체 이벤트 목록을 불러오는 중 오류 발생:', error);
       }
     },
 
-    async fetchEventHistory(eventId) {
+    async fetchEventHistory(eventId, index) {
       try {
         const response = await axios.get(`/eventDate/getHistory/${eventId}`);
-        this.eventHistories = response.data;
+        this.eventList[index].eventHistories = response.data; // 이벤트별 히스토리 저장
       } catch (error) {
         console.error('이벤트 히스토리 가져오기 중 오류:', error);
       }
     },
 
-    toggleHistory(index) {
+    toggleHistory(index, eventId) {
       this.eventList[index].showHistory = !this.eventList[index].showHistory;
-      this.fetchEventHistory(this.eventList[index].id);
+      if (!this.eventList[index].eventHistories.length) {
+        this.fetchEventHistory(eventId, index); // 해당 이벤트의 히스토리가 없으면 가져옴
+      }
     },
 
     formatDate(date) {
@@ -215,12 +228,19 @@ h1 {
   font-size: 16px;
 }
 
+.history-row {
+  justify-content: flex-start;
+}
+
+.history-section {
+  padding-left: 20px;
+  max-width: 400px;
+}
+
 .history-card {
   background-color: #e9f7fe;
   border-radius: 10px;
   padding: 15px;
-  display: flex;
-  flex-direction: row-reverse;
 }
 
 .v-card-title {
