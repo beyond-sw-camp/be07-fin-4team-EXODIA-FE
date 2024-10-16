@@ -1,14 +1,13 @@
 <template>
   <v-container>
     <v-row class="mt-4 mb-4">
-    <h1>일정 목록</h1>
+      <h1>일정 목록</h1>
       <v-col class="text-right">
         <v-btn color="primary" @click="showDialog = true" large>
-          이벤트 생성
+          새로운 일정 생성
         </v-btn>
       </v-col>
     </v-row>
-
 
     <v-row class="mt-4">
       <v-col cols="12">
@@ -33,15 +32,18 @@
             </v-btn>
           </v-col>
 
+          <!-- History Section -->
           <v-col cols="12" v-if="event.showHistory" transition="slide-y-transition">
             <v-row class="history-row">
-              <v-col cols="8" offset-md="6" class="history-section">
+              <v-col cols="12" offset-md="3" class="history-section">
                 <v-card v-for="history in event.eventHistories" :key="history.id" class="pa-3 mb-3 history-card">
-                  <v-card-title>
+                  <v-card-title class="d-flex align-center">
+                    <v-icon color="brown" class="mr-3">mdi-clock-outline</v-icon>
                     {{ history.startDate }} - {{ history.endDate }} 변경됨
                   </v-card-title>
                   <v-card-subtitle>
-                    변경 날짜: {{ history.eventRange }} | 변경자: {{ history.userNum }}
+                    <v-icon color="blue" small>mdi-calendar-range</v-icon> 변경 날짜: {{ history.eventRange }} |
+                    <v-icon color="green" small>mdi-account</v-icon> 변경자: {{ history.userNum }}
                   </v-card-subtitle>
                 </v-card>
               </v-col>
@@ -51,43 +53,38 @@
       </v-col>
     </v-row>
 
-    <!-- 일정 생성 모달 -->
-    <v-dialog v-model="showDialog" max-width="1000px">
-      <v-card :style="{ height: '900px' }">
+    <v-dialog v-model="showDialog" max-width="1200px">
+      <v-card :style="{ height: 'auto', padding: '20px' }">
         <v-card-title>새 일정 생성</v-card-title>
         <v-card-text>
-          <!-- 이벤트 타입 선택 -->
-          <v-select
+          <v-combobox
             v-model="newEventType"
             :items="eventTypes"
-            label="이벤트 타입 선택"
+            label="일정 타입 선택 또는 입력"
             outlined
             dense
-          ></v-select>
+            placeholder="일정을 선택하거나 입력하세요"
+          ></v-combobox>
 
           <!-- 시작일과 종료일 선택 -->
           <v-row class="mt-3" justify="space-between">
             <v-col cols="12" md="6">
               <v-date-picker
                 v-model="newStartDate"
-                :max="newEndDate"
                 label="시작일 선택"
                 full-width
                 color="brown"
-                :style="{ width: '100%', height: '450px' }"
-                placeholder="시작일"
+                :header-color="'brown'"
               ></v-date-picker>
             </v-col>
 
             <v-col cols="12" md="6">
               <v-date-picker
                 v-model="newEndDate"
-                :min="newStartDate"
                 label="종료일 선택"
                 full-width
                 color="brown"
-                :style="{ width: '100%', height: '450px' }"
-                placeholder="종료일"
+                :header-color="'brown'"
               ></v-date-picker>
             </v-col>
           </v-row>
@@ -116,7 +113,7 @@ export default {
     return {
       eventTypes: ['salary', 'evaluation'], // 이벤트 타입 목록
       eventList: [], // 전체 이벤트 목록
-      newEventType: '', // 새로운 이벤트 타입 선택
+      newEventType: '', // 새로운 이벤트 타입 선택 또는 입력
       newStartDate: null, // 시작일 선택
       newEndDate: null, // 종료일 선택
       showDialog: false, // 모달창 상태
@@ -143,11 +140,11 @@ export default {
           endDate: formattedEndDate,
           userNum: userNum,
         });
-        alert('이벤트가 성공적으로 생성되었습니다.');
+        alert('일정이 성공적으로 저장되었습니다.');
         this.fetchEventList(); // 이벤트 목록 갱신
         this.showDialog = false; // 모달창 닫기
       } catch (error) {
-        console.error('이벤트 생성 중 오류 발생:', error);
+        console.error('일정 저장 중 오류 발생:', error);
       }
     },
 
@@ -160,7 +157,7 @@ export default {
           eventHistories: []
         }));
       } catch (error) {
-        console.error('전체 이벤트 목록을 불러오는 중 오류 발생:', error);
+        console.error('전체 일정 목록을 불러오는 중 오류 발생:', error);
       }
     },
 
@@ -169,7 +166,7 @@ export default {
         const response = await axios.get(`/eventDate/getHistory/${eventId}`);
         this.eventList[index].eventHistories = response.data; // 이벤트별 히스토리 저장
       } catch (error) {
-        console.error('이벤트 히스토리 가져오기 중 오류:', error);
+        console.error('일정 히스토리 가져오기 중 오류:', error);
       }
     },
 
@@ -233,14 +230,15 @@ h1 {
 }
 
 .history-section {
-  padding-left: 20px;
-  max-width: 400px;
+  padding-left: 5%;
+  max-width: 80%;
 }
 
 .history-card {
   background-color: #e9f7fe;
   border-radius: 10px;
   padding: 15px;
+  width: 100%;
 }
 
 .v-card-title {
