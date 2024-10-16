@@ -36,12 +36,12 @@
                 </v-col>
             </v-row>
 
-            <div v-if="selectdUser.length !== 0">
+            <div v-if="selectUser.length !== 0">
                 <span>------------------------------------------------</span>
             </div>
 
             <!-- 선택된 유저 리스트 -->
-            <v-row v-for="(userInfo, index) in selectdUser" :key="index" class="selected-user-row">
+            <v-row v-for="(userInfo, index) in selectUser" :key="index" class="selected-user-row">
                 <!-- <v-col cols="2">
                     <v-avatar>
                         <img :src="user.profileImage" alt="user avatar">
@@ -110,7 +110,7 @@ export default {
 
             userList: [], // 사원 
 
-            selectdUser: [], // 채팅 선택된 사원
+            selectUser: [], // 채팅 선택된 사원
 
         }
     },
@@ -142,17 +142,21 @@ export default {
         },
 
         removeUser(index) {
-            this.selectdUser.splice(index, 1);
+            this.selectUser.splice(index, 1);
         },
         addUser(userInfos) {
-            this.selectdUser.push(userInfos);
+            if(this.selectUser.indexOf(userInfos) != -1){
+                alert("이미 선택한 유저입니다.");
+                return;
+            }
+            this.selectUser.push(userInfos);
         },
         // checkUser(){ // 선택된 채팅 유저 중 중복된 인원이 있으면 안된다.
 
         // },
 
         showChatRoomNameCreate() {
-            if (this.selectdUser.length === 0) {
+            if (this.selectUser.length === 0) {
                 alert("유저를 고르세요.");
                 return;
             }
@@ -162,7 +166,11 @@ export default {
 
         async createChatRoom() {
             try {
-                this.chatroomData.userNums = this.selectdUser.map(num => num.userNum);
+                if(this.chatroomData.roomName.trim() === ''){
+                    alert("채팅방명을 작성해주세요.");
+                    return;
+                }
+                this.chatroomData.userNums = this.selectUser.map(user => user.userNum);
                 const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/create`, this.chatroomData);
                 console.log(response);
                 if (response.data.result.existCheck) {
@@ -185,7 +193,9 @@ export default {
         closeCreate() {
             this.showChatUser = true;
             this.showChatRoomName = false;
-            this.selectdUser = [];
+            this.selectUser = [];
+            this.chatroomData.roomName = "";
+            this.chatroomData.userNum = "";
             this.chatroomData.userNums = [];
             this.$emit('update:dialog', false);
             this.$emit('update:check', true);
