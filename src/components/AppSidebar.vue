@@ -37,12 +37,6 @@
 
       <!-- 서브사이드: 문서 관리 -->
       <div v-show="expandedMenu === 'document' || hoveredMenu === 'document'" class="sub-side-menu">
-        <v-row>
-          <v-btn style="color:#ffffff" @click="$router.push('/document/create')">
-            파일 등록
-          </v-btn>
-        </v-row>
-
         <v-row @click="$router.push('/document')">
           전체 파일
         </v-row>

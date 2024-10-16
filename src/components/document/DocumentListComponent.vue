@@ -7,11 +7,12 @@
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
         <v-col cols="6">
             <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="filterDocuments"
-                style="margin-bottom: 20px;"></v-text-field>
+                style="margin-bottom: 20px;" append-icon="mdi-magnify"
+                @click:append=searchFilter(searchQuery)></v-text-field>
         </v-col>
-        <v-col cols="4" sm="2">
-            <v-btn @click="searchFilter(searchQuery)">
-                검색
+        <v-col cols="3">
+            <v-btn style="background-color:#722121; color:#ffffff;" @click="$router.push('/document/create')">
+                파일 등록
             </v-btn>
         </v-col>
     </v-row>
@@ -77,6 +78,14 @@
                     <v-card-text>
                         <v-row>파일 등록자</v-row>
                         <v-row>{{ selectedDocument.userName }}</v-row>
+                    </v-card-text>
+                    <v-card-text>
+                        <v-row>태그</v-row>
+                        <v-row>
+                            <span v-for="(tag, index) in selectedDocument.tags" :key="index" style="padding-right:5px">
+                                <v-chip>{{ tag }}</v-chip>
+                            </span>
+                        </v-row>
                     </v-card-text>
                     <v-card-text>
                         <v-row>파일 다운로드</v-row>
