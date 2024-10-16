@@ -1,5 +1,5 @@
 <!-- 채팅방 하나의 화면 -->
-<!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기, 채팅 이미지 모아보기 -->
+<!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기 -->
 <!--채팅 날짜 구분해서 채팅메세지 불러오기 / 나와 구성원 구분하여 띄워주기 / 구성원 프로필사진 : 메세지-->
 <!-- 채팅입력창, 파일 보내기, 이미지 보내기-->
 
@@ -8,68 +8,80 @@
     <v-container> <!--전체 채팅방 감싸요-->
 
         <!-- 채팅방 상단 -->
-         <v-container class="icons">
+        <v-row class="chat-room-header">
+            <v-col cols="1">
+                <v-icon class="icon" @click="goBack">mdi-chevron-left</v-icon> <!-- 뒤로가기 -->
+            </v-col>
+            <v-col cols="10" class="chat-room-title">
+                <span class="chat-room-name">{{ chatRoomNameProp }}</span>
+            </v-col>
+            <v-col cols="1" class="header-icons">
+                <!--<v-icon class="icon">mdi-magnify</v-icon>--> <!-- 검색 -->
+                <v-icon class="icon">mdi-dots-vertical</v-icon> <!-- 메뉴 -->
+            </v-col>
+        </v-row>
 
-            <v-icon class="icon-item icon" @click="goBack">mdi-chevron-left</v-icon> <!-- 채팅방리스트로돌아감 -->
-
-            <span>{{ chatRoomId }}방입니다</span> <!-- 채팅방 이름 -->
-
-            <!-- <v-text-field variant="outlined" placeholder="채팅방 내 검색"></v-text-field> -->
-            <v-icon class="icon-item icon" @click="goBack">mdi-magnify</v-icon>
-
-
-            <v-icon class=" icon-item icon" @click="goBack">mdi-dots-vertical</v-icon><!-- 채팅방메뉴 : 사진모아보기, 파일모아보기, 채팅구성원확인, 채팅방 아예 나가기  // 유저초대?-->
-
-        </v-container>
-
-
-
-        <!-- 채팅방 -->
-        <v-container >
-
+        <!-- 채팅 내용 -->
+        <div class="chat-content">
             <div v-for="(chat, index) in chatMessageList" :key="chat.id">
-
-                <!-- 날짜 분리 -->
-                <div v-if="index === 0 || this.isDifferentDay(chat.createAt, chatMessageList[index - 1].createAt)">
-                    <div>
-                        <hr style="width: 27%; margin:auto;">
-                        <span style="margin:auto;">{{ this.getDay(chat.createAt) }}</span>
-                        <hr style="width: 27%; margin:auto;">
+                <!-- 날짜 구분 -->
+                <div v-if="index === 0 || isDifferentDay(chat.createAt, chatMessageList[index - 1].createAt)">
+                    <div class="date-divider">
+                        <span class="date-text">{{ getDay(chat.createAt) }}</span>
                     </div>
                 </div>
 
-                <div> <!-- 채팅메세지들 감싸요 -->
-                    <div>
-                        <div v-if="index === 0 || chat.senderNum != chatMessageList[index - 1].senderNum"
-                            style="margin-bottom: 20px;">
-                            <span v-if="chat.senderNum != this.chatSenderNum">{{ chat.senderName }}</span>
-                            <span v-if="chat.senderNum == this.chatSenderNum">나</span>
-                        </div>
-                        <div>
-                            <span>{{ chat.message }}</span>
-                            <span>{{ this.getTime(chat.createAt) }}</span>
-                        </div>
-                    </div>
-                </div>
+                <!-- 메시지 -->
+                <div :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
+                    <v-row v-if="chat.senderNum !== chatSenderNum" class="message-row">
+                        <span class="sender-name">{{ chat.senderDepName }} {{ chat.senderName }} {{ chat.senderPosName
+                            }}님</span>
+                        <v-col class="message" v-if="chat.messageType == 'TALK'">
+                            <div class="message-text">{{ chat.message }}</div>
+                        </v-col>
+                        <v-col class="message" v-if="chat.messageType == 'FILE'">
+                            <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="chat.senderNum === chatSenderNum">
+                            </ChatFileBox>
+                            <div v-if="chat.message.length != 0" class="message-text">{{ chat.message }}</div>
+                        </v-col>
+                    </v-row>
 
+                    <v-row v-if="chat.senderNum === chatSenderNum" class="message-row my-row">
+                        <v-col class="message" v-if="chat.messageType == 'TALK'">
+                            <div class="message-text">{{ chat.message }}</div>
+                        </v-col>
+                        <v-col class="message" v-if="chat.messageType == 'FILE'">
+                            <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="chat.senderNum === chatSenderNum">
+                            </ChatFileBox>
+                            <div v-if="chat.message.length != 0" class="message-text">{{ chat.message }}</div>
+                        </v-col>
+                    </v-row>
+
+                    <!-- 보낸 시간 -->
+                    <span class="message-time">{{ getTime(chat.createAt) }}</span>
+                </div>
             </div>
-        </v-container>
+        </div>
 
-        <!-- 채팅입력 -->
-        <v-container>
-            <div v-for="(file, index) in fileList" :key="index">
-                <img :src="file.imageUrl" @error="e => e.target.src = require('@/assets/user.png')"
+        <div class="image-group">
+            <div v-for="(file, index) in fileList" :key="index" class="image-container">
+                <v-icon color="red" class="close-icon" @click="deleteImage(index)">mdi-close-circle</v-icon>
+                <img :src="file.fileUrl" @error="e => e.target.src = require('@/assets/user.png')"
                     style="height: 120px; width: 120px; object-fit: cover;">
                 <p class="custom-contents">{{ file.name }}</p>
-            </div><!-- 파일미리보기 -->
+            </div>
+        </div>
+        <!-- 채팅 입력 -->
+        <v-container class="input-container">
             <v-row>
-                <v-text-field v-model="messageToSend" v-on:keypress.enter="sendMessage"></v-text-field>
+                <v-text-field class="input-field" v-model="messageToSend"
+                    v-on:keypress.enter="sendMessage"></v-text-field>
             </v-row>
-            <v-row>
-                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input>파일</v-file-input>
-                <v-btn @click="sendMessage">전송</v-btn>
+            <v-row class="file-input-container">
+                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input
+                    prepend-icon="mdi-paperclip"></v-file-input>
+                <v-btn class="send-btn" @click="sendMessage">전송</v-btn>
             </v-row>
-
         </v-container>
 
     </v-container>
@@ -79,19 +91,21 @@
 import axios from 'axios';
 import Stomp from 'webstomp-client'
 import SockJS from 'sockjs-client'
+import ChatFileBox from '@/components/chat/ChatFileBox.vue'
 
 export default {
     props: [
-        'chatRoomIdProp' // ⭐⭐⭐ 채팅방 리스트에서 채팅방 id, name, userNums 받자.=
-    ],
+        'chatRoomIdProp',
+        'chatRoomNameProp',
+        'chatRoomUserNumsProp',
+    ], // 채팅방리스트에서 받아오는 값.
     components: {
-
+        ChatFileBox,
     },
     data() {
         return {
             stompClient: null,
-            chatRoomId: null, // ⭐⭐⭐ this.$route.params.id, // props 로 처리할지 params->axios.get로 처리할지..
-            // chatRoomName: "", // 채팅방 이름
+            chatRoomId: this.chatRoomIdProp, // 채팅방 id
             chatMessageList: [], // 주고받은 채팅내역
 
             chatSenderNum: '', // 채팅방을 여는 사람 == 채팅보내는 사람
@@ -100,14 +114,13 @@ export default {
             fileList: [], // files를 가공한 리스트.
             fileRes: null, // 메세지와 함께 보내기 위한 파일메타데이터(name, s3url)
 
-            // messageType: '', // 메세지 타입 // TALK, FILE
             messageToSend: '', // 메세지입력란
         }
     },
     async created() {
-        // this.chatRoomId = this.chatRoomIdProp; // ⭐⭐⭐ props 로 처리할지 params 로 처리할지.. ⭐⭐⭐
-        this.chatRoomId = this.$route.params.id;
+        this.chatRoomId = this.chatRoomIdProp;
         this.chatSenderNum = localStorage.getItem('userNum');
+        // 메세지 불러오기
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
         if (response.data) {
             this.chatMessageList = response.data.result;
@@ -232,10 +245,14 @@ export default {
                     size: file.size,
                     type: file.type,
                     file,
-                    imageUrl: URL.createObjectURL(file)
+                    fileUrl: URL.createObjectURL(file)
                 })
             });
             this.files = null;
+        },
+
+        deleteImage(index) {
+            this.fileList.splice(index, 1);
         },
 
         // 보내는 시간
@@ -268,7 +285,8 @@ export default {
         },
 
         goBack() {
-            console.log("goback");
+            this.$emit('update:dialog', false);
+            this.$emit('update:check', true);
         },
     }
 }
@@ -276,47 +294,181 @@ export default {
 </script>
 
 <style scoped>
-.icons {
+/* .chat-room-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: space-between;
+} */
+
+.chat-room-header {
     display: flex;
     align-items: center;
-    color: #444444;
+    padding: 10px;
+    background-color: #e9f4e4;
+    border-bottom: 1px solid #ccc;
 }
 
 .icon {
-    margin-left: 20px;
-    margin: 30px;
-}
-
-.icons>.icon {
-    font-size: 4vh;
     cursor: pointer;
-    font-size: 25px;
+    margin-right: 10px;
 }
 
-
-.icons>v-avatar {
-    margin-left: 4vw;
-    height: 5vh;
-    width: 5vh;
-}
-
-.icon:hover {
-    opacity: 0.5;
-    visibility: visible;
-}
-
-.icon-item.active {
-    color: #7A5656;
-    font-weight: 700;
-    background-color: rgba(122, 86, 86, 0.2);
-    border-radius: 50%;
+/* .chat-room-avatar img {
     width: 40px;
     height: 40px;
-    justify-content: center;
-    align-content: center;
+    border-radius: 50%;
+} */
+
+.chat-room-title {
+    display: flex;
+    align-items: center;
 }
 
-.icon-item.active>.icon {
-    color: #7A5656;
+.chat-room-name {
+    margin-left: 10px;
+}
+
+.header-icons {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.chat-content {
+    flex: 1;
+    padding: 10px;
+    /* height: calc(100vh - 150px); */
+    height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* flex-shrink: 0; */
+}
+
+.date-divider {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.date-text {
+    background-color: #e9e9e9;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.my-message {
+    text-align: right;
+}
+
+.other-message {
+    text-align: left;
+}
+
+.message-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0px;
+}
+
+/* .profile-avatar img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+} */
+
+.sender-name {
+    font-weight: bold;
+}
+
+.message {
+    padding-top: 15px;
+    padding-bottom: 0px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.message-text {
+    background-color: #e0f7fa;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    max-width: 60%;
+    display: inline-block;
+}
+
+.my-row {
+    justify-content: flex-end;
+}
+
+.message-time {
+    font-size: 0.8em;
+    color: gray;
+    margin-left: 5px;
+}
+
+.image-group {
+    display: flex;
+    flex-direction: row;
+    width: 120px;
+    max-height: 180px;
+}
+
+.image-container {
+    position: relative;
+    /* 아이콘과 이미지를 겹치게 하기 위해 부모에 relative 추가 */
+    display: inline-block;
+    /* 여러 이미지를 가로로 정렬 */
+}
+
+.image-container img {
+    display: block;
+}
+
+.close-icon {
+    position: absolute;
+    top: 5px;
+    /* 이미지 위쪽에서 5px */
+    left: 5px;
+    /* 이미지 왼쪽에서 5px */
+    z-index: 1;
+    /* 이미지보다 아이콘이 위에 표시되도록 z-index 설정 */
+    cursor: pointer;
+    /* 클릭 가능하게 설정 */
+}
+
+.custom-contents {
+    max-width: 120px;
+    /* 제목의 최대 너비를 설정 */
+    overflow: hidden;
+    /* 내용이 넘칠 경우 숨김 처리 */
+    text-overflow: ellipsis !important;
+    /* 넘치는 텍스트에 '...' 추가 (이거 적용안됨 이후 수정필요)*/
+    white-space: nowrap;
+    /* 텍스트 줄 바꿈 방지 */
+}
+
+.input-container {
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-top: 1px solid #ccc;
+}
+
+.input-field {
+    width: 100%;
+    /* height: 100px; */
+    /* 입력 필드 넓이 조정 */
+}
+
+.file-input-container {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    /* 파일 전송 아이콘을 왼쪽 정렬 */
+}
+
+.send-btn {
+    background-color: #4CAF50;
+    color: white;
 }
 </style>

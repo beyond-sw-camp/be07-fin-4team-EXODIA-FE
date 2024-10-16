@@ -1,11 +1,13 @@
 <template>
   <v-app>
-    <div v-if="!isLoginPage" class="app-container">
+    <div v-if="!isLoginPage && !isChatRoomListPage" class="app-container">
       <AppSidebar />
       <div class="main-layout">
         <HeaderComponent />
         <div class="main-content">
-          <router-view />
+          <v-card style="padding:40px; border-radius:10px">
+            <router-view />
+          </v-card>
         </div>
       </div>
     </div>
@@ -17,7 +19,7 @@
 
 <script>
 import { useRoute } from 'vue-router';
-import { computed } from 'vue'; 
+import { computed } from 'vue';
 import HeaderComponent from './components/HeaderComponent.vue';
 import AppSidebar from './components/AppSidebar.vue';
 
@@ -28,12 +30,14 @@ export default {
     AppSidebar,
   },
   setup() {
-    const route = useRoute(); 
+    const route = useRoute();
 
     const isLoginPage = computed(() => route.path === '/login');
+    const isChatRoomListPage = computed(() => route.path === '/chatRoom/list');
 
     return {
       isLoginPage,
+      isChatRoomListPage,
     };
   },
 };
@@ -41,7 +45,7 @@ export default {
 
 <style>
 :root {
-  --sidebar-width: 13%;
+  --sidebar-width: 15%;
   --header-height: 60px;
 }
 
@@ -72,8 +76,7 @@ export default {
 .main-content {
   flex: 1;
   margin-top: var(--header-height);
-  padding: 20px 140px;
-  margin-right: 40px;
+  padding: 50px 80px;
   background-color: #f5f5f5;
   border-radius: 25px;
   overflow-y: auto;

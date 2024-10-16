@@ -1,71 +1,70 @@
 <template>
   <v-container class="board-container">
-    <h1 class="board-title">{{ boardTitle }}</h1>
+    <!-- Adjusted the title size and positioning -->
+    <v-row justify="start">
+      <v-col cols="12" md="6">
+        <h1 class="board-title">{{ boardTitle }}</h1>
+      </v-col>
+    </v-row>
 
-    <!-- 게시판 상단 검색 폼 -->
+    <!-- 게시판 상단 검색 폼 - Adjusted layout and search bar size -->
     <v-form ref="form" class="search-form d-flex mb-4">
-      <!-- 검색 범위 선택 -->
-      <v-col cols="12" md="2">
-        <v-select
-          v-model="searchType"
-          :items="searchOptions"
-          item-title="text"
-          item-value="value"
-          label="검색 범위"
-          required
-        ></v-select>
-      </v-col>
+      <v-row justify="center" align="center" class="w-100">
+        <!-- 검색 범위 선택 -->
+        <v-col cols="12" md="3">
+          <v-select
+            v-model="searchType"
+            :items="searchOptions"
+            variant="underlined"
+            item-title="text"
+            item-value="value"
+            label="검색 범위"
+            required
+          ></v-select>
+        </v-col>
 
-      <!-- 검색어 입력 -->
-      <v-col cols="12" md="8">
-        <v-text-field
-          v-model="searchQuery"
-          label="검색어를 입력하세요."
-          append-icon="mdi-magnify"
-          @click:append="performSearch"
-          required
-        ></v-text-field>
-      </v-col>
+        <!-- 검색어 입력 -->
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="searchQuery"
+            variant="underlined" 
+            label="검색어를 입력하세요."
+            append-icon="mdi-magnify"
+            @click:append="performSearch"
+            required
+          ></v-text-field>
+        </v-col>
 
-      <!-- 작성하기 버튼을 같은 행에 정렬 -->
-      <v-col cols="12" md="2" class="text-right">
-        <v-btn v-if="isAdmin" class="btn_write" @click="createNewPost">
-          작성하기
-        </v-btn>
-      </v-col>
-      
+        <!-- 작성하기 버튼을 검색바 오른쪽에 위치 -->
+        <v-col cols="12" md="3" class="text-right">
+          <v-btn v-if="isAdmin" class="btn_write" @click="createNewPost">
+            작성하기
+          </v-btn>
+        </v-col>
+      </v-row>
     </v-form>
 
-    <!-- 게시글 목록 테이블 -->
-    <table class="tbl_list">
-      <colgroup>
-        <!-- 각 열의 너비를 설정 -->
-        <col width="10%" />
-        <col width="50%" />
-        <col width="15%" />
-        <col width="15%" />
-        <col width="10%" />
-      </colgroup>
-      <thead>
-        <tr>
-          <th scope="col" class="text-center">번호</th>
-          <th scope="col" class="text-left">제목</th>
-          <th scope="col" class="text-center">작성자</th>
-          <th scope="col" class="text-center">작성일</th>
-          <th scope="col" class="text-center">조회수</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in boardItems" :key="item.id">
-          <td class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</td>
-          <td @click="goToDetail(item.id)" class="text-left subject">{{ item.title }}</td>
-          <td class="text-center">관리자</td>
-          <td class="text-center">{{ formatDate(item.createdAt) }}</td>
-          <td class="text-center">{{ item.hits }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- 게시글 목록 테이블을 아래로 내리기 위해 mt-4 클래스 추가 -->
+    <v-row justify="center" :class="{ 'drawer-open': drawer }" class="mt-4">
+      <v-col cols="12">
+        <v-row class="mb-2"
+          style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
+          <v-col cols="1"><strong>번호</strong></v-col>
+          <v-col cols="4"><strong>제목</strong></v-col>
+          <v-col cols="3"><strong>작성일</strong></v-col>
+          <v-col cols="2"><strong>조회수</strong></v-col>
+        </v-row>
 
+        <v-row v-for="(item, index) in boardItems" :key="item.id" class="board"
+          @click="goToDetail(item.id)"
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
+          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+          <v-col cols="4">{{ item.title }}</v-col>
+          <v-col cols="3">{{ formatDate(item.createdAt) }}</v-col>
+          <v-col cols="2">{{ item.hits }}</v-col>
+        </v-row>
+      </v-col>
+    </v-row>
 
     <!-- 페이지네이션 -->
     <v-pagination v-model="currentPage" :length="totalPages" @change="onPageChange" class="my-4"></v-pagination>
@@ -93,7 +92,6 @@ export default {
       searchOptions: [
         { text: "전체", value: "all" },
         { text: "제목", value: "title" },
-        { text: "작성자", value: "userNum" },
       ],
       categoryOptions: [
         { text: "공지사항", value: "NOTICE" },
@@ -103,7 +101,6 @@ export default {
   },
   props: ["category"],
   watch: {
-    // newPage와 oldPage를 매개변수로 전달하여 오류 방지
     currentPage(newPage, oldPage) {
       console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
       this.fetchBoardItems();
@@ -127,6 +124,7 @@ export default {
       this.isAdmin = departmentId === "4";
       this.userNum = localStorage.getItem("userNum");
     },
+
     async fetchBoardItems() {
       try {
         const params = {
@@ -148,9 +146,7 @@ export default {
     },
     onPageChange(newPage) {
       this.currentPage = newPage;
-      this.$nextTick(() => {
-        this.fetchBoardItems();
-      });
+      this.fetchBoardItems();
     },
     setBoardTitle() {
       if (this.currentCategory === "familyevent") {
@@ -162,8 +158,12 @@ export default {
       }
     },
     formatDate(date) {
-      const options = { year: "numeric", month: "long", day: "numeric" };
-      return new Date(date).toLocaleDateString(undefined, options);
+      const options = { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      };
+      return new Date(date).toLocaleDateString('ko-KR', options).replace(/\//g, '.');
     },
     createNewPost() {
       if (!this.isAdmin) {
@@ -184,30 +184,29 @@ export default {
 </script>
 
 <style scoped>
-/* 전체 배경 및 컨테이너 스타일 */
+*:not(h1) {
+  font-size: 14px;
+}
+
 .board-container {
   background-color: #f9fafb;
   padding: 20px;
   border-radius: 12px;
 }
 
-/* 제목 섹션 스타일 */
 .board-title {
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 20px;
-  color: #000000;
-  border-bottom: 2px solid #000000;
-  padding-bottom: 10px;
+  margin-bottom: 120px; /* 간격을 넓히기 위해 margin-bottom 값을 40px로 설정 */
+  color: #000;
 }
 
-/* 검색 바 스타일 */
 .search-form {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 40px; /* 간격을 넓히기 위해 변경 */
 }
 
 .v-select,
@@ -223,7 +222,6 @@ export default {
   background: transparent;
 }
 
-/* 테이블 전체 스타일 */
 .tbl_list {
   width: 100%;
   border-collapse: collapse;
@@ -234,56 +232,37 @@ export default {
 .tbl_list td {
   padding: 12px;
   font-size: 14px;
-  border-bottom: 1px solid #000000;
-  transform: none; /* 혹시 scale이 적용되었을 경우 */
-  box-sizing: border-box; /* 박스 모델 설정 */
-  zoom: 1; /* 확대 축소 여부 초기화 */
+  border-bottom: 1px solid #000;
+  text-align: left;
 }
 
 .tbl_list th {
   background-color: #f4f4f4;
-  text-align: left;
-}
-
-.tbl_list td.text-left {
-  text-align: left;
-}
-
-.tbl_list td.text-center {
-  text-align: center;
-}
-
-.tbl_list td.text-right {
-  text-align: right;
 }
 
 .tbl_list tr:hover {
   background-color: #ababab;
 }
 
-/* 질문 작성하기 버튼 스타일 */
 .btn_write {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 30px 20px;
-  background-color: #949494; /* 연한 녹색 배경 */
-  color: rgb(255, 255, 255);
+  padding: 10px 16px;
+  background-color: #949494;
+  color: #fff;
   border: none;
   cursor: pointer;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 12px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease;
-  padding: 0 16px;
 }
 
 .btn_write:hover {
   background-color: #722121;
 }
 
-
-/* 페이지네이션 스타일 */
 .v-pagination {
   margin-top: 20px;
 }
@@ -297,5 +276,10 @@ export default {
   font-weight: bold;
   background-color: #c5e1a5;
   color: white;
+}
+
+.drawer-open {
+  transition: margin-right 0.3s ease;
+  margin-right: 200px;
 }
 </style>

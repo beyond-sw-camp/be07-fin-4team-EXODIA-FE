@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode';
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
@@ -25,9 +26,7 @@ const vuetifyInstance = createVuetify({
   directives, 
 });
 
-// Axios 인터셉터 설정 (Presigned URL 요청 시 Authorization 헤더 제거)
 axios.interceptors.request.use(config => {
-  // 요청 URL에 "amazonaws.com"이 포함되어 있으면 Authorization 헤더 제거
   if (config.url.includes("amazonaws.com")) {
     delete config.headers['Authorization'];
   }
@@ -35,6 +34,26 @@ axios.interceptors.request.use(config => {
 }, error => {
   return Promise.reject(error);
 });
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
+
+        if (decodedToken.exp < currentTime) {
+          localStorage.clear();
+          alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
+          router.push('/login'); 
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 const app = createApp(App);
 

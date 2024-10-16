@@ -2,12 +2,13 @@
   <v-container fluid class="timeline-container">
     <!-- Week Selection -->
     <v-row>
-      <v-col cols="10" md="6">
+      <v-col cols="10" md="6" >
         <v-select
           v-model="selectedWeek"
           :items="weeks"
           label="주차 선택"
           outlined
+          style="margin-left: 30px;"
         ></v-select>
       </v-col>
     </v-row>
@@ -206,6 +207,7 @@ export default {
 
 <style scoped>
 .timeline-container {
+  margin-left: -30px;
   /* background-color: white; */
   /* padding: 20px; */
   /* border: solid 1px; */
@@ -213,15 +215,16 @@ export default {
 
 .hours-row {
   margin-bottom: 10px;
+  
 }
 
 .hour-label {
-  width: calc(100% / 30);
+  width: calc(100% / 25);
   text-align: center;
   font-size: 12px;
   font-weight: bold;
   background-color: #ffffff;
-  
+
   border: 1px solid #D8EACA;
   padding: 10px;
 }
@@ -240,7 +243,7 @@ export default {
 
 .timeline-bar {
   margin-top: -10px;
-  width: calc(100% / 30);
+  width: calc(100% / 25);
   padding: 0;
   height: 50px;
   border-width: 0px 1px 0px 1px;

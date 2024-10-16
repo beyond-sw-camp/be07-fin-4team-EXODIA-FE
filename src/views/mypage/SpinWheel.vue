@@ -17,19 +17,19 @@
       <v-tab-item v-if="activeTab === 2">
         <v-row justify="" class="my-8" style=" margin-left: 70px;">
           <!-- 왼쪽: 돌림판 -->
-          <v-col cols="12" sm="6" md="5" style="background-color: #F5F5F5;">
+          <v-col cols="12" sm="6" md="5" style="background-color: #ffffff;">
             <!-- 검은 줄 (화살표) -->
             <v-sheet class="indicator"></v-sheet>
 
-            <v-sheet class="pa-4" elevation="0" style="background-color: #F5F5F5;">
+            <v-sheet class="pa-4" elevation="0" style="background-color: #ffffff;">
               <canvas ref="canvas" width="400" height="400"></canvas>
             </v-sheet>
           </v-col>
 
           <!-- 오른쪽: 결과 -->
           <v-col cols="12" sm="6" md="5" style="margin-top: 40px;">
-            <v-sheet class="pa-4" elevation="0" style="background-color: #F5F5F5;">
-              <v-sheet class="pa-6 text-h5" elevation="0" style="background-color: #F5F5F5;">
+            <v-sheet class="pa-4" elevation="0" style="background-color: #ffffff;">
+              <v-sheet class="pa-6 text-h5" elevation="0" style="background-color: #ffffff;">
                 {{ resultText || '오늘의 점심' }}
               </v-sheet>
             </v-sheet>
@@ -62,7 +62,7 @@ export default {
     return {
       activeTab: 2,
       product: ["햄버거", "피자"], // 기본 메뉴
-      colors: ["#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF", "#4B0082", "#8B00FF", "brown"], // 무지개 색상
+      colors: ["#A68A8A", "#C4A3A3", "#D9B7B7", "#E3C4C4", "#F0D5D5", "#BFA1A1", "#D1B0B0", "brown"], // 무지개 색상
       newMenu: "", // 추가할 메뉴 입력 필드
       ctx: null, // Canvas Context
       currentRotation: 0, // 돌림판의 현재 회전 각도
@@ -133,30 +133,36 @@ export default {
 
     // 돌림판 회전 함수
     rotate() {
-      const canvas = this.$refs.canvas;
-      canvas.style.transition = "initial";
-      canvas.style.transform = "initial";
-      const alpha = Math.floor(Math.random() * 100);
-      const arc = 360 / this.product.length;
+  const canvas = this.$refs.canvas;
+  canvas.style.transition = "initial";
+  canvas.style.transform = "initial";
+  
+  // 한 섹션의 각도 (360도를 메뉴 개수로 나눔)
+  const arc = 360 / this.product.length;
 
-      setTimeout(() => {
-        const ran = Math.floor(Math.random() * this.product.length);
-        const rotate = ran * arc + 3600 + arc * 3 - arc / 4 + alpha;
-        this.currentRotation = rotate; // 회전 각도 저장
-        canvas.style.transform = `rotate(-${rotate}deg)`;
-        canvas.style.transition = "2s";
+  // 화살표가 가리키는 위치 보정 (12시 방향 기준으로 보정)
+  const adjustmentAngle = arc / 2; // 보정 각도 (12시에서 섹션의 중앙으로 맞춤)
 
-        // 결과 텍스트 업데이트 및 팡파레 실행
-        setTimeout(() => {
-          this.resultText = this.product[ran];
-          this.jsConfetti.addConfetti({
-            confettiColors: ["#4B89DC","#4B66DC", "#7E91E6","#B5C0F0","#B5CEF0","#B5E3F0",],
-            confettiRadius: 6,
-            confettiNumber: 600,
-          });
-        }, 2000); // 2초 후 결과 출력 및 팡파레 실행
-      }, 1);
-    },
+  setTimeout(() => {
+    const ran = Math.floor(Math.random() * this.product.length); // 임의의 섹션 선택
+    const rotate = ran * arc + 3600 + arc * 3 - adjustmentAngle; // 3600도 이상 회전 후 정지
+    this.currentRotation = rotate; // 현재 회전 각도 저장
+    canvas.style.transform = `rotate(-${rotate}deg)`; // 돌림판 회전
+    canvas.style.transition = "2s";
+
+    // 결과 텍스트 업데이트 및 팡파레 실행
+    setTimeout(() => {
+      this.resultText = this.product[ran]; // 선택된 메뉴 표시
+      this.jsConfetti.addConfetti({
+        confettiColors: ["#4B89DC","#4B66DC", "#7E91E6","#B5C0F0","#B5CEF0","#B5E3F0"],
+        confettiRadius: 6,
+        confettiNumber: 600,
+      });
+    }, 2000); // 2초 후 결과 출력 및 팡파레 실행
+  }, 1);
+},
+
+
 
     // 캔버스 클릭 이벤트 처리 함수
     handleCanvasClick(e) {
@@ -202,7 +208,7 @@ export default {
 
 <style scoped>
 .main-view {
-  margin-left: -150px;
+  /* margin-left: -150px; */
   /* margin-top: -50px; */
   padding: -50px;
 }
@@ -216,7 +222,7 @@ export default {
   font-size: 16px;
   color: #4CAF50;
   min-width: 100px;
-  background-color: #e0e0e0;
+  background-color: #ffffff;
 }
 
 .v-tabs {
@@ -225,10 +231,12 @@ export default {
   margin-top: -20px;
   min-width: 90px;
   margin-right: 13px;
+  
 }
 
 .v-tab {
   font-weight: bold;
+  
 }
 
 /* 돌림판 관련 스타일 */
@@ -236,11 +244,13 @@ canvas {
   transition: 2s;
   margin-top: 20px;
   width: 100%;
+  background-color: #ffffff;
 }
 
 .tab-item {
   font-weight: bold;
   color: #4CAF50;
+  background-color: #ffffff;
 }
 
 /* 검은 줄 스타일 (화살표) */

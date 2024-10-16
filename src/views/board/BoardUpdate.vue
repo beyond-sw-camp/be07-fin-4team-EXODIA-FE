@@ -155,6 +155,7 @@ export default {
         formData.append('content', this.content);
         formData.append('category', this.currentCategory); // 현재 카테고리 값을 사용
         formData.append('isPinned', this.isPinned);
+        formData.append('userNum', localStorage.getItem('userNum'));
 
         // 파일 정보 추가
         if (this.files && this.files.length > 0) {

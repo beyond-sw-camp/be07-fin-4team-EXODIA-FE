@@ -83,6 +83,7 @@ meetReservation
               item-title="name"
               item-value="id"
               label="회의실 선택"
+              
               required
             ></v-select>
 
@@ -150,27 +151,31 @@ meetReservation
     <!-- 사용자 예약 내역 표시 -->
     <br>
     <br>
-    <v-row>
-      <v-col>
-        <h3>내 예약 내역</h3>
-        <br>
-        
-        <v-data-table
-          :headers="reservationHeaders"
-          :items="userReservations"
-          class="elevation-1"
-        >
-          <template v-slot:items="{ item }">
-            <tr>
-              <td>{{ item.meetingRoom ? item.meetingRoom.name : '회의실 정보 없음' }}</td>
-              <td>{{ item.startTime }} 시작 시간 </td>
-              <td>{{ item.endTime }}</td>
-              <td>{{ item.status }}</td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-col>
-    </v-row>
+    <br>
+  <br>
+  <v-row>
+    <v-col>
+      <h3>내 예약 내역</h3>
+      <br>
+      
+      <!-- 테이블 헤더 -->
+      <v-row class="mb-2" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
+        <v-col cols="3"><strong>회의실</strong></v-col>
+        <v-col cols="3"><strong>시작 시간</strong></v-col>
+        <v-col cols="3"><strong>종료 시간</strong></v-col>
+        <v-col cols="3"><strong>상태</strong></v-col>
+      </v-row>
+
+      <!-- 예약 내역 리스트 -->
+      <v-row v-for="(item, index) in userReservations" :key="index" class="document-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+        <v-col cols="3">{{ item.meetingRoom ? item.meetingRoom.name : '회의실 정보 없음' }}</v-col>
+        <!-- 날짜와 시간만 표시하도록 변경 -->
+        <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
+        <v-col cols="3">{{ formatDateTime(item.endTime) }}</v-col>
+        <v-col cols="3">{{ item.status }}</v-col>
+      </v-row>
+    </v-col>
+  </v-row>
 
   </v-container>
 </template>
@@ -199,6 +204,9 @@ export default {
     };
   },
   methods: {
+    formatDateTime(dateTime) {
+      return moment(dateTime).format('YYYY-MM-DD HH:mm');
+    },
     formattedDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -379,6 +387,7 @@ export default {
   border: 1px solid #B9B9B9;
   padding: 10px;
   margin-bottom: -12px;
+  font-size: 11px;
 }
 
 .day-label {
@@ -392,6 +401,7 @@ export default {
 .timeline-row {
   display: flex;
   flex-wrap: nowrap;
+  
 }
 
 .timeline-bar {
@@ -426,4 +436,24 @@ export default {
   background-color: #f5f5f5;
   box-shadow: none;
 }
+
+
+
+.document-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* .document-row:hover {
+  background-color: #f0f0f0;
+} */
+
+.mb-2 {
+  margin-bottom: 20px;
+}
+
+.v-row {
+  text-align: center;
+}
+
 </style>
