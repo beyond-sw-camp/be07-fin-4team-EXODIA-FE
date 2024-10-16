@@ -8,6 +8,7 @@
         <v-row class="mb-3">
           <v-col cols="4"><strong>일정명</strong></v-col>
           <v-col cols="6"><strong>기간</strong></v-col>
+          <v-col cols="2"><strong>히스토리</strong></v-col>
         </v-row>
 
         <v-row v-for="(event, index) in eventList" :key="event.id" class="event-row">
@@ -15,7 +16,7 @@
           <v-col cols="4">
             <h3 class="event-type">{{ event.eventType }}</h3>
           </v-col>
-          <v-col cols="4">
+          <v-col cols="6">
             <p class="event-date">{{ event.startDate }} ~ {{ event.endDate }}</p>
           </v-col>
 
@@ -27,26 +28,29 @@
             </v-btn>
           </v-col>
 
-          <!-- 히스토리 토글 -->
-          <v-col cols="4" v-if="event.showHistory" transition="slide-y-transition">
-            <v-card v-for="history in eventHistories" :key="history.id" class="pa-3 mb-3 history-card">
-              <v-card-title>
-                {{ history.startDate }} - {{ history.endDate }} 변경됨
-              </v-card-title>
-              <v-card-subtitle>
-                변경 날짜: {{ history.eventRange }} | 변경자: {{ history.userNum }}
-              </v-card-subtitle>
-            </v-card>
+          <!-- 히스토리 토글: 오른쪽에 표시 -->
+          <v-col cols="12" v-if="event.showHistory" transition="slide-x-transition">
+            <v-row class="history-content">
+              <v-col cols="12" class="history-card" :style="{ display: 'flex', flexDirection: 'row-reverse' }">
+                <v-card v-for="history in eventHistories" :key="history.id" class="pa-3 mb-3">
+                  <v-card-title>
+                    {{ history.startDate }} - {{ history.endDate }} 변경됨
+                  </v-card-title>
+                  <v-card-subtitle>
+                    변경 날짜: {{ history.eventRange }} | 변경자: {{ history.userNum }}
+                  </v-card-subtitle>
+                </v-card>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
       </v-col>
     </v-row>
 
+    <!-- 일정 생성 화면 -->
     <v-row>
       <h1 class="text-center" style="margin-top:5%">일정 생성</h1>
     </v-row>
-
-    <!-- 일정 생성 화면 -->
     <v-row class="mt-5">
       <v-col cols="12" md="10" offset-md="1">
         <v-card class="pa-5">
@@ -69,7 +73,7 @@
                 full-width
                 color="brown"
                 :style="{ width: '100%', height: '350px' }"
-                :input-placeholder="'시작일'"
+                :placeholder="'시작일'"
               ></v-date-picker>
             </v-col>
 
@@ -81,7 +85,7 @@
                 full-width
                 color="brown"
                 :style="{ width: '100%', height: '350px' }"
-                :input-placeholder="'종료일'"
+                :placeholder="'종료일'"
               ></v-date-picker>
             </v-col>
           </v-row>
@@ -215,6 +219,8 @@ h1 {
   background-color: #e9f7fe;
   border-radius: 10px;
   padding: 15px;
+  display: flex;
+  flex-direction: row-reverse;
 }
 
 .v-card-title {
