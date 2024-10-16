@@ -4,6 +4,7 @@ import evalutionFrame from '@/views/mypage/evalutionFrame.vue';
 import SpinWheel from '@/views/mypage/SpinWheel.vue';
 import evalutionList from '@/views/mypage/evalutionList.vue';
 import UserAttendance from '@/views/mypage/userAttendance.vue';
+import tmp from '@/views/mypage/tmp.vue'
 
 export const mypageRouter = [
     {
@@ -35,6 +36,11 @@ export const mypageRouter = [
         path: '/mypage/userAttendance',
         name: 'userAttendance',
         component: UserAttendance,
+    },
+    {
+        path: '/mypage/tmp',
+        name: 'tmp',
+        component: tmp,
     }
 
 
