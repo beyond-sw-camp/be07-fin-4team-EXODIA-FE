@@ -65,20 +65,38 @@
       </div>
 
       <!-- 급여일 설정 다이얼로그 -->
-      <v-dialog v-model="salaryDateDialog" max-width="500">
-        <v-card>
+      <v-dialog v-model="salaryDateDialog" max-width="600px">
+        <v-card :style="{ padding: '20px' }">
           <v-card-title>급여일 설정</v-card-title>
           <v-card-text>
-            <v-row>
-              <v-col cols="12">
-                <v-date-picker v-model="selectedSalaryDate" label="급여일 선택" />
+            <v-row class="mt-3">
+              <v-col cols="12" md="6">
+                <v-date-picker
+                  v-model="selectedStartDate"
+                  label="시작일 선택"
+                  full-width
+                  color="brown"
+                  :header-color="'brown'"
+                ></v-date-picker>
+              </v-col>
+
+              <v-col cols="12" md="6">
+                <v-date-picker
+                  v-model="selectedEndDate"
+                  label="종료일 선택"
+                  full-width
+                  color="brown"
+                  :header-color="'brown'"
+                ></v-date-picker>
               </v-col>
             </v-row>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="primary" @click="setSalaryDate">저장</v-btn>
-            <v-btn color="secondary" @click="salaryDateDialog = false">취소</v-btn>
+            <v-btn color="primary" @click="setSalaryDate">
+              저장
+            </v-btn>
+            <v-btn text @click="salaryDateDialog = false">취소</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -97,13 +115,9 @@ export default {
       positions: [],
       selectedPosition: null,
       salaryDateDialog: false,
-      selectedSalaryDate: null,
+      selectedStartDate: null, // 시작일 선택
+      selectedEndDate: null, // 종료일 선택
     };
-  },
-  watch: {
-    selectedPosition(newPosition) {
-      this.fetchSalariesByPosition(newPosition);
-    },
   },
   methods: {
     async fetchSalaries() {
@@ -114,18 +128,6 @@ export default {
         console.error('급여 목록을 가져오는 중 오류가 발생했습니다.', error);
       }
     },
-    // async fetchSalariesByPosition() {
-    //   if (this.selectedPosition) {
-    //     try {
-    //       const response = await axios.get(`/salary/byPosition/${this.selectedPosition}`);
-    //       this.salaries = response.data;
-    //     } catch (error) {
-    //       console.error('직급별 급여 목록을 가져오는 중 오류가 발생했습니다.', error);
-    //     }
-    //   } else {
-    //     this.fetchSalaries();
-    //   }
-    // },
 
     async fetchSalariesByPosition(positionId) {
       if (positionId) {
@@ -147,9 +149,11 @@ export default {
         console.error('직급 목록을 가져오는 중 오류가 발생했습니다.', error);
       }
     },
+
     viewSalaryDetails(userNum) {
       this.$router.push(`/salary/detail/${userNum}`);
     },
+
     openSetSalaryDateDialog() {
       this.salaryDateDialog = true;
     },
@@ -168,31 +172,33 @@ export default {
     },
 
     async setSalaryDate() {
-  try {
-    if (!this.selectedSalaryDate) {
-      throw new Error('날짜가 선택되지 않았습니다.');
+      try {
+        if (!this.selectedStartDate || !this.selectedEndDate) {
+          throw new Error('시작일과 종료일을 모두 선택해야 합니다.');
+        }
+
+        const formattedStartDate = this.formatDate(this.selectedStartDate);
+        const formattedEndDate = this.formatDate(this.selectedEndDate);
+        const userNum = localStorage.getItem('userNum');
+        if (!userNum) {
+          throw new Error('유저 정보를 찾을 수 없습니다.');
+        }
+
+        await axios.post('/eventDate/setDate', {
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,  
+          eventType: 'salary',       
+          userNum: userNum        
+        });
+
+        this.salaryDateDialog = false;
+        alert('급여일이 성공적으로 설정되었습니다.');
+      } catch (error) {
+        console.error('급여일 설정 중 오류가 발생했습니다.', error);
+      }
     }
-
-    const formattedDate = this.formatDate(this.selectedSalaryDate);
-    const userNum = localStorage.getItem('userNum');
-    if (!userNum) {
-      throw new Error('유저 정보를 찾을 수 없습니다.');
-    }
-
-    await axios.post('/eventDate/setDate', {
-      eventDate: formattedDate,  
-      eventType: 'salary',       
-      userNum: userNum        
-    });
-
-    this.salaryDateDialog = false;
-    alert('급여일이 성공적으로 설정되었습니다.');
-  } catch (error) {
-    console.error('급여일 설정 중 오류가 발생했습니다.', error);
-  }
-}
-
   },
+
   mounted() {
     this.fetchSalaries();
     this.fetchPositions();
