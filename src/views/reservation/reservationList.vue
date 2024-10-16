@@ -15,42 +15,50 @@
       </v-tabs>
 
       <!-- 오른쪽 상단에 관리자 전용 아이콘 추가 (인사팀인 경우에만 표시) -->
-      <v-btn v-if="isHrDepartment" icon @click="goToAdminPage">
+      <v-btn v-if="isHrDepartment" icon @click="goToAdminPage" style="margin-top: 10px;">
         <v-icon>mdi-cog</v-icon> <!-- 톱니바퀴 아이콘 -->
       </v-btn>
     </v-row>
+
+    <v-row class="my-3 align-center" >
+      <v-col cols="4">
+        <!-- 어제 버튼 -->
+        <v-btn @click="prevDay" icon style="box-shadow: none; ">
+          <v-icon>mdi-chevron-left</v-icon>
+        </v-btn>
+        <!-- 내일 버튼 -->
+        <v-btn @click="nextDay" icon style="box-shadow: none; margin-left: -10px;">
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+        <!-- 오늘 버튼 -->
+        <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -1px; margin-left: -10px;">Today</v-btn>
+        <!-- 장기 예약  -->
+        <v-btn @click="openLongTermReservationModal" style="box-shadow: none;  margin-left: -15px;">
+          <v-icon right style="margin-top: 5px">mdi-calendar-plus</v-icon>
+        </v-btn>
+      </v-col>
+      
+      <v-col cols="6" class="text-center">
+        <h2 style="font-size: 30px; margin-left: -40%; letter-spacing: -0.5px;">{{ formattedDate(selectedDate) }}</h2>
+      </v-col>
+      <!-- 장기 예약 버튼 -->
+      <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
+    </v-row>
+
 
     <!-- 현재 탭에 대한 내용 -->
     <v-tabs-items v-model="selectedTab">
       <!-- 차량 예약 탭 내용 -->
       <v-tab-item>
         <v-container fluid>
-          <v-row justify="center" class="mb-5">
-            <!-- Left Arrow Button for Previous Day -->
-            <v-btn @click="prevDay" icon>
-              <v-icon>mdi-chevron-left</v-icon> <!-- Left arrow icon -->
-            </v-btn>
-
-            <h2>{{ formattedDate(selectedDate) }}</h2>
-
-            <!-- Right Arrow Button for Next Day -->
-            <v-btn @click="nextDay" icon>
-              <v-icon>mdi-chevron-right</v-icon> <!-- Right arrow icon -->
-            </v-btn>
-            
-            <!-- 오늘 버튼 -->
-            <v-btn class="ml-4" @click="setToday" color="primary" outlined>오늘</v-btn>
-
-            <!-- 장기 예약 버튼 -->
-            <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn>
-          </v-row>
-
+        
           <!-- Vehicle Availability Table -->
           <v-table>
             <thead>
               <tr>
                 <th>종류</th>
                 <th>차량 종류</th>
+                <th>차량 정보</th>
                 <th>예약 상태</th>
               </tr>
             </thead>
