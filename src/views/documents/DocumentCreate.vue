@@ -15,11 +15,21 @@
                     </v-row>
                     <v-row>
                         <v-col cols=4>
-                            문서 타입
+                            문서 태그
                         </v-col>
-                        <v-combobox v-model="selectedType" :items="typeOptions" item-title="text" item-value="value"
-                            label="타입명을 선택하세요. 새로 추가하려면 입력하세요." :filter="customFilter" @blur="addTypeIfNew"
-                            class="custom-select" allow-overflow clearable persistent-hint></v-combobox>
+                        <!-- <v-combobox v-model="selectedType" :items="typeOptions" item-title="text" item-value="value"
+                            label="태그를 선택하세요" :filter="customFilter" @blur="addTypeIfNew" class="custom-select"
+                            allow-overflow clearable persistent-hint></v-combobox> -->
+                        <v-select v-model="tagNames" :items="tagOptions" label="태그를 선택하세요" multiple>
+                            <template v-slot:selection="{ item, index }">
+                                <v-chip v-if="index < 2">
+                                    <span>{{ item.title }}</span>
+                                </v-chip>
+                                <span v-if="index === 2" class="text-grey text-caption align-self-center">
+                                    (+{{ value.length - 2 }} others)
+                                </span>
+                            </template>
+                        </v-select>
                     </v-row>
                     <v-row>
                         <v-col cols=4>
@@ -49,8 +59,8 @@ export default {
     data() {
         return {
             token: localStorage.getItem('token') || null,
-            selectedType: '',
-            typeOptions: [],
+            tagNames: [],
+            tagOptions: [],
             description: '',
             selectedFile: '',
         }
@@ -61,36 +71,20 @@ export default {
     methods: {
         async fetchTypes() {
             try {
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/types`, { headers: { Authorization: `Bearer ${this.token}` } });
-                this.typeOptions = response.data.result;
-                console.log(this.typeOptions)
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/tags`, { headers: { Authorization: `Bearer ${this.token}` } });
+                this.tagOptions = response.data.result;
+                console.log(this.tagOptions)
             } catch (e) {
                 console.error('문서 타입 가져오는 중 오류 발생:', e);
-            }
-        },
-        async addTypeIfNew(newType) {
-            const existingType = this.typeOptions.find(type => type.value === newType);
-
-            if (!existingType && newType) {
-                try {
-                    const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/type/create`, {
-                        typeName: newType
-                    });
-                    console.log(response.data.result)
-
-                    this.typeOptions.push({ text: newType, value: newType });
-                    console("새로운 문서 타입이 추가되었습니다.");
-                } catch (e) {
-                    console.error('Error adding new document type:', e);
-                }
             }
         },
         async submitForm() {
             try {
                 const data = {
-                    typeName: this.selectedType,
+                    tags: this.tagNames,
                     description: this.description,
                 };
+                console.log("tags: " + this.tagNames);
                 const submitData = new FormData();
                 submitData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
 
