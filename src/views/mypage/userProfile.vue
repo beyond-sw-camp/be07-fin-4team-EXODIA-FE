@@ -185,6 +185,8 @@ export default {
   },
   
   methods: {
+
+  
     updateAttendanceData(data) {
       this.attendanceData = data;
     },
@@ -232,27 +234,52 @@ export default {
         console.error('유저 정보 가져오기 실패:', error);
       }
     },
-// 출 퇴근 기록 예시(ver1)
-async fetchTodayAttendance() {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/today`, {
-        headers: {
-          Authorization: `Bearer ${token}`
+    async fetchTodayAttendance() {
+      try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/today`, {
+              headers: {
+                  Authorization: `Bearer ${token}`
+              }
+          });
+
+          const data = response.data.result; // API 응답의 result 부분을 사용
+
+          console.log("Today attendance data:", data); // 로그로 데이터 확인
+
+          // 출퇴근 시간 및 근무시간 바인딩
+          this.attendanceData.clockInTime = data.inTime
+            ? moment(data.inTime).format('HH:mm:ss')
+            : 'N/A';
+          this.attendanceData.clockOutTime = data.outTime
+            ? moment(data.outTime).format('HH:mm:ss')
+            : 'N/A';
+            this.attendanceData.weeklyWorkHours = data.hoursWorked 
+              ? data.hoursWorked.toFixed(1) + '(시간)' // 소숫점 .1 자리까지 설정함
+              : 'N/A';
+          this.attendanceData.weeklyOvertimeHours = data.overtimeHours || 'N/A';
+
+          const clockInTime = moment(data.inTime);
+          const clockOutTime = data.outTime ? moment(data.outTime) : moment(); // 퇴근 시간이 없으면 현재 시간 사용
+
+          // 09:00 ~ 18:00 근무 시간 이외의 시간 계산
+          const standardStartTime = moment(clockInTime).set({ hour: 9, minute: 0, second: 0 });
+          const standardEndTime = moment(clockInTime).set({ hour: 18, minute: 0, second: 0 });
+
+          let overtimeHours = 0;
+          if (clockInTime.isBefore(standardStartTime)) {
+            overtimeHours += standardStartTime.diff(clockInTime, 'hours', true); // 출근 시간이 09:00보다 이른 경우 초과 근무 계산
+          }
+          if (clockOutTime.isAfter(standardEndTime)) {
+            overtimeHours += clockOutTime.diff(standardEndTime, 'hours', true); // 퇴근 시간이 18:00보다 늦은 경우 초과 근무 계산
+          } 
+
+          this.attendanceData.weeklyOvertimeHours = overtimeHours.toFixed(1) + '(시간)'; // 소수점 1자리로 표시
+
+        } catch (error) {
+          console.error('오늘의 출퇴근 기록을 가져오는 중 오류 발생:', error);
         }
-      });
-
-      const data = response.data;
-      // 출퇴근 시간 데이터 바인딩
-      this.attendanceData.clockInTime = data.clockInTime || 'N/A';
-      this.attendanceData.clockOutTime = data.clockOutTime || 'N/A';
-      this.attendanceData.weeklyWorkHours = data.weeklyWorkHours || 'N/A';
-      this.attendanceData.weeklyOvertimeHours = data.weeklyOvertimeHours || 'N/A';
-
-    } catch (error) {
-      console.error('오늘의 출퇴근 기록을 가져오는 중 오류 발생:', error);
-    }
-  },
+    },
 
 
     navigateTab(index) {

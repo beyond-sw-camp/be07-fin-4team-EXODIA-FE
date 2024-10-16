@@ -12,16 +12,14 @@
             <v-col cols="1">
                 <v-icon class="icon" @click="goBack">mdi-chevron-left</v-icon> <!-- 뒤로가기 -->
             </v-col>
-            <v-col cols="8" class="chat-room-title">
+            <v-col cols="10" class="chat-room-title">
                 <span class="chat-room-name">{{ chatRoomNameProp }}</span>
             </v-col>
-            <v-col cols="3" class="header-icons">
-                <v-icon class="icon">mdi-magnify</v-icon> <!-- 검색 -->
+            <v-col cols="1" class="header-icons">
+                <!--<v-icon class="icon">mdi-magnify</v-icon>--> <!-- 검색 -->
                 <v-icon class="icon">mdi-dots-vertical</v-icon> <!-- 메뉴 -->
             </v-col>
         </v-row>
-
-
 
         <!-- 채팅 내용 -->
         <div class="chat-content">
@@ -36,30 +34,30 @@
                 <!-- 메시지 -->
                 <div :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
                     <v-row v-if="chat.senderNum !== chatSenderNum" class="message-row">
-                        <!-- <v-avatar class="profile-avatar">
-                            <img :src="chat.profileImage" alt="프로필 이미지" />
-                        </v-avatar> -->
-                        <v-col>
-                            <span class="sender-name">{{chat.senderDepName}} {{ chat.senderName }}{{ chat.senderPosName }}님</span>
-                        </v-col>
-                        <v-col v-if="chat.messageType == 'TALK'">
+                        <span class="sender-name">{{ chat.senderDepName }} {{ chat.senderName }} {{ chat.senderPosName
+                            }}님</span>
+                        <v-col class="message" v-if="chat.messageType == 'TALK'">
                             <div class="message-text">{{ chat.message }}</div>
                         </v-col>
-                        <v-col v-if="chat.messageType == 'FILE'">
-                            <div class="message-text">파일입니다.</div>
+                        <v-col class="message" v-if="chat.messageType == 'FILE'">
+                            <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="chat.senderNum === chatSenderNum">
+                            </ChatFileBox>
+                            <div v-if="chat.message.length != 0" class="message-text">{{ chat.message }}</div>
                         </v-col>
                     </v-row>
 
                     <v-row v-if="chat.senderNum === chatSenderNum" class="message-row my-row">
-                        <v-col v-if="chat.messageType == 'TALK'">
+                        <v-col class="message" v-if="chat.messageType == 'TALK'">
                             <div class="message-text">{{ chat.message }}</div>
                         </v-col>
-                        <v-col v-if="chat.messageType == 'FILE'">
-                            <div class="message-text">내가 보낸 파일입니다.</div>
+                        <v-col class="message" v-if="chat.messageType == 'FILE'">
+                            <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="chat.senderNum === chatSenderNum">
+                            </ChatFileBox>
+                            <div v-if="chat.message.length != 0" class="message-text">{{ chat.message }}</div>
                         </v-col>
                     </v-row>
 
-                    <!-- 시간 -->
+                    <!-- 보낸 시간 -->
                     <span class="message-time">{{ getTime(chat.createAt) }}</span>
                 </div>
             </div>
@@ -76,17 +74,15 @@
         <!-- 채팅 입력 -->
         <v-container class="input-container">
             <v-row>
-                <v-text-field style="height: 200px;" v-model="messageToSend"
+                <v-text-field class="input-field" v-model="messageToSend"
                     v-on:keypress.enter="sendMessage"></v-text-field>
             </v-row>
-            <v-row>
-                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input prepend-icon="mdi-paperclip">
-                    파일 전송
-                </v-file-input>
+            <v-row class="file-input-container">
+                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input
+                    prepend-icon="mdi-paperclip"></v-file-input>
                 <v-btn class="send-btn" @click="sendMessage">전송</v-btn>
             </v-row>
         </v-container>
-
 
     </v-container>
 </template>
@@ -95,13 +91,17 @@
 import axios from 'axios';
 import Stomp from 'webstomp-client'
 import SockJS from 'sockjs-client'
+import ChatFileBox from '@/components/chat/ChatFileBox.vue'
 
 export default {
     props: [
         'chatRoomIdProp',
         'chatRoomNameProp',
-        'chatRoomUserNumsProp'
-    ],
+        'chatRoomUserNumsProp',
+    ], // 채팅방리스트에서 받아오는 값.
+    components: {
+        ChatFileBox,
+    },
     data() {
         return {
             stompClient: null,
@@ -120,6 +120,7 @@ export default {
     async created() {
         this.chatRoomId = this.chatRoomIdProp;
         this.chatSenderNum = localStorage.getItem('userNum');
+        // 메세지 불러오기
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
         if (response.data) {
             this.chatMessageList = response.data.result;
@@ -250,7 +251,7 @@ export default {
             this.files = null;
         },
 
-        deleteImage(index){
+        deleteImage(index) {
             this.fileList.splice(index, 1);
         },
 
@@ -293,12 +294,12 @@ export default {
 </script>
 
 <style scoped>
-.chat-room-container {
+/* .chat-room-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
     justify-content: space-between;
-}
+} */
 
 .chat-room-header {
     display: flex;
@@ -308,11 +309,16 @@ export default {
     border-bottom: 1px solid #ccc;
 }
 
-.chat-room-avatar img {
+.icon {
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+/* .chat-room-avatar img {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-}
+} */
 
 .chat-room-title {
     display: flex;
@@ -328,16 +334,14 @@ export default {
     justify-content: flex-end;
 }
 
-.icon {
-    cursor: pointer;
-    margin-right: 10px;
-}
-
 .chat-content {
     flex: 1;
     padding: 10px;
-    height: 500px;
+    /* height: calc(100vh - 150px); */
+    height: 400px;
     overflow-y: auto;
+    overflow-x: hidden;
+    /* flex-shrink: 0; */
 }
 
 .date-divider {
@@ -362,45 +366,45 @@ export default {
 .message-row {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
+}
+
+/* .profile-avatar img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+} */
+
+.sender-name {
+    font-weight: bold;
+}
+
+.message {
+    padding-top: 15px;
+    padding-bottom: 0px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.message-text {
+    background-color: #e0f7fa;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    max-width: 60%;
+    display: inline-block;
 }
 
 .my-row {
     justify-content: flex-end;
 }
 
-.profile-avatar img {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-}
-
-.sender-name {
-    font-weight: bold;
-}
-
-.message-text {
-    background-color: #e0f7fa;
-    padding: 10px;
-    border-radius: 10px;
-    max-width: 60%;
-    display: inline-block;
-}
-
 .message-time {
     font-size: 0.8em;
     color: gray;
-}
-
-.input-container {
-    padding: 10px;
-    background-color: #f1f1f1;
-    border-top: 1px solid #ccc;
-}
-
-.send-btn {
-    background-color: #4CAF50;
-    color: white;
+    margin-left: 5px;
 }
 
 .image-group {
@@ -408,6 +412,29 @@ export default {
     flex-direction: row;
     width: 120px;
     max-height: 180px;
+}
+
+.image-container {
+    position: relative;
+    /* 아이콘과 이미지를 겹치게 하기 위해 부모에 relative 추가 */
+    display: inline-block;
+    /* 여러 이미지를 가로로 정렬 */
+}
+
+.image-container img {
+    display: block;
+}
+
+.close-icon {
+    position: absolute;
+    top: 5px;
+    /* 이미지 위쪽에서 5px */
+    left: 5px;
+    /* 이미지 왼쪽에서 5px */
+    z-index: 1;
+    /* 이미지보다 아이콘이 위에 표시되도록 z-index 설정 */
+    cursor: pointer;
+    /* 클릭 가능하게 설정 */
 }
 
 .custom-contents {
@@ -421,21 +448,27 @@ export default {
     /* 텍스트 줄 바꿈 방지 */
 }
 
-.image-container {
-    position: relative; /* 아이콘과 이미지를 겹치게 하기 위해 부모에 relative 추가 */
-    display: inline-block; /* 여러 이미지를 가로로 정렬 */
+.input-container {
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-top: 1px solid #ccc;
 }
 
-.close-icon {
-    position: absolute;
-    top: 5px; /* 이미지 위쪽에서 5px */
-    left: 5px; /* 이미지 왼쪽에서 5px */
-    z-index: 1; /* 이미지보다 아이콘이 위에 표시되도록 z-index 설정 */
-    cursor: pointer; /* 클릭 가능하게 설정 */
+.input-field {
+    width: 100%;
+    /* height: 100px; */
+    /* 입력 필드 넓이 조정 */
 }
 
-.image-container img {
-    display: block;
+.file-input-container {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    /* 파일 전송 아이콘을 왼쪽 정렬 */
 }
 
+.send-btn {
+    background-color: #4CAF50;
+    color: white;
+}
 </style>

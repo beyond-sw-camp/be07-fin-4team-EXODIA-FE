@@ -29,22 +29,18 @@
                 <v-row class="mb-2"
                     style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
                     <v-col cols="1"><strong></strong></v-col>
-                    <v-col cols="3"><strong>제목</strong></v-col>
-                    <v-col cols="2"><strong>프로젝트명</strong></v-col>
+                    <v-col cols="6"><strong>제목</strong></v-col>
+                    <v-col cols="3"><strong>등록일</strong></v-col>
                     <v-col cols="2"><strong>작성자</strong></v-col>
-                    <v-col cols="2"><strong>등록일</strong></v-col>
-                    <v-col cols="2"><strong>조회수</strong></v-col>
                 </v-row>
 
                 <v-row v-for="(document, index) in documents" :key="document.id" class="document" oulined
                     @click="openDrawer(document.id)"
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
-                    <v-col cols="3">{{ document.fileName }}</v-col>
-                    <v-col cols="2">{{ document.type }}</v-col>
+                    <v-col cols="6" class="ellipsis-text">{{ document.fileName }}</v-col>
+                    <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
                     <v-col cols="2">{{ document.userName }}</v-col>
-                    <v-col cols="2">{{ formatDate(document.createdAt) }}</v-col>
-                    <v-col cols="1">{{ document.views || 34 }}</v-col>
                 </v-row>
             </v-col>
         </v-row>
@@ -70,10 +66,6 @@
                         <v-row class="detailFileName">{{ selectedDocument.fileName }}</v-row>
                     </v-card-title>
                     <v-divider></v-divider>
-                    <v-card-text>
-                        <v-row>프로젝트명</v-row>
-                        <v-row>{{ selectedDocument.documentType }}</v-row>
-                    </v-card-text>
                     <v-card-text>
                         <v-row>생성 날짜</v-row>
                         <v-row>{{ formatDate(selectedDocument.createAt) }}</v-row>
@@ -117,36 +109,44 @@
 
                         <v-icon class="icon" @click="toggleHistoryVisibility"> {{ showHistory ? 'mdi-chevron-up' :
                             'mdi-chevron-down' }}</v-icon>
-                        <v-divider v-if="!showHistory"></v-divider>
-
-
+                        <v-divider></v-divider>
                     </v-card-title>
 
-                    <v-timeline dense v-if="showHistory">
+                    <v-timeline dense v-if="showHistory" style="margin:10px">
                         <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
-                            <div>
 
-                            </div>
                             <v-card>
-                                <v-card-text style="margin-bottom:0; padding:0">
-                                    <div class="fileName">
-                                        <v-icon left>mdi-file-document-outline</v-icon>
-                                        <span>{{ history.fileName }}</span>
+                                <v-row justify="space-between">
+                                    <v-col>
+                                        <v-card-text style="margin-bottom:0; padding:0">
+                                            <div class="fileName">
+                                                <v-icon left>mdi-file-document-outline</v-icon>
+                                                <span class="ellipsis-text">{{ history.fileName }}</span>
+                                            </div>
+                                        </v-card-text>
+                                    </v-col>
+                                    <v-col>
+                                        <v-card-actions style=" margin:0;">
+                                            <v-btn small text @click="confirmRevert(history.id)" style="font-size:12px">
+                                                복원
+                                            </v-btn>
+                                        </v-card-actions>
+                                    </v-col>
+                                </v-row>
+
+                                <v-card-text class="userName" style="margin-bottom:5px; padding:0 10px">
+                                    <v-avatar class="icon">
+                                        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
+                                            style="width: 100%; height: 100%; object-fit: cover;" />
+                                    </v-avatar>
+                                    <span style="padding:20px; font-size:14px">{{ history.userName }}</span>
+                                </v-card-text>
+
+                                <v-card-text style="margin-bottom:0; padding:10px">
+                                    <div>
+                                        <span>설명: {{ history.description }}</span>
                                     </div>
                                 </v-card-text>
-
-                                <v-card-text class="userName" style="margin-bottom:0; padding:0">
-                                    <!-- <v-avatar left size="24">
-                                        <img :src="history.userAvatar" alt="User Avatar" />
-                                    </v-avatar> -->
-                                    <span style="padding:20px;">{{ history.userName }}</span>
-                                </v-card-text>
-
-                                <v-card-actions style=" margin:0;">
-                                    <v-btn small text color="primary" @click="confirmRevert(history.id)">
-                                        복원
-                                    </v-btn>
-                                </v-card-actions>
                             </v-card>
 
                             <template v-slot:opposite>
@@ -155,11 +155,48 @@
                         </v-timeline-item>
                     </v-timeline>
 
-
-                    <!-- <v-card-title>
+                    <!-- 댓글 -->
+                    <v-card-title>
                         <span class="headline">댓글</span>
-                        <v-divider></v-divider>
-                    </v-card-title> -->
+                        <v-icon class="icon" @click="toggleCommentsVisibility"> {{ showComments ? 'mdi-chevron-up' :
+                            'mdi-chevron-down' }}</v-icon>
+                        <v-row>
+                            <v-col cols="9">
+                                <v-text-field label="댓글을 입력하세요." variant="outlined" v-model="comment"></v-text-field>
+                            </v-col>
+                            <v-col cols="3">
+                                <v-btn @click="submitComments(this.selectedDocument.id)">저장</v-btn>
+                            </v-col>
+                        </v-row>
+                    </v-card-title>
+
+                    <div v-if="showComments" class="comments">
+                        <v-row v-if="this.comments.length > 0">
+                            <v-col cols="12" v-for="(comment, index) in this.comments" :key="index">
+                                <v-row class="comments-item">
+                                    <v-col cols=1>
+                                        <v-avatar class="icon" size="24">
+                                            <img src="@/assets/user.png"
+                                                style="width: 100%; height: 100%; object-fit: cover;" />
+                                        </v-avatar>
+                                    </v-col>
+                                    <v-col cols="5">{{ comment.userName }}</v-col>
+                                    <v-col cols="5" style="font-size:12px">{{ formatDate(comment.createdAt) }} {{
+                                        formatLocalTime(comment.createdAt) }}</v-col>
+                                </v-row>
+                                <v-row cols="12" style="padding-left:50px">
+                                    {{ comment.contents }}
+                                </v-row>
+                                <v-divider v-if="!showHistory"></v-divider>
+                            </v-col>
+                        </v-row>
+                        <v-row v-else>
+                            <v-col cols=" 12">
+                                <p>댓글이 없습니다.</p>
+                            </v-col>
+                        </v-row>
+                    </div>
+
 
                     <v-card-actions>
                         <v-spacer></v-spacer>
@@ -187,11 +224,12 @@ export default {
     data() {
         return {
             token: localStorage.getItem('token') || null,
+            userNum: localStorage.getItem('userNum') || null,
 
             title: '',
             drawer: false,
             selectedDocument: {},
-            tab: '상세보기',
+            tab: '히스토리',
             showHistory: false,
 
             pageId: '',
@@ -199,6 +237,10 @@ export default {
             pageSize: 10,
             totalPages: '',
             documents: {},
+
+            comments: {},
+            showComments: true,
+            commentInput: '',
         }
     },
     mounted() {
@@ -236,6 +278,37 @@ export default {
                 console.error('문서 목록을 가져오는 중 오류 발생:', e);
             }
         },
+        async fetchComments() {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/comment/document/list/${this.selectedDocument.id}`;
+                const response = await axios.get(url);
+                this.comments = response.data.result;
+            } catch (e) {
+                console.error('댓글 목록 가져오는 중 오류 발생:', e);
+            }
+        },
+        async submitComments(id) {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/comment/document/create`;
+
+                const createData = {
+                    documentId: id,
+                    userNum: this.userNum,
+                    contents: this.comment
+                };
+
+                await axios.post(url, createData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                alert("댓글 작성이 성공적으로 처리되었습니다.");
+                this.comment = '';
+                this.fetchComments();
+            } catch (e) {
+                console.error('댓글 등록 중 오류 발생:', e);
+            }
+        },
         async openDrawer(id) {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/detail/${id}`;
@@ -243,6 +316,8 @@ export default {
 
                 this.selectedDocument = response.data.result;
                 this.drawer = true;
+
+                this.fetchComments();
             } catch (e) {
                 console.error('문서 상세 정보를 가져오는 중 오류 발생:', e);
             }
@@ -324,14 +399,15 @@ export default {
         toggleHistoryVisibility() {
             this.showHistory = !this.showHistory;
         },
+        toggleCommentsVisibility() {
+            this.showComments = !this.showComments;
+        },
     },
 }
 </script>
 
 <style scoped>
-*:not(h1) {
-    font-size: 14px;
-}
+*:not(h1) {}
 
 .login-container {
     height: 100vh;
@@ -359,6 +435,14 @@ v-card-title,
     align-items: center;
 }
 
+.ellipsis-text {
+    /* 말줄임 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
 .v-tabs-window {
     margin: 50px;
 }
@@ -367,50 +451,16 @@ v-card-title,
     object-fit: cover;
 }
 
-.headline {
-    font-size: 14px;
-}
-
-.tabs>.v-btn {
-    font-size: 14px;
-}
-
-
-.v-btn {
-    font-size: 12px;
-}
-
-
-
-.v-card-text>.v-row:first-child {
-    font-size: 14px;
-}
-
-.v-card-text>.v-row:last-child {
-    font-size: 16px;
-}
-
 .v-card-text {
     margin-bottom: 20px;
 }
 
-
 .detailFileName {
-    font-size: 20px;
     margin: 20px 0 0;
 }
 
 .fileName {
-    font-size: 13px;
     margin: 10px;
-}
-
-.userName {
-    font-size: 13px;
-}
-
-.fileModifiedDate {
-    font-size: 10px;
 }
 
 .v-timeline--vertical.v-timeline {
@@ -419,5 +469,15 @@ v-card-title,
 
 .v-divider {
     margin: 20px 0;
+}
+
+.comments {
+    padding: 20px 10px;
+}
+
+.comments-item {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
 }
 </style>

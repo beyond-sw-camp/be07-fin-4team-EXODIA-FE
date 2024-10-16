@@ -7,9 +7,9 @@
         <!-- Top section with search and buttons -->
         <v-row class="top-bar">
             <!-- Close icon -->
-            <v-col cols="1">
+            <!-- <v-col cols="1">
                 <v-icon class="icon close-icon" @click="closeChatList">mdi-close</v-icon>
-            </v-col>
+            </v-col> -->
 
 
             <!-- Search bar -->
@@ -37,8 +37,8 @@
           </v-list-item-avatar> -->
 
                     <!-- Room info -->
-                    <v-list-item-content>
-                        <v-list-item-title @click="enterToChatRoom(index)">{{ chatroom.roomName }}</v-list-item-title>
+                    <v-list-item-content @click="enterToChatRoom(index)">
+                        <v-list-item-title>{{ chatroom.roomName }}</v-list-item-title>
                         <!-- <v-list-item-subtitle>{{ chatroom.lastMessage }}</v-list-item-subtitle> -->
                     </v-list-item-content>
 
@@ -135,9 +135,9 @@ export default {
             this.chatRoomListCheck= false;
         },
 
-        closeChatList() { // 채팅방 리스트 닫기
-            this.$emit('update:dialog', false);
-        }
+        // closeChatList() { // 채팅방 리스트 닫기
+        //     this.$emit('update:dialog', false);
+        // }
     }
 }
 </script>
