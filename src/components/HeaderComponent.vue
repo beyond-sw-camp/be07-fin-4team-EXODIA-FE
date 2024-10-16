@@ -90,7 +90,7 @@ export default {
 
     // 채팅룸 리스트 열기
     showChatRoomList() {
-      window.open("/chatRoom/list", "_blank", "width=480, height=720")
+      window.open("/chatRoom/list", "_blank", "width=480, height=650")
     },
     
     // 로그인 연장
