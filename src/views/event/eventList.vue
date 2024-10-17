@@ -99,7 +99,7 @@
         <!-- 생성 버튼 -->
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="createEvent">
+          <v-btn color="primary" @click="createOrUpdateCalendar">
             저장
           </v-btn>
           <v-btn text @click="showDialog = false">
@@ -127,7 +127,7 @@ export default {
     };
   },
   methods: {
-    async createEvent() {
+    async createOrUpdateCalendar() {
       const userNum = localStorage.getItem('userNum');
       if (!userNum) {
         alert('로그인 정보가 없습니다.');
@@ -141,39 +141,69 @@ export default {
         const formattedStartDate = this.formatDate(startDate);
         const formattedEndDate = this.formatDate(endDate);
 
-        // 기본적으로 event_date 테이블에 일정 등록
-        const payload = {
+        // event_date 테이블의 기존 로직 그대로 두고, 달력 등록 로직만 추가합니다
+        const eventPayload = {
           eventType: this.newEventType,
           startDate: formattedStartDate,
           endDate: formattedEndDate,
           userNum: userNum,
         };
 
-        await axios.post('/eventDate/setDate', payload, {
+        await axios.post('/eventDate/setDate', eventPayload, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
 
-        // 달력 등록이 체크된 경우 캘린더 테이블에도 추가
         if (this.registerToCalendar) {
-          const calendarPayload = {
-            title: this.newEventType,
-            content: '달력 등록된 이벤트입니다.',
-            startTime: formattedStartDate + "T00:00:00",
-            endTime: formattedEndDate + "T23:59:59",
-            type: '회사일정',
-            userId: userNum,
-          };
+          // Check if the calendar event already exists
+          try {
+            const calendarResponse = await axios.get(`/calendars/findByTitle/${encodeURIComponent(this.newEventType)}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              },
+            });
 
-          await axios.post('/calendars/create', calendarPayload, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
+            // If it exists, update it
+            const calendarUpdatePayload = {
+              title: this.newEventType,
+              content: '달력 등록된 이벤트입니다.',
+              startTime: formattedStartDate + "T00:00:00",
+              endTime: formattedEndDate + "T23:59:59",
+              type: '회사일정',
+              userId: userNum,
+            };
+
+            await axios.put(`/calendars/update/${calendarResponse.data.id}`, calendarUpdatePayload, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              },
+            });
+
+          } catch (error) {
+            // If not found (404), create a new calendar event
+            if (error.response && error.response.status === 404) {
+              const calendarCreatePayload = {
+                title: this.newEventType,
+                content: '달력 등록된 이벤트입니다.',
+                startTime: formattedStartDate + "T00:00:00",
+                endTime: formattedEndDate + "T23:59:59",
+                type: '회사일정',
+                userId: userNum,
+              };
+
+              await axios.post('/calendars/create', calendarCreatePayload, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+              });
+            } else {
+              console.error('달력 이벤트 처리 중 오류 발생:', error);
+            }
+          }
         }
 
-        alert('일정이 성공적으로 저장되었습니다.');
+        alert('일정이 성공적으로 처리되었습니다.');
         this.fetchEventList(); // 이벤트 목록 갱신
         this.showDialog = false; // 모달창 닫기
       } catch (error) {
