@@ -1,5 +1,5 @@
 <template>
-    <h1 style="margin:25px 0; font-weight:800">법인 카드 신청</h1>
+    <h1 style="margin:25px 0; font-weight:800">법인 카드 사용 신청서</h1>
     <v-card style="padding:50px">
         <v-row justify="justify-space-around">
             <v-col cols="8">

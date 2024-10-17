@@ -1,7 +1,8 @@
 <template>
   <header class="header">
     <div class="icons">
-      <div class="icon-item" @click="$router.push('/calendar/calendarList')" :class="{ 'active': $route.path.startsWith('/calendar') }">
+      <div class="icon-item" @click="$router.push('/calendar/calendarList')"
+        :class="{ 'active': $route.path.startsWith('/calendar') }">
         <v-icon class="icon">mdi-calendar</v-icon>
       </div>
 
@@ -18,8 +19,9 @@
         <v-icon class="icon" @click="showChatRoomList">mdi-chat</v-icon>
       </div>
 
-      <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
-        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+      <v-avatar class="icon" @click="$router.push('/mypage/vacation')">
+        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
+          style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
 
 
@@ -92,7 +94,7 @@ export default {
     showChatRoomList() {
       window.open("/chatRoom/list", "_blank", "width=480, height=650")
     },
-    
+
     // 로그인 연장
     async extendSession() {
       try {
@@ -236,7 +238,6 @@ export default {
 
 .v-btn {
   margin-left: 10px;
-  
-}
 
+}
 </style>
