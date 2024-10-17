@@ -60,11 +60,17 @@
           <v-combobox
             v-model="newEventType"
             :items="eventTypes"
-            label="일정 타입 선택 또는 입력"
+            label="일정 타입 선택"
             outlined
             dense
-            placeholder="일정을 선택하거나 입력하세요"
+            placeholder="일정을 선택하세요"
           ></v-combobox>
+
+          <!-- 달력 등록 체크박스 -->
+          <v-checkbox
+            v-model="registerToCalendar"
+            label="달력 등록"
+          ></v-checkbox>
 
           <!-- 시작일과 종료일 선택 -->
           <v-row class="mt-3" justify="space-between">
@@ -111,12 +117,13 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      eventTypes: ['salary', 'evaluation'], // 이벤트 타입 목록
-      eventList: [], // 전체 이벤트 목록
-      newEventType: '', // 새로운 이벤트 타입 선택 또는 입력
-      newStartDate: null, // 시작일 선택
-      newEndDate: null, // 종료일 선택
-      showDialog: false, // 모달창 상태
+      eventTypes: ['급여', '인사평가'], 
+      eventList: [], 
+      newEventType: '',
+      newStartDate: null, 
+      newEndDate: null, 
+      showDialog: false,
+      registerToCalendar: false, 
     };
   },
   methods: {
@@ -134,14 +141,40 @@ export default {
         const formattedStartDate = this.formatDate(startDate);
         const formattedEndDate = this.formatDate(endDate);
 
-        await axios.post('/eventDate/setDate', {
+
+        const payload = {
           eventType: this.newEventType,
           startDate: formattedStartDate,
           endDate: formattedEndDate,
           userNum: userNum,
+        };
+
+        await axios.post('/eventDate/setDate', payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         });
+
+
+        if (this.registerToCalendar) {
+          const calendarPayload = {
+            title: this.newEventType, 
+            content: '달력 등록된 이벤트입니다.',
+            startTime: formattedStartDate + "T00:00:00",
+            endTime: formattedEndDate + "T23:59:59",
+            type: '회사일정',
+            userId: userNum,
+          };
+
+          await axios.post('/calendars/create', calendarPayload, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+        }
+
         alert('일정이 성공적으로 저장되었습니다.');
-        this.fetchEventList(); // 이벤트 목록 갱신
+        this.fetchEventList(); // 일정 목록 갱신
         this.showDialog = false; // 모달창 닫기
       } catch (error) {
         console.error('일정 저장 중 오류 발생:', error);
@@ -154,7 +187,7 @@ export default {
         this.eventList = response.data.map(event => ({
           ...event,
           showHistory: false,
-          eventHistories: []
+          eventHistories: [],
         }));
       } catch (error) {
         console.error('전체 일정 목록을 불러오는 중 오류 발생:', error);
@@ -164,9 +197,9 @@ export default {
     async fetchEventHistory(eventId, index) {
       try {
         const response = await axios.get(`/eventDate/getHistory/${eventId}`);
-        this.eventList[index].eventHistories = response.data; // 이벤트별 히스토리 저장
+        this.eventList[index].eventHistories = response.data;
       } catch (error) {
-        console.error('일정 히스토리 가져오기 중 오류:', error);
+        console.error('일정 히스토리 가져오기 중 오류 발생:', error);
       }
     },
 
@@ -191,7 +224,7 @@ export default {
     },
   },
   mounted() {
-    this.fetchEventList();
+    this.fetchEventList(); // 페이지 로드 시 이벤트 목록 불러오기
   },
 };
 </script>
