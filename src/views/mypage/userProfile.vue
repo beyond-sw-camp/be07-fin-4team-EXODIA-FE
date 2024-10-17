@@ -2,17 +2,19 @@
   <div class="main-view">
     <v-container fluid>
       <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-
-        <v-tab @click="navigateTab(0)">인사정보</v-tab>
-        <v-tab @click="navigateTab(1)">평가리스트</v-tab>
-        <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
-        <v-tab @click="navigateTab(3)">인사평가</v-tab>
-        <v-tab @click="navigateTab(4)">전사 근태 통계</v-tab>
+        <v-tab @click="navigateTab(0)">전사 근태 통계</v-tab>
+        <v-tab @click="navigateTab(1)">프로필</v-tab>
+        <v-tab @click="navigateTab(2)">평가리스트</v-tab>
+        <v-tab @click="navigateTab(3)">오늘의 점심</v-tab>
+        <v-tab @click="navigateTab(4)">인사평가</v-tab>
       </v-tabs>
 
       <v-tabs-items v-model="activeTab">
-        <!-- 프로필 -->
         <v-tab-item v-if="activeTab === 0">
+          <!-- 전사 근태 통계 -->
+        </v-tab-item>
+
+        <v-tab-item v-if="activeTab === 1">
 
           <v-row no-gutters>
             <v-col cols="12" md="4" class="profile-content">
@@ -56,81 +58,15 @@
             </v-col>
 
           </v-row>
-
-
-          <!-- <v-row class="leave-info-table" justify="" style="margin-top: 10px;">
-            <v-col cols="8" md="6">
-              <v-row>
-                <v-card-text>
-                  <table class="custom-leave-table">
-                    <thead>
-                      <tr>
-                        <th>잔여 휴가</th>
-                        <th>사용 휴가</th>
-                        <th>병가</th>
-                        <th>결근</th>
-                        <th>유연 근무제</th>
-                        <th>근무 일수</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
-                        <td>{{ usedLeave || 'N/A' }}일</td>
-                        <td>{{ sickLeave || 'N/A' }}일</td>
-                        <td>{{ absentDays || 'N/A' }}일</td>
-                        <td>{{ flexWork || 'N/A' }}</td>
-                        <td>{{ workDays || 'N/A' }}일</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </v-card-text>
-              </v-row>
-            </v-col>
-
-            <v-col cols="8" md="5">
-              <v-row>
-                <v-card-text>
-                  <table class="custom-attendance-table">
-                    <thead>
-                      <tr>
-                        <th>출근시간</th>
-                        <th>퇴근시간</th>
-                        <th>주차누적근무</th>
-                        <th>주차초과근무</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
-                        <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
-                        <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
-                        <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </v-card-text>
-              </v-row>
-            </v-col>
-
-
-
-          </v-row>
-
-
-          <v-row class="timeline-container" style="margin-top: 10px;">
-            <attendance-record />
-          </v-row> -->
         </v-tab-item>
 
-
-        <v-tab-item v-if="activeTab === 1">
+        <v-tab-item v-if="activeTab === 2">
           <!-- 평가리스트 -->
         </v-tab-item>
-        <v-tab-item v-if="activeTab === 2">
+        <v-tab-item v-if="activeTab === 3">
           <!-- 오늘의 점심 -->
         </v-tab-item>
-        <v-tab-item v-if="activeTab === 3">
+        <v-tab-item v-if="activeTab === 4">
           <!-- 인사평가 -->
         </v-tab-item>
 
@@ -151,7 +87,7 @@ export default {
   },
   data() {
     return {
-      activeTab: 0,
+      activeTab: 1,
       userProfile: {},
       workDays: null, // 근무 일수
       usedLeave: 0, // 사용된 휴가
@@ -278,15 +214,16 @@ export default {
 
 
     navigateTab(index) {
-      if (index === 1) {
-        this.$router.push('/mypage/evalutionFrame');
+      if (index == 0) {
+        this.$router.push('/mypage/vacation');
+      } else if (index === 1) {
+        this.$router.push('/mypage/userProfile');
       } else if (index === 2) {
-        this.$router.push('/mypage/spinWheel');
+        this.$router.push('/mypage/evalutionFrame');
       } else if (index === 3) {
-        this.$router.push('/mypage/evalutionList');
+        this.$router.push('/mypage/spinWheel');
       } else if (index === 4) {
-        this.$router.push('/mypage/tmp');
-
+        this.$router.push('/mypage/evalutionList');
       } else {
         this.activeTab = index;
       }

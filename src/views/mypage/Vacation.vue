@@ -2,16 +2,15 @@
     <div class="main-view">
         <v-container fluid>
             <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-
-                <v-tab @click="navigateTab(0)">인사정보</v-tab>
-                <v-tab @click="navigateTab(1)">평가리스트</v-tab>
-                <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
-                <v-tab @click="navigateTab(3)">인사평가</v-tab>
-                <v-tab @click="navigateTab(4)">전사 근태 통계</v-tab>
+                <v-tab @click="navigateTab(0)">전사 근태 통계</v-tab>
+                <v-tab @click="navigateTab(1)">프로필</v-tab>
+                <v-tab @click="navigateTab(2)">평가리스트</v-tab>
+                <v-tab @click="navigateTab(3)">오늘의 점심</v-tab>
+                <v-tab @click="navigateTab(4)">인사평가</v-tab>
             </v-tabs>
 
             <v-tabs-items v-model="activeTab">
-                <!-- 프로필 -->
+                <!-- 전사 근태 통계 -->
                 <v-tab-item v-if="activeTab === 0">
                     <v-row class="leave-info-table" style="margin-top: 10px;">
                         <v-col cols="12">
@@ -59,15 +58,17 @@
 
 
                 <v-tab-item v-if="activeTab === 1">
-                    <!-- 평가리스트 -->
+                    <!-- 프로필 -->
                 </v-tab-item>
                 <v-tab-item v-if="activeTab === 2">
-                    <!-- 오늘의 점심 -->
+                    <!-- 평가리스트 -->
                 </v-tab-item>
                 <v-tab-item v-if="activeTab === 3">
+                    <!-- 오늘의 점심 -->
+                </v-tab-item>
+                <v-tab-item v-if="activeTab === 4">
                     <!-- 인사평가 -->
                 </v-tab-item>
-
             </v-tabs-items>
         </v-container>
     </div>
@@ -212,14 +213,16 @@ export default {
 
 
         navigateTab(index) {
-            if (index === 1) {
-                this.$router.push('/mypage/evalutionFrame');
+            if (index == 0) {
+                this.$router.push('/mypage/vacation');
+            } else if (index === 1) {
+                this.$router.push('/mypage/userProfile');
             } else if (index === 2) {
-                this.$router.push('/mypage/spinWheel');
+                this.$router.push('/mypage/evalutionFrame');
             } else if (index === 3) {
-                this.$router.push('/mypage/evalutionList');
+                this.$router.push('/mypage/spinWheel');
             } else if (index === 4) {
-                this.$router.push('/mypage/tmp');
+                this.$router.push('/mypage/evalutionList');
             } else {
                 this.activeTab = index;
             }
