@@ -122,8 +122,8 @@ export default {
       newEventType: '', // 새로운 이벤트 타입 선택
       newStartDate: null, // 시작일 선택
       newEndDate: null, // 종료일 선택
-      showDialog: false, // 모달창 상태
       registerToCalendar: false, // 달력 등록 상태 추가
+      showDialog: false, // 모달창 상태
     };
   },
   methods: {
@@ -141,7 +141,7 @@ export default {
         const formattedStartDate = this.formatDate(startDate);
         const formattedEndDate = this.formatDate(endDate);
 
-        // event_date 테이블의 기존 로직 그대로 두고, 달력 등록 로직만 추가합니다
+        // 이벤트 등록 코드 그대로 유지
         const eventPayload = {
           eventType: this.newEventType,
           startDate: formattedStartDate,
@@ -156,7 +156,7 @@ export default {
         });
 
         if (this.registerToCalendar) {
-          // Check if the calendar event already exists
+          // 달력에서 이벤트가 있는지 확인
           try {
             const calendarResponse = await axios.get(`/calendars/findByTitle/${encodeURIComponent(this.newEventType)}`, {
               headers: {
@@ -164,7 +164,7 @@ export default {
               },
             });
 
-            // If it exists, update it
+            // 이미 이벤트가 있으면 업데이트
             const calendarUpdatePayload = {
               title: this.newEventType,
               content: '달력 등록된 이벤트입니다.',
@@ -181,7 +181,7 @@ export default {
             });
 
           } catch (error) {
-            // If not found (404), create a new calendar event
+            // 이벤트가 없는 경우, 새로 생성
             if (error.response && error.response.status === 404) {
               const calendarCreatePayload = {
                 title: this.newEventType,
@@ -204,7 +204,6 @@ export default {
         }
 
         alert('일정이 성공적으로 처리되었습니다.');
-        this.fetchEventList(); // 이벤트 목록 갱신
         this.showDialog = false; // 모달창 닫기
       } catch (error) {
         console.error('일정 저장 중 오류 발생:', error);
