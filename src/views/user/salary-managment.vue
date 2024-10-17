@@ -115,9 +115,16 @@ export default {
       positions: [],
       selectedPosition: null,
       salaryDateDialog: false,
-      selectedStartDate: null, // 시작일 선택
-      selectedEndDate: null, // 종료일 선택
+      selectedStartDate: null, 
+      selectedEndDate: null,
     };
+  },
+  watch: {
+    selectedPosition(newPositionId) {
+      if (newPositionId) {
+        this.fetchSalariesByPosition(newPositionId);
+      }
+    }
   },
   methods: {
     async fetchSalaries() {
