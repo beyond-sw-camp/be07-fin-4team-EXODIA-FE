@@ -1,8 +1,8 @@
 <template>
 
-  <v-row class="buttons">
+  <v-row>
     <v-col cols="4">
-      <h2>출·퇴근 기록</h2>
+      <h3>출·퇴근 기록</h3>
     </v-col>
     <v-col cols="2">
       <!-- 출근 버튼 -->

@@ -2,41 +2,25 @@
   <v-container fluid class="timeline-container">
     <!-- Week Selection -->
     <v-row>
-      <v-col cols="10" md="6" >
-        <v-select
-          v-model="selectedWeek"
-          :items="weeks"
-          label="주차 선택"
-          outlined
-          style="margin-left: 30px;"
-        ></v-select>
+      <v-col cols="10" md="6">
+        <v-select v-model="selectedWeek" :items="weeks" label="주차 선택" outlined style="margin-left: 30px;"></v-select>
       </v-col>
 
-      <v-col cols="10" md ="4">
-        <v-btn
-        color="primary"
-          @click="workIn"
-          :disabled="isWorkIn"
-          style="height: 55px;"
-        >
-         출근
+      <!-- 출근 버튼 -->
+      <v-col cols="10" md="4">
+        <v-btn color="primary" @click="workIn" :disabled="isWorkIn" style="height: 55px;">
+          출근
         </v-btn>
-    
+
         <!-- 퇴근 버튼 -->
-        <v-btn
-          color="error"
-          @click="workOut"
-        
-          style="margin-left: 10px; height:55px"
-        >
+        <v-btn color="error" @click="workOut" style="margin-left: 10px; height:55px">
           퇴근
         </v-btn>
         <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
       </v-col>
 
     </v-row>
-      <!-- 출근 버튼 -->
-      
+
     <!-- 타임라인 헤더 -->
     <v-row class="hours-row">
       <v-col cols="1">
@@ -60,13 +44,8 @@
         <v-row>
           <div v-for="hour in hours" :key="hour" class="timeline-bar">
             <!-- 근무 시간이 있을 때만 표시 -->
-            <v-progress-linear
-              v-if="isWorkHour(day, hour)"
-              :value="100"
-              height="30"
-              :color="getTimeColor(day, hour)"
-              class="timeline-progress"
-            ></v-progress-linear>
+            <v-progress-linear v-if="isWorkHour(day, hour)" :value="100" height="30" :color="getTimeColor(day, hour)"
+              class="timeline-progress"></v-progress-linear>
           </div>
         </v-row>
       </v-col>
@@ -102,7 +81,7 @@ export default {
   watch: {
     selectedWeek() {
       this.fetchWeeklyDetails(); // 주차가 변경될 때마다 데이터 불러오기
-      
+
     },
   },
   mounted() {
@@ -129,8 +108,8 @@ export default {
         console.error(error);
       }
     },
-  
-      // 퇴근 API 호출
+
+    // 퇴근 API 호출
     async workOut() {
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, {}, {
@@ -146,8 +125,8 @@ export default {
         console.error(error);
       }
     },
-  
-      // JWT 인증 헤더 설정
+
+    // JWT 인증 헤더 설정
     getAuthHeaders() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -158,10 +137,10 @@ export default {
         Authorization: `Bearer ${token}`,
       };
     },
-  
-  created() {
-    // 페이지 로딩 시 초기화 작업을 할 수 있음
-  },
+
+    created() {
+      // 페이지 로딩 시 초기화 작업을 할 수 있음
+    },
 
     emitAttendanceData() {
       this.$emit('update-attendance', {
@@ -171,17 +150,17 @@ export default {
         weeklyOvertimeHours: this.weeklyOvertimeHours,
       });
     },
-  
+
 
 
 
     getISOWeekNumber(date) {
       const thursday = new Date(date.getTime());
       thursday.setDate(date.getDate() + (4 - (date.getDay() || 7)));
-      
+
       const yearStart = new Date(thursday.getFullYear(), 0, 1);
       const weekNumber = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
-      
+
       return weekNumber;
     },
     // 선택된 주차의 데이터를 API에서 가져오는 함수
@@ -212,41 +191,41 @@ export default {
     },
 
     async fetchAttendanceData() {
-    try {
-      const token = localStorage.getItem('token');
-      const userNum = localStorage.getItem('userNum');
-      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/today`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        params: {
-          userNum: userNum
+      try {
+        const token = localStorage.getItem('token');
+        const userNum = localStorage.getItem('userNum');
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/today`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          params: {
+            userNum: userNum
+          }
+        });
+
+        const attendanceData = response.data;
+        // Log the entire response to check the structure
+        console.log('Fetched today\'s attendance data:', attendanceData);
+
+        // Log today's clock-in and clock-out times
+        if (attendanceData.todayClockInTime) {
+          console.log('Today\'s Clock-in Time:', attendanceData.todayClockInTime);
+        } else {
+          console.log('No clock-in record found for today');
         }
-      });
 
-      const attendanceData = response.data;
-      // Log the entire response to check the structure
-      console.log('Fetched today\'s attendance data:', attendanceData);
+        if (attendanceData.todayClockOutTime) {
+          console.log('Today\'s Clock-out Time:', attendanceData.todayClockOutTime);
+        } else {
+          console.log('No clock-out record found for today');
+        }
+        this.attendanceData.clockInTime = attendanceData.todayClockInTime || 'N/A';
+        this.attendanceData.clockOutTime = attendanceData.todayClockOutTime || 'N/A';
 
-      // Log today's clock-in and clock-out times
-      if (attendanceData.todayClockInTime) {
-        console.log('Today\'s Clock-in Time:', attendanceData.todayClockInTime);
-      } else {
-        console.log('No clock-in record found for today');
+      } catch (error) {
+        console.error("Error fetching today's clock-in/out data:", error);
       }
-
-      if (attendanceData.todayClockOutTime) {
-        console.log('Today\'s Clock-out Time:', attendanceData.todayClockOutTime);
-      } else {
-        console.log('No clock-out record found for today');
-      }
-      this.attendanceData.clockInTime = attendanceData.todayClockInTime || 'N/A';
-      this.attendanceData.clockOutTime = attendanceData.todayClockOutTime || 'N/A';
-
-    } catch (error) {
-      console.error("Error fetching today's clock-in/out data:", error);
-    }
-  },
+    },
 
 
 
@@ -271,7 +250,7 @@ export default {
       if (dayData) {
         const inTime = new Date(dayData.inTime).getHours();
         const outTime = new Date(dayData.outTime).getHours();
-        
+
         // hour가 근무 시간 범위 내에 있는 경우에만 색상을 결정
         if (hour >= inTime && hour < outTime) {
           const hoursWorked = dayData.hoursWorked;
@@ -294,27 +273,23 @@ export default {
   /* border: solid 1px; */
 }
 
-.hours-row {
-  margin-bottom: 10px;
-  
-}
+.hours-row {}
 
 .hour-label {
   width: calc(100% / 25);
   text-align: center;
   font-size: 12px;
   font-weight: bold;
-  background-color: #ffffff;
-
-  border: 1px solid #D8EACA;
+  background-color: rgba(122, 86, 86, 0.2);
+  border: 0.5px solid #B9B9B9;
   padding: 10px;
+  margin-bottom: 0;
 }
 
 .day-label {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* background-color: #f0f0f0; */
   height: 50px;
   font-size: 18px;
   margin-top: -20px;
@@ -323,14 +298,13 @@ export default {
 }
 
 .timeline-bar {
-  margin-top: -10px;
+  margin-top: 0;
   width: calc(100% / 25);
   padding: 0;
-  height: 50px;
-  border-width: 0px 1px 0px 1px;
+  height: 40px;
+  border-width: 0px 0.5px 0.5px 0.5px;
   border-style: solid;
-  border-color: #D8EACA;
-  
+  border-color: #B9B9B9;
 }
 
 .v-progress-linear {
