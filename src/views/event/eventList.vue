@@ -117,13 +117,13 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      eventTypes: ['급여', '인사평가'], 
-      eventList: [], 
-      newEventType: '',
-      newStartDate: null, 
-      newEndDate: null, 
-      showDialog: false,
-      registerToCalendar: false, 
+      eventTypes: ['급여', '인사평가'], // 이벤트 타입 목록
+      eventList: [], // 전체 이벤트 목록
+      newEventType: '', // 새로운 이벤트 타입 선택
+      newStartDate: null, // 시작일 선택
+      newEndDate: null, // 종료일 선택
+      showDialog: false, // 모달창 상태
+      registerToCalendar: false, // 달력 등록 상태 추가
     };
   },
   methods: {
@@ -141,7 +141,7 @@ export default {
         const formattedStartDate = this.formatDate(startDate);
         const formattedEndDate = this.formatDate(endDate);
 
-
+        // 기본적으로 event_date 테이블에 일정 등록
         const payload = {
           eventType: this.newEventType,
           startDate: formattedStartDate,
@@ -155,10 +155,10 @@ export default {
           },
         });
 
-
+        // 달력 등록이 체크된 경우 캘린더 테이블에도 추가
         if (this.registerToCalendar) {
           const calendarPayload = {
-            title: this.newEventType, 
+            title: this.newEventType,
             content: '달력 등록된 이벤트입니다.',
             startTime: formattedStartDate + "T00:00:00",
             endTime: formattedEndDate + "T23:59:59",
@@ -174,7 +174,7 @@ export default {
         }
 
         alert('일정이 성공적으로 저장되었습니다.');
-        this.fetchEventList(); // 일정 목록 갱신
+        this.fetchEventList(); // 이벤트 목록 갱신
         this.showDialog = false; // 모달창 닫기
       } catch (error) {
         console.error('일정 저장 중 오류 발생:', error);
