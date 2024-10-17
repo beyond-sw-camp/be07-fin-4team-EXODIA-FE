@@ -1,28 +1,35 @@
 <template>
   <v-container>
     <v-row>
-      <v-col>
+      <v-col cols="5">
         <h2>출·퇴근 기록</h2>
-
+      </v-col>
+      <v-col cols="2">
         <!-- 출근 버튼 -->
-        <v-btn color="primary" @click="workIn" :disabled="isWorkIn">
+        <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn" :disabled="isWorkIn">
           출근
         </v-btn>
-
+      </v-col>
+      <v-col cols="2">
         <!-- 퇴근 버튼 -->
-        <v-btn color="error" @click="workOut" :disabled="!isWorkIn || isWorkOut">
+        <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut" :disabled="!isWorkIn || isWorkOut">
           퇴근
         </v-btn>
-
-        <!-- 상태 표시 -->
-        <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
       </v-col>
+
+
+
+      <!-- 상태 표시 -->
+      <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
+
     </v-row>
+
+
   </v-container>
 
   <!-- 부서원 출근 정보 목록 -->
-  <div class="container">
-    <div class="user-card" v-for="user in departmentUsers" :key="user.userNum">
+  <v-row class="container">
+    <v-col cols="4" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
       <div class="profile-container">
         <!-- 프로필 이미지 -->
         <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
@@ -37,8 +44,8 @@
         <div class="user-position">{{ user.positionName }}</div>
         <div class="user-department">{{ user.departmentName }}</div>
       </div>
-    </div>
-  </div>
+    </v-col>
+  </v-row>
 
 </template>
 
@@ -165,7 +172,7 @@ v-alert {
 .user-card {
   width: 200px;
   padding: 20px;
-  margin: 15px;
+  margin: 5px;
   text-align: center;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -179,8 +186,8 @@ v-alert {
 }
 
 .profile-img {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #ddd;
