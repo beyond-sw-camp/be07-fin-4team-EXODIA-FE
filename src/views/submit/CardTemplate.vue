@@ -22,7 +22,8 @@
                         <v-list-subheader>신청일</v-list-subheader>
                     </v-col>
                     <v-col cols="9">
-                        <VueDatePicker v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"></VueDatePicker>
+                        <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
+                            :min-date="new Date()" :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
                     </v-col>
                 </v-row>
                 <v-row>
@@ -114,9 +115,6 @@
             </v-col>
         </v-row>
     </v-card>
-
-
-
 </template>
 
 <script>
@@ -134,7 +132,7 @@ export default {
             departmentName: '',
 
             formData: {
-                신청일: '',
+                신청일: new Date().toISOString().split("T")[0], // ISO 형식으로 초기화
                 사용기간: '',
                 사유: '',
                 사용인원: '',
@@ -186,6 +184,9 @@ export default {
                 console.error('직급 이름 불러오는데 오류 발생:', e);
             }
         },
+        onDateSelect(date) {
+            this.formData.신청일 = date;
+        },
         onDragStart(user) {
             this.draggedUser = user;
         },
@@ -204,7 +205,6 @@ export default {
         },
         async createSubmit() {
             try {
-                this.formData.신청일 = this.formatDate(this.formatDate.신청일) + " " + this.formatLocalTime(this.formatDate.신청일);
                 this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
                 await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
                 alert("결재 요청이 성공적으로 처리되었습니다.")

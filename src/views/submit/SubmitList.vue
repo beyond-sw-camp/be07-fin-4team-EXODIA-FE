@@ -1,6 +1,6 @@
 <template>
     <v-row>
-        <h1 style="margin:35px 0; font-weight:800">결재 할 문서</h1>
+        <h1>결재 할 문서</h1>
     </v-row>
 
     <v-card style="padding:50px">
@@ -35,8 +35,10 @@
                         <v-col cols="1">{{ index + 1 }}</v-col>
                         <v-col cols="3">{{ submit.submitType }}</v-col>
                         <v-col cols="2">{{ submit.userName }} </v-col>
-                        <v-col cols="2">{{ formatDate(submit.submitTime) }}</v-col>
-                        <v-col cols="2">{{ formatDate(submit.submitTime) }}</v-col>
+                        <v-col cols="2">{{ formatDate(submit.submitTime) }}
+                            {{ formatLocalTime(submit.submitTime) }}</v-col>
+                        <v-col cols="2">{{ formatDate(submit.updatedTime) }} {{ formatLocalTime(submit.updatedTime)
+                            }}</v-col>
                         <v-col cols="2">
                             <v-chip class="d-flex justify-center align-center" v-bind:class="{
                                 'chip-reject': submit.submitStatus === 'REJECT',
@@ -145,7 +147,7 @@ export default {
 }
 
 .chip-accept {
-    background-color: #81c784;
+    background-color: #4cAf50;
     color: white;
 }
 
