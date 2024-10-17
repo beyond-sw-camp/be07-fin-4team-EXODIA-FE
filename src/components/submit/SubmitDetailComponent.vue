@@ -190,9 +190,7 @@ export default {
 }
 </script>
 <style scoped>
-*:not(h1, h2) {
-    font-size: 14px;
-}
+*:not(h1, h2) {}
 
 .subtitle {
     justify-content: space-between;

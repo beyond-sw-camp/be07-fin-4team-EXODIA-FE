@@ -37,12 +37,6 @@
 
       <!-- 서브사이드: 문서 관리 -->
       <div v-show="expandedMenu === 'document' || hoveredMenu === 'document'" class="sub-side-menu">
-        <v-row>
-          <v-btn style="color:#ffffff" @click="$router.push('/document/create')">
-            파일 등록
-          </v-btn>
-        </v-row>
-
         <v-row @click="$router.push('/document')">
           전체 파일
         </v-row>
@@ -80,11 +74,6 @@
 
       <!-- 서브사이드: 결재 -->
       <div v-show="expandedMenu === 'submit' || hoveredMenu === 'submit'" class="sub-side-menu">
-        <v-row>
-          <v-btn style="color:#ffffff" @click="$router.push('/submit')">
-            결재 생성
-          </v-btn>
-        </v-row>
         <v-row @click="$router.push('/submit/list')">
           결재 할 문서
         </v-row>
@@ -263,6 +252,10 @@ export default {
   justify-content: center;
   align-content: center;
   overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; 
 }
 
 .menu {
