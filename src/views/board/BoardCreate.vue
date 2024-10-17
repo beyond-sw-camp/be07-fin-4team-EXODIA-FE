@@ -17,6 +17,7 @@
             flat
             hide-details
             class="category-select"
+            :disabled="!!$route.params.category" 
           ></v-select>
         </v-col>
 
@@ -79,12 +80,10 @@
       <v-row>
         <v-col cols="12">
           <div class="tag-buttons">
-            <!-- 태그 추가 버튼 -->
             <v-btn class="tag-button rounded-button" outlined @click="openTagModal">
               + <!-- 태그 추가 버튼 표시 -->
             </v-btn>
 
-            <!-- 기존 태그들 -->
             <div v-for="tag in tags" :key="tag.id" class="tag-wrapper">
               <v-btn
                 :class="{'selected-tag': selectedTags.includes(tag.id)}"
@@ -94,29 +93,25 @@
               >
                 {{ tag.tag }}
               </v-btn>
-              <!-- 태그 삭제 버튼 (X 버튼) -->
               <v-btn icon @click="removeTag(tag.id)" class="remove-tag-btn">
                 <v-icon>mdi-close</v-icon>
               </v-btn>
-              
             </div>
           </div>
         </v-col>
       </v-row>
 
-<!-- 고정 여부 체크박스, 취소 및 저장 버튼 -->
-    <div class="btnWrap">
-      <!-- 고정 체크박스: 카테고리가 FAMILY_EVENT가 아닐 때만 표시 -->
-      <v-checkbox
-        v-if="selectedCategory !== 'FAMILY_EVENT'"
-        v-model="isPinned"
-        label="중요"
-        class="mr-4"
-      />
-
-      <v-btn text @click="cancel">취소</v-btn>
-      <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
-    </div>
+      <!-- 고정 여부 체크박스, 취소 및 저장 버튼 -->
+      <div class="btnWrap">
+        <v-checkbox
+          v-if="selectedCategory !== 'FAMILY_EVENT'"
+          v-model="isPinned"
+          label="중요"
+          class="mr-4"
+        />
+        <v-btn text @click="cancel">취소</v-btn>
+        <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
+      </div>
     </v-form>
 
     <!-- 태그 추가 모달 -->
@@ -159,7 +154,6 @@ export default {
       tags: [], // 태그 목록
       userNum: localStorage.getItem('userNum'), // 유저 번호
       departmentId: localStorage.getItem('departmentId'), // 부서 아이디
-
       showTagModal: false, // 태그 추가 모달 상태
       newTagName: '', // 새로운 태그 이름
     };
@@ -167,8 +161,16 @@ export default {
   mounted() {
     this.checkUserRole(); // 유저 권한 확인
     this.fetchTags(); // 태그 목록 불러오기
+    this.setCategory(); // 카테고리 설정
   },
   methods: {
+    // 카테고리 설정
+    setCategory() {
+      if (this.$route.params.category) {
+        this.selectedCategory = this.$route.params.category.toUpperCase();
+      }
+    },
+
     // 유저가 관리자 권한을 갖고 있는지 확인
     checkUserRole() {
       if (!this.userNum || !this.departmentId) {
@@ -212,7 +214,6 @@ export default {
           tag: this.newTagName.trim(),
         });
 
-        // 새로 추가된 태그를 태그 목록에 추가
         this.tags.push(response.data.result);
         this.selectedTags.push(response.data.result.id);
         this.closeTagModal();
@@ -232,103 +233,70 @@ export default {
       }
     },
 
-    // 태그 삭제
-    async removeTag(tagId) {
-      console.log("삭제할 태그 ID:", tagId); // 태그 ID가 정상적으로 출력되는지 확인
-      if (!tagId) {
-        console.error('tagId가 유효하지 않습니다.');
-        return;
-      }
-      try {
-        await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/tags/delete/${tagId}`);
-        this.tags = this.tags.filter(tag => tag.id !== tagId); // 태그 목록에서 삭제
-      } catch (error) {
-        console.error('태그 삭제에 실패했습니다:', error);
-        alert('태그 삭제에 실패했습니다.');
-      }
-    },
-
-
     async submitForm() {
-      console.log('submitForm called')
-    if (this.departmentId !== '4') {
+      if (this.departmentId !== '4') {
         alert('관리자만 작성할 수 있습니다.');
         return;
-    }
+      }
 
-    const content = document.getElementById('editor').innerHTML;
+      const content = document.getElementById('editor').innerHTML;
 
-    console.log('Form Data Before Submission:');
-    console.log('title:', this.title);
-    console.log('content:', content);
-    console.log('isPinned:', this.isPinned);
+      const formData = new FormData();
+      formData.append('title', this.title);
+      formData.append('content', content);
+      formData.append('category', this.selectedCategory);
+      formData.append('userNum', this.userNum);
+      formData.append('isPinned', this.isPinned ? 'true' : 'false');
+      formData.append('tagIds', this.selectedTags);
 
-    const formData = new FormData();
-    formData.append('title', this.title);
-    formData.append('content', content);
-    formData.append('category', this.selectedCategory);
-    formData.append('userNum', this.userNum);
-    formData.append('isPinned', this.isPinned ? 'true' : 'false');
-    formData.append('tagIds', this.selectedTags);
-
-    if (this.files && this.files.length > 0) {
-        this.files.forEach((file) => {
-            formData.append('files', file);
+      if (this.files && this.files.length > 0) {
+        this.files.forEach(file => {
+          formData.append('files', file);
         });
-    }
+      }
 
-    try {
+      try {
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`;
         const response = await axios.post(apiUrl, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         });
 
-        console.log('저장 성공:', response.data);
         const boardId = response.data.result?.id || response.data?.id;
 
-
         if (!boardId) {
-            console.error('게시글 ID를 가져오지 못했습니다. 응답 데이터:', response.data);
-            return;
+          console.error('게시글 ID를 가져오지 못했습니다.');
+          return;
         }
 
-        // 게시글이 고정된 경우 상단 고정 처리
         if (this.isPinned) {
-            await this.pinBoard(boardId);
+          await this.pinBoard(boardId);
         }
 
         if (this.selectedCategory === 'NOTICE') {
-            this.$router.push({ path: '/board/notice/list' });
+          this.$router.push({ path: '/board/notice/list' });
         } else if (this.selectedCategory === 'FAMILY_EVENT') {
-            this.$router.push({ path: '/board/familyevent/list' });
+          this.$router.push({ path: '/board/familyevent/list' });
         } else {
-            this.$router.push({ name: 'BoardList' });
+          this.$router.push({ name: 'BoardList' });
         }
-    } catch (error) {
-        console.error('저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
+      } catch (error) {
+        console.error('저장 실패:', error);
         alert('게시글 저장에 실패했습니다.');
-    }
-},
+      }
+    },
 
-async pinBoard(boardId) {
-    try {
+    async pinBoard(boardId) {
+      try {
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/pin/${boardId}`;
-        const response = await axios.post(apiUrl, {
-            boardId,
-            isPinned: true
-        });
-
-        console.log('상단 고정 성공:', response.data);
-    } catch (error) {
-        console.error('상단 고정 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
+        await axios.post(apiUrl, { boardId, isPinned: true });
+      } catch (error) {
+        console.error('상단 고정 실패:', error);
         alert('상단 고정 처리에 실패했습니다.');
-    }
-},
-
-
+      }
+    },
 
     cancel() {
       this.$router.go(-1);
@@ -340,6 +308,7 @@ async pinBoard(boardId) {
   },
 };
 </script>
+
 
 
 

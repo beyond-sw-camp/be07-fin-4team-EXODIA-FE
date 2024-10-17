@@ -107,7 +107,7 @@ export default {
         { text: "태그", value: "tags" }, // 태그로 검색 가능하도록 유지
       ],
       categoryOptions: [
-        { text: "공지사항", value: "NOTICE" },
+        { text: "공지사항", value: "notice" },
         { text: "경조사", value: "FAMILY_EVENT" },
       ],
     };
@@ -208,8 +208,9 @@ export default {
         alert("관리자만 이 게시판에 글을 작성할 수 있습니다.");
         return;
       }
-      this.$router.push({ name: "BoardCreate" });
+      this.$router.push({ name: "BoardCreate", params: { category: this.currentCategory } });
     },
+
 
     goToDetail(id) {
       this.$router.push({ name: "BoardDetail", params: { id } });
