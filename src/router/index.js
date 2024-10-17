@@ -14,6 +14,7 @@ import { positionRouter } from './positionRouter';
 import { qnaRouter } from './qnaRouter';
 import { notificationRouter } from './notificationRouter';
 import { submitRouter } from './submitRouter';
+import { eventRouter } from './eventRouter';
 
 const routes = [
   {
@@ -40,6 +41,7 @@ const routes = [
   ...submitRouter,
   ...chatRouter,
   ...qnaRouter,
+  ...eventRouter,
 ];
 
 const router = createRouter({

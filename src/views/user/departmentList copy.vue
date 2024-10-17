@@ -19,7 +19,7 @@
             @dragstart="dragStart(department)"
             @dragover.prevent
             @drop="drop(department)"
-            @click="editMode ? openEditDialog(department) : fetchUsersByDepartment(department.id)"
+            @click="fetchUsersByDepartment(department.id)" 
           >
             {{ department.name || '이름 없음' }}
             <button v-if="editMode" @click.stop="deleteDepartment(department.id)">삭제</button>
@@ -33,7 +33,7 @@
                 @dragstart="dragStart(child)"
                 @dragover.prevent
                 @drop="drop(child)"
-                @click="editMode ? openEditDialog(child) : fetchUsersByDepartment(child.id)"
+                @click="fetchUsersByDepartment(child.id)" 
               >
                 {{ child.name || '이름 없음' }}
                 <button v-if="editMode" @click.stop="deleteDepartment(child.id)">삭제</button>
@@ -47,7 +47,7 @@
                     @dragstart="dragStart(subChild)"
                     @dragover.prevent
                     @drop="drop(subChild)"
-                    @click="editMode ? openEditDialog(subChild) : fetchUsersByDepartment(subChild.id)"
+                    @click="fetchUsersByDepartment(subChild.id)"
                   >
                     {{ subChild.name || '이름 없음' }}
                     <button v-if="editMode" @click.stop="deleteDepartment(subChild.id)">삭제</button>
@@ -91,7 +91,7 @@
             label="상위 부서"
             v-model="departmentForm.parentId"
             :items="parentOptions"
-            item-text="name"
+            item-title="name"
             item-value="id"
           ></v-select>
         </v-card-text>
@@ -146,6 +146,7 @@ export default {
     },
     async fetchUsersByDepartment(departmentId) {
       try {
+        console.log('Fetching users for department ID:', departmentId); // departmentId 확인 로그
         const response = await axios.get(`/department/${departmentId}/users`);
         this.users = response.data;
       } catch (error) {
@@ -162,7 +163,7 @@ export default {
     },
     getPositionName(positionId) {
       const position = this.positions.find(pos => pos.id === positionId);
-      return position ? position.name : '알 수 없음'; 
+      return position ? position.name : '알 수 없음';
     },
     toggleEditMode() {
       this.editMode = !this.editMode;
@@ -224,7 +225,7 @@ export default {
       }
     },
     getNodeStyle(department, depth) {
-      const colors = ['#ffeb3b', '#64b5f6', '#81c784'];
+      const colors = ['#e3f2fd', '#bbdefb', '#90caf9']; // 색상 변경
       const color = colors[depth % colors.length];
       return {
         cursor: this.editMode ? 'move' : 'pointer',

@@ -1,101 +1,162 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="timeline-container">
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
     <v-row justify="space-between">
-      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3">
+      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 12px;">
         <!-- 차량 예약 탭 -->
         <v-tab @click="goToVehicleReservation" class="text-body-1">
-          법인 차량 예약
+          법인차량예약
         </v-tab>
 
         <!-- 회의실 예약 탭 -->
-        <v-tab @click="goToMeetingRoomReservation" class="text-body-1">
-          회의실 예약
+        <v-tab @click="goToMeetingRoomReservation" class="text-body-1" style="margin-left: -9px;">
+          회의실예약
         </v-tab>
       </v-tabs>
 
       <!-- 오른쪽 상단에 관리자 전용 아이콘 추가 (인사팀인 경우에만 표시) -->
-      <v-btn v-if="isHrDepartment" icon @click="goToAdminPage">
+      <v-btn v-if="isHrDepartment" icon @click="goToAdminPage" style="margin-top: 10px;">
         <v-icon>mdi-cog</v-icon> <!-- 톱니바퀴 아이콘 -->
       </v-btn>
     </v-row>
+
+    <v-row class="my-3 align-center" >
+      <v-col cols="4">
+        <!-- 어제 버튼 -->
+        <v-btn @click="prevDay" icon style="box-shadow: none; ">
+          <v-icon>mdi-chevron-left</v-icon>
+        </v-btn>
+        <!-- 내일 버튼 -->
+        <v-btn @click="nextDay" icon style="box-shadow: none; margin-left: -10px;">
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+        <!-- 오늘 버튼 -->
+        <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -1px; margin-left: -10px;">Today</v-btn>
+        <!-- 장기 예약  -->
+        <v-btn @click="openLongTermReservationModal" style="box-shadow: none;  margin-left: -10px;">
+          <v-icon right style="margin-top: 5px">mdi-calendar-plus</v-icon>
+        </v-btn>
+      </v-col>
+      
+      <v-col cols="6" class="text-center">
+        <h2 style="font-size: 30px; margin-left: -40%; letter-spacing: -0.5px;">{{ formattedDate(selectedDate) }}</h2>
+      </v-col>
+      <!-- 장기 예약 버튼 -->
+      <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
+    </v-row>
+
 
     <!-- 현재 탭에 대한 내용 -->
     <v-tabs-items v-model="selectedTab">
       <!-- 차량 예약 탭 내용 -->
       <v-tab-item>
-        <v-container fluid>
-          <v-row justify="center" class="mb-5">
-            <!-- Left Arrow Button for Previous Day -->
-            <v-btn @click="prevDay" icon>
-              <v-icon>mdi-chevron-left</v-icon> <!-- Left arrow icon -->
-            </v-btn>
 
-            <h2>{{ formattedDate(selectedDate) }}</h2>
+        <v-row>
+          <v-col>
+            <h3 style="margin: 10px;">차량 예약 내역</h3>
+            <br>
 
-            <!-- Right Arrow Button for Next Day -->
-            <v-btn @click="nextDay" icon>
-              <v-icon>mdi-chevron-right</v-icon> <!-- Right arrow icon -->
-            </v-btn>
+            <!-- 테이블 헤더 -->
+            <v-row class="mb-2" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
+              <v-col cols="1"><strong></strong></v-col>
+              <v-col cols="3"><strong>종류</strong></v-col>
+              <v-col cols="3"><strong>차량번호</strong></v-col>
             
-            <!-- 오늘 버튼 -->
-            <v-btn class="ml-4" @click="setToday" color="primary" outlined>오늘</v-btn>
+              <v-col cols="3"><strong>예약상태</strong></v-col>
+              <v-col cols="1"></v-col>
+            </v-row>
 
-            <!-- 장기 예약 버튼 -->
-            <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn>
-          </v-row>
+            <!-- 차량 리스트 -->
+            <v-row v-for="vehicle in vehicles" :key="vehicle.carId" class="vehicle-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+              <v-col cols="1">
+                <v-btn @click="openCarModal(vehicle)" icon color="none" style="box-shadow: none;">
+                  <v-icon>mdi-car</v-icon> <!-- 차량 아이콘 -->
+                </v-btn>
+              </v-col>
+              
+                    <!-- 차량 종류 -->
+                    <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
 
-          <!-- Vehicle Availability Table -->
-          <v-table>
-            <thead>
-              <tr>
-                <th>종류</th>
-                <th>차량 종류</th>
-                <th>예약 상태</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="vehicle in vehicles" :key="vehicle.carId">
-                <td>{{ vehicle.carType }}</td>
-                <td>{{ vehicle.carNum }}</td>
-                <td>
-                  <v-btn @click="isCarModalOpen(vehicle)" color="primary">
-                    차량 정보
-                  </v-btn>
-                </td>
-                <td>
-                  <v-btn v-if="vehicle.status === 'AVAILABLE'" color="green" @click="createReservation(vehicle.carId)">
-                    예약 가능
-                  </v-btn>
-                  <v-btn v-else color="red">
-                    예약 불가
-                  </v-btn>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
+              <!-- 차량 번호 -->
+              <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carNum }}</v-col>
+            
+              <v-col cols="3">
+                <v-btn v-if="vehicle.status === 'AVAILABLE'" color="green" @click="createReservation(vehicle.carId)">
+                  예약 가능
+                </v-btn>
+                <v-btn v-else color="red">
+                  예약 불가
+                </v-btn>
+              </v-col>
 
-          <v-dialog v-model="isCarModalOpen" persistent max-width="600px">
-            <v-card>
-              <v-card-title>
-                <span>{{ selectedCar.carType }} ({{ selectedCar.carNum }})</span>
-              </v-card-title>
-              <v-card-text>
-                <p>인승: {{ selectedCar.seatingCapacity }}</p>
-                <p>배기량: {{ selectedCar.engineDisplacement }}L</p>
-                <v-img :src="selectedCar.carImage" alt="차량 이미지"></v-img>
-              </v-card-text>
-              <v-card-actions>
-                <v-btn color="blue darken-1" text @click="isCarModalOpen = false">닫기</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+              <v-col cols="1">
+                <!-- 예약 불가일 때만 아이콘 표시 -->
+                <v-hover v-if="vehicle.status === 'RESERVED'">
+                  <template v-slot:default="{ isHovering, props }">
+                    <div style="position: relative;">
+                      <v-btn v-bind="props" icon style="box-shadow: none;">
+                        <v-icon>mdi-account</v-icon>
+                      </v-btn>
 
-          <!-- 장기 예약 모달창 -->
+                      <!-- 호버 시 아이콘 오른쪽에 텍스트 표시 -->
+                      <v-row v-if="isHovering" style="position: absolute; top: 20; left: 5px; width: 130px; background-color: white; padding: 2px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">
+                        <v-col>{{ vehicle.departmentName }}  {{ vehicle.userName }}</v-col>
+                      </v-row>
+                    </div>
+                  </template>
+                </v-hover>
+
+
+              </v-col>
+
+            </v-row>
+
+          </v-col>
+        </v-row>
+
+        <!-- 차량 상세 정보 모달창 -->
+        <v-dialog v-model="isCarModalOpen" persistent max-width="400px">
+          <v-card>
+            <!-- 차량 이미지 최상단에 배치, 이미지 없을 때도 고정 크기 유지 -->
+            <v-img 
+              :src="selectedCar.carImage || 'https://via.placeholder.com/600x200?text=No+Image+Available'" 
+              alt="차량 이미지"
+              height="200px"
+              max-height="200px"
+              contain
+              class="d-flex align-center justify-center"
+            ></v-img>
+
+            <v-card-title class="text-center">
+              <span>{{ selectedCar.carType }} ({{ selectedCar.carNum }})</span>
+            </v-card-title>
+
+            <v-card-text>
+              <v-row align="center" justify="space-between">
+                <v-col class="d-flex align-center">
+                  <v-icon left>mdi-seat</v-icon> <!-- 사람 인승 아이콘 -->
+                  <span>{{ selectedCar.seatingCapacity }} 인승</span> <!-- 인승 바인딩 -->
+                </v-col>
+                <v-col class="d-flex align-center">
+                  <span>배기량: {{ selectedCar.engineDisplacement }}L</span> <!-- 배기량 바인딩 -->
+                </v-col>
+              </v-row>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="isCarModalOpen = false">닫기</v-btn>
+            </v-card-actions>
+
+          </v-card>
+        </v-dialog>
+
+
+          <!-- 차량 예약 모달창 -->
           <v-dialog v-model="isLongTermReservationModalOpen" persistent max-width="500px">
             <v-card>
               <v-card-title>
-                <span>장기 차량 예약</span>
+                <span>차량 예약</span>
               </v-card-title>
               <v-card-text>
                 <v-form ref="form">
@@ -143,7 +204,7 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-        </v-container>
+
       </v-tab-item>
     </v-tabs-items>
   </v-container>
@@ -160,7 +221,7 @@ export default {
       selectedDate: new Date(), // Default to today's date
       vehicles: [], // 차량 데이터
 
-      isCarModalOpen: false, // 차량 모달 상태
+      isCarModalOpen: false, 
       selectedCar: {}, // 선택된 차량 정보
 
       isLongTermReservationModalOpen: false, // 장기 예약 모달 상태
@@ -173,36 +234,39 @@ export default {
   },
   computed: {
     ...mapGetters({
-      departmentId: "getDepartmentId", // Vuex에서 departmentId 가져오기
+      departmentName: "getDepartmentName",
     }),
     isHrDepartment() {
-      // 인사팀이면 true를 반환
-      return this.departmentId === "4"; // '4'가 인사팀의 departmentId라고 가정
-    }
+      console.log("Current departmentName: ", this.departmentName);
+      return this.departmentName === "인사팀"; // Assuming "인사팀" is the HR department name
+    },
   },
   methods: {
     ...mapActions(["setUserAllInfoActions"]), // 사용자 정보를 Vuex에 저장하는 액션 호출
+    
     formattedDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
-      const weekDay = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
-      return `${year}-${month}-${day} (${weekDay})`;
+      // const weekDay = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
+      return `${year}-${month}-${day}`;
     },
 
     async fetchCarList() {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/car/list`);
+        console.log(response.data);
         this.vehicles = response.data;
       } catch (error) {
         console.error("Error fetching car list:", error);
       }
     },
-        openCarModal(vehicle) {
+
+    openCarModal(vehicle) {
+      console.log(vehicle);
       this.selectedCar = vehicle;
       this.isCarModalOpen = true;
     },
-
 
     async fetchVehicleAvailability(date) {
       try {
@@ -226,6 +290,7 @@ export default {
         }
       }
     },
+
     async fetchUserInfo() {
       try {
         const token = localStorage.getItem("token");
@@ -238,8 +303,10 @@ export default {
             },
           }
         );
-        this.userName = response.data.name; // 사용자 이름 저장
-        this.setUserAllInfoActions(); // Vuex에 사용자 정보 저장
+        this.userName = response.data.name;
+        this.departmentName = response.data.name;
+        console.log("나 유저, 부서명을 곁들인 : ", response.data.departmentName);
+        this.setUserAllInfoActions();
       } catch (error) {
         console.error("Error fetching user info:", error);
         if (error.response?.status === 401) {
@@ -248,18 +315,18 @@ export default {
         }
       }
     },
+
+  
+
     // 차량 예약 메서드 추가
     async createReservation(carId) {
+      const reservationData = {
+        carId: carId,
+        startDate: this.selectedDate.toISOString().split('T')[0], // YYYY-MM-DD 형식으로 변환
+        endDate: this.selectedDate.toISOString().split('T')[0] // 같은 날짜로 설정
+      };
       try {
         const token = localStorage.getItem("token");
-
-        // 예약 생성 요청을 보낼 데이터 (현재 날짜로 예약)
-        const reservationData = {
-          carId: carId,
-          startDate: this.selectedDate.toISOString().split("T")[0], // 현재 선택된 날짜
-          endDate: this.selectedDate.toISOString().split("T")[0], 
-        };
-
         await axios.post(
           `${process.env.VUE_APP_API_BASE_URL}/reservation/car/create`,
           reservationData,
@@ -270,11 +337,8 @@ export default {
           }
         );
 
-        // 예약 성공 시 사용자에게 알림
         alert(`${this.userName} 님 차량 예약을 완료했습니다.`);
-
-        // 차량 상태 업데이트
-        this.fetchVehicleAvailability(this.selectedDate);
+        this.fetchVehicleAvailability(this.selectedDate); // 예약 후 차량 상태 새로고침
       } catch (error) {
         console.error("Error creating reservation:", error);
         if (error.response?.status === 401) {
@@ -285,11 +349,13 @@ export default {
         }
       }
     },
-    // 장기 예약을 위한 모달 열기
+
+    // 입력하는 예약을 위한 모달
     openLongTermReservationModal() {
       this.isLongTermReservationModalOpen = true;
     },
-    // 장기 예약 제출
+
+    // 입력하는 예약 제출
     async submitLongTermReservation() {
       try {
         const token = localStorage.getItem("token");
@@ -368,7 +434,30 @@ export default {
 </script>
 
 <style scoped>
+.timeline-container {
+  background-color: white;
+  /* border: solid 1px; */
+  /* 외부 선  */
+  border: 1px solid #D8EACA; 
+}
 .v-btn {
   margin: 0 10px;
 }
+.vehicle-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.vehicle-row:hover {
+  background-color: #f0f0f0;
+}
+
+.mb-2 {
+  margin-bottom: 20px;
+}
+
+.v-row {
+  text-align: center;
+}
+
 </style>
