@@ -1,31 +1,26 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="5">
-        <h2>출·퇴근 기록</h2>
-      </v-col>
-      <v-col cols="2">
-        <!-- 출근 버튼 -->
-        <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn" :disabled="isWorkIn">
-          출근
-        </v-btn>
-      </v-col>
-      <v-col cols="2">
-        <!-- 퇴근 버튼 -->
-        <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut" :disabled="!isWorkIn || isWorkOut">
-          퇴근
-        </v-btn>
-      </v-col>
 
+  <v-row class="buttons">
+    <v-col cols="4">
+      <h2>출·퇴근 기록</h2>
+    </v-col>
+    <v-col cols="2">
+      <!-- 출근 버튼 -->
+      <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn" :disabled="isWorkIn">
+        출근
+      </v-btn>
+    </v-col>
+    <v-col cols="2">
+      <!-- 퇴근 버튼 -->
+      <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut" :disabled="!isWorkIn || isWorkOut">
+        퇴근
+      </v-btn>
+    </v-col>
 
+    <!-- 상태 표시 -->
+    <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
+  </v-row>
 
-      <!-- 상태 표시 -->
-      <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
-
-    </v-row>
-
-
-  </v-container>
 
   <!-- 부서원 출근 정보 목록 -->
   <v-row class="container">
@@ -190,14 +185,13 @@ v-alert {
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #ddd;
 }
 
 /* 뱃지 스타일 */
 .badge {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
+  bottom: 15px;
+  right: 25px;
   width: 25px;
   height: 25px;
   border-radius: 50%;

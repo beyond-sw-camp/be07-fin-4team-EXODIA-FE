@@ -75,8 +75,6 @@ export default {
         console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
 
-        console.log(this.userProfile);
-
         console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
         console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
       } catch (error) {
@@ -110,6 +108,5 @@ export default {
   width: 200px;
   height: 200px;
   object-fit: cover;
-  margin: 0 auto;
 }
 </style>
