@@ -32,9 +32,9 @@
                     @click="showDetail(submit.id)">
                     <v-col cols="1">{{ index + 1 }}</v-col>
                     <v-col cols="5">{{ submit.submitType }}</v-col>
-                    <v-col cols="4">{{ formatDate(submit.submitTime) }}</v-col>
+                    <v-col cols="4">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime) }}</v-col>
                     <v-col cols="2" class="d-flex justify-center align-center">
-                        <v-chip class="d-flex align-center" v-bind:class="{
+                        <v-chip class="d-flex justify-center align-center" v-bind:class="{
                             'chip-reject': submit.submitStatus === 'REJECT',
                             'chip-accept': submit.submitStatus === 'ACCEPT'
                         }" style="width: 80px; height: 32px;">{{ submit.submitStatus }}</v-chip>
@@ -147,13 +147,9 @@ v-card-title,
 
 
 
-.v-card-text>.v-row:first-child {
-    font-size: 14px;
-}
+.v-card-text>.v-row:first-child {}
 
-.v-card-text>.v-row:last-child {
-    font-size: 16px;
-}
+.v-card-text>.v-row:last-child {}
 
 .v-card-text {
     margin-bottom: 20px;

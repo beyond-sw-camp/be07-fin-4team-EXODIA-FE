@@ -16,10 +16,10 @@
                 <v-row class="mb-2"
                     style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
                     <v-col cols="1"><strong> </strong></v-col>
-                    <v-col cols="3"><strong>결재 종류</strong></v-col>
-                    <v-col cols="2"><strong>신청인</strong></v-col>
-                    <v-col cols="2"><strong>신청 일시</strong></v-col>
-                    <v-col cols="2"><strong>처리 일시</strong></v-col>
+                    <v-col cols="2"><strong>결재 종류</strong></v-col>
+                    <v-col cols="1"><strong>신청인</strong></v-col>
+                    <v-col cols="3"><strong>신청 일시</strong></v-col>
+                    <v-col cols="3"><strong>처리 일시</strong></v-col>
                     <v-col cols="2"><strong>상태</strong></v-col>
                 </v-row>
 
@@ -27,11 +27,12 @@
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
                     @click="showDetail(submit.id)">
                     <v-col cols="1">{{ index + 1 }}</v-col>
-                    <v-col cols="3">{{ submit.submitType }}</v-col>
-                    <v-col cols="2">{{ submit.userName }} </v-col>
-                    <v-col cols="2">{{ formatDate(submit.submitTime) }}</v-col>
-                    <v-col cols="2">{{ formatDate(submit.submitTime) }}</v-col>
-                    <v-col cols="2">
+                    <v-col cols="2">{{ submit.submitType }}</v-col>
+                    <v-col cols="1">{{ submit.userName }} </v-col>
+                    <v-col cols="3">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime) }}</v-col>
+                    <v-col cols="3">{{ formatDate(submit.updatedTime) }} {{ formatLocalTime(submit.updatedTime)
+                        }}</v-col>
+                    <v-col cols="2" class="d-flex justify-center align-center">
                         <v-chip class="d-flex justify-center align-center" v-bind:class="{
                             'chip-reject': submit.submitStatus === 'REJECT',
                             'chip-accept': submit.submitStatus === 'ACCEPT'
