@@ -27,27 +27,17 @@
         <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
       </v-col>
     </v-row>
-
-  
   </v-container>
-
-    <!-- 부서원 출근 정보 목록 -->
-    <div class="container">
       
+  <!-- 부서원 출근 정보 목록 -->
+  <div class="container">
     <div class="user-card" v-for="user in departmentUsers" :key="user.userNum">
       <div class="profile-container">
         <!-- 프로필 이미지 -->
-        <img
-          :src="user.profileImage || defaultProfileImage"
-          alt="프로필 이미지"
-          class="profile-img"
-        />
+        <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
 
         <!-- 출근 여부 뱃지 -->
-        <div
-          class="badge"
-          :class="user.isPresent ? 'badge-present' : 'badge-absent'"
-        ></div>
+        <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
       </div>
 
       <!-- 이름, 직책, 부서명 -->
@@ -213,11 +203,13 @@ v-alert {
 }
 
 .badge-present {
-  background-color: #4caf50; /* 출근한 사람은 초록색 뱃지 */
+  background-color: #4caf50;
+  /* 출근한 사람은 초록색 뱃지 */
 }
 
 .badge-absent {
-  background-color: #f44336; /* 출근하지 않은 사람은 빨간색 뱃지 */
+  background-color: #f44336;
+  /* 출근하지 않은 사람은 빨간색 뱃지 */
 }
 
 .user-info {

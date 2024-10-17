@@ -38,12 +38,6 @@
 
       <!-- 서브사이드: 문서 관리 -->
       <div v-show="expandedMenu === 'document' || hoveredMenu === 'document'" class="sub-side-menu">
-        <v-row>
-          <v-btn style="color:#ffffff" @click="$router.push('/document/create')">
-            파일 등록
-          </v-btn>
-        </v-row>
-
         <v-row @click="$router.push('/document')">
           전체 파일
         </v-row>
@@ -81,11 +75,6 @@
 
       <!-- 서브사이드: 결재 -->
       <div v-show="expandedMenu === 'submit' || hoveredMenu === 'submit'" class="sub-side-menu">
-        <v-row>
-          <v-btn style="color:#ffffff" @click="$router.push('/submit')">
-            결재 생성
-          </v-btn>
-        </v-row>
         <v-row @click="$router.push('/submit/list')">
           결재 할 문서
         </v-row>
@@ -130,7 +119,7 @@
       </div>
       <!-- 서브사이드: 직원관리 -->
       <div
-        v-show="expandedMenu === 'employee-management' || hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management'"
+        v-show="expandedMenu === 'employee-management' || hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management' || hoveredMenu === 'eventList'"
         class="sub-side-menu">
         <v-row style="font-weight:700; font-size:16px;">
           직원 관리
@@ -149,8 +138,8 @@
         <v-row @click="$router.push('/salary-management')">
           직원 급여 목록
         </v-row>
-        <v-row @click="$router.push('/salary-management/manage')">
-          급여일 관리
+        <v-row @click="$router.push('/eventList')" style="font-weight:700; font-size:16px;">
+          일정 관리
         </v-row>
         <v-row style="font-weight:700; font-size:16px;">
           부서 관리
@@ -264,6 +253,10 @@ export default {
   justify-content: center;
   align-content: center;
   overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; 
 }
 
 .menu {

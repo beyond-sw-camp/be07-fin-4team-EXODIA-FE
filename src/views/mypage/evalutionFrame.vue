@@ -1,95 +1,88 @@
 <template>
   <div class="main-view">
-  <v-container fluid>
-    <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-      <v-tab @click="navigateTab(0)">프로필</v-tab>
-      <v-tab @click="navigateTab(1)">평가리스트</v-tab>
-      <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
-      <v-tab @click="navigateTab(3)">인사평가</v-tab>
-    </v-tabs>
+    <v-container fluid>
+      <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
+        <v-tab @click="navigateTab(0)">전사 근태 통계</v-tab>
+        <v-tab @click="navigateTab(1)">프로필</v-tab>
+        <v-tab @click="navigateTab(2)">평가리스트</v-tab>
+        <v-tab @click="navigateTab(3)">오늘의 점심</v-tab>
+        <v-tab @click="navigateTab(4)">인사평가</v-tab>
+      </v-tabs>
 
-    <v-tabs-items v-model="activeTab">
-      <v-tab-item v-if="activeTab === 0">
-        <!-- 프로필 -->
-      </v-tab-item>
+      <v-tabs-items v-model="activeTab">
+        <v-tab-item v-if="activeTab === 0">
+          <!-- 전사 근태 통계 -->
+        </v-tab-item>
+        <v-tab-item v-if="activeTab === 1">
+          <!-- 프로필 -->
+        </v-tab-item>
 
-      <v-tab-item v-if="activeTab === 1">
-        <v-row>
-          <v-col>
-            <h3></h3>
-            <br>
-            <span>* 인사평가를 위한 자신의 리스트를 작성하세요</span>
-            <v-simple-table dense>
-              <thead>
-                <tr>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(item, index) in evalutions" :key="index">
-                  <!-- 대분류 셀 병합 -->
-                  <td
-                    v-if="shouldShowBigCategory(index)"
-                    :rowspan="getRowspanForBigCategory(index)"
-                    style="width: 200px; text-align: center; font-weight: bold; border: 1px solid #e0e0e0;"
-                  >
-                    {{ item.bigCategoryName }}
-                  </td>
-                  <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
-                    {{ item.midCategoryName }}
-                  </td>
-                  <td style="border: 1px solid #e0e0e0;" width="700">
-                    <!-- 소분류 입력 필드 -->
-                    <v-text-field
-                      v-model="item.subEvalutionContent"
-                      :label="item.subEvalutionContent ? '' : '소분류 입력'"
-                      outlined
-                      dense
-                      :disabled="item.saved && !item.editable"
-                      :style="{ width: '600px', marginRight: '10px', color: '#000000', float: 'left', border: 'none'}"
-                    />
-                    <v-btn icon @click="toggleEditAndSave(item, index)" style="justify-content: center; width: 30px; height: 30px; margin-top: 15px; margin-right: 10px; background-color: transparent; box-shadow: none;">
-                      <v-icon>{{ item.editable ? 'mdi-check' : 'mdi-pencil' }}</v-icon>
-                    </v-btn>
-                  </td>
-                  <td style="border: 1px solid #e0e0e0; text-align: center;">
-                    <!-- 평가 선택 -->
-                    <v-row
-                      v-model="item.grade"
-                      :items="[]"
-                      label=""
-                      dense
-                      style="width: 100px; background-color: #FFFFFF; border: none"
-                      :disabled="item.saved && !item.editable"
-                    ></v-row>
-                  </td>
-                  <!-- 수정 및 저장 버튼 추가 -->
-                  <td style="text-align: center; border: 1px solid #e0e0e0;">
+        <v-tab-item v-if="activeTab === 2">
+          <v-row>
+            <v-col>
+              <h3></h3>
+              <br>
+              <span>* 인사평가를 위한 자신의 리스트를 작성하세요</span>
+              <v-simple-table dense>
+                <thead>
+                  <tr>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in evalutions" :key="index">
+                    <!-- 대분류 셀 병합 -->
+                    <td v-if="shouldShowBigCategory(index)" :rowspan="getRowspanForBigCategory(index)"
+                      style="width: 200px; text-align: center; font-weight: bold; border: 1px solid #e0e0e0;">
+                      {{ item.bigCategoryName }}
+                    </td>
+                    <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
+                      {{ item.midCategoryName }}
+                    </td>
+                    <td style="border: 1px solid #e0e0e0;" width="700">
+                      <!-- 소분류 입력 필드 -->
+                      <v-text-field v-model="item.subEvalutionContent" :label="item.subEvalutionContent ? '' : '소분류 입력'"
+                        outlined dense :disabled="item.saved && !item.editable"
+                        :style="{ width: '600px', marginRight: '10px', color: '#000000', float: 'left', border: 'none' }" />
+                      <v-btn icon @click="toggleEditAndSave(item, index)"
+                        style="justify-content: center; width: 30px; height: 30px; margin-top: 15px; margin-right: 10px; background-color: transparent; box-shadow: none;">
+                        <v-icon>{{ item.editable ? 'mdi-check' : 'mdi-pencil' }}</v-icon>
+                      </v-btn>
+                    </td>
+                    <td style="border: 1px solid #e0e0e0; text-align: center;">
+                      <!-- 평가 선택 -->
+                      <v-row v-model="item.grade" :items="[]" label="" dense
+                        style="width: 100px; background-color: #FFFFFF; border: none"
+                        :disabled="item.saved && !item.editable"></v-row>
+                    </td>
+                    <!-- 수정 및 저장 버튼 추가 -->
+                    <td style="text-align: center; border: 1px solid #e0e0e0;">
 
-                  </td>
-                </tr>
-              </tbody>
-            </v-simple-table>
+                    </td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
 
-            <!-- 전체 저장 버튼 -->
-            <v-row justify="end" style="margin-top: 20px;">
-              <v-btn @click="saveAllSubEvalutions" :disabled="isSaveDisabled" style="background-color: #4CAF50; color: white;">
-                전체 저장
-              </v-btn>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-tab-item>
+              <!-- 전체 저장 버튼 -->
+              <v-row justify="end" style="margin-top: 20px;">
+                <v-btn @click="saveAllSubEvalutions" :disabled="isSaveDisabled"
+                  style="background-color: #4CAF50; color: white;">
+                  전체 저장
+                </v-btn>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
 
-      <v-tab-item v-if="activeTab === 2">
-        <!-- 오늘의 점심 -->
-      </v-tab-item>
 
-      <v-tab-item v-if="activeTab === 3">
-        <!-- 인사평가-->
-      </v-tab-item>
-    </v-tabs-items>
-  </v-container>
-</div>
+        <v-tab-item v-if="activeTab === 3">
+          <!-- 오늘의 점심 -->
+        </v-tab-item>
+        <v-tab-item v-if="activeTab === 4">
+          <!-- 인사평가 -->
+        </v-tab-item>
+      </v-tabs-items>
+    </v-container>
+  </div>
 </template>
 
 <script>
@@ -98,7 +91,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      activeTab: 1,
+      activeTab: 2,
       evalutions: [], // 대/중/소분류 데이터
     };
   },
@@ -151,7 +144,7 @@ export default {
           item.saved = true;
           alert('수정이 완료되었습니다.');
         } catch (error) {
-            console.error('소분류 수정에 실패하였습니다', error);
+          console.error('소분류 수정에 실패하였습니다', error);
           alert('수정에 실패했습니다.');
         }
       } else {
@@ -219,11 +212,15 @@ export default {
 
     // 탭 이동
     navigateTab(index) {
-      if (index === 0) {
+      if (index == 0) {
+        this.$router.push('/mypage/vacation');
+      } else if (index === 1) {
         this.$router.push('/mypage/userProfile');
       } else if (index === 2) {
-        this.$router.push('/mypage/spinWheel');
+        this.$router.push('/mypage/evalutionFrame');
       } else if (index === 3) {
+        this.$router.push('/mypage/spinWheel');
+      } else if (index === 4) {
         this.$router.push('/mypage/evalutionList');
       } else {
         this.activeTab = index;
@@ -234,37 +231,38 @@ export default {
 </script>
 
 <style scoped>
-
 /* 헤더 탭 여백 */
 .main-view {
   /* margin-left: -150px; */
   /* margin-top: -50px; */
   padding: -50px;
 }
+
 .header-tabs {
-    margin-bottom: 30px;
-  }
-  
-  .tab-item {
-    font-weight: bold;
-    font-size: 16px;
-    color: #4CAF50;
-  }
-  
-  .v-tabs--density-default {
-    --v-tabs-height: 48px;
-  }
-  
-  .v-tabs {
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .v-tab {
-    font-weight: bold;
-  }
+  margin-bottom: 30px;
+}
+
+.tab-item {
+  font-weight: bold;
+  font-size: 16px;
+  color: #4CAF50;
+}
+
+.v-tabs--density-default {
+  --v-tabs-height: 48px;
+}
+
+.v-tabs {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.v-tab {
+  font-weight: bold;
+}
 
 /* 테이블 셀 경계선 설정 */
-th, td {
+th,
+td {
   border: 1px solid #e0e0e0;
 }
 

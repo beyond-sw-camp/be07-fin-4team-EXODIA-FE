@@ -1,17 +1,18 @@
 <template>
     <v-row>
-        <h1 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle }}</h1>
+        <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle }}</h1>
     </v-row>
 
     <!-- 검색 옵션 -->
     <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
-        <v-col cols="6">
+        <v-col cols="7">
             <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="filterDocuments"
-                style="margin-bottom: 20px;"></v-text-field>
+                style="margin-bottom: 20px;" append-icon="mdi-magnify"
+                @click:append=searchFilter(searchQuery)></v-text-field>
         </v-col>
-        <v-col cols="4" sm="2">
-            <v-btn @click="searchFilter(searchQuery)">
-                검색
+        <v-col cols="2" v-if="this.pageTitle === '전체파일'">
+            <v-btn style="background-color:#722121; color:#ffffff;" @click="$router.push('/document/create')">
+                파일 등록
             </v-btn>
         </v-col>
     </v-row>
@@ -79,9 +80,17 @@
                         <v-row>{{ selectedDocument.userName }}</v-row>
                     </v-card-text>
                     <v-card-text>
+                        <v-row>태그</v-row>
+                        <v-row>
+                            <span v-for="(tag, index) in selectedDocument.tags" :key="index" style="padding-right:5px">
+                                <v-chip>{{ tag }}</v-chip>
+                            </span>
+                        </v-row>
+                    </v-card-text>
+                    <v-card-text>
                         <v-row>파일 다운로드</v-row>
                         <v-row>
-                            <v-btn style="color:#4CAF50" @click="fileDownload(selectedDocument.id)">다운로드</v-btn>
+                            <v-btn style="color:#722121" @click="fileDownload(selectedDocument.id)">다운로드</v-btn>
                         </v-row>
                     </v-card-text>
                     <v-card-text>
@@ -160,12 +169,13 @@
                         <span class="headline">댓글</span>
                         <v-icon class="icon" @click="toggleCommentsVisibility"> {{ showComments ? 'mdi-chevron-up' :
                             'mdi-chevron-down' }}</v-icon>
-                        <v-row>
+                        <v-row class="mt-4">
                             <v-col cols="9">
                                 <v-text-field label="댓글을 입력하세요." variant="outlined" v-model="comment"></v-text-field>
                             </v-col>
                             <v-col cols="3">
-                                <v-btn @click="submitComments(this.selectedDocument.id)">저장</v-btn>
+                                <v-btn style="background-color:#722121; color:#ffffff;"
+                                    @click="submitComments(this.selectedDocument.id)">저장</v-btn>
                             </v-col>
                         </v-row>
                     </v-card-title>
@@ -259,7 +269,7 @@ export default {
             try {
                 let url = '';
 
-                if (this.pageTitle == '전체문서') {
+                if (this.pageTitle == '전체파일') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/all`;
                 } else if (this.pageTitle == '최근 조회 문서') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewed`;
@@ -314,8 +324,11 @@ export default {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/detail/${id}`;
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
 
+                console.log('Document data:', response.data.result);
+
                 this.selectedDocument = response.data.result;
                 this.drawer = true;
+                console.log("tags: " + this.selectedDocument.tags)
 
                 this.fetchComments();
             } catch (e) {
@@ -479,5 +492,12 @@ v-card-title,
     display: flex;
     justify-content: space-between;
     align-content: center;
+}
+
+.addComment {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+
 }
 </style>

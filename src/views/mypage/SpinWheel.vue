@@ -2,54 +2,63 @@
   <div class="main-view">
     <v-container fluid>
       <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-        <v-tab @click="navigateTab(0)">프로필</v-tab>
-        <v-tab @click="navigateTab(1)">평가리스트</v-tab>
-        <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
-        <v-tab @click="navigateTab(3)">인사평가</v-tab>
+        <v-tab @click="navigateTab(0)">전사 근태 통계</v-tab>
+        <v-tab @click="navigateTab(1)">프로필</v-tab>
+        <v-tab @click="navigateTab(2)">평가리스트</v-tab>
+        <v-tab @click="navigateTab(3)">오늘의 점심</v-tab>
+        <v-tab @click="navigateTab(4)">인사평가</v-tab>
       </v-tabs>
 
-      <v-tab-item v-if="activeTab === 0">
-        <!-- 프로필 -->
-      </v-tab-item>
-      <v-tab-item v-if="activeTab === 1">
-        <!-- 평가리스트 -->
-      </v-tab-item>
-      <v-tab-item v-if="activeTab === 2">
-        <v-row justify="" class="my-8" style=" margin-left: 70px;">
-          <!-- 왼쪽: 돌림판 -->
-          <v-col cols="12" sm="6" md="5" style="background-color: #ffffff;">
-            <!-- 검은 줄 (화살표) -->
-            <v-sheet class="indicator"></v-sheet>
+      <v-tab-items>
+        <v-tab-item v-if="activeTab === 0">
+          <!-- 프로필 -->
+        </v-tab-item>
+        <v-tab-item v-if="activeTab === 1">
+          <!-- 평가리스트 -->
+        </v-tab-item>
+        <v-tab-item v-if="activeTab === 2">
+          <!-- 평가리스트 -->
+        </v-tab-item>
 
-            <v-sheet class="pa-4" elevation="0" style="background-color: #ffffff;">
-              <canvas ref="canvas" width="400" height="400"></canvas>
-            </v-sheet>
-          </v-col>
+        <v-tab-item v-if="activeTab === 3">
+          <v-row justify="" class="my-8" style=" margin-left: 70px;">
+            <!-- 왼쪽: 돌림판 -->
+            <v-col cols="12" sm="6" md="5" style="background-color: #ffffff;">
+              <!-- 검은 줄 (화살표) -->
+              <v-sheet class="indicator"></v-sheet>
 
-          <!-- 오른쪽: 결과 -->
-          <v-col cols="12" sm="6" md="5" style="margin-top: 40px;">
-            <v-sheet class="pa-4" elevation="0" style="background-color: #ffffff;">
-              <v-sheet class="pa-6 text-h5" elevation="0" style="background-color: #ffffff;">
-                {{ resultText || '오늘의 점심' }}
+              <v-sheet class="pa-4" elevation="0" style="background-color: #ffffff;">
+                <canvas ref="canvas" width="400" height="400"></canvas>
               </v-sheet>
-            </v-sheet>
+            </v-col>
 
-            <!-- Spin Button -->
-            <v-btn color="yellow darken-2" @click="rotate" large class="mt-4">돌려돌려 돌림판</v-btn>
+            <!-- 오른쪽: 결과 -->
+            <v-col cols="12" sm="6" md="5" style="margin-top: 40px;">
+              <v-sheet class="pa-4" elevation="0" style="background-color: #ffffff;">
+                <v-sheet class="pa-6 text-h5" elevation="0" style="background-color: #ffffff;">
+                  {{ resultText || '오늘의 점심' }}
+                </v-sheet>
+              </v-sheet>
 
-            <!-- Add Menu Section -->
-            <v-row justify="center" class="mt-4">
-              <v-col cols="12">
-                <v-text-field v-model="newMenu" label="메뉴 추가" solo></v-text-field>
-                <v-btn color="primary" @click="addMenu" large>메뉴 추가</v-btn>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item v-if="activeTab === 3">
-        <!-- 인사평가 -->
-      </v-tab-item>
+              <!-- Spin Button -->
+              <v-btn color="yellow darken-2" @click="rotate" large class="mt-4">돌려돌려 돌림판</v-btn>
+
+              <!-- Add Menu Section -->
+              <v-row justify="center" class="mt-4">
+                <v-col cols="12">
+                  <v-text-field v-model="newMenu" label="메뉴 추가" solo></v-text-field>
+                  <v-btn color="primary" @click="addMenu" large>메뉴 추가</v-btn>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+
+        <v-tab-item v-if="activeTab === 4">
+          <!-- 인사평가 -->
+        </v-tab-item>
+
+      </v-tab-items>
     </v-container>
   </div>
 </template>
@@ -60,7 +69,7 @@ import JSConfetti from 'js-confetti'; // JSConfetti import
 export default {
   data() {
     return {
-      activeTab: 2,
+      activeTab: 3,
       product: ["햄버거", "피자"], // 기본 메뉴
       colors: ["#A68A8A", "#C4A3A3", "#D9B7B7", "#E3C4C4", "#F0D5D5", "#BFA1A1", "#D1B0B0", "brown"], // 무지개 색상
       newMenu: "", // 추가할 메뉴 입력 필드
@@ -133,34 +142,34 @@ export default {
 
     // 돌림판 회전 함수
     rotate() {
-  const canvas = this.$refs.canvas;
-  canvas.style.transition = "initial";
-  canvas.style.transform = "initial";
-  
-  // 한 섹션의 각도 (360도를 메뉴 개수로 나눔)
-  const arc = 360 / this.product.length;
+      const canvas = this.$refs.canvas;
+      canvas.style.transition = "initial";
+      canvas.style.transform = "initial";
 
-  // 화살표가 가리키는 위치 보정 (12시 방향 기준으로 보정)
-  const adjustmentAngle = arc / 2; // 보정 각도 (12시에서 섹션의 중앙으로 맞춤)
+      // 한 섹션의 각도 (360도를 메뉴 개수로 나눔)
+      const arc = 360 / this.product.length;
 
-  setTimeout(() => {
-    const ran = Math.floor(Math.random() * this.product.length); // 임의의 섹션 선택
-    const rotate = ran * arc + 3600 + arc * 3 - adjustmentAngle; // 3600도 이상 회전 후 정지
-    this.currentRotation = rotate; // 현재 회전 각도 저장
-    canvas.style.transform = `rotate(-${rotate}deg)`; // 돌림판 회전
-    canvas.style.transition = "2s";
+      // 화살표가 가리키는 위치 보정 (12시 방향 기준으로 보정)
+      const adjustmentAngle = arc / 2; // 보정 각도 (12시에서 섹션의 중앙으로 맞춤)
 
-    // 결과 텍스트 업데이트 및 팡파레 실행
-    setTimeout(() => {
-      this.resultText = this.product[ran]; // 선택된 메뉴 표시
-      this.jsConfetti.addConfetti({
-        confettiColors: ["#4B89DC","#4B66DC", "#7E91E6","#B5C0F0","#B5CEF0","#B5E3F0"],
-        confettiRadius: 6,
-        confettiNumber: 600,
-      });
-    }, 2000); // 2초 후 결과 출력 및 팡파레 실행
-  }, 1);
-},
+      setTimeout(() => {
+        const ran = Math.floor(Math.random() * this.product.length); // 임의의 섹션 선택
+        const rotate = ran * arc + 3600 + arc * 3 - adjustmentAngle; // 3600도 이상 회전 후 정지
+        this.currentRotation = rotate; // 현재 회전 각도 저장
+        canvas.style.transform = `rotate(-${rotate}deg)`; // 돌림판 회전
+        canvas.style.transition = "2s";
+
+        // 결과 텍스트 업데이트 및 팡파레 실행
+        setTimeout(() => {
+          this.resultText = this.product[ran]; // 선택된 메뉴 표시
+          this.jsConfetti.addConfetti({
+            confettiColors: ["#4B89DC", "#4B66DC", "#7E91E6", "#B5C0F0", "#B5CEF0", "#B5E3F0"],
+            confettiRadius: 6,
+            confettiNumber: 600,
+          });
+        }, 2000); // 2초 후 결과 출력 및 팡파레 실행
+      }, 1);
+    },
 
 
 
@@ -192,16 +201,20 @@ export default {
     },
 
     navigateTab(index) {
-      if (index === 0) {
-        this.$router.push('/mypage/userProfile');
+      if (index == 0) {
+        this.$router.push('/mypage/vacation');
       } else if (index === 1) {
+        this.$router.push('/mypage/userProfile');
+      } else if (index === 2) {
         this.$router.push('/mypage/evalutionFrame');
       } else if (index === 3) {
+        this.$router.push('/mypage/spinWheel');
+      } else if (index === 4) {
         this.$router.push('/mypage/evalutionList');
       } else {
         this.activeTab = index;
       }
-    },
+    }
   },
 };
 </script>
@@ -212,6 +225,7 @@ export default {
   /* margin-top: -50px; */
   padding: -50px;
 }
+
 /* 탭 관련 스타일 */
 .header-tabs {
   margin-bottom: 30px;
@@ -231,12 +245,12 @@ export default {
   margin-top: -20px;
   min-width: 90px;
   margin-right: 13px;
-  
+
 }
 
 .v-tab {
   font-weight: bold;
-  
+
 }
 
 /* 돌림판 관련 스타일 */
