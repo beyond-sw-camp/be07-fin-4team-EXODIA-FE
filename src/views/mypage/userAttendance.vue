@@ -6,13 +6,13 @@
     </v-col>
     <v-col cols="2">
       <!-- 출근 버튼 -->
-      <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn" :disabled="isWorkIn">
+      <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn">
         출근
       </v-btn>
     </v-col>
     <v-col cols="2">
       <!-- 퇴근 버튼 -->
-      <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut" :disabled="!isWorkIn || isWorkOut">
+      <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut">
         퇴근
       </v-btn>
     </v-col>
