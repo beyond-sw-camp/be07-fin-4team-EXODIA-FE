@@ -52,28 +52,32 @@
       </div>
 
       <!-- 댓글 섹션 -->
-      <div v-if="isFamilyEventCategory" class="comment-section">
-        <h3 class="section-title">댓글</h3>
-        <v-list two-line v-if="comments && comments.length > 0">
-          <v-list-item v-for="comment in comments" :key="comment.id" class="comment-item">
-            <div class="comment-content">
-              <div class="comment-meta">
-                <p class="comment-text">{{ comment.content }}</p>
-                <small>사번: {{ comment.userNum }} - {{ formatDate(comment.createdAt) }}</small>
-              </div>
-              <div v-if="comment.userNum === userNum" class="action-buttons">
-                <v-btn small text @click="editComment(comment)">수정</v-btn>
-                <v-btn small text color="red" @click="deleteComment(comment.id)">삭제</v-btn>
-              </div>
-            </div>
-          </v-list-item>
-        </v-list>
-
-        <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
-          <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
-          <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
-        </v-form>
+<div v-if="isFamilyEventCategory" class="comment-section">
+  <h3 class="section-title">댓글</h3>
+  <v-list two-line v-if="comments && comments.length > 0">
+    <v-list-item v-for="comment in comments" :key="comment.id" class="comment-item">
+      <div class="comment-content">
+        <div class="comment-meta">
+          <p class="comment-text">{{ comment.content }}</p>
+          <small>
+            사번: {{ comment.userNum }} - {{ formatDate(comment.createdAt) }}
+            <!-- isEdited가 true이면 수정됨 표시 -->
+            <span v-if="comment.isEdited">(수정됨)</span>
+          </small>
+        </div>
+        <div v-if="comment.userNum === userNum" class="action-buttons">
+          <v-btn small text @click="editComment(comment)">수정</v-btn>
+          <v-btn small text color="red" @click="deleteComment(comment.id)">삭제</v-btn>
+        </div>
       </div>
+    </v-list-item>
+  </v-list>
+
+  <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
+    <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
+    <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
+  </v-form>
+</div>
     </div>
 
     <!-- 액션 버튼들 -->
@@ -121,7 +125,6 @@ export default {
     },
     async fetchBoardDetail() {
   try {
-    // 게시글 ID와 사용자 번호를 가져옴
     const boardId = this.$route.params.id;
     const userNum = localStorage.getItem('userNum');
 
@@ -130,25 +133,25 @@ export default {
       params: { userNum }
     });
 
-    // 게시글 정보를 저장
+    // 게시글 정보가 제대로 있는지 로그로 확인
+    console.log('게시글 상세 정보:', boardResponse.data.result);
+
     this.board = boardResponse.data.result;
 
-    // 게시글 상세 정보 로그 확인
-    console.log("게시글 상세 정보:", this.board);
-
-    // 태그가 있는 경우, 태그 정보를 가져옴
-    if (this.board.tags && this.board.tags.length > 0) {
-      this.tags = this.board.tags; // 이미 태그 리스트를 포함한 데이터를 사용
-      console.log("태그 정보:", this.tags); // 태그 로그 확인
+    // 댓글 데이터를 제대로 받아오는지 확인
+    if (this.board.comments) {
+      this.comments = this.board.comments;
+      console.log('댓글 목록:', this.comments);
     } else {
-      // 태그가 없을 경우, 빈 배열로 설정
-      this.tags = [];
+      this.comments = [];
     }
+
   } catch (error) {
     console.error('게시글을 불러오는 데 실패했습니다:', error);
     this.error = '게시글을 불러오는 데 실패했습니다.';
   }
 }
+
 
 
 ,
@@ -200,18 +203,30 @@ export default {
       }
     },
     editComment(comment) {
-      const updatedContent = prompt("댓글을 수정하세요:", comment.content);
-      if (updatedContent && updatedContent !== comment.content) {
-        const userNum = localStorage.getItem("userNum");
-        axios
-          .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum })
-          .then(() => this.fetchBoardDetail())
-          .catch((error) => {
-            console.error("댓글 수정에 실패했습니다:", error);
-            alert("댓글 수정에 실패했습니다.");
-          });
-      }
-    },
+  const updatedContent = prompt("댓글을 수정하세요:", comment.content);
+  if (updatedContent && updatedContent !== comment.content) {
+    const userNum = localStorage.getItem("userNum");
+    axios
+      .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum, isEdited: true })
+      .then((response) => {
+        console.log('댓글 수정 응답:', response.data);
+        // 수정된 댓글을 comments 배열에서 직접 업데이트
+        const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
+        if (updatedCommentIndex !== -1) {
+          // 배열 요소를 직접 수정
+          this.comments[updatedCommentIndex].content = updatedContent;
+          this.comments[updatedCommentIndex].isEdited = true;
+        }
+      })
+      .catch((error) => {
+        console.error("댓글 수정에 실패했습니다:", error);
+        alert("댓글 수정에 실패했습니다.");
+      });
+  }
+}
+,
+
+
     async deleteComment(commentId) {
       if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
         const userNum = localStorage.getItem("userNum");
