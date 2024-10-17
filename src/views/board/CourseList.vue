@@ -14,6 +14,7 @@
           <v-icon>mdi-magnify</v-icon>
         </v-btn>
       </v-col>
+      
     </v-row>
   
     <v-row justify="end" style="margin-top: 20px;">
@@ -42,7 +43,7 @@
       style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;"
       @click="openEnrollModal(course)"
     >
-      <v-col cols="3">{{ course.courseName }}</v-col>
+      <v-col cols="3" >{{ course.courseName }}</v-col>
       <v-col cols="3">{{ course.content }}</v-col>
       <v-col cols="2">{{ course.createCourse }}</v-col>
       <v-col cols="2">{{ course.remainingParticipants }} / {{ course.maxParticipants }}</v-col>

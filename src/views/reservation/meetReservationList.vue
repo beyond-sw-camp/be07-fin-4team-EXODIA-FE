@@ -3,7 +3,7 @@ meetReservation
 <template>
   <v-container fluid class="timeline-container" >
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
-    <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" >
+    <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 30px;">
       <v-tab @click="goToVehicleReservation" class="text-body-1">
         법인차량예약
       </v-tab>
