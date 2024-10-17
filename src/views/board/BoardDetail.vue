@@ -12,8 +12,7 @@
         <span class="meta-info">
           <strong>카테고리:</strong> {{ board.category }} |
           <strong>작성일:</strong> {{ formatDate(board.createdAt) }} |
-          <strong>조회수:</strong> {{ board.hits }} |
-          <strong>댓글:</strong> {{ comments.length }}
+          <strong>조회수:</strong> {{ board.hits }} 
         </span>
       </div>
 
@@ -22,6 +21,22 @@
 
       <!-- 본문 내용 섹션 -->
       <div v-html="board.content" class="board-body mb-4"></div>
+
+      <!-- 태그 목록 섹션 -->
+      <v-divider class="mb-4"></v-divider>
+      <div v-if="tags && tags.length > 0" class="tag-section">
+        <h4 class="section-title">태그</h4>
+        <div class="tags">
+          <v-chip
+            v-for="tag in tags"
+            :key="tag"
+            class="tag-chip"
+            outlined
+          >
+            {{ tag }}
+          </v-chip>
+        </div>
+      </div>
 
       <!-- 파일 목록 섹션 -->
       <div v-if="board.files && board.files.length > 0" class="file-list-section mb-5">
@@ -36,10 +51,9 @@
         </div>
       </div>
 
-      <!-- 댓글 섹션 (FAMILY_EVENT 카테고리일 때만 표시) -->
+      <!-- 댓글 섹션 -->
       <div v-if="isFamilyEventCategory" class="comment-section">
         <h3 class="section-title">댓글</h3>
-        <!-- 댓글 목록 -->
         <v-list two-line v-if="comments && comments.length > 0">
           <v-list-item v-for="comment in comments" :key="comment.id" class="comment-item">
             <div class="comment-content">
@@ -55,7 +69,6 @@
           </v-list-item>
         </v-list>
 
-        <!-- 댓글 작성 폼 -->
         <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
           <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
           <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
@@ -89,6 +102,7 @@ export default {
       error: null,
       userNum: localStorage.getItem('userNum'),
       boardTitle: '게시글 상세보기',
+      tags: [] // 태그 목록을 담을 배열
     };
   },
   computed: {
@@ -106,20 +120,38 @@ export default {
       this.isLoggedIn = !!token;
     },
     async fetchBoardDetail() {
-      try {
-        const boardId = this.$route.params.id;
-        const userNum = localStorage.getItem('userNum');
-        const response = await axios.get(`/board/detail/${boardId}`, { params: { userNum } });
-        this.board = response.data.result;
+  try {
+    // 게시글 ID와 사용자 번호를 가져옴
+    const boardId = this.$route.params.id;
+    const userNum = localStorage.getItem('userNum');
 
-        if (this.isFamilyEventCategory) {
-          this.comments = Array.isArray(this.board?.comments) ? this.board.comments : [];
-        }
-      } catch (error) {
-        console.error('게시글을 불러오는 데 실패했습니다:', error);
-        this.error = '게시글을 불러오는 데 실패했습니다.';
-      }
-    },
+    // 게시글 상세 정보를 가져옴
+    const boardResponse = await axios.get(`/board/detail/${boardId}`, {
+      params: { userNum }
+    });
+
+    // 게시글 정보를 저장
+    this.board = boardResponse.data.result;
+
+    // 게시글 상세 정보 로그 확인
+    console.log("게시글 상세 정보:", this.board);
+
+    // 태그가 있는 경우, 태그 정보를 가져옴
+    if (this.board.tags && this.board.tags.length > 0) {
+      this.tags = this.board.tags; // 이미 태그 리스트를 포함한 데이터를 사용
+      console.log("태그 정보:", this.tags); // 태그 로그 확인
+    } else {
+      // 태그가 없을 경우, 빈 배열로 설정
+      this.tags = [];
+    }
+  } catch (error) {
+    console.error('게시글을 불러오는 데 실패했습니다:', error);
+    this.error = '게시글을 불러오는 데 실패했습니다.';
+  }
+}
+
+
+,
     async submitComment() {
       if (!this.newCommentContent.trim()) {
         alert('댓글 내용을 입력하세요.');
@@ -143,7 +175,10 @@ export default {
       }
     },
     formatDate(date) {
-      return new Date(date).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\./g, '-');
+      return new Date(date)
+        .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+        .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
     },
     goBack() {
       this.$router.go(-1);
@@ -207,24 +242,14 @@ export default {
 
 <style scoped>
 .board-container {
-  max-width: 900px;
-  margin: 0 auto;
+  background-color: #f9fafb;
   padding: 20px;
-  background-color: #f9f9f9;
   border-radius: 12px;
 }
 
-.board-content-section {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.title-section .board-title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #333;
+.board-title {
+  margin-bottom: 20px;
+  color: #000;
 }
 
 .meta-info-section {
@@ -233,8 +258,23 @@ export default {
 }
 
 .board-body {
-  font-size: 1rem;
-  color: #555;
+  width: 100%;         
+  max-width: 800px;      
+  min-height: 400px;     
+  height: auto;           
+  padding: 20px;         
+  border-radius: 8px;     
+  overflow: hidden;       
+}
+
+.tag-section {
+  margin-top: 20px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .file-list-section {
@@ -292,10 +332,6 @@ export default {
   margin-top: 20px;
 }
 
-.action-section {
-  margin-top: 20px;
-}
-
 .btn_solid {
   background-color: #3f51b5 !important;
   color: #ffffff !important;
@@ -318,5 +354,66 @@ export default {
   background-color: #5087c7 !important;
   color: white;
   border-radius: 8px;
+}
+
+.tbl_list {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0px;
+}
+
+.tbl_list th,
+.tbl_list td {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #000;
+  text-align: left;
+}
+
+.tbl_list th {
+  background-color: #f4f4f4;
+}
+
+.tbl_list tr:hover {
+  background-color: #ababab;
+}
+
+.btn_write {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #949494;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.btn_write:hover {
+  background-color: #722121;
+}
+
+.v-pagination {
+  margin-top: 20px;
+}
+
+.v-pagination .v-pagination__item {
+  border: none;
+  color: #722121;
+}
+
+.v-pagination .v-pagination__item--active {
+  font-weight: bold;
+  background-color: #c5e1a5;
+  color: white;
+}
+
+.drawer-open {
+  transition: margin-right 0.3s ease;
+  margin-right: 200px;
 }
 </style>

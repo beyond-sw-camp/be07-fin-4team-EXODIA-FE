@@ -1,6 +1,6 @@
 <template>
   <div class="write-container">
-    <h3 class="write-title">글쓰기</h3>
+    <h3 class="write-title">게시글 작성</h3>
 
     <v-form ref="form" @submit.prevent="submitForm" class="write-form">
       <v-row>
@@ -75,11 +75,69 @@
         flat
       />
 
-      <div class="btnWrap">
-        <v-btn text @click="cancel">취소</v-btn>
-        <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
-      </div>
+      <!-- 태그 선택 버튼 -->
+      <v-row>
+        <v-col cols="12">
+          <div class="tag-buttons">
+            <!-- 태그 추가 버튼 -->
+            <v-btn class="tag-button rounded-button" outlined @click="openTagModal">
+              + <!-- 태그 추가 버튼 표시 -->
+            </v-btn>
+
+            <!-- 기존 태그들 -->
+            <div v-for="tag in tags" :key="tag.id" class="tag-wrapper">
+              <v-btn
+                :class="{'selected-tag': selectedTags.includes(tag.id)}"
+                @click="toggleTagSelection(tag.id)"
+                outlined
+                class="tag-button rounded-button"
+              >
+                {{ tag.tag }}
+              </v-btn>
+              <!-- 태그 삭제 버튼 (X 버튼) -->
+              <v-btn icon @click="removeTag(tag.id)" class="remove-tag-btn">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+              
+            </div>
+          </div>
+        </v-col>
+      </v-row>
+
+<!-- 고정 여부 체크박스, 취소 및 저장 버튼 -->
+    <div class="btnWrap">
+      <!-- 고정 체크박스: 카테고리가 FAMILY_EVENT가 아닐 때만 표시 -->
+      <v-checkbox
+        v-if="selectedCategory !== 'FAMILY_EVENT'"
+        v-model="isPinned"
+        label="중요"
+        class="mr-4"
+      />
+
+      <v-btn text @click="cancel">취소</v-btn>
+      <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
+    </div>
     </v-form>
+
+    <!-- 태그 추가 모달 -->
+    <v-dialog v-model="showTagModal" max-width="400">
+      <v-card>
+        <v-card-title>새로운 태그 추가</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="newTagName"
+            label="태그 이름"
+            placeholder="태그 이름을 입력하세요"
+            solo
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="closeTagModal">취소</v-btn>
+          <v-btn color="primary" @click="addNewTag">저장</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -89,21 +147,29 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      title: '',
-      files: [],
-      selectedCategory: null,
+      title: '', // 제목
+      files: [], // 파일
+      isPinned: false, // 고정 여부
+      selectedCategory: null, // 선택된 카테고리
+      selectedTags: [], // 선택된 태그들
       categories: [
         { value: 'NOTICE', title: '공지사항' },
         { value: 'FAMILY_EVENT', title: '경조사' },
       ],
-      userNum: localStorage.getItem('userNum'),
-      departmentId: localStorage.getItem('departmentId'),
+      tags: [], // 태그 목록
+      userNum: localStorage.getItem('userNum'), // 유저 번호
+      departmentId: localStorage.getItem('departmentId'), // 부서 아이디
+
+      showTagModal: false, // 태그 추가 모달 상태
+      newTagName: '', // 새로운 태그 이름
     };
   },
   mounted() {
-    this.checkUserRole();
+    this.checkUserRole(); // 유저 권한 확인
+    this.fetchTags(); // 태그 목록 불러오기
   },
   methods: {
+    // 유저가 관리자 권한을 갖고 있는지 확인
     checkUserRole() {
       if (!this.userNum || !this.departmentId) {
         alert('로그인이 필요합니다.');
@@ -111,57 +177,171 @@ export default {
         return;
       }
     },
-    async submitForm() {
-      if (this.departmentId !== '4') {
-        alert('관리자만 작성할 수 있습니다.');
+
+    // 백엔드로부터 태그 목록을 가져옴
+    async fetchTags() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/tags/list`);
+        this.tags = response.data.result;
+      } catch (error) {
+        console.error('태그 목록을 불러오는 데 실패했습니다:', error);
+        alert('태그 목록을 불러오는 데 실패했습니다.');
+      }
+    },
+
+    // 태그 추가 모달 열기
+    openTagModal() {
+      this.newTagName = '';
+      this.showTagModal = true;
+    },
+
+    // 태그 추가 모달 닫기
+    closeTagModal() {
+      this.showTagModal = false;
+    },
+
+    // 새로운 태그 추가하기
+    async addNewTag() {
+      if (!this.newTagName.trim()) {
+        alert('태그 이름을 입력하세요.');
         return;
       }
 
-      const content = document.getElementById('editor').innerHTML; // 에디터의 내용 가져오기
-
-      const formData = new FormData();
-      formData.append('title', this.title);
-      formData.append('content', content); // 에디터에서 가져온 HTML을 content로 사용
-      formData.append('category', this.selectedCategory);
-      formData.append('userNum', this.userNum);
-
-      if (this.files && this.files.length > 0) {
-        this.files.forEach((file) => {
-          formData.append('files', file);
-        });
-      }
-
       try {
-        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`;
-        const response = await axios.post(apiUrl, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/tags/create`, {
+          tag: this.newTagName.trim(),
         });
-        console.log('저장 성공:', response.data);
 
-        if (this.selectedCategory === 'NOTICE') {
-          this.$router.push({ path: '/board/notice/list' });
-        } else if (this.selectedCategory === 'FAMILY_EVENT') {
-          this.$router.push({ path: '/board/familyevent/list' });
-        } else {
-          this.$router.push({ name: 'BoardList' });
-        }
+        // 새로 추가된 태그를 태그 목록에 추가
+        this.tags.push(response.data.result);
+        this.selectedTags.push(response.data.result.id);
+        this.closeTagModal();
       } catch (error) {
-        console.error('저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
-        alert('게시글 저장에 실패했습니다.');
+        console.error('태그 추가에 실패했습니다:', error);
+        alert('태그 추가에 실패했습니다.');
       }
     },
+
+    // 태그 선택/해제 토글
+    toggleTagSelection(tagId) {
+      const index = this.selectedTags.indexOf(tagId);
+      if (index === -1) {
+        this.selectedTags.push(tagId);
+      } else {
+        this.selectedTags.splice(index, 1);
+      }
+    },
+
+    // 태그 삭제
+    async removeTag(tagId) {
+      console.log("삭제할 태그 ID:", tagId); // 태그 ID가 정상적으로 출력되는지 확인
+      if (!tagId) {
+        console.error('tagId가 유효하지 않습니다.');
+        return;
+      }
+      try {
+        await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/tags/delete/${tagId}`);
+        this.tags = this.tags.filter(tag => tag.id !== tagId); // 태그 목록에서 삭제
+      } catch (error) {
+        console.error('태그 삭제에 실패했습니다:', error);
+        alert('태그 삭제에 실패했습니다.');
+      }
+    },
+
+
+    async submitForm() {
+      console.log('submitForm called')
+    if (this.departmentId !== '4') {
+        alert('관리자만 작성할 수 있습니다.');
+        return;
+    }
+
+    const content = document.getElementById('editor').innerHTML;
+
+    console.log('Form Data Before Submission:');
+    console.log('title:', this.title);
+    console.log('content:', content);
+    console.log('isPinned:', this.isPinned);
+
+    const formData = new FormData();
+    formData.append('title', this.title);
+    formData.append('content', content);
+    formData.append('category', this.selectedCategory);
+    formData.append('userNum', this.userNum);
+    formData.append('isPinned', this.isPinned ? 'true' : 'false');
+    formData.append('tagIds', this.selectedTags);
+
+    if (this.files && this.files.length > 0) {
+        this.files.forEach((file) => {
+            formData.append('files', file);
+        });
+    }
+
+    try {
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`;
+        const response = await axios.post(apiUrl, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
+
+        console.log('저장 성공:', response.data);
+        const boardId = response.data.result?.id || response.data?.id;
+
+
+        if (!boardId) {
+            console.error('게시글 ID를 가져오지 못했습니다. 응답 데이터:', response.data);
+            return;
+        }
+
+        // 게시글이 고정된 경우 상단 고정 처리
+        if (this.isPinned) {
+            await this.pinBoard(boardId);
+        }
+
+        if (this.selectedCategory === 'NOTICE') {
+            this.$router.push({ path: '/board/notice/list' });
+        } else if (this.selectedCategory === 'FAMILY_EVENT') {
+            this.$router.push({ path: '/board/familyevent/list' });
+        } else {
+            this.$router.push({ name: 'BoardList' });
+        }
+    } catch (error) {
+        console.error('저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
+        alert('게시글 저장에 실패했습니다.');
+    }
+},
+
+async pinBoard(boardId) {
+    try {
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/pin/${boardId}`;
+        const response = await axios.post(apiUrl, {
+            boardId,
+            isPinned: true
+        });
+
+        console.log('상단 고정 성공:', response.data);
+    } catch (error) {
+        console.error('상단 고정 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
+        alert('상단 고정 처리에 실패했습니다.');
+    }
+},
+
+
+
     cancel() {
       this.$router.go(-1);
     },
+
     formatText(command) {
-      document.execCommand(command, false, null); // 텍스트 서식 변경을 위한 execCommand
+      document.execCommand(command, false, null);
     },
   },
 };
 </script>
+
+
 
 <style scoped>
 .write-container {
@@ -174,7 +354,7 @@ export default {
 .write-title {
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 100px; /* 간격을 넓히기 위해 margin-bottom을 100px로 설정 */
+  margin-bottom: 50px;
 }
 
 .write-form {
@@ -200,9 +380,61 @@ export default {
   overflow-wrap: break-word;
 }
 
+/* 태그 선택 버튼 스타일 */
+.tag-buttons {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tag-wrapper {
+  position: relative; /* 태그와 X 버튼을 함께 배치하기 위한 설정 */
+  display: inline-block;
+  margin: 5px;
+}
+
+.tag-button {
+  min-width: 100px;
+  text-align: center;
+}
+
+/* 둥근 모양 버튼 스타일 */
+.rounded-button {
+  border-radius: 20px;
+  padding: 10px 20px;
+}
+
+.remove-tag-btn {
+  position: absolute !important;
+  top: -2px !important; /* 더 작게 조정 */
+  right: -2px !important; /* 더 작게 조정 */
+  background-color: red !important;
+  border-radius: 50% !important;
+  color: white !important;
+  padding: 0 !important;
+  width: 12px !important;  /* 고정된 너비 */
+  height: 12px !important; /* 고정된 높이 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 6px !important; /* 폰트 크기 줄임 */
+  line-height: 12px !important; /* X 문자가 중앙에 위치하도록 */
+}
+
+.selected-tag {
+  background-color: #007bff;
+  color: white;
+}
+
+.right-align {
+  display: flex;
+  justify-content: flex-end; /* 버튼들을 오른쪽 끝으로 정렬 */
+  margin-top: 20px; /* 약간의 여백 추가 */
+}
+
 .btnWrap {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  gap: 10px; /* 버튼 간의 간격 */
 }
 </style>

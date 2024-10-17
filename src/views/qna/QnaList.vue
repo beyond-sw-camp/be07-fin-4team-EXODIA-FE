@@ -1,75 +1,74 @@
 <template>
   <v-container class="board-container">
-    <h1 class="board-title">{{ boardTitle }}</h1>
+    <!-- Adjusted the title size and positioning -->
+    <v-row justify="start">
+      <v-col cols="12" md="6">
+        <h1 class="board-title">{{ boardTitle }}</h1>
+      </v-col>
+    </v-row>
 
-    <!-- 게시판 상단 검색 폼 -->
+    <!-- 게시판 상단 검색 폼 - Adjusted layout and search bar size -->
     <v-form ref="form" class="search-form d-flex mb-4">
-      <!-- 검색 범위 선택 -->
-      <v-col cols="12" md="2">
-        <v-select
-          v-model="searchType"
-          :items="searchOptions"
-          item-title="text"
-          item-value="value"
-          label="검색 범위"
-          required
-        ></v-select>
-      </v-col>
+      <v-row justify="center" align="center" class="w-100">
+        <!-- 검색 범위 선택 -->
+        <v-col cols="12" md="3">
+          <v-select
+            v-model="searchType"
+            :items="searchOptions"
+                        variant="underlined"
+            item-title="text"
+            item-value="value"
+            label="검색 범위"
+            required
+          ></v-select>
+        </v-col>
 
-      <!-- 검색어 입력 -->
-      <v-col cols="12" md="8">
-        <v-text-field
-          v-model="searchQuery"
-          label="검색어를 입력하세요."
-          append-icon="mdi-magnify"
-          @click:append="performSearch"
-          required
-        ></v-text-field>
-      </v-col>
+        <!-- 검색어 입력 -->
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="searchQuery"
+            variant="underlined"
+            label="검색어를 입력하세요."
+            append-icon="mdi-magnify"
+            @click:append="performSearch"
+            required
+          ></v-text-field>
+        </v-col>
 
-      <!-- 작성하기 버튼을 같은 행에 정렬 -->
-      <v-col cols="12" md="2" class="text-right">
-        <v-btn class="btn_write" @click="createNewPost">
-          작성하기
-        </v-btn>
-      </v-col>
+        <!-- 작성하기 버튼을 검색바 오른쪽에 위치 -->
+        <v-col cols="12" md="3" class="text-right">
+          <v-btn v-if="isAdmin" class="btn_write" @click="createNewPost">
+            작성하기
+          </v-btn>
+        </v-col>
+      </v-row>
     </v-form>
 
-    <!-- 게시글 목록 테이블 -->
-    <table class="tbl_list">
-      <colgroup>
-        <!-- 각 열의 너비를 설정 -->
-        <col width="10%" />
-        <col width="50%" />
-        <col width="15%" />
-        <col width="15%" />
-        <col width="10%" />
-      </colgroup>
-      <thead>
-        <tr>
-          <th scope="col" class="text-center">번호</th>
-          <th scope="col" class="text-left">제목</th>
-          <th scope="col" class="text-center">부서명</th>
-          <th scope="col" class="text-center">작성자</th>
-          <th scope="col" class="text-center">작성일</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in boardItems" :key="item.id">
-          <td class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</td>
-          <td @click="goToDetail(item.id)" class="text-left subject">{{ item.title }}</td>
-          <!-- 부서명 및 작성자 정보를 API 응답 필드에 맞춰 변경 -->
-          <td class="text-center">{{ item.departmentName || 'N/A' }}</td>
-          <td class="text-center">{{ item.anonymous ? '익명' : item.questionUserName || 'N/A' }}</td>
-          <td class="text-center">{{ formatDate(item.createdAt) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- 게시글 목록 테이블을 아래로 내리기 위해 mt-4 클래스 추가 -->
+    <v-row justify="center" :class="{ 'drawer-open': drawer }" class="mt-4">
+      <v-col cols="12">
+        <v-row class="mb-2"
+          style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
+          <v-col cols="1"><strong>번호</strong></v-col>
+          <v-col cols="9"><strong>제목</strong></v-col>
+          <v-col cols="2"><strong>작성일</strong></v-col>
+        </v-row>
+
+        <v-row v-for="(item, index) in boardItems" :key="item.id" class="board"
+          @click="goToDetail(item.id)"
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
+          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+          <v-col cols="9">{{ item.title }}</v-col>
+          <v-col cols="2">{{ formatDate(item.createdAt) }}</v-col>
+        </v-row>
+      </v-col>
+    </v-row>
 
     <!-- 페이지네이션 -->
     <v-pagination v-model="currentPage" :length="totalPages" @change="onPageChange" class="my-4"></v-pagination>
   </v-container>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -87,13 +86,11 @@ export default {
       boardTitle: "",
 
       // 검색 필드 추가
-      searchType: "all",
+      searchType: "title", // 기본값은 제목으로 검색
       searchQuery: "",
       searchOptions: [
-        { text: "전체", value: "all" },
         { text: "제목", value: "title" },
-        { text: "부서명", value: "department" },
-        { text: "작성자", value: "author" },
+        { text: "내용", value: "content" },
       ],
     };
   },
@@ -133,8 +130,6 @@ export default {
         const response = await axios.get(apiUrl, { params });
 
         // API 응답 데이터 확인
-        console.log("API 응답 데이터:", response.data);
-
         if (response.data && response.data.result) {
           const result = response.data.result;
 
@@ -142,15 +137,14 @@ export default {
             this.boardItems = result.content;
             this.totalPages = result.totalPages;
           } else {
-            console.error("API 응답에 올바른 데이터가 없습니다.");
-            this.boardItems = []; // 빈 배열로 초기화
-            this.totalPages = 1; // 페이지 수 초기화
+            this.boardItems = [];
+            this.totalPages = 1;
           }
         }
       } catch (error) {
+        this.boardItems = [];
+        this.totalPages = 1;
         console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
-        this.boardItems = []; // 오류 발생 시 빈 배열로 초기화
-        this.totalPages = 1; // 오류 발생 시 페이지 수 초기화
       }
     },
 
@@ -169,8 +163,6 @@ export default {
         month: '2-digit', 
         day: '2-digit' 
       };
-      
-      // toLocaleDateString을 사용하여 형식 변경 (ex: 2024.10.11)
       return new Date(date).toLocaleDateString('ko-KR', options).replace(/\//g, '.');
     },
     createNewPost() {
@@ -199,10 +191,8 @@ export default {
 .board-title {
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 120px;
   color: #000000;
-  border-bottom: 2px solid #000000;
-  padding-bottom: 10px;
 }
 
 /* 검색 바 스타일 */
@@ -280,7 +270,9 @@ export default {
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease;
   padding: 12px 16px;
+  margin-left: 50px; /* 버튼을 오른쪽으로 이동시킴 */
 }
+
 
 .btn_write:hover {
   background-color: #722121;
