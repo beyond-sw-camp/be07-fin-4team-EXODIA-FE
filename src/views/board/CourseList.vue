@@ -58,67 +58,97 @@
     </v-row>
   
     <!-- 강좌 생성 모달 -->
-    <v-dialog v-model="showModal" max-width="500">
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">강좌 생성</span>
-        </v-card-title>
-  
-        <v-card-text>
-          <v-text-field v-model="newCourse.courseName" label="강좌명" required></v-text-field>
-          <v-text-field v-model="newCourse.content" label="내용" required></v-text-field>
-          <v-text-field v-model="newCourse.courseUrl" label="강좌 URL" required></v-text-field>
-          <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required></v-text-field>
-        </v-card-text>
-  
-        <v-card-actions>
-          <v-btn color="blue darken-1" text @click="closeModal">취소</v-btn>
-          <v-btn color="blue darken-1" text @click="createCourse">생성</v-btn>
-        </v-card-actions>
-      </v-card>
+    <v-dialog v-model="showModal" max-width="600">
+        <v-card>
+            <v-card-title class="headline grey lighten-2">
+                <span class="text-h5 font-weight-bold">강좌 생성</span>
+            </v-card-title>
+
+            <v-card-text class="py-6 px-10">
+                <v-text-field v-model="newCourse.courseName" label="학자명" required outlined></v-text-field>
+                <v-textarea v-model="newCourse.content" label="내용" rows="3" outlined required></v-textarea>
+                <v-text-field v-model="newCourse.courseUrl" label="학자 URL" required outlined></v-text-field>
+                <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required outlined></v-text-field>
+            </v-card-text>
+
+            <v-card-actions class="justify-end">
+                <v-btn color="red lighten-2" text @click="closeModal">취소</v-btn>
+                <v-btn color="primary" text @click="createCourse">생성</v-btn>
+            </v-card-actions>
+        </v-card>
     </v-dialog>
-  
+
     <!-- 강좌 수정 모달 -->
-    <v-dialog v-model="showEditModal" max-width="500">
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">강좌 수정</span>
-        </v-card-title>
-  
-        <v-card-text>
-          <v-text-field v-model="editCourse.courseName" label="강좌명" required></v-text-field>
-          <v-text-field v-model="editCourse.content" label="내용" required></v-text-field>
-          <v-text-field v-model="editCourse.courseUrl" label="강좌 URL" required></v-text-field>
-          <v-text-field v-model="editCourse.maxParticipants" label="최대 참가자 수" type="number" required></v-text-field>
-        </v-card-text>
-  
-        <v-card-actions>
-          <v-btn color="blue darken-1" text @click="closeEditModal" style="box-shadow: none;">취소</v-btn>
-          <v-btn color="blue darken-1" text @click="updateCourse" style="box-shadow: none;">수정</v-btn>
-        </v-card-actions>
-      </v-card>
+    <v-dialog v-model="showEditModal" max-width="600">
+        <v-card>
+            <v-card-title class="headline grey lighten-2">
+                <span class="text-h5 font-weight-bold">강좌 수정</span>
+            </v-card-title>
+
+            <v-card-text class="py-6 px-10">
+                <v-text-field v-model="editCourse.courseName" label="학자명" required outlined></v-text-field>
+                <v-textarea v-model="editCourse.content" label="내용" rows="3" outlined required></v-textarea>
+                <v-text-field v-model="editCourse.courseUrl" label="학자 URL" required outlined></v-text-field>
+                <v-text-field v-model="editCourse.maxParticipants" label="최대 참가자 수" type="number" required outlined></v-text-field>
+            </v-card-text>
+
+            <v-card-actions class="justify-end">
+                <v-btn color="red lighten-2" text @click="closeEditModal">취소</v-btn>
+                <v-btn color="primary" text @click="updateCourse">수정</v-btn>
+            </v-card-actions>
+        </v-card>
     </v-dialog>
-  
-    <!-- 강좌 신청 모달 -->
-    <v-dialog v-model="showEnrollModal" max-width="500">
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">강좌 신청</span>
-        </v-card-title>
-  
-        <v-card-text>
-          <p><strong>강좌명:</strong> {{ selectedCourse.courseName }}</p>
-          <p><strong>내용:</strong> {{ selectedCourse.content }}</p>
-          <p><strong>URL:</strong> <a :href="selectedCourse.courseUrl" target="_blank">{{ selectedCourse.courseUrl }}</a></p>
-          <p><strong>현재 참가자/최대 참가자:</strong> {{ selectedCourse.remainingParticipants ? (selectedCourse.maxParticipants - selectedCourse.remainingParticipants) : 0 }} / {{ selectedCourse.maxParticipants }}</p>
-        </v-card-text>
-  
-        <v-card-actions>
-          <v-btn color="blue darken-1" text @click="closeEnrollModal">취소</v-btn>
-          <v-btn color="blue darken-1" text @click="enrollCourse">신청</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+
+<!-- 강좌 신청 모달 -->
+<v-dialog v-model="showEnrollModal" max-width="600">
+  <v-card elevation="10" class="rounded-lg">
+    <v-card-title class="headline grey lighten-4 py-4">
+      <span class="text-h5 font-weight-bold">강좌 신청</span>
+    </v-card-title>
+
+    <v-card-text class="py-8 px-12">
+      <v-row class="mb-4">
+        <v-col cols="4">
+          <strong>강좌명</strong>
+        </v-col>
+        <v-col cols="8">
+          {{ selectedCourse.courseName }}
+        </v-col>
+      </v-row>
+      <v-row class="mb-4">
+        <v-col cols="4">
+          <strong>내용</strong>
+        </v-col>
+        <v-col cols="8">
+          {{ selectedCourse.content }}
+        </v-col>
+      </v-row>
+      <v-row class="mb-4">
+        <v-col cols="4">
+          <strong>URL</strong>
+        </v-col>
+        <v-col cols="8">
+          <a :href="selectedCourse.courseUrl" target="_blank" class="blue--text text--darken-2">{{ selectedCourse.courseUrl }}</a>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="4">
+          <strong>신청인원</strong>
+        </v-col>
+        <v-col cols="8">
+          {{ selectedCourse.remainingParticipants ? (selectedCourse.maxParticipants - selectedCourse.remainingParticipants) : 0 }} / {{ selectedCourse.maxParticipants }}
+        </v-col>
+      </v-row>
+    </v-card-text>
+
+    <v-card-actions class="justify-end px-10 pb-6">
+      <v-btn color="red darken-1" class="white--text" @click="closeEnrollModal">취소</v-btn>
+      <v-btn color="blue darken-2" class="white--text" @click="enrollCourse">신청</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
+
   </template>
   
   <script>
