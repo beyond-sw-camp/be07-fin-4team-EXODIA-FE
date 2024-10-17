@@ -52,6 +52,9 @@ export default {
   name: "NotificationList",
   data() {
     return {
+      eventSource: null,
+      retryCount: 0,
+      maxRetryCount: 5,
       notifications: [],
       unreadCount: 0,
       selectedType: "", // 선택된 알림 타입
@@ -91,19 +94,43 @@ export default {
         return;
       }
 
-      // SSE 연결
-      const eventSource = new EventSource(`${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`);
-      
-      // 메시지 수신
-      eventSource.onmessage = (event) => {
-        const newNotification = JSON.parse(event.data);
-        this.notifications.unshift(newNotification); // 새로운 알림을 맨 위에 추가
-      };
+      try {
+        // EventSource 객체 생성
+        this.eventSource = new EventSource(`${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`);
 
-      // 오류 처리
-      eventSource.onerror = (error) => {
-        console.error("SSE 연결 오류:", error);
-      };
+        // EventSource 객체가 정상적으로 생성되었는지 확인
+        if (!this.eventSource) {
+          console.error("SSE 연결에 실패했습니다.");
+          return;
+        }
+
+        // 메시지 수신 처리
+        this.eventSource.onmessage = (event) => {
+          const newNotification = JSON.parse(event.data);
+          this.notifications.unshift(newNotification); // 새로운 알림을 맨 위에 추가
+        };
+
+        // 오류 처리 및 재연결
+        this.eventSource.onerror = (error) => {
+          console.error("SSE 연결 오류 발생:", error);
+
+          // 재연결 로직 추가 (필요할 경우)
+          if (this.retryCount < this.maxRetryCount) {
+            setTimeout(() => {
+              this.retryCount++;
+              this.initSSE(); // 재연결
+            }, this.getRetryInterval());
+          } else {
+            console.error("최대 재연결 시도 횟수에 도달했습니다.");
+          }
+        };
+
+      } catch (error) {
+        console.error("SSE 연결 중 예외가 발생했습니다.", error);
+      }
+    },
+    getRetryInterval() {
+      return Math.min(1000 * Math.pow(2, this.retryCount), 30000); // 최대 30초까지 증가
     },
 
     formatDate(notificationTime) {

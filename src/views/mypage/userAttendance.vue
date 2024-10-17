@@ -4,22 +4,31 @@
       <v-col>
         <h2>출·퇴근 기록</h2>
 
-        <!-- 출근 버튼 -->
-        <v-btn color="primary" @click="workIn" :disabled="isWorkIn">
+        <v-btn
+          color="primary"
+            @click="workIn"
+            :disabled="isWorkIn"
+            style="height: 55px;"
+          >
           출근
-        </v-btn>
-
-        <!-- 퇴근 버튼 -->
-        <v-btn color="error" @click="workOut" :disabled="!isWorkIn || isWorkOut">
-          퇴근
-        </v-btn>
+          </v-btn>
+      
+          <!-- 퇴근 버튼 -->
+          <v-btn
+            color="error"
+            @click="workOut"
+          
+            style="margin-left: 10px; height:55px"
+          >
+            퇴근
+          </v-btn>
 
         <!-- 상태 표시 -->
         <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
       </v-col>
     </v-row>
   </v-container>
-
+      
   <!-- 부서원 출근 정보 목록 -->
   <div class="container">
     <div class="user-card" v-for="user in departmentUsers" :key="user.userNum">
@@ -49,29 +58,28 @@ export default {
   name: "userAttendance",
   data() {
     return {
-      isWorkIn: false, // 출근 여부
+      isWorkIn: false,  // 출근 여부
       isWorkOut: false, // 퇴근 여부
-      message: "", // 알림 메시지
+      message: "",      // 알림 메시지
       alertType: "info", // 알림 메시지 유형
+
       departmentUsers: [], // 부서원들의 출근 정보
       defaultProfileImage: "https://via.placeholder.com/150", // 기본 프로필 이미지
+
+
     };
   },
   methods: {
     // 출근 API 호출
     async workIn() {
       try {
-        const response = await axios.post(
-          `${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`,
-          {},
-          {
-            headers: this.getAuthHeaders(),
-          }
-        );
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, {}, {
+          headers: this.getAuthHeaders()
+        });
         this.message = response.data.message;
         this.alertType = "success";
-        this.isWorkIn = true; // 출근 완료
-        this.fetchDepartmentUsersAttendance(); // 부서원 출근 상태 갱신
+        this.isWorkIn = true;  // 출근 완료
+        location.reload();
       } catch (error) {
         this.message = "출근 기록 중 오류 발생";
         this.alertType = "error";
@@ -82,17 +90,13 @@ export default {
     // 퇴근 API 호출
     async workOut() {
       try {
-        const response = await axios.post(
-          `${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`,
-          {},
-          {
-            headers: this.getAuthHeaders(),
-          }
-        );
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, {}, {
+          headers: this.getAuthHeaders()
+        });
         this.message = response.data.message;
         this.alertType = "success";
-        this.isWorkOut = true; // 퇴근 완료
-        this.fetchDepartmentUsersAttendance(); // 부서원 출근 상태 갱신
+        this.isWorkOut = true;  // 퇴근 완료
+        location.reload();
       } catch (error) {
         this.message = "퇴근 기록 중 오류 발생";
         this.alertType = "error";
