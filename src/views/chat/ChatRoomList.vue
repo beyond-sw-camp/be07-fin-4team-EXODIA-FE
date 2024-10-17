@@ -39,6 +39,8 @@
                     <!-- Room info -->
                     <v-list-item-content @click="enterToChatRoom(index)">
                         <v-list-item-title>{{ chatroom.roomName }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ chatroom.recentChat }}</v-list-item-subtitle>
+                        <span>{{ chatroom.unreadChatNum }}</span>
                         <!-- <v-list-item-subtitle>{{ chatroom.lastMessage }}</v-list-item-subtitle> -->
                     </v-list-item-content>
 
@@ -108,6 +110,7 @@ export default {
             try {
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/list/${this.userNum}`);
                 this.chatRoomList = response.data.result || [];
+                console.log(this.chatRoomList);
             } catch (e) {
                 console.error('채팅방 목록 조회 실패', e);
             }

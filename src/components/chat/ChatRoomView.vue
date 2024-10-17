@@ -66,7 +66,7 @@
         <div class="image-group">
             <div v-for="(file, index) in fileList" :key="index" class="image-container">
                 <v-icon color="red" class="close-icon" @click="deleteImage(index)">mdi-close-circle</v-icon>
-                <img :src="file.fileUrl" @error="e => e.target.src = require('@/assets/user.png')"
+                <img :src="file.fileUrl" @error="e => e.target.src = require('@/assets/file.png')"
                     style="height: 120px; width: 120px; object-fit: cover;">
                 <p class="custom-contents">{{ file.name }}</p>
             </div>
@@ -284,7 +284,9 @@ export default {
             return `${createdTime.getFullYear()}년 ${createdTime.getMonth() + 1}월 ${createdTime.getDate()}일`;
         },
 
-        goBack() {
+        async goBack() {
+            const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
+            console.log(response);
             this.$emit('update:dialog', false);
             this.$emit('update:check', true);
         },

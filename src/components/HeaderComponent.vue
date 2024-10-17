@@ -1,7 +1,8 @@
 <template>
   <header class="header">
     <div class="icons">
-      <div class="icon-item" @click="$router.push('/calendar/calendarList')" :class="{ 'active': $route.path.startsWith('/calendar') }">
+      <div class="icon-item" @click="$router.push('/calendar/calendarList')"
+        :class="{ 'active': $route.path.startsWith('/calendar') }">
         <v-icon class="icon">mdi-calendar</v-icon>
       </div>
 
@@ -16,10 +17,12 @@
       <!-- 채팅방리스트 -->
       <div class="icon-item">
         <v-icon class="icon" @click="showChatRoomList">mdi-chat</v-icon>
+        <span v-if="chatAlarm > 0" class="badge">{{ chatAlarm }}</span>
       </div>
 
       <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
-        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
+          style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
 
 
@@ -43,7 +46,7 @@
 <script>
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
-
+// import {EventSourcePolyfill} from 'event-source-polyfill';
 
 export default {
   name: 'HeaderComponent',
@@ -51,12 +54,35 @@ export default {
     return {
       unreadCount: 0, // 읽지 않은 알림 개수
       timeRemaining: 0, // 토큰의 남은 유효기간
+      chatAlarm: 0,
     };
   },
   created() {
     // 컴포넌트 생성 시 읽지 않은 알림 개수를 가져옴
     this.fetchUnreadCount();
     this.calculateTokenTimeRemaining();
+
+    // const token = localStorage.getItem("token");
+    // if(token){
+    //   const eventSource = new EventSourcePolyfill(`${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`);
+    // const eventSource = new EventSource(`${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`);
+    //   eventSource.addEventListener('connect',(event)=>{console.log(event)} );
+    //   eventSource.addEventListener('chatAlarm',(event)=>{
+    //     console.log(event);
+    //     this.chatAlarm++;
+    //   });
+    // }
+      //     // 메시지 수신
+      //     eventSource.onmessage = (event) => {
+      //   const newNotification = JSON.parse(event.data);
+      //   this.notifications.unshift(newNotification); // 새로운 알림을 맨 위에 추가
+      // };
+
+      // // 오류 처리
+      // eventSource.onerror = (error) => {
+      //   console.error("SSE 연결 오류:", error);
+      // };
+
   },
   methods: {
     // 읽지 않은 알림 개수를 가져오는 메서드
@@ -92,7 +118,7 @@ export default {
     showChatRoomList() {
       window.open("/chatRoom/list", "_blank", "width=480, height=650")
     },
-    
+
     // 로그인 연장
     async extendSession() {
       try {
@@ -236,7 +262,6 @@ export default {
 
 .v-btn {
   margin-left: 10px;
-  
-}
 
+}
 </style>
