@@ -87,7 +87,7 @@
                 </v-row>
             </v-col>
 
-            <v-col cols="4">
+            <v-col cols="4" class="createSubmit">
                 <v-card style="background-color: rgba(123, 86, 86, 0.3);">
                     <v-card-title>결재 라인</v-card-title>
                     <v-list style="background-color: rgba(123, 86, 86, 0.3);">
@@ -109,9 +109,12 @@
                         </v-list-item>
                     </v-list>
                 </v-card>
-                <v-btn color="primary" class="mt-4" @click="createSubmit">
-                    결재라인 등록
-                </v-btn>
+                <v-row class="submitBtn">
+                    <v-btn style="background-color:#722121; color:#ffffff;" class="mt-8" @click="createSubmit">
+                        결재라인 등록
+                    </v-btn>
+                </v-row>
+
             </v-col>
         </v-row>
     </v-card>
@@ -208,7 +211,7 @@ export default {
                 this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
                 await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
                 alert("결재 요청이 성공적으로 처리되었습니다.")
-                location.reload();
+                this.$router.push("/submit/list/my")
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }
@@ -224,9 +227,7 @@ export default {
 </script>
 
 <style scoped>
-*:not(h1) {
-    font-size: 14px;
-}
+*:not(h1) {}
 
 .draggable-item {
     cursor: grab;
@@ -238,5 +239,11 @@ export default {
     min-height: 200px;
     border: 2px dashed #7A5656;
     padding: 20px;
+}
+
+.submitBtn {
+    display: flex;
+    justify-content: center;
+    align-content: center;
 }
 </style>

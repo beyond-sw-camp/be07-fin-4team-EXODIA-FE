@@ -1,13 +1,14 @@
 <template>
     <v-row>
-        <h1 style="margin:35px 0; font-weight:800">결재 요청 문서</h1>
+        <h1>결재 요청 문서</h1>
     </v-row>
 
-    <v-row class="searchButton">
+    <v-row style="margin:0; text-align:center;" class="searchButton">
         <v-col cols="9" sm="6">
             <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요" append-icon="mdi-magnify"
                 @click:append=searchFilter(searchQuery) style=""></v-text-field>
         </v-col>
+
         <v-col cols="3" class="searchButton" style="margin-bottom:15px">
             <v-btn style=" background-color:#722121; color:#ffffff;" @click="$router.push('/submit')">
                 결재 생성
@@ -102,9 +103,7 @@ export default {
 }
 </script>
 <style scoped>
-*:not(h1) {
-    font-size: 14px;
-}
+*:not(h1) {}
 
 .login-container {
     height: 100vh;
@@ -140,13 +139,6 @@ v-card-title,
     object-fit: cover;
 }
 
-.headline {
-    font-size: 14px;
-}
-
-.tabs>.v-btn {
-    font-size: 14px;
-}
 
 
 .v-btn {
@@ -204,5 +196,11 @@ v-card-title,
     background-color: #4cAf50;
     color: white;
     padding: auto;
+}
+
+.searchButton {
+    display: flex;
+    justify-content: center;
+    align-content: center;
 }
 </style>
