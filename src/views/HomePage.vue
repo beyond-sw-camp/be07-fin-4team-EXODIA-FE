@@ -16,9 +16,15 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <v-card outlined class="blue--text">
-            <v-card-text>프로필</v-card-text>
-          </v-card>
+          <v-row>
+            <v-col cols="12" md="4" class="profile-content">
+              <v-row class="profile-card">
+                <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"
+                  class="profile-img"></v-img>
+                <v-card-title class="profile-name">{{ userProfile?.name || '이름' }}</v-card-title>
+              </v-row>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
     </v-col>
@@ -42,9 +48,64 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   name: 'HomePage',
+  data() {
+    return {
+      userProfile: {},
+    }
+  },
+  mounted() {
+    this.fetchUserProfile();
+  },
+  methods: {
+    async fetchUserProfile() {
+      try {
+        const token = localStorage.getItem('token');
+        const userNum = localStorage.getItem('userNum');
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/profile/${userNum}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        console.log('Received User Profile:', response.data);
+        this.userProfile = response.data;
+
+        console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
+        console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
+      } catch (error) {
+        console.error('유저 정보 가져오기 실패:', error);
+      }
+    },
+  }
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+.profile-img {
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  margin: 0 auto;
+}
+</style>

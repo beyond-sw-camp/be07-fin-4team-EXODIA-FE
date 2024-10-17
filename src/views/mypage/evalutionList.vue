@@ -1,90 +1,80 @@
 <template>
   <div class="main-view">
-  <v-container fluid>
-    <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-      <v-tab @click="navigateTab(0)">프로필</v-tab>
-      <v-tab @click="navigateTab(1)">평가리스트</v-tab>
-      <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
-      <v-tab @click="navigateTab(3)">인사평가</v-tab>
-    </v-tabs>
+    <v-container fluid>
+      <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
+        <v-tab @click="navigateTab(0)">전사 근태 통계</v-tab>
+        <v-tab @click="navigateTab(1)">프로필</v-tab>
+        <v-tab @click="navigateTab(2)">평가리스트</v-tab>
+        <v-tab @click="navigateTab(3)">오늘의 점심</v-tab>
+        <v-tab @click="navigateTab(4)">인사평가</v-tab>
+      </v-tabs>
 
-    <v-tabs-items v-model="activeTab">
-      <v-tab-item v-if="activeTab === 0">
-        <!-- 프로필 -->
-      </v-tab-item>
+      <v-tabs-items v-model="activeTab">
+        <v-tab-item v-if="activeTab === 0">
+          <!-- 전사 근태 통계 -->
+        </v-tab-item>
 
-      <v-tab-item v-if="activeTab === 1">
-        <!-- 평가리스트 -->
-      </v-tab-item>
+        <v-tab-item v-if="activeTab === 1">
+          <!-- 프로필 -->
+        </v-tab-item>
 
-      <v-tab-item v-if="activeTab === 2">
-        <!-- 오늘의 점심 -->
-      </v-tab-item>
+        <v-tab-item v-if="activeTab === 2">
+          <!-- 평가리스트 -->
+        </v-tab-item>
 
-      <v-tab-item v-if="activeTab === 3">
-        <v-row>
-          <v-col v-if="isManager" cols="12" md="4">
-            <v-select
-              v-model="selectedUser"
-              :items="departmentUsers"
-              item-title="name"
-              item-value="userNum"
-              label="부서원 선택"
-              dense
-              outlined
-            ></v-select>
-          </v-col>
-        </v-row>
+        <v-tab-item v-if="activeTab === 3">
+          <!-- 오늘의 점심 -->
+        </v-tab-item>
 
-        <v-row>
-          <v-col>
-            <v-simple-table dense>
-              <thead>
-                <tr>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(item, index) in evaluations" :key="index">
-                  <td
-                    v-if="shouldShowBigCategory(index)"
-                    :rowspan="getRowspanForBigCategory(index)"
-                    style="width: 200px; text-align: center; font-weight: bold; border: 1px solid #e0e0e0;"
-                  >
-                    {{ item.bigCategoryName }}
-                  </td>
-                  <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
-                    {{ item.midCategoryName }}
-                  </td>
-                  <td style="border: 1px solid #e0e0e0; text-align: center; width: 800px;">
-                    {{ item.subEvalutionContent }}
-                  </td>
-                  <td style="border: 1px solid #e0e0e0; text-align: center;">
-                    <!-- 평가 선택 -->
-                    <v-select
-                      v-model="item.grade"
-                      :items="['A', 'B', 'C', 'D', 'E']"
-                      label="평가 선택"
-                      dense
-                      style="width: 100px; background-color: #FFFFFF; border: none"
-                      :disabled="item.saved && !item.editable"
-                    ></v-select>
-                  </td>
-                </tr>
-              </tbody>
-            </v-simple-table>
-          </v-col>
-        </v-row>
+        <v-tab-item v-if="activeTab === 4">
+          <v-row>
+            <v-col v-if="isManager" cols="12" md="4">
+              <v-select v-model="selectedUser" :items="departmentUsers" item-title="name" item-value="userNum"
+                label="부서원 선택" dense outlined></v-select>
+            </v-col>
+          </v-row>
 
-        <!-- 저장 버튼 추가 -->
-        <v-row>
-          <v-col cols="12" class="text-center">
-            <v-btn @click="saveEvaluations" color="success">저장</v-btn>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-    </v-tabs-items>
-  </v-container>
-</div>
+          <v-row>
+            <v-col>
+              <v-simple-table dense>
+                <thead>
+                  <tr>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in evaluations" :key="index">
+                    <td v-if="shouldShowBigCategory(index)" :rowspan="getRowspanForBigCategory(index)"
+                      style="width: 200px; text-align: center; font-weight: bold; border: 1px solid #e0e0e0;">
+                      {{ item.bigCategoryName }}
+                    </td>
+                    <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
+                      {{ item.midCategoryName }}
+                    </td>
+                    <td style="border: 1px solid #e0e0e0; text-align: center; width: 800px;">
+                      {{ item.subEvalutionContent }}
+                    </td>
+                    <td style="border: 1px solid #e0e0e0; text-align: center;">
+                      <!-- 평가 선택 -->
+                      <v-select v-model="item.grade" :items="['A', 'B', 'C', 'D', 'E']" label="평가 선택" dense
+                        style="width: 100px; background-color: #FFFFFF; border: none"
+                        :disabled="item.saved && !item.editable"></v-select>
+                    </td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
+            </v-col>
+          </v-row>
+
+          <!-- 저장 버튼 추가 -->
+          <v-row>
+            <v-col cols="12" class="text-center">
+              <v-btn @click="saveEvaluations" color="success">저장</v-btn>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+      </v-tabs-items>
+    </v-container>
+  </div>
 </template>
 
 <script>
@@ -93,7 +83,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      activeTab: 3,
+      activeTab: 4,
       evaluations: [], // 평가 항목들
       departmentUsers: [], // 부서원 리스트 (팀장일 경우에만 필요)
       selectedUser: null, // 선택된 부서원의 ID
@@ -215,12 +205,16 @@ export default {
 
     // 탭 이동
     navigateTab(index) {
-      if (index === 0) {
-        this.$router.push('/mypage/userProfile');
+      if (index == 0) {
+        this.$router.push('/mypage/vacation');
       } else if (index === 1) {
-        this.$router.push('/mypage/evalutionFrame');
+        this.$router.push('/mypage/userProfile');
       } else if (index === 2) {
+        this.$router.push('/mypage/evalutionFrame');
+      } else if (index === 3) {
         this.$router.push('/mypage/spinWheel');
+      } else if (index === 4) {
+        this.$router.push('/mypage/evalutionList');
       } else {
         this.activeTab = index;
       }
@@ -235,6 +229,7 @@ export default {
   /* margin-top: -50px; */
   padding: -50px;
 }
+
 /* 헤더 탭 여백 */
 .header-tabs {
   margin-bottom: 30px;
@@ -259,7 +254,8 @@ export default {
 }
 
 /* 테이블 셀 경계선 설정 */
-th, td {
+th,
+td {
   border: 1px solid #e0e0e0;
 }
 
