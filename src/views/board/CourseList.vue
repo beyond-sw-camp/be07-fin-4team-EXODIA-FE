@@ -5,23 +5,22 @@
   
     <!-- 검색 및 강좌 생성 버튼 -->
     <v-row justify="center" style="margin:0; text-align:center;">
-
       <v-col cols="12" sm="6">
         <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요" style="margin-bottom: 20px;"></v-text-field>
       </v-col>
 
       <v-col cols="6" sm="2" style="margin-left: -30px;">
-        <v-btn class="searchBtn" @click="searchFilter(searchQuery)">
-          검색
+        <v-btn class="searchBtn" icon @click="searchFilter(searchQuery)">
+          <v-icon>mdi-magnify</v-icon>
         </v-btn>
       </v-col>
-      <v-col cols="6" sm="2" style="margin-left: -60px;">
-
-        <!-- 강좌 생성 모달 -->
-        <v-btn @click="openCreateModal" color="rgba(122, 86, 86, 0.2)">
-          강좌 생성
+    </v-row>
+  
+    <v-row justify="end" style="margin-top: 20px;">
+      <v-col cols="12" style="text-align: right;">
+        <v-btn v-if="isHrDepartment()" icon @click="openCreateModal" color="rgba(122, 86, 86, 0.2)">
+          <v-icon>mdi-plus-circle</v-icon>
         </v-btn>
-
       </v-col>
     </v-row>
   
@@ -30,8 +29,8 @@
       <v-col cols="3"><strong>강좌명</strong></v-col>
       <v-col cols="3"><strong>내용</strong></v-col>
       <v-col cols="2"><strong>생성일</strong></v-col>
-      <v-col cols="1"><strong>최대인원</strong></v-col>
-      <v-col cols="1"><strong>남은인원</strong></v-col>
+      <v-col cols="2"><strong>참여자</strong></v-col>
+      <v-col cols="2" v-if="isHrDepartment()"><strong>관리</strong></v-col>
     </v-row>
   
     <!-- 강좌 리스트 -->
@@ -41,12 +40,20 @@
       class="course-row"
       outlined
       style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;"
+      @click="openEnrollModal(course)"
     >
       <v-col cols="3">{{ course.courseName }}</v-col>
       <v-col cols="3">{{ course.content }}</v-col>
       <v-col cols="2">{{ course.createCourse }}</v-col>
-      <v-col cols="1">{{ course.maxParticipants }}</v-col>
-      <v-col cols="1">{{ course.remainingParticipants }}</v-col>
+      <v-col cols="2">{{ course.remainingParticipants }} / {{ course.maxParticipants }}</v-col>
+      <v-col cols="2" v-if="isHrDepartment()">
+        <v-btn icon @click.stop="openEditModal(course)">
+          <v-icon>mdi-pencil</v-icon> <!-- 강좌 수정 아이콘 -->
+        </v-btn>
+        <v-btn icon @click.stop="deleteCourse(course.id)">
+          <v-icon>mdi-delete</v-icon> <!-- 강좌 삭제 아이콘 -->
+        </v-btn>
+      </v-col>
     </v-row>
   
     <!-- 강좌 생성 모달 -->
@@ -69,18 +76,68 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+  
+    <!-- 강좌 수정 모달 -->
+    <v-dialog v-model="showEditModal" max-width="500">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">강좌 수정</span>
+        </v-card-title>
+  
+        <v-card-text>
+          <v-text-field v-model="editCourse.courseName" label="강좌명" required></v-text-field>
+          <v-text-field v-model="editCourse.content" label="내용" required></v-text-field>
+          <v-text-field v-model="editCourse.courseUrl" label="강좌 URL" required></v-text-field>
+          <v-text-field v-model="editCourse.maxParticipants" label="최대 참가자 수" type="number" required></v-text-field>
+        </v-card-text>
+  
+        <v-card-actions>
+          <v-btn color="blue darken-1" text @click="closeEditModal" style="box-shadow: none;">취소</v-btn>
+          <v-btn color="blue darken-1" text @click="updateCourse" style="box-shadow: none;">수정</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  
+    <!-- 강좌 신청 모달 -->
+    <v-dialog v-model="showEnrollModal" max-width="500">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">강좌 신청</span>
+        </v-card-title>
+  
+        <v-card-text>
+          <p><strong>강좌명:</strong> {{ selectedCourse.courseName }}</p>
+          <p><strong>내용:</strong> {{ selectedCourse.content }}</p>
+          <p><strong>URL:</strong> <a :href="selectedCourse.courseUrl" target="_blank">{{ selectedCourse.courseUrl }}</a></p>
+          <p><strong>현재 참가자/최대 참가자:</strong> {{ selectedCourse.remainingParticipants ? (selectedCourse.maxParticipants - selectedCourse.remainingParticipants) : 0 }} / {{ selectedCourse.maxParticipants }}</p>
+        </v-card-text>
+  
+        <v-card-actions>
+          <v-btn color="blue darken-1" text @click="closeEnrollModal">취소</v-btn>
+          <v-btn color="blue darken-1" text @click="enrollCourse">신청</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </template>
   
   <script>
   import axios from "axios";
-  
   export default {
     data() {
       return {
         courses: [],
         searchQuery: "",
         showModal: false,
+        showEditModal: false,
+        showEnrollModal: false,
+        selectedCourse: {},
         newCourse: {
+          courseName: "",
+          content: "",
+          courseUrl: "",
+          maxParticipants: 0,
+        },
+        editCourse: {
           courseName: "",
           content: "",
           courseUrl: "",
@@ -99,6 +156,27 @@
       },
     },
     methods: {
+      async fetchUserInfo() {
+        try {
+          const token = localStorage.getItem('token');
+          const userNum = localStorage.getItem('userNum');
+          const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/profile/${userNum}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          const user = response.data;
+          console.log('User Info:', user);
+          localStorage.setItem('departmentName', user.departmentName);
+          localStorage.setItem('positionId', user.positionId);
+        } catch (error) {
+          console.error('Failed to fetch user info:', error);
+        }
+      },
+      isHrDepartment() {
+        const departmentName = localStorage.getItem('departmentName');
+        return departmentName === '인사팀';
+      },
       fetchCourses() {
         axios
           .get("/course/list")
@@ -110,7 +188,6 @@
           });
       },
       searchFilter(query) {
-        // 검색 필터를 적용하는 로직은 이미 computed에 구현됨
         console.log("Searching for:", query);
       },
       openCreateModal() {
@@ -139,8 +216,61 @@
             console.error("Failed to create course:", error);
           });
       },
+      openEditModal(course) {
+        this.editCourse = { ...course };
+        this.showEditModal = true;
+      },
+      closeEditModal() {
+        this.showEditModal = false;
+      },
+      updateCourse() {
+        axios
+          .put(`/course/update/${this.editCourse.id}`, this.editCourse)
+          .then((response) => {
+            const index = this.courses.findIndex(course => course.id === response.data.id);
+            if (index !== -1) {
+              this.courses.splice(index, 1, response.data);
+            }
+            this.closeEditModal();
+          })
+          .catch((error) => {
+            console.error("Failed to update course:", error);
+          });
+      },
+      openEnrollModal(course) {
+        this.selectedCourse = course;
+        this.showEnrollModal = true;
+      },
+      closeEnrollModal() {
+        this.showEnrollModal = false;
+      },
+      enrollCourse() {
+        axios
+          .post(`/course/register/${this.selectedCourse.id}`)
+          .then((response) => {
+            alert(response.data);
+            this.closeEnrollModal();
+            this.fetchCourses();
+          })
+          .catch((error) => {
+            console.error("Failed to enroll in course:", error);
+          });
+      },
+      deleteCourse(courseId) {
+        axios
+          .put(`/course/delete/${courseId}`)
+          .then(() => {
+            this.courses = this.courses.filter(course => course.id !== courseId);
+          })
+          .catch((error) => {
+            console.error("Failed to delete course:", error);
+          });
+      },
     },
     mounted() {
+      this.fetchUserInfo().then(() => this.fetchCourses());
+      console.log('Fetching user info...');
+      this.fetchUserInfo();
       this.fetchCourses();
     },
   };
@@ -167,5 +297,15 @@
   .searchBtn {
     margin-right: 10px;
   }
+
+  .v-btn--icon.v-btn--density-default {
+    margin-left: 10px;
+    width: calc(var(--v-btn-height) + 12px);
+    height: calc(var(--v-btn-height) + 12px);
+    box-shadow: none;
+}
+.v-btn--icon.v-btn--density-default :hover{
+
+    box-shadow: none;
+}
   </style>
-  
