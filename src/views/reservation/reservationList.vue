@@ -76,7 +76,6 @@
               
                     <!-- 차량 종류 -->
                     <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
-      <!-- 차량 번호 -->
 
               <!-- 차량 번호 -->
               <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carNum }}</v-col>
@@ -235,12 +234,12 @@ export default {
   },
   computed: {
     ...mapGetters({
-      departmentId: "getDepartmentId", // Vuex에서 departmentId 가져오기
+      departmentName: "getDepartmentName",
     }),
     isHrDepartment() {
-      // 인사팀이면 true를 반환
-      return this.departmentId === "4";
-    }
+      console.log("Current departmentName: ", this.departmentName);
+      return this.departmentName === "인사팀"; // Assuming "인사팀" is the HR department name
+    },
   },
   methods: {
     ...mapActions(["setUserAllInfoActions"]), // 사용자 정보를 Vuex에 저장하는 액션 호출
@@ -305,6 +304,8 @@ export default {
           }
         );
         this.userName = response.data.name;
+        this.departmentName = response.data.name;
+        console.log("나 유저, 부서명을 곁들인 : ", response.data.departmentName);
         this.setUserAllInfoActions();
       } catch (error) {
         console.error("Error fetching user info:", error);

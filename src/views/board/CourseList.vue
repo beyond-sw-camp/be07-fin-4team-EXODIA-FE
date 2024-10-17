@@ -65,9 +65,9 @@
             </v-card-title>
 
             <v-card-text class="py-6 px-10">
-                <v-text-field v-model="newCourse.courseName" label="학자명" required outlined></v-text-field>
+                <v-text-field v-model="newCourse.courseName" label="강좌명" required outlined></v-text-field>
                 <v-textarea v-model="newCourse.content" label="내용" rows="3" outlined required></v-textarea>
-                <v-text-field v-model="newCourse.courseUrl" label="학자 URL" required outlined></v-text-field>
+                <v-text-field v-model="newCourse.courseUrl" label="강좌URL" required outlined></v-text-field>
                 <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required outlined></v-text-field>
             </v-card-text>
 
@@ -86,9 +86,9 @@
             </v-card-title>
 
             <v-card-text class="py-6 px-10">
-                <v-text-field v-model="editCourse.courseName" label="학자명" required outlined></v-text-field>
+                <v-text-field v-model="editCourse.courseName" label="강좌명" required outlined></v-text-field>
                 <v-textarea v-model="editCourse.content" label="내용" rows="3" outlined required></v-textarea>
-                <v-text-field v-model="editCourse.courseUrl" label="학자 URL" required outlined></v-text-field>
+                <v-text-field v-model="editCourse.courseUrl" label="강좌URL" required outlined></v-text-field>
                 <v-text-field v-model="editCourse.maxParticipants" label="최대 참가자 수" type="number" required outlined></v-text-field>
             </v-card-text>
 
