@@ -103,9 +103,7 @@
                     <v-list>
                         <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
                             <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
-                            <v-btn icon @click="removeUser(index)">
-                                <v-icon style="border:none">mdi-close</v-icon>
-                            </v-btn>
+                            <v-icon @click="removeUser(index)" style="border:none">mdi-close</v-icon>
                         </v-list-item>
                     </v-list>
                 </v-card>
