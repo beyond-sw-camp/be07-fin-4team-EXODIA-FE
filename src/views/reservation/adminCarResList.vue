@@ -1,67 +1,67 @@
 <template>
-    <v-container fluid>
+  <v-container fluid class="timeline-container">
 
-      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3">
-        <!-- 차량 예약 탭 -->
-         <v-tab @click="goToAdminApprovalChange" class="text-body-1">
-            전체 예약 조회
-         </v-tab>
-        <v-tab @click="goToVehicleReservation" class="text-body-1">
-          법인 차량 예약
+    <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3">
+      <!-- 차량 예약 탭 -->
+        <v-tab @click="goToAdminApprovalChange" class="text-body-1">
+          관리자조회
         </v-tab>
-      </v-tabs>
-  
-      <!-- 관리자 예약 승인/거절 화면 -->
-      <v-tabs-items v-model="selectedTab">
-        <!-- 차량 예약 승인/거절 탭 내용 -->
-        <v-tab-item>
-          <v-container fluid>
-            <v-row justify="center" class="mb-5">
-              <h2>예약 요청 목록</h2>
-            </v-row>
-  
-            <!-- Reservation Approval Table -->
-            <v-table>
-              <thead>
-                <tr>
-                  <th>차량 번호</th>
-                  <th>차량 종류</th>
-                  <th>예약자</th>
-                  <th>예약 상태</th>
-                  <th>액션</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="reservation in reservations" :key="reservation.reservationId">
-                  <td>{{ reservation.carNum }}</td>
-                  <td>{{ reservation.carType }}</td>
-                  <td>{{ reservation.userName }}</td>
-                  <td>{{ reservation.status }}</td>
-                  <td>
-                    <v-btn
-                      v-if="reservation.status === 'WAITING'"
-                      color="green"
-                      @click="approveReservation(reservation.reservationId)"
-                    >
-                      승인
-                    </v-btn>
-                    <v-btn
-                      v-if="reservation.status === 'WAITING'"
-                      color="red"
-                      @click="rejectReservation(reservation.reservationId)"
-                    >
-                      거절
-                    </v-btn>
-                    <span v-else>{{ reservation.status }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </v-container>
-        </v-tab-item>
-      </v-tabs-items>
-    </v-container>
-  </template>
+      <v-tab @click="goToVehicleReservation" class="text-body-1">
+        법인차량예약
+      </v-tab>
+    </v-tabs>
+
+    <!-- 관리자 예약 승인/거절 화면 -->
+    <v-tabs-items v-model="selectedTab">
+      <!-- 차량 예약 승인/거절 탭 내용 -->
+      <v-tab-item>
+        <v-container fluid>
+          <v-row justify="center" class="mb-5">
+            <h2>예약 요청 목록</h2>
+          </v-row>
+
+          <!-- Reservation Approval Table -->
+          <v-table>
+            <thead>
+              <tr>
+                <th>차량 번호</th>
+                <th>차량 종류</th>
+                <th>예약자</th>
+                <th>예약 상태</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="reservation in reservations" :key="reservation.reservationId">
+                <td>{{ reservation.carNum }}</td>
+                <td>{{ reservation.carType }}</td>
+                <td>{{ reservation.userName }}</td>
+                <td>{{ reservation.status }}</td>
+                <td>
+                  <v-btn
+                    v-if="reservation.status === 'WAITING'"
+                    color="green"
+                    @click="approveReservation(reservation.reservationId)"
+                  >
+                    승인
+                  </v-btn>
+                  <v-btn
+                    v-if="reservation.status === 'WAITING'"
+                    color="red"
+                    @click="rejectReservation(reservation.reservationId)"
+                  >
+                    거절
+                  </v-btn>
+                  <span v-else>{{ reservation.status }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-container>
+      </v-tab-item>
+    </v-tabs-items>
+  </v-container>
+</template>
   
 <script>
 import axios from "axios";
@@ -141,6 +141,12 @@ export default {
 </script>
   
 <style scoped>
+.timeline-container {
+  background-color: white;
+  /* border: solid 1px; */
+  /* 외부 선  */
+  border: 1px solid #D8EACA; 
+}  
   .v-btn {
     margin: 0 10px;
   }

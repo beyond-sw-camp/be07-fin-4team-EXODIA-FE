@@ -40,17 +40,19 @@
 
     <!-- 팀원들 출근현황 -->
     <v-col cols="6">
-      <v-card outlined>
-        <v-card-text>팀원들 출근현황</v-card-text>
-      </v-card>
+      <UserAttendance />
     </v-col>
   </v-row>
 </template>
 
 <script>
 import axios from 'axios';
+import UserAttendance from './mypage/userAttendance.vue';
 export default {
   name: 'HomePage',
+  components: {
+    UserAttendance // 타임라인 컴포넌트 등록
+  },
   data() {
     return {
       userProfile: {},
@@ -106,6 +108,5 @@ export default {
   width: 200px;
   height: 200px;
   object-fit: cover;
-  margin: 0 auto;
 }
 </style>

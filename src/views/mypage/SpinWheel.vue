@@ -269,13 +269,14 @@ canvas {
 
 /* 검은 줄 스타일 (화살표) */
 .indicator {
-  width: 10px;
+  width: 5px;
   height: 40px;
   background-color: black;
   position: relative;
   top: 50px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 1;
 }
 
 .v-btn {

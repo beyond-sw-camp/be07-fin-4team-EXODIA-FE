@@ -20,9 +20,8 @@
         <span v-if="chatAlarm > 0" class="badge">{{ chatAlarm }}</span>
       </div>
 
-      <v-avatar class="icon" @click="$router.push('/mypage/userProfile')">
-        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
-          style="width: 100%; height: 100%; object-fit: cover;" />
+      <v-avatar class="icon" @click="$router.push('/mypage/vacation')">
+        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar" style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
 
 
@@ -35,7 +34,8 @@
       <span v-if="timeRemaining > 0">남은 시간: {{ formattedTimeRemaining }}</span>
 
       <!-- 로그아웃 버튼 -->
-      <!-- <v-btn color="error" @click="logout">로그아웃</v-btn> -->
+      <v-btn color="error" @click="logout">로그아웃</v-btn>
+
     </div>
 
   </header>

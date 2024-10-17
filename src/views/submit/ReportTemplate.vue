@@ -1,6 +1,6 @@
 <template>
-    <h1 style="margin:25px 0; font-weight:800">법인 카드 사용 신청서</h1>
-    <v-card style="padding:50px">
+    <h1 style="margin:25px 0; font-weight:800">보고서 결재</h1>
+    <v-row style="padding:50px">
         <v-row justify="justify-space-around">
             <v-col cols="8">
                 <v-row>
@@ -17,22 +17,45 @@
                         <v-text-field disabled>{{ this.departmentName }}</v-text-field>
                     </v-col>
                 </v-row>
+
                 <v-row>
                     <v-col cols="3">
-                        <v-list-subheader>신청일</v-list-subheader>
+                        <v-list-subheader>휴가 종류</v-list-subheader>
                     </v-col>
                     <v-col cols="9">
-                        <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
-                            :min-date="new Date()" :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
+                        <v-select label="휴가 종류" v-model="formData.휴가종류" :items="휴가종류목록" outlined></v-select>
+
                     </v-col>
                 </v-row>
+
                 <v-row>
                     <v-col cols="3">
-                        <v-list-subheader>사용 기간</v-list-subheader>
+                        <v-list-subheader>휴가 시작일</v-list-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                        <VueDatePicker locale="ko" v-model="formData.휴가시작일" :type="'date'" format="yyyy-MM-dd"
+                            :min-date="new Date()" :enable-time-picker="false"></VueDatePicker>
+                    </v-col>
+                </v-row>
+
+
+                <v-row>
+                    <v-col cols="3">
+                        <v-list-subheader>휴가 종료일</v-list-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                        <VueDatePicker locale="ko" v-model="formData.휴가종료일" :type="'date'" format="yyyy-MM-dd"
+                            :min-date="new Date()" :enable-time-picker="false"></VueDatePicker>
+                    </v-col>
+                </v-row>
+
+                <v-row>
+                    <v-col cols="3">
+                        <v-list-subheader>총 휴가 일수</v-list-subheader>
                     </v-col>
 
                     <v-col cols="9">
-                        <v-text-field label="사용 기간" v-model="formData.사용기간"></v-text-field>
+                        <v-text-field label="총 휴가 일수" v-model="formData.총휴가일수"></v-text-field>
                     </v-col>
                 </v-row>
 
@@ -46,48 +69,10 @@
                     </v-col>
                 </v-row>
 
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>사용 인원</v-list-subheader>
-                    </v-col>
-
-                    <v-col cols="9">
-                        <v-text-field label="사용 인원" v-model="formData.사용인원"></v-text-field>
-                    </v-col>
-                </v-row>
-
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>사용 금액</v-list-subheader>
-                    </v-col>
-
-                    <v-col cols="9">
-                        <v-text-field label="사용 금액" v-model="formData.사용금액"></v-text-field>
-                    </v-col>
-                </v-row>
-
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>총 금액</v-list-subheader>
-                    </v-col>
-
-                    <v-col cols="9">
-                        <v-text-field label="총 금액" v-model="formData.총금액"></v-text-field>
-                    </v-col>
-                </v-row>
-
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>기타</v-list-subheader>
-                    </v-col>
-
-                    <v-col cols="9">
-                        <v-text-field label="기타" v-model="formData.기타"></v-text-field>
-                    </v-col>
-                </v-row>
             </v-col>
 
-            <v-col cols="4" class="createSubmit">
+            <!-- 결재 라인 -->
+            <v-col cols="4">
                 <v-card style="background-color: rgba(123, 86, 86, 0.3);">
                     <v-card-title>결재 라인</v-card-title>
                     <v-list style="background-color: rgba(123, 86, 86, 0.3);">
@@ -103,7 +88,7 @@
                     <v-list>
                         <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
                             <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
-                            <v-icon @click="removeUser(index)" style="border:none">mdi-close</v-icon>
+                            <v-icon style="border:none" @click="removeUser(index)">mdi-close</v-icon>
                         </v-list-item>
                     </v-list>
                 </v-card>
@@ -112,15 +97,14 @@
                         결재라인 등록
                     </v-btn>
                 </v-row>
-
             </v-col>
         </v-row>
-    </v-card>
+    </v-row>
+
 </template>
 
 <script>
 import axios from 'axios';
-
 export default {
     data() {
         return {
@@ -132,14 +116,14 @@ export default {
             userName: '',
             departmentName: '',
 
+            휴가종류목록: ['연차', '반차', '병가', '기타'],
+
             formData: {
-                신청일: new Date().toISOString().split("T")[0], // ISO 형식으로 초기화
-                사용기간: '',
-                사유: '',
-                사용인원: '',
-                사용금액: '',
-                총금액: '',
-                기타: ''
+                휴가종류: '',
+                휴가시작일: new Date().toISOString().split("T")[0],
+                휴가종료일: new Date().toISOString().split("T")[0],
+                총휴가일수: '',
+                사유: ''
             },
             users: [],
             droppedUsers: [],
@@ -147,7 +131,7 @@ export default {
             submitTypes: [],
 
             submitCreateData: {
-                submitType: '',
+                submitType: '휴가신청',
                 contents: '',
                 submitUserDtos: [],
             },
@@ -156,9 +140,8 @@ export default {
     mounted() {
         this.fetchWriter();
         this.fetchDepartment();
-
         this.fetchUsers();
-        this.submitCreateData.submitType = '법인 카드 신청';
+        this.submitCreateData.submitType = '휴가 신청';
     },
     methods: {
         async fetchUsers() {
@@ -169,14 +152,6 @@ export default {
                 console.error('직원 불러오는데 오류 발생:', e);
             }
         },
-        async fetchWriter() {
-            try {
-                const response = await axios.get('/user/userName');
-                this.userName = response.data.result;
-            } catch (e) {
-                console.error('회원 이름 불러오는데 오류 발생:', e);
-            }
-        },
         async fetchDepartment() {
             try {
                 const response = await axios.get(`/department/name/${this.departmentId}`);
@@ -185,8 +160,13 @@ export default {
                 console.error('직급 이름 불러오는데 오류 발생:', e);
             }
         },
-        onDateSelect(date) {
-            this.formData.신청일 = date;
+        async fetchWriter() {
+            try {
+                const response = await axios.get('/user/userName');
+                this.userName = response.data.result;
+            } catch (e) {
+                console.error('회원 이름 불러오는데 오류 발생:', e);
+            }
         },
         onDragStart(user) {
             this.draggedUser = user;
@@ -208,8 +188,10 @@ export default {
             try {
                 this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
                 await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
+
+                console.log(this.submitCreateData)
                 alert("결재 요청이 성공적으로 처리되었습니다.")
-                this.$router.push("/submit/list/my")
+                location.reload();
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }
@@ -220,13 +202,11 @@ export default {
         formatLocalTime(date) {
             return new Date(date).toLocaleTimeString();
         }
-    },
+    }
 }
+
 </script>
-
 <style scoped>
-*:not(h1) {}
-
 .draggable-item {
     cursor: grab;
     margin: 5px;
@@ -238,6 +218,7 @@ export default {
     border: 2px dashed #7A5656;
     padding: 20px;
 }
+
 
 .submitBtn {
     display: flex;

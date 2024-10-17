@@ -29,13 +29,15 @@
                     <v-col cols=4>
                         문서 태그
                     </v-col>
-                    <v-select v-model="tagNames" :items="tagOptions" label="태그를 선택하세요" multiple>
-                        <template v-slot:selection="{ item, index }">
-                            <v-chip v-if="index >= 0">
-                                <span>{{ item.title }}</span>
-                            </v-chip>
-                        </template>
-                    </v-select>
+                    <v-col>
+                        <v-select v-model="tagNames" :items="tagOptions" label="태그를 선택하세요" multiple>
+                            <template v-slot:selection="{ item, index }">
+                                <v-chip v-if="index >= 0">
+                                    <span>{{ item.title }}</span>
+                                </v-chip>
+                            </template>
+                        </v-select>
+                    </v-col>
                 </v-row>
                 <v-row>
                     <v-col cols=4>
