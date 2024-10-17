@@ -22,7 +22,10 @@
                     <v-col cols="3">
                         <v-list-subheader>휴가 종류</v-list-subheader>
                     </v-col>
-                    <v-select label="휴가 종류" v-model="formData.휴가종류" :items="휴가종류목록" outlined></v-select>
+                    <v-col cols="9">
+                        <v-select label="휴가 종류" v-model="formData.휴가종류" :items="휴가종류목록" outlined></v-select>
+
+                    </v-col>
                 </v-row>
 
                 <v-row>
@@ -113,7 +116,7 @@ export default {
             userName: '',
             departmentName: '',
 
-            휴가종류목록: ['연차', '병가', '반차', '기타'],
+            휴가종류목록: ['연차', '반차', '병가', '기타'],
 
             formData: {
                 휴가종류: '',
