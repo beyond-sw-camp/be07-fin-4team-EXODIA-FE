@@ -23,7 +23,7 @@
                     </v-col>
                     <v-col cols="9">
                         <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
-                            :min-date="new Date()" :enable-time-picker="false"></VueDatePicker>
+                            :min-date="new Date()" :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
                     </v-col>
                 </v-row>
                 <v-row>
@@ -115,9 +115,6 @@
             </v-col>
         </v-row>
     </v-card>
-
-
-
 </template>
 
 <script>
@@ -186,6 +183,9 @@ export default {
             } catch (e) {
                 console.error('직급 이름 불러오는데 오류 발생:', e);
             }
+        },
+        onDateSelect(date) {
+            this.formData.신청일 = date;
         },
         onDragStart(user) {
             this.draggedUser = user;

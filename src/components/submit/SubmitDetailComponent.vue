@@ -55,7 +55,7 @@
                 <v-col cols="9">
                     <div style="border: 1px solid #b9b9b9; border-radius:20px">
                         <v-col v-for="(value, key) in selectedSubmit.contents" :key="key">
-                            <div v-if="key === '신청일'">
+                            <div v-if="key === '신청일' || key === '휴가시작일' || key === '휴가종료일'">
                                 {{ key }}: {{ formatDate(value) }}
                             </div>
                             <div v-else>
