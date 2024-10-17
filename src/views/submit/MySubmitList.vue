@@ -8,8 +8,7 @@
             <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요" append-icon="mdi-magnify"
                 @click:append=searchFilter(searchQuery) style=""></v-text-field>
         </v-col>
-    </v-row>
-    <v-row justify="end">
+
         <v-col cols="3" class="searchButton" style="margin-bottom:15px">
             <v-btn style=" background-color:#722121; color:#ffffff;" @click="$router.push('/submit')">
                 결재 생성
@@ -194,7 +193,7 @@ v-card-title,
 }
 
 .chip-accept {
-    background-color: #81c784;
+    background-color: #4cAf50;
     color: white;
     padding: auto;
 }

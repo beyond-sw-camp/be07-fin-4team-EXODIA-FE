@@ -1,6 +1,6 @@
 <template>
     <v-row>
-        <h1 style="margin:35px 0; font-weight:800">결재 할 문서</h1>
+        <h1>결재 할 문서</h1>
     </v-row>
 
     <v-row justify="center" style="margin:0; text-align:center;">
@@ -47,7 +47,6 @@
             데이터가 존재하지 않습니다.
         </v-row>
     </div>
-
 
     <!-- 
     <div class="pagination-controls">
@@ -137,7 +136,7 @@ export default {
 }
 
 .chip-accept {
-    background-color: #81c784;
+    background-color: #4cAf50;
     color: white;
 }
 

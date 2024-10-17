@@ -254,6 +254,10 @@ export default {
   overflow-y: auto;
 }
 
+.sidebar::-webkit-scrollbar {
+  display: none; 
+}
+
 .menu {
   display: flex;
   flex-direction: column;
