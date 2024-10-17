@@ -32,7 +32,8 @@
       <span v-if="timeRemaining > 0">남은 시간: {{ formattedTimeRemaining }}</span>
 
       <!-- 로그아웃 버튼 -->
-      <!-- <v-btn color="error" @click="logout">로그아웃</v-btn> -->
+      <v-btn color="error" @click="logout">로그아웃</v-btn>
+
     </div>
 
   </header>
