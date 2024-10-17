@@ -7,6 +7,8 @@
           v-model="selectedWeek"
           :items="weeks"
           label="주차 선택"
+          item-title="text" 
+          item-value="weekNumber" 
           outlined
           style="margin-left: 30px;"
         ></v-select>
@@ -82,7 +84,8 @@ export default {
   data() {
     return {
       selectedWeek: null, // 선택된 주차
-      weeks: Array.from({ length: 52 }, (_, i) => `${i + 1}주차`), // 1주차부터 52주차까지 배열
+      // weeks: Array.from({ length: 52 }, (_, i) => `${i + 1}주차`), // 1주차부터 52주차까지 배열
+      weeks: [],
       weekdays: ['월', '화', '수', '목', '금', '토', '일'], // 요일 설정
       hours: Array.from({ length: 24 }, (_, i) => `${i}`), // 0~23시까지 시간
       attendanceData: {}, // API에서 받은 데이터
@@ -111,8 +114,35 @@ export default {
     this.selectedWeek = `${currentWeek}주차`; // 선택된 주차 기본 설정
     this.fetchWeeklyDetails(); // 기본 주차 데이터 로드
     this.emitAttendanceData(); // 데이터 전송
+    this.fetchWeeklyAttendance();
   },
   methods: {
+
+    async fetchWeeklyAttendance() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/weekly`, {
+          params: {
+            year: 2024, // 원하는 연도 설정
+          },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        // 받은 데이터를 가공하여 weeks 배열에 넣기
+        this.weeks = response.data.map((week) => ({
+          weekNumber: week.weekNumber,   // value는 weekNumber 그대로
+          text: `${week.startOfWeek} ~ ${week.endOfWeek}`  // 표시할 텍스트는 startOfWeek ~ endOfWeek
+        }));
+
+        // 기본으로 첫 번째 주차 선택
+        this.selectedWeek = this.weeks[0].weekNumber;
+      } catch (error) {
+        console.error('주차 정보를 불러오는 중 오류 발생:', error);
+      }
+    },
+
+
     // 출근 API 호출
     async workIn() {
       try {
