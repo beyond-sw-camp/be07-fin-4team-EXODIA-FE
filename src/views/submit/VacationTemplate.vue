@@ -1,5 +1,5 @@
 <template>
-    <h1 style="margin:25px 0; font-weight:800">휴가 신청</h1>
+    <h1 style="margin:25px 0; font-weight:800">휴가 신청서</h1>
     <v-row style="padding:50px">
         <v-row justify="justify-space-around">
             <v-col cols="8">
@@ -22,7 +22,10 @@
                     <v-col cols="3">
                         <v-list-subheader>휴가 종류</v-list-subheader>
                     </v-col>
-                    <v-select label="휴가 종류" v-model="formData.휴가종류" :items="휴가종류목록" outlined></v-select>
+                    <v-col cols="9">
+                        <v-select label="휴가 종류" v-model="formData.휴가종류" :items="vacationOptions" outlined></v-select>
+
+                    </v-col>
                 </v-row>
 
                 <v-row>
@@ -85,15 +88,15 @@
                     <v-list>
                         <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
                             <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
-                            <v-btn icon @click="removeUser(index)">
-                                <v-icon style="border:none">mdi-close</v-icon>
-                            </v-btn>
+                            <v-icon style="border:none" @click="removeUser(index)">mdi-close</v-icon>
                         </v-list-item>
                     </v-list>
                 </v-card>
-                <v-btn color="primary" class="mt-4" @click="createSubmit">
-                    결재라인 등록
-                </v-btn>
+                <v-row class="submitBtn">
+                    <v-btn style="background-color:#722121; color:#ffffff;" class="mt-8" @click="createSubmit">
+                        결재라인 등록
+                    </v-btn>
+                </v-row>
             </v-col>
         </v-row>
     </v-row>
@@ -113,7 +116,7 @@ export default {
             userName: '',
             departmentName: '',
 
-            휴가종류목록: ['연차', '병가', '반차', '기타'],
+            vacationOptions: ['연차', '반차', '병가', '기타'],
 
             formData: {
                 휴가종류: '',
@@ -128,7 +131,7 @@ export default {
             submitTypes: [],
 
             submitCreateData: {
-                submitType: '휴가신청',
+                submitType: '휴가 신청서',
                 contents: '',
                 submitUserDtos: [],
             },
@@ -138,7 +141,7 @@ export default {
         this.fetchWriter();
         this.fetchDepartment();
         this.fetchUsers();
-        this.submitCreateData.submitType = '휴가 신청';
+        this.submitCreateData.submitType = '휴가 신청서';
     },
     methods: {
         async fetchUsers() {
@@ -203,3 +206,23 @@ export default {
 }
 
 </script>
+<style scoped>
+.draggable-item {
+    cursor: grab;
+    margin: 5px;
+    padding: 10px;
+}
+
+.drop-zone {
+    min-height: 200px;
+    border: 2px dashed #7A5656;
+    padding: 20px;
+}
+
+
+.submitBtn {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+</style>

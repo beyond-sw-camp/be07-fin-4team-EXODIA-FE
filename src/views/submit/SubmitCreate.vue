@@ -13,26 +13,32 @@
     <div v-if="showVacationTemplate">
         <VacationTemplate />
     </div>
+
+    <div v-if="showFamilyEventTemplate">
+        <FamilyEventTemplate />
+    </div>
 </template>
 
 <script>
 import axios from 'axios';
 import CardTemplate from './CardTemplate.vue';
 import VacationTemplate from './VacationTemplate.vue';
+import FamilyEventTemplate from './FamilyEventTemplate.vue';
 
 export default {
     components: {
-        CardTemplate, VacationTemplate,
+        CardTemplate, VacationTemplate, FamilyEventTemplate,
     },
     data() {
         return {
             token: localStorage.getItem('token') || null,
             userNum: localStorage.getItem('userNum') || null,
 
-            submitType: '법인 카드 신청',
+            submitType: '법인 카드 사용 신청서',
             submitTypes: [],
             showCardTemplate: true,
             showVacationTemplate: false,
+            showFamilyEventTemplate: false,
         };
     },
     mounted() {
@@ -40,8 +46,9 @@ export default {
     },
     watch: {
         'submitType': function (newType) {
-            this.showCardTemplate = newType === '법인 카드 신청';
-            this.showVacationTemplate = newType == '휴가 신청'
+            this.showCardTemplate = newType === '법인 카드 사용 신청서';
+            this.showVacationTemplate = newType == '휴가 신청서'
+            this.showFamilyEventTemplate = newType == '경조사 신청서';
         }
     },
     methods: {
