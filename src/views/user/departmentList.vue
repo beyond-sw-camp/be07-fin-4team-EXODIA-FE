@@ -8,145 +8,84 @@
       <v-btn v-if="editMode" @click="cancelEdit" color="error">취소</v-btn>
     </div>
 
-    <!-- <div class="content-container">
+    <div class="content-container">
       <div class="tree-container">
         <v-card v-for="department in topLevelDepartments" :key="department.id" class="mb-4 tree-card">
           <v-card-title>{{ department.name || '이름 없음' }}</v-card-title>
           <v-card-text>
             <ul class="tree-root">
               <li class="tree-item">
-                <div
-                  class="tree-node"
-                  :style="getNodeStyle(0)"
-                  :draggable="editMode"
-                  @dragstart="dragStart(department)"
-                  @dragover.prevent
-                  @drop="drop(department)"
-                  @click="fetchUsersByDepartment(department.id)"
-                >
-                  <v-icon large>{{ getIconForDepth(0) }}</v-icon>
-                  {{ department.name || '이름 없음' }}
-                  <v-btn v-if="editMode" icon @click.stop="openEditDialog(department)">
-                    <v-icon>mdi-pencil</v-icon>
-                  </v-btn>
-                </div>
-                <ul v-if="department.children && department.children.length" class="children-nodes">
-                  <li v-for="child in department.children" :key="child.id" class="tree-item">
+                <details>
+                  <summary>
                     <div
                       class="tree-node"
-                      :style="getNodeStyle(1)"
+                      :style="getNodeStyle(0)"
                       :draggable="editMode"
-                      @dragstart="dragStart(child)"
+                      @dragstart="dragStart(department)"
                       @dragover.prevent
-                      @drop="drop(child)"
-                      @click="fetchUsersByDepartment(child.id)"
+                      @drop="drop(department)"
+                      @click="fetchUsersByDepartment(department.id)"
                     >
-                      <v-icon large>{{ getIconForDepth(1) }}</v-icon>
-                      {{ child.name || '이름 없음' }}
-                      <v-btn v-if="editMode" icon @click.stop="openEditDialog(child)">
+                      <v-icon large>{{ getIconForDepth(0) }}</v-icon>
+                      {{ department.name || '이름 없음' }}
+                      <v-btn v-if="editMode" icon @click.stop="openEditDialog(department)">
                         <v-icon>mdi-pencil</v-icon>
                       </v-btn>
                     </div>
-                    <ul v-if="child.children && child.children.length" class="children-nodes">
-                      <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
-                        <div
-                          class="tree-node"
-                          :style="getNodeStyle(2)"
-                          :draggable="editMode"
-                          @dragstart="dragStart(subChild)"
-                          @dragover.prevent
-                          @drop="drop(subChild)"
-                          @click="fetchUsersByDepartment(subChild.id)"
-                        >
-                          <v-icon large>{{ getIconForDepth(2) }}</v-icon>
-                          {{ subChild.name || '이름 없음' }}
-                          <v-btn v-if="editMode" icon @click.stop="openEditDialog(subChild)">
-                            <v-icon>mdi-pencil</v-icon>
-                          </v-btn>
-                        </div>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
+                  </summary>
+                  <ul v-if="department.children && department.children.length" class="children-nodes">
+                    <li v-for="child in department.children" :key="child.id" class="tree-item">
+                      <details>
+                        <summary>
+                          <div
+                            class="tree-node"
+                            :style="getNodeStyle(1)"
+                            :draggable="editMode"
+                            @dragstart="dragStart(child)"
+                            @dragover.prevent
+                            @drop="drop(child)"
+                            @click="fetchUsersByDepartment(child.id)"
+                          >
+                            <v-icon large>{{ getIconForDepth(1) }}</v-icon>
+                            {{ child.name || '이름 없음' }}
+                            <v-btn v-if="editMode" icon @click.stop="openEditDialog(child)">
+                              <v-icon>mdi-pencil</v-icon>
+                            </v-btn>
+                          </div>
+                        </summary>
+                        <ul v-if="child.children && child.children.length" class="children-nodes">
+                          <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
+                            <details>
+                              <summary>
+                                <div
+                                  class="tree-node"
+                                  :style="getNodeStyle(2)"
+                                  :draggable="editMode"
+                                  @dragstart="dragStart(subChild)"
+                                  @dragover.prevent
+                                  @drop="drop(subChild)"
+                                  @click="fetchUsersByDepartment(subChild.id)"
+                                >
+                                  <v-icon large>{{ getIconForDepth(2) }}</v-icon>
+                                  {{ subChild.name || '이름 없음' }}
+                                  <v-btn v-if="editMode" icon @click.stop="openEditDialog(subChild)">
+                                    <v-icon>mdi-pencil</v-icon>
+                                  </v-btn>
+                                </div>
+                              </summary>
+                            </details>
+                          </li>
+                        </ul>
+                      </details>
+                    </li>
+                  </ul>
+                </details>
               </li>
             </ul>
           </v-card-text>
         </v-card>
-      </div> -->
+      </div>
 
-      <div class="content-container">
-        <div class="tree-container">
-          <v-card v-for="department in topLevelDepartments" :key="department.id" class="mb-4 tree-card">
-            <v-card-title>{{ department.name || '이름 없음' }}</v-card-title>
-            <v-card-text>
-              <ul class="tree-root">
-                <li class="tree-item">
-                  <details>
-                    <summary>
-                      <div
-                        class="tree-node"
-                        :style="getNodeStyle(0)"
-                        :draggable="editMode"
-                        @dragstart="dragStart(department)"
-                        @dragover.prevent
-                        @drop="drop(department)"
-                        @click="fetchUsersByDepartment(department.id)"
-                      >
-                        <v-icon large>{{ getIconForDepth(0) }}</v-icon>
-                        {{ department.name || '이름 없음' }}
-                        <v-btn v-if="editMode" icon @click.stop="openEditDialog(department)">
-                          <v-icon>mdi-pencil</v-icon>
-                        </v-btn>
-                      </div>
-                    </summary>
-                    <ul v-if="department.children && department.children.length" class="children-nodes">
-                      <li v-for="child in department.children" :key="child.id" class="tree-item">
-                        <details>
-                          <summary>
-                            <div
-                              class="tree-node"
-                              :style="getNodeStyle(1)"
-                              :draggable="editMode"
-                              @dragstart="dragStart(child)"
-                              @dragover.prevent
-                              @drop="drop(child)"
-                              @click="fetchUsersByDepartment(child.id)"
-                            >
-                              <v-icon large>{{ getIconForDepth(1) }}</v-icon>
-                              {{ child.name || '이름 없음' }}
-                              <v-btn v-if="editMode" icon @click.stop="openEditDialog(child)">
-                                <v-icon>mdi-pencil</v-icon>
-                              </v-btn>
-                            </div>
-                          </summary>
-                          <ul v-if="child.children && child.children.length" class="children-nodes">
-                            <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
-                              <div
-                                class="tree-node"
-                                :style="getNodeStyle(2)"
-                                :draggable="editMode"
-                                @dragstart="dragStart(subChild)"
-                                @dragover.prevent
-                                @drop="drop(subChild)"
-                                @click="fetchUsersByDepartment(subChild.id)"
-                              >
-                                <v-icon large>{{ getIconForDepth(2) }}</v-icon>
-                                {{ subChild.name || '이름 없음' }}
-                                <v-btn v-if="editMode" icon @click.stop="openEditDialog(subChild)">
-                                  <v-icon>mdi-pencil</v-icon>
-                                </v-btn>
-                              </div>
-                            </li>
-                          </ul>
-                        </details>
-                      </li>
-                    </ul>
-                  </details>
-                </li>
-              </ul>
-            </v-card-text>
-          </v-card>
-        </div>
       <div class="user-box">
         <h3>{{ selectedDepartmentName }}</h3>
         <div v-if="users.length === 0" class="no-users">
@@ -398,17 +337,20 @@ export default {
   justify-content: space-between;
 }
 
+
 .tree-container {
   width: 50%;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow-y: auto
+  overflow-y: visible; 
 }
+
 
 .tree-card {
   margin-right: 20px;
+  overflow-y: auto; 
 }
 
 .tree-root {
@@ -423,7 +365,7 @@ export default {
   position: relative;
   display: inline-block;
   margin: 15px 0;
-  padding: 20px 40px;
+  padding: 10px 30px;
   background-color: #f0f0f0;
   border-radius: 10px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
@@ -435,6 +377,8 @@ export default {
 .children-nodes {
   list-style-type: none;
   padding-left: 40px;
+  overflow: visible;
+  max-height: none;
 }
 
 .tree-node::before {

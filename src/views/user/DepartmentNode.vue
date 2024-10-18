@@ -86,10 +86,13 @@
   list-style: none;
   position: relative;
   margin-left: 40px;
+  max-height: none;
 }
 
 .children-nodes {
   list-style-type: none;
+  max-height: none;
+  overflow: visible; 
   padding-left: 20px;
 }
 
