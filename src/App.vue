@@ -45,7 +45,7 @@ export default {
 
 <style>
 :root {
-  --sidebar-width: 15%;
+  --sidebar-width: 13%;
   --header-height: 60px;
 }
 
