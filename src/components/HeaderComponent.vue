@@ -188,7 +188,6 @@ export default {
 .icons>.icon {
   font-size: 4vh;
   cursor: pointer;
-  font-size: 25px;
 }
 
 .icons>v-avatar {
@@ -219,7 +218,7 @@ export default {
 }
 
 .notification-icon {
-  font-size: 2vh;
+
   margin-right: 1vh;
   position: relative;
   cursor: pointer;
