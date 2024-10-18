@@ -229,7 +229,7 @@ export default {
 
 <style scoped>
 :root {
-  --sidebar-width: 15%;
+  --sidebar-width: 7%;
   --sub-sidebar-width: 15%;
   --header-height: 60px;
 }
@@ -274,7 +274,7 @@ export default {
   width: 100%;
   padding: 30px;
   position: relative;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 

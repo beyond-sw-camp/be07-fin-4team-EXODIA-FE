@@ -34,14 +34,38 @@
                   dense
                   class="remember-checkbox"
                 ></v-checkbox>
-                <v-btn
+
+                <!-- <v-btn
                   :class="{'gradient-animation': loginSuccessful}"
                   type="submit"
                   block large
                   class="mt-4 login-btn"
                 >
                   로그인
+                </v-btn> -->
+
+                <v-btn
+                  :class="{'gradient-animation': loginSuccessful, 'is-loading': isLoading}"
+                  type="submit"
+                  block large
+                  class="mt-4 login-btn"
+                  :disabled="isLoading"
+                >
+                  <template v-if="!isLoading">로그인</template>
+                  <template v-else>
+                    <v-progress-circular
+                      indeterminate
+                      color="white"
+                      size="20"
+                    ></v-progress-circular>
+                  </template>
                 </v-btn>
+                <v-progress-linear
+                  v-if="isLoading"
+                  indeterminate
+                  color="primary"
+                  class="mt-4"
+                ></v-progress-linear>
               </v-form>
             </v-card-text>
           </v-card>
@@ -70,6 +94,7 @@ export default {
       password: '',
       rememberUserNum: false,
       loginSuccessful: false,
+      isLoading: false, 
     };
   },
   mounted() {
@@ -82,6 +107,7 @@ export default {
   methods: {
     async doLogin() {
       try {
+        this.isLoading = true;
         const loginData = {
           userNum: this.userNum,
           password: this.password,
@@ -99,8 +125,8 @@ export default {
         const positionId = decodedToken.position_id;
 
         localStorage.setItem('token', token);
-        localStorage.setItem('position_id', positionId);
-        localStorage.setItem('department_id', departmentId );
+        localStorage.setItem('positionId', positionId);
+        localStorage.setItem('departmentId', departmentId );
         localStorage.setItem('userNum', this.userNum);
 
         if (this.rememberUserNum) {
@@ -111,10 +137,12 @@ export default {
 
         this.loginSuccessful = true;
         setTimeout(() => {
+          this.isLoading = false; 
           this.$router.push('/');
         }, 1500);
 
       } catch (e) {
+        this.isLoading = false; 
         alert('로그인에 실패했습니다.');
         console.error(e);
       }
@@ -132,67 +160,56 @@ html, body, #app {
 
 .login-container {
   height: 100vh;
-  background: linear-gradient(315deg, rgba(101,0,94,1) 3%, rgba(60,132,206,1) 38%, rgba(48,238,226,1) 68%, rgba(255,25,25,1) 98%);
-  animation: gradient 15s ease infinite;
-  background-size: 400% 400%;
-  background-attachment: fixed;
+  background-color: white;
   position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wave-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 35vh; /* 높이를 더 올렸습니다 */
   overflow: hidden;
 }
 
-@keyframes gradient {
-  0% {
-    background-position: 0% 0%;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  100% {
-    background-position: 0% 0%;
-  }
-}
-
 .wave {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 150, 136, 0.25);
   border-radius: 1000% 1000% 0 0;
-  position: fixed;
+  position: absolute;
   width: 200%;
-  height: 12em;
+  height: 15em; /* 높이를 조금 더 키움 */
   animation: wave 10s -3s linear infinite;
   transform: translate3d(0, 0, 0);
   opacity: 0.8;
   bottom: 0;
   left: 0;
-  z-index: -1;
 }
 
 .wave:nth-of-type(2) {
   bottom: -1.25em;
-  animation: wave 18s linear reverse infinite;
+  animation: wave 12s linear reverse infinite;
   opacity: 0.8;
 }
 
 .wave:nth-of-type(3) {
   bottom: -2.5em;
-  animation: wave 20s -1s reverse infinite;
+  animation: wave 17s -1s reverse infinite;
   opacity: 0.9;
 }
 
 @keyframes wave {
-  2% {
-    transform: translateX(1%);
-  }
-  25% {
-    transform: translateX(-25%);
+  0% {
+    transform: translateX(0);
   }
   50% {
     transform: translateX(-50%);
   }
-  75% {
-    transform: translateX(-25%);
-  }
   100% {
-    transform: translateX(1%);
+    transform: translateX(0);
   }
 }
 
@@ -239,4 +256,9 @@ html, body, #app {
 .gradient-animation {
   animation: gradient 1s ease-out forwards;
 }
+
+.login-btn.is-loading {
+  background-color: rgba(0, 150, 136, 0.25);
+}
+
 </style>
