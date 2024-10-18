@@ -25,7 +25,7 @@
     <v-row class="container">
       <v-col cols="6" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
         <v-row class="profile-container">
-          <v-col>
+          <v-col class="profile-item">
             <!-- 프로필 이미지 -->
             <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
             <!-- 출근 여부 뱃지 -->
@@ -164,18 +164,9 @@ v-alert {
 }
 
 /* 유저 카드 스타일 */
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-content: center;
-  margin: 0 10px;
-}
-
 .user-card {
   display: flex;
-  flex-direction: column;
-  justify-content: start;
+  justify-content: center;
   align-content: center;
   text-align: start;
 }
@@ -227,5 +218,10 @@ v-alert {
 .user-department {
   font-size: 14px;
   color: #808080;
+}
+
+.profile-item {
+  display: flex;
+  justify-content: center;
 }
 </style>
