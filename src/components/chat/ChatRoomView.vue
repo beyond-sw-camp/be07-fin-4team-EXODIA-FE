@@ -128,8 +128,16 @@ export default {
     },
     mounted() {
         this.connect();
+        window.addEventListener('beforeunload', this.leave)
+    },
+    beforeUnmount() {
+        window.removeEventListener('beforeunload', this.leave)
     },
     methods: {
+        async leave() {
+            const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
+            console.log(response);
+        },
         connect() {
             if (this.stompClient && this.stompClient.connected) { return; } // 연결확인
             const socket = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`);
@@ -287,8 +295,12 @@ export default {
         async goBack() {
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
             console.log(response);
+            window.location.href='/chatRoom/list';
             this.$emit('update:dialog', false);
             this.$emit('update:check', true);
+            // window.location.reload('/chatRoom/list');
+            
+
         },
     }
 }

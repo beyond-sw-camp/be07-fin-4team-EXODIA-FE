@@ -178,7 +178,7 @@ export default {
                     this.$emit('update:dialog', false);
                     this.$emit('update:check', true);
                     // window.location.href='/chatRoom/list';
-                    window.location.reload('chatRoom/list');
+                    window.location.reload('/chatRoom/list');
                 } else {
                     alert("채팅방이 생성 성공");
                     this.$emit('update:dialog', false);
