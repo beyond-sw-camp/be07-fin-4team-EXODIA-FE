@@ -18,7 +18,7 @@
 
           <v-row no-gutters>
             <v-col cols="12" md="4" class="profile-content">
-              <v-row class="profile-card">
+              <v-row class="profile-card" style="margin-top: 40px;"> 
                 <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"
                   class="profile-img"></v-img>
                 <v-card-title class="profile-name">{{ userProfile?.name || '이름' }}</v-card-title>
