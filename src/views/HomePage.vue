@@ -33,33 +33,20 @@
 
   <v-row>
     <!-- 공지사항 -->
-    <v-col cols="6">
+
+    <v-col cols="6" class="board">
+      <h3 class="mb-6">공지사항</h3>
       <v-row>
-        <h3>공지사항</h3>
-      </v-row>
-
-      <v-row class="mt-10">
-        <v-row>
-          <v-col cols="12">
-            <v-row style="background-color:rgba(122, 86, 86, 0.2); color:#444444; font-weight:600;">
-              <v-col cols="3"><strong>번호</strong></v-col>
-              <v-col cols="5"><strong>제목</strong></v-col>
-              <v-col cols="4"><strong>작성일</strong></v-col>
-            </v-row>
-
-            <!-- 게시글 정렬 -->
-            <v-row v-for="(item, index) in boardItems" :key="item.id" class="board" @click="goToDetail(item.id)">
-              <v-col cols="3">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
-              <v-col cols="5">{{ item.title }}</v-col>
-              <v-col cols="4">{{ formatDate(item.createdAt) }}</v-col>
-            </v-row>
-          </v-col>
+        <!-- 게시글 목록 -->
+        <v-row v-for="item in boardItems" :key="item.id" class="board-item" @click="goToDetail(item.id)">
+          <v-col cols="10" class="ellipsis-text"> {{ item.title }}</v-col>
+          <v-col>{{ formatDate(item.createdAt) }}</v-col>
         </v-row>
       </v-row>
     </v-col>
 
     <!-- 팀원들 출근현황 -->
-    <v-col cols="6">
+    <v-col cols="6" style="padding:0 6px;">
       <UserAttendance />
     </v-col>
   </v-row>
@@ -119,7 +106,7 @@ export default {
         const response = await axios.get(apiUrl, { params });
         if (response.data && response.data.result) {
           const result = response.data.result;
-          this.boardItems = result.content;
+          this.boardItems = result.content.slice(0, 5);
           this.totalPages = result.totalPages;
         }
 
@@ -163,8 +150,43 @@ export default {
 
 .profile-img {
   border-radius: 50%;
-  width: 200px;
-  height: 200px;
+  width: 50px;
+  height: 50px;
   object-fit: cover;
+}
+
+.ellipsis-text {
+  /* 말줄임 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.board {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  height: 100%;
+
+}
+
+.board-item {
+  font-size: 14px;
+  padding: 3px 30px;
+  display: flex;
+  justify-content: space-around;
+  align-content: center;
+}
+
+.board-item:last-child {
+  padding-bottom: 20px;
+}
+
+.board-item>.v-col {
+  padding: 7px 0;
 }
 </style>

@@ -1,46 +1,49 @@
 <template>
+  <div class="userAttendance">
+    <v-row>
+      <v-col cols="4">
+        <h3>출·퇴근 기록</h3>
+      </v-col>
+      <v-col cols="2">
+        <!-- 출근 버튼 -->
+        <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn">
+          출근
+        </v-btn>
+      </v-col>
+      <v-col cols="2">
+        <!-- 퇴근 버튼 -->
+        <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut">
+          퇴근
+        </v-btn>
+      </v-col>
 
-  <v-row>
-    <v-col cols="4">
-      <h3>출·퇴근 기록</h3>
-    </v-col>
-    <v-col cols="2">
-      <!-- 출근 버튼 -->
-      <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn">
-        출근
-      </v-btn>
-    </v-col>
-    <v-col cols="2">
-      <!-- 퇴근 버튼 -->
-      <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut">
-        퇴근
-      </v-btn>
-    </v-col>
+      <!-- 상태 표시 -->
+      <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
+    </v-row>
 
-    <!-- 상태 표시 -->
-    <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
-  </v-row>
+    <!-- 부서원 출근 정보 목록 -->
+    <v-row class="container">
+      <v-col cols="6" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
+        <v-row class="profile-container">
+          <v-col>
+            <!-- 프로필 이미지 -->
+            <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
+            <!-- 출근 여부 뱃지 -->
+            <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
+            <!-- 이름, 직책, 부서명 -->
+          </v-col>
 
-  <!-- 부서원 출근 정보 목록 -->
-  <v-row class="container">
-    <v-col cols="4" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
-      <div class="profile-container">
-        <!-- 프로필 이미지 -->
-        <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
-
-        <!-- 출근 여부 뱃지 -->
-        <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
-      </div>
-
-      <!-- 이름, 직책, 부서명 -->
-      <div class="user-info">
-        <div class="user-name">{{ user.name }}</div>
-        <div class="user-position">{{ user.positionName }}</div>
-        <div class="user-department">{{ user.departmentName }}</div>
-      </div>
-    </v-col>
-  </v-row>
-
+          <v-col>
+            <div class="user-info">
+              <div class="user-name">{{ user.name }}</div>
+              <div class="user-position">{{ user.positionName }}</div>
+              <div class="user-department">{{ user.departmentName }}</div>
+            </div>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>
@@ -151,18 +154,8 @@ v-alert {
   margin-top: 20px;
 }
 
-/* 유저 카드 스타일 */
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-}
-
-.user-card {
-  width: 200px;
+.userAttendance {
   padding: 20px;
-  margin: 5px;
-  text-align: center;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   position: relative;
@@ -170,13 +163,30 @@ v-alert {
   background-color: #fff;
 }
 
+/* 유저 카드 스타일 */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-content: center;
+  margin: 0 10px;
+}
+
+.user-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-content: center;
+  text-align: start;
+}
+
 .profile-container {
   position: relative;
 }
 
 .profile-img {
-  width: 80px;
-  height: 80px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -184,10 +194,10 @@ v-alert {
 /* 뱃지 스타일 */
 .badge {
   position: absolute;
-  bottom: 15px;
-  right: 25px;
-  width: 25px;
-  height: 25px;
+  top: 50px;
+  left: 55px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   border: 2px solid white;
   box-shadow: 3px solid #f44336;
