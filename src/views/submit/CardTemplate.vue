@@ -163,7 +163,7 @@ export default {
     methods: {
         async fetchUsers() {
             try {
-                const response = await axios.get(`/user/department-users/${this.departmentId}`);
+                const response = await axios.get(`/department/${this.departmentId}/users`);
                 this.users = response.data;
                 console.log(this.users);
             } catch (e) {

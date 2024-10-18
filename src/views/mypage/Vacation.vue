@@ -270,8 +270,6 @@ thead th {
     background-color: rgba(122, 86, 86, 0.2);
     text-align: left;
     padding: 10px;
-
-
 }
 
 .custom-leave-table {
@@ -284,7 +282,7 @@ thead th {
 }
 
 .custom-leave-table td {
-    padding: 25px;
+    padding: 15px 30px;
     border: 1px solid #f5f5f5;
     font-weight: 700;
 }
