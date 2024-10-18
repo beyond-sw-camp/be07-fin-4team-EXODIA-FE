@@ -8,90 +8,100 @@
       <v-btn v-if="editMode" @click="cancelEdit" color="error">취소</v-btn>
     </div>
 
-    <!-- 최상위 부서별로 트리 카드로 표시 -->
-    <div class="tree-container">
-      <v-card v-for="department in topLevelDepartments" :key="department.id" class="mb-4 tree-card">
-        <v-card-title>{{ department.name || '이름 없음' }}</v-card-title>
-        <v-card-text>
-          <ul class="tree-root">
-            <li class="tree-item">
-              <div
-                class="tree-node"
-                :style="getNodeStyle(0)"
-                :draggable="editMode"
-                @dragstart="dragStart(department)"
-                @dragover.prevent
-                @drop="drop(department)"
-                @click="fetchUsersByDepartment(department.id)"
-              >
-                <v-icon large>{{ getIconForDepth(0) }}</v-icon>
-                {{ department.name || '이름 없음' }}
-                <v-btn v-if="editMode" icon @click.stop="openEditDialog(department)">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-              </div>
-              <ul v-if="department.children && department.children.length" class="children-nodes">
-                <li v-for="child in department.children" :key="child.id" class="tree-item">
-                  <div
-                    class="tree-node"
-                    :style="getNodeStyle(1)"
-                    :draggable="editMode"
-                    @dragstart="dragStart(child)"
-                    @dragover.prevent
-                    @drop="drop(child)"
-                    @click="fetchUsersByDepartment(child.id)"
-                  >
-                    <v-icon large>{{ getIconForDepth(1) }}</v-icon>
-                    {{ child.name || '이름 없음' }}
-                    <v-btn v-if="editMode" icon @click.stop="openEditDialog(child)">
-                      <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
-                  </div>
-                  <ul v-if="child.children && child.children.length" class="children-nodes">
-                    <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
-                      <div
-                        class="tree-node"
-                        :style="getNodeStyle(2)"
-                        :draggable="editMode"
-                        @dragstart="dragStart(subChild)"
-                        @dragover.prevent
-                        @drop="drop(subChild)"
-                        @click="fetchUsersByDepartment(subChild.id)"
-                      >
-                        <v-icon large>{{ getIconForDepth(2) }}</v-icon>
-                        {{ subChild.name || '이름 없음' }}
-                        <v-btn v-if="editMode" icon @click.stop="openEditDialog(subChild)">
-                          <v-icon>mdi-pencil</v-icon>
-                        </v-btn>
-                      </div>
+    <div class="content-container">
+      <!-- 부서 트리 표시 -->
+      <div class="tree-container">
+        <v-card v-for="department in topLevelDepartments" :key="department.id" class="mb-4 tree-card">
+          <v-card-title>{{ department.name || '이름 없음' }}</v-card-title>
+          <v-card-text>
+            <ul class="tree-root">
+              <li class="tree-item">
+                <details>
+                  <summary>
+                    <div
+                      class="tree-node"
+                      :style="getNodeStyle(0)"
+                      :draggable="editMode"
+                      @dragstart="dragStart(department)"
+                      @dragover.prevent
+                      @drop="drop(department)"
+                      @click="fetchUsersByDepartment(department.id)"
+                    >
+                      <v-icon large>{{ getIconForDepth(0) }}</v-icon>
+                      {{ department.name || '이름 없음' }}
+                      <v-btn v-if="editMode" icon @click.stop="openEditDialog(department)">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                    </div>
+                  </summary>
+                  <ul v-if="department.children && department.children.length" class="children-nodes">
+                    <li v-for="child in department.children" :key="child.id" class="tree-item">
+                      <details>
+                        <summary>
+                          <div
+                            class="tree-node"
+                            :style="getNodeStyle(1)"
+                            :draggable="editMode"
+                            @dragstart="dragStart(child)"
+                            @dragover.prevent
+                            @drop="drop(child)"
+                            @click="fetchUsersByDepartment(child.id)"
+                          >
+                            <v-icon large>{{ getIconForDepth(1) }}</v-icon>
+                            {{ child.name || '이름 없음' }}
+                            <v-btn v-if="editMode" icon @click.stop="openEditDialog(child)">
+                              <v-icon>mdi-pencil</v-icon>
+                            </v-btn>
+                          </div>
+                        </summary>
+                        <ul v-if="child.children && child.children.length" class="children-nodes">
+                          <li v-for="subChild in child.children" :key="subChild.id" class="tree-item">
+                            <details>
+                              <summary>
+                                <div
+                                  class="tree-node"
+                                  :style="getNodeStyle(2)"
+                                  :draggable="editMode"
+                                  @dragstart="dragStart(subChild)"
+                                  @dragover.prevent
+                                  @drop="drop(subChild)"
+                                  @click="fetchUsersByDepartment(subChild.id)"
+                                >
+                                  <v-icon large>{{ getIconForDepth(2) }}</v-icon>
+                                  {{ subChild.name || '이름 없음' }}
+                                  <v-btn v-if="editMode" icon @click.stop="openEditDialog(subChild)">
+                                    <v-icon>mdi-pencil</v-icon>
+                                  </v-btn>
+                                </div>
+                              </summary>
+                            </details>
+                          </li>
+                        </ul>
+                      </details>
                     </li>
                   </ul>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </v-card-text>
-      </v-card>
-    </div>
-
-    <!-- 사용자 리스트 패널 -->
-    <transition name="slide-fade">
-      <div class="user-list" v-if="users.length">
-        <h3>사용자 정보</h3>
-        <v-card v-for="user in users" :key="user.userNum" class="user-card mb-4">
-          <v-row>
-            <v-col cols="3">
-              <img :src="user.profileImage || defaultProfile" alt="profile" class="user-profile" />
-            </v-col>
-            <v-col cols="9" class="user-details">
-              <p class="user-name">{{ user.name }}</p>
-              <p>사번: {{ user.userNum }}</p>
-              <p>직급: {{ getPositionName(user.positionId) }}</p>
-            </v-col>
-          </v-row>
+                </details>
+              </li>
+            </ul>
+          </v-card-text>
         </v-card>
       </div>
-    </transition>
+
+      <div class="user-box">
+        <h3>{{ selectedDepartmentName }}</h3>
+        <div v-if="users.length === 0" class="no-users">
+          <v-alert type="info" color="blue lighten-4">해당 부서에 소속된 사용자가 없습니다.</v-alert>
+        </div>
+        <div v-else class="user-grid">
+          <v-card v-for="user in users" :key="user.userNum" class="user-card">
+            <img :src="user.profileImage || defaultProfile" alt="profile" class="user-profile" />
+            <p class="user-name">{{ user.name }}</p>
+            <p>사번: {{ user.userNum }}</p>
+            <p>직급: {{ getPositionName(user.positionId) }}</p>
+          </v-card>
+        </div>
+      </div>
+    </div>
 
     <!-- 부서 추가/수정 다이얼로그 -->
     <v-dialog v-model="dialog" max-width="500">
@@ -119,6 +129,7 @@
   </div>
 </template>
 
+
 <script>
 import axios from 'axios';
 
@@ -135,6 +146,7 @@ export default {
       editMode: false, // 편집 모드 여부
       draggedItem: null, // 드래그 중인 항목
       positions: [], // 직급 목록
+      selectedDepartmentName: '' // 선택한 부서 이름
     };
   },
   computed: {
@@ -163,15 +175,45 @@ export default {
       departments.forEach(recurse);
       return flat;
     },
+    // async fetchUsersByDepartment(departmentId) {
+    //   try {
+    //     const response = await axios.get(`/department/${departmentId}/users`);
+    //     this.users = response.data;
+    //     this.selectedDepartmentName = this.hierarchy.find(d => d.id === departmentId).name || '부서 없음';
+    //   } catch (error) {
+    //     console.error('Error fetching users for department:', error);
+    //   }
+    // },
+
     async fetchUsersByDepartment(departmentId) {
-      try {
-        const response = await axios.get(`/department/${departmentId}/users`);
-        this.users = response.data;
-      } catch (error) {
-        console.error('Error fetching users for department:', error);
+  try {
+    const response = await axios.get(`/department/${departmentId}/users`);
+    this.users = response.data;
+
+    // 선택한 부서가 계층 구조 상 어디에 있는지 찾음
+    const findDepartmentName = (departmentList, id) => {
+      for (const department of departmentList) {
+        if (department.id === id) {
+          return department.name;
+        }
+        if (department.children) {
+          const found = findDepartmentName(department.children, id);
+          if (found) return found;
+        }
       }
-    },
-    async fetchPositions() {
+      return null;
+    };
+
+    // 선택한 부서의 이름을 가져옴
+    this.selectedDepartmentName = findDepartmentName(this.hierarchy, departmentId) || '부서 없음';
+    
+  } catch (error) {
+    console.error('Error fetching users for department:', error);
+  }
+}
+,
+
+  async fetchPositions() {
       try {
         const response = await axios.get('/positions');
         this.positions = response.data;
@@ -186,7 +228,7 @@ export default {
     toggleEditMode() {
       this.editMode = !this.editMode;
       if (!this.editMode) {
-        this.fetchHierarchy(); // 편집 완료 후 다시 계층 구조 새로고침
+        this.fetchHierarchy();
       }
     },
     openCreateDialog() {
@@ -264,22 +306,51 @@ export default {
       return icons[depth] || 'mdi-file';
     },
   },
+
   mounted() {
     this.fetchHierarchy();
     this.fetchPositions();
   },
 };
 </script>
+
+
 <style scoped>
+.department-container {
+  padding: 20px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.content-container {
+  display: flex;
+  flex-direction: column;
+  height: auto; 
+  justify-content: flex-start;
+}
+
+.user-content {
+  display: flex;
+  justify-content: space-between;
+}
+
 .tree-container {
+  width: 50%;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: visible; 
 }
 
 .tree-card {
   margin-right: 20px;
+  height: auto;
+  flex-grow: 1;
 }
 
 .tree-root {
@@ -288,18 +359,17 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-left: 20px; /* 트리를 살짝 오른쪽으로 */
 }
 
 .tree-node {
   position: relative;
   display: inline-block;
   margin: 15px 0;
-  padding: 20px 40px; /* 크기 키움 */
+  padding: 10px 30px;
   background-color: #f0f0f0;
   border-radius: 10px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* 좀 더 큰 그림자 */
-  font-size: 20px; /* 노드 크기 확장 */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  font-size: 20px;
   color: #333;
   text-align: center;
 }
@@ -307,6 +377,8 @@ export default {
 .children-nodes {
   list-style-type: none;
   padding-left: 40px;
+  overflow: visible;
+  max-height: none;
 }
 
 .tree-node::before {
@@ -337,69 +409,65 @@ export default {
   bottom: 50%;
 }
 
-.button-group {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 20px;
+.user-box {
+  position: fixed;
+  padding: 20px;
+  background-color: #f8f9fa;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+
+  width: 28%;    
+  height: 50%;
+  border-radius: 5%; 
+  bottom: 10%; 
+  right: 10%;   
+}
+
+.user-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
 }
 
 .user-card {
-  border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 더 큰 그림자 */
-  overflow: hidden;
+  padding: 15px;
   background-color: #ffffff;
-  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.user-list {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 450px; /* 카드 사이즈 확장 */
-  height: 100%;
-  background-color: #f8f9fa;
-  padding: 30px;
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
-  transition: transform 0.3s ease-in-out;
-}
-
-.user-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2); /* hover 효과 향상 */
+  flex-direction: column;
 }
 
 .user-profile {
-  width: 60px; /* 프로필 이미지 사이즈 키움 */
-  height: 60px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 20px;
 }
 
 .user-name {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   margin-bottom: 5px;
   color: #333;
 }
 
-.user-details p {
-  margin: 0;
-  color: #666;
+.user-details {
+  text-align: center;
 }
 
-.user-list-enter-active, .user-list-leave-active {
-  transition: all 0.3s ease;
+.no-users {
+  color: #1565c0;
+  background-color: #e3f2fd;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
 }
 
-.slide-fade-enter, .slide-fade-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
+@media (max-width: 800px) {
+  .tree-container {
+    width: 100%;
+  }
 }
 </style>
