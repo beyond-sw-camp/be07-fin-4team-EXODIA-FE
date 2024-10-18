@@ -13,12 +13,12 @@
 
 
             <!-- Search bar ⭐⭐ -->
-            <v-col cols="9" v-if="searchBar">
+            <v-col cols="9">
                 <v-text-field v-model="searchQuery" placeholder="채팅방명, 사번, 이름으로 검색" class="search-bar" solo hide-details
                     dense></v-text-field>
             </v-col>
-            <v-col cols="1" v-if="searchIcon" location="right">
-                <v-icon @click="showSearchChatRoom">mdi-magnify</v-icon>
+            <v-col cols="1" location="right">
+                <v-icon @click="searchChatRoom">mdi-magnify</v-icon>
             </v-col>
 
             <!-- Create chat room button -->
@@ -88,8 +88,6 @@ export default {
             createChatRoom: false, // 채팅방 생성 제어
 
             searchQuery: "", // 채팅방 검색어
-            searchBar: false, // 검색바 제어
-            searchIcon: true, // 검색아이콘 제어
 
             chatRoomListCheck: true, // 채팅방 리스트 제어
             chatRoomCheck: false, // 채팅방 제어
@@ -115,11 +113,6 @@ export default {
             } catch (e) {
                 console.error('채팅방 목록 조회 실패', e);
             }
-        },
-
-        showSearchChatRoom() { // 검색바 숨김
-            this.searchBar = true;
-            this.searchIcon = false;
         },
 
         searchChatRoom() { // 검색시 재정렬

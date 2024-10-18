@@ -14,6 +14,17 @@
             </v-col>
             <v-col cols="10" class="chat-room-title">
                 <span class="chat-room-name">{{ chatRoomNameProp }}</span>
+                <v-menu>
+                    <template v-slot:activator="{ props }">
+                        <v-icon class="user-mini-icon" v-bind="props">mdi-account</v-icon>
+                        <span class="chat-user-num">{{ chatRoomUserNumsProp.length }}</span>
+                    </template>
+                    <v-list>
+                        <v-list-item v-for="(user, index) in chatUserList" :key="index">
+                            <v-list-item-title>{{ user.chatUserDepName }} {{ user.chatUserName }} {{ user.chatUserPosName }}님</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
             </v-col>
             <v-col cols="1" class="header-icons">
                 <!--<v-icon class="icon">mdi-magnify</v-icon>--> <!-- 검색 -->
@@ -108,6 +119,9 @@ export default {
             chatRoomId: this.chatRoomIdProp, // 채팅방 id
             chatMessageList: [], // 주고받은 채팅내역
 
+            // chatUserListCheck: false, // 채팅유저리스트 제어
+            chatUserList: [], // 채팅유저리스트
+
             chatSenderNum: '', // 채팅방을 여는 사람 == 채팅보내는 사람
 
             files: null, // v-file-input로 업로드한 파일들
@@ -121,9 +135,14 @@ export default {
         this.chatRoomId = this.chatRoomIdProp;
         this.chatSenderNum = localStorage.getItem('userNum');
         // 메세지 불러오기
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
-        if (response.data) {
-            this.chatMessageList = response.data.result;
+        const chatResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
+        if (chatResponse.data) {
+            this.chatMessageList = chatResponse.data.result;
+        }
+        // chatUsers 불러오기
+        const usersResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/chatUsers/${this.chatRoomId}`);
+        if (usersResponse.data) {
+            this.chatUserList = usersResponse.data.result;
         }
     },
     mounted() {
@@ -295,13 +314,12 @@ export default {
         async goBack() {
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
             console.log(response);
-            window.location.href='/chatRoom/list';
+            window.location.href = '/chatRoom/list';
             this.$emit('update:dialog', false);
             this.$emit('update:check', true);
             // window.location.reload('/chatRoom/list');
-            
-
         },
+
     }
 }
 
@@ -340,7 +358,20 @@ export default {
 }
 
 .chat-room-name {
+    font-size: 20px;
     margin-left: 10px;
+}
+
+.user-mini-icon {
+    cursor: pointer;
+    margin-left: 15px;
+    color: gray;
+    font-size: 14px;
+}
+
+.chat-user-num {
+    color: gray;
+    font-size: 11px;
 }
 
 .header-icons {
