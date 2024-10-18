@@ -1,73 +1,56 @@
 <template>
-  <v-row>
-    <!-- 달력 -->
-    <v-col cols="8">
-      <v-card outlined>
-        <v-card-text>달력(일정)</v-card-text>
-      </v-card>
-    </v-col>
 
-    <!-- 알림과 프로필 -->
-    <v-col cols="4">
+  <v-row>
+    <v-col cols="6">
+      <CalendarList style="font-size:12px; background-color:#ffffff;" />
+
+    </v-col>
+    <v-col cols=" 6">
       <v-row>
-        <v-col cols="12">
-          <v-card outlined>
-            <v-card-text>알림</v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12">
+        <!-- 공지사항 -->
+        <v-col cols="12" class="board">
+          <h3 class="mb-6">공지사항</h3>
           <v-row>
-            <v-col cols="12" md="4" class="profile-content">
-              <v-row class="profile-card">
-                <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"
-                  class="profile-img"></v-img>
-                <v-card-title class="profile-name">{{ userProfile?.name || '이름' }}</v-card-title>
-              </v-row>
-            </v-col>
+            <!-- 게시글 목록 -->
+            <v-row v-for="item in boardItems" :key="item.id" class="board-item" @click="goToDetail(item.id)">
+              <v-col cols="10" class="ellipsis-text"> {{ item.title }}</v-col>
+              <v-col style="color:#808080">{{ formatDate(item.createdAt) }}</v-col>
+            </v-row>
           </v-row>
         </v-col>
       </v-row>
-    </v-col>
-  </v-row>
 
-
-  <v-row>
-    <!-- 공지사항 -->
-
-    <v-col cols="6" class="board">
-      <h3 class="mb-6">공지사항</h3>
-      <v-row>
-        <!-- 게시글 목록 -->
-        <v-row v-for="item in boardItems" :key="item.id" class="board-item" @click="goToDetail(item.id)">
-          <v-col cols="10" class="ellipsis-text"> {{ item.title }}</v-col>
-          <v-col>{{ formatDate(item.createdAt) }}</v-col>
-        </v-row>
+      <!-- 팀원 출근 현황 -->
+      <v-row class="mt-10">
+        <UserAttendance />
       </v-row>
     </v-col>
-
-    <!-- 팀원들 출근현황 -->
-    <v-col cols="6" style="padding:0 6px;">
-      <UserAttendance />
-    </v-col>
   </v-row>
+
+
 </template>
 
 <script>
 import axios from 'axios';
 import UserAttendance from './mypage/userAttendance.vue';
+import CalendarList from './calendar/calendarList.vue';
 
 export default {
   name: 'HomePage',
   components: {
-    UserAttendance // 타임라인 컴포넌트 등록
+    UserAttendance, // 타임라인 컴포넌트 등록
+    CalendarList,
   },
   data() {
     return {
+
       userProfile: {},
       boardItems: [],
       currentPage: 1,
       totalPages: 1,
       itemsPerPage: 10,
+
+
     }
   },
   mounted() {
@@ -161,6 +144,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+  font-weight: 600;
 }
 
 .board {
@@ -171,6 +155,8 @@ export default {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   background-color: #fff;
   height: 100%;
+  flex-wrap: wrap;
+
 
 }
 
@@ -187,6 +173,6 @@ export default {
 }
 
 .board-item>.v-col {
-  padding: 7px 0;
+  padding: 10px 0;
 }
 </style>

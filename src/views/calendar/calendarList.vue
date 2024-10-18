@@ -123,7 +123,7 @@ export default {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
         events: [],
-        locale: 'en',
+        locale: 'ko',
 
         headerToolbar: {
           left: 'prev,next today', // 왼쪽에 '월/주/일' 버튼 배치

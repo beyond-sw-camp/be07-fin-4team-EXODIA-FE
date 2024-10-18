@@ -195,7 +195,7 @@ v-alert {
 .badge {
   position: absolute;
   top: 50px;
-  left: 55px;
+  left: 50px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
