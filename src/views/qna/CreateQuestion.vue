@@ -34,7 +34,7 @@
 
           <!-- 부서 선택 (버튼형태) -->
           <div class="department-section mb-4">
-            <h4>부서 선택</h4>
+            <h4>문의 부서 선택</h4>
             <v-row>
               <v-col cols="12" md="4" v-for="department in flattenedDepartments" :key="department.id" class="d-flex">
                 <v-btn
