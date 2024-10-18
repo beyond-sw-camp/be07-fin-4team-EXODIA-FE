@@ -35,6 +35,11 @@
                         <v-text-field label="휴가 일수" v-model="formData.휴가일수" disabled></v-text-field>
                     </v-col>
                 </v-row>
+
+                <v-row>
+                    <v-checkbox v-model="submitCreateData.uploadBoard" label="게시판에 등록하시겠습니까?"></v-checkbox>
+                </v-row>
+
             </v-col>
 
             <!-- 결재 라인 -->
@@ -110,6 +115,7 @@ export default {
             submitCreateData: {
                 submitType: '경조사 신청서',
                 contents: '',
+                uploadBoard: false,
                 submitUserDtos: [],
             },
         }
