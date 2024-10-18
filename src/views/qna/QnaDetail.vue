@@ -12,7 +12,7 @@
         <div class="meta-info-section d-flex justify-space-between align-center mb-3">
           <div>
             <p><strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }}</p>
-            <p><strong>문의 부서:</strong> {{ questionDetail.departmentName }}</p> 
+            <p><strong>문의 부서:</strong> {{ questionDetail.departmentName }}</p>
             <p><strong>작성 시간:</strong> {{ formatDate(questionDetail.createdAt) }}</p>
             <p><strong>수정 시간:</strong> {{ formatDate(questionDetail.updatedAt) }}</p>
           </div>
@@ -83,34 +83,32 @@
       </div>
     </div>
 
-<!-- 댓글 섹션 -->
-<div v-if="isFamilyEventCategory" class="comment-section">
-  <h3 class="section-title">댓글</h3>
-  <v-list two-line v-if="comments && comments.length > 0">
-    <v-list-item v-for="comment in comments" :key="comment.id" class="comment-item">
-      <div class="comment-content">
-        <div class="comment-meta">
-          <p class="comment-text">{{ comment.content }}</p>
-          <small>
-            사번: {{ comment.userNum }} - {{ formatDate(comment.createdAt) }}
-            <!-- isEdited가 true이면 수정됨 표시 -->
-            <span v-if="comment.isEdited">(수정됨)</span>
-          </small>
-        </div>
-        <div v-if="comment.userNum === userNum" class="action-buttons">
-          <v-btn small text @click="editComment(comment)">수정</v-btn>
-          <v-btn small text color="red" @click="deleteComment(comment.id)">삭제</v-btn>
-        </div>
-      </div>
-    </v-list-item>
-  </v-list>
+    <!-- 댓글 섹션 -->
+    <div class="comment-section">
+      <h3 class="section-title">댓글</h3>
+      <v-list two-line v-if="comments && comments.length > 0">
+        <v-list-item v-for="comment in comments" :key="comment.id" class="comment-item">
+          <div class="comment-content">
+            <div class="comment-meta">
+              <p class="comment-text">{{ comment.content }}</p>
+              <small>
+                사번: {{ comment.userNum }} - {{ formatDate(comment.createdAt) }}
+                <span v-if="comment.isEdited">(수정됨)</span>
+              </small>
+            </div>
+            <div v-if="comment.userNum === userNum" class="action-buttons">
+              <v-btn small text @click="editComment(comment)">수정</v-btn>
+              <v-btn small text color="red" @click="deleteComment(comment.id)">삭제</v-btn>
+            </div>
+          </div>
+        </v-list-item>
+      </v-list>
 
-  <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
-    <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
-    <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
-  </v-form>
-</div>
-
+      <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
+        <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
+        <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
+      </v-form>
+    </div>
 
     <!-- 오류 메시지 표시 -->
     <v-alert type="error" v-if="error" class="mt-4">{{ error }}</v-alert>
