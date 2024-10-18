@@ -125,8 +125,8 @@ export default {
         const positionId = decodedToken.position_id;
 
         localStorage.setItem('token', token);
-        localStorage.setItem('position_id', positionId);
-        localStorage.setItem('department_id', departmentId );
+        localStorage.setItem('positionId', positionId);
+        localStorage.setItem('departmentId', departmentId );
         localStorage.setItem('userNum', this.userNum);
 
         if (this.rememberUserNum) {
