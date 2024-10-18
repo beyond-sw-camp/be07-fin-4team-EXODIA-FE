@@ -12,6 +12,7 @@
         <div class="meta-info-section d-flex justify-space-between align-center mb-3">
           <div>
             <p><strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }}</p>
+            <p><strong>문의 부서:</strong> {{ questionDetail.departmentName }}</p> 
             <p><strong>작성 시간:</strong> {{ formatDate(questionDetail.createdAt) }}</p>
             <p><strong>수정 시간:</strong> {{ formatDate(questionDetail.updatedAt) }}</p>
           </div>
@@ -82,51 +83,39 @@
       </div>
     </div>
 
-    <!-- 댓글 섹션 -->
-    <div class="pa-4 comment-section" v-if="questionDetail && questionDetail.comments && questionDetail.comments.length > 0">
-      <h3 class="text-h6 font-weight-bold">
-        댓글
-      </h3>
-      <v-divider></v-divider>
-      <div>
-        <!-- 댓글 목록 -->
-        <v-list two-line>
-          <v-list-item v-for="comment in questionDetail.comments" :key="comment.id" class="comment-item">
-            <v-list-item-content class="comment-content">
-              <v-list-item-title class="text-subtitle-1">{{ comment.content }}</v-list-item-title>
-              <v-list-item-subtitle>{{ comment.userName }} - {{ formatDate(comment.createdAt) }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action v-if="comment.userNum === userNum" class="action-buttons">
-              <v-btn small text @click="editComment(comment)">수정</v-btn>
-              <v-btn small text class="btn_del" @click="deleteComment(comment.id)">삭제</v-btn>
-            </v-list-item-action>
-          </v-list-item>
-        </v-list>
+<!-- 댓글 섹션 -->
+<div v-if="isFamilyEventCategory" class="comment-section">
+  <h3 class="section-title">댓글</h3>
+  <v-list two-line v-if="comments && comments.length > 0">
+    <v-list-item v-for="comment in comments" :key="comment.id" class="comment-item">
+      <div class="comment-content">
+        <div class="comment-meta">
+          <p class="comment-text">{{ comment.content }}</p>
+          <small>
+            사번: {{ comment.userNum }} - {{ formatDate(comment.createdAt) }}
+            <!-- isEdited가 true이면 수정됨 표시 -->
+            <span v-if="comment.isEdited">(수정됨)</span>
+          </small>
+        </div>
+        <div v-if="comment.userNum === userNum" class="action-buttons">
+          <v-btn small text @click="editComment(comment)">수정</v-btn>
+          <v-btn small text color="red" @click="deleteComment(comment.id)">삭제</v-btn>
+        </div>
       </div>
-    </div>
+    </v-list-item>
+  </v-list>
 
-    <!-- 댓글 작성 폼 -->
-    <div v-if="questionDetail" class="pa-4 comment-form">
-      <h3 class="text-h6 font-weight-bold">
-        댓글 작성
-      </h3>
-      <v-divider></v-divider>
-      <div>
-        <v-form @submit.prevent="submitComment" class="mt-3">
-          <v-textarea label="댓글 작성" v-model="newComment" outlined required></v-textarea>
-          <div class="mt-3 d-flex justify-end">
-            <v-btn class="btn_solid mr-2" @click="goBack">목록으로</v-btn>
-            <v-btn type="submit" class="btn_comment_ok">댓글 작성</v-btn>
-          </div>
-        </v-form>
-      </div>
-    </div>
+  <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
+    <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
+    <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
+  </v-form>
+</div>
+
 
     <!-- 오류 메시지 표시 -->
     <v-alert type="error" v-if="error" class="mt-4">{{ error }}</v-alert>
   </v-container>
 </template>
-
 
 <script>
 import axios from 'axios';
@@ -135,7 +124,9 @@ export default {
   data() {
     return {
       questionDetail: null, 
-      newComment: '', 
+      newCommentContent: '', 
+      comments: [], // comments를 빈 배열로 초기화
+      isLoggedIn: false, // isLoggedIn을 초기화
       error: null, 
       userNum: '', 
     };
@@ -151,6 +142,7 @@ export default {
   methods: {
     decodeToken() {
       this.userNum = localStorage.getItem('userNum');
+      this.isLoggedIn = !!this.userNum; // 로그인 여부 설정
       if (!this.userNum) {
         this.$router.push('/login');
       }
@@ -160,13 +152,7 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/detail/${questionId}`);
         this.questionDetail = response.data.result;
-
-        if (this.questionDetail.anonymous) {
-          this.questionDetail.questionUserName = '익명';
-        }
-
-        this.questionDetail.qFiles = response.data.result.qfiles || [];
-        this.questionDetail.aFiles = response.data.result.afiles || [];
+        this.comments = response.data.comments || []; // 서버에서 댓글 데이터를 가져와 comments에 저장
       } catch (error) {
         this.error = error.response ? error.response.data.message : '질문 정보를 불러오는 중 오류가 발생했습니다.';
         console.error("Error fetching question detail:", error);
@@ -183,20 +169,25 @@ export default {
       this.$router.push(`/qna/answer/${questionId}`);
     },
     async submitComment() {
-      const questionId = this.$route.params.id;
+      if (!this.newCommentContent.trim()) {
+        alert('댓글 내용을 입력하세요.');
+        return;
+      }
+
+      const qnaId = this.$route.params.id;
+      const newComment = {
+        content: this.newCommentContent,
+        question_id: qnaId,
+        userNum: this.userNum,
+      };
+
       try {
-        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/comment/create`, {
-          question_id: questionId,
-          content: this.newComment,
-          userNum: this.userNum,
-        });
-        this.newComment = '';
-        this.fetchQuestionDetail();
+        await axios.post(`http://localhost:8087/comment/create`, newComment);
+        this.newCommentContent = '';
+        this.fetchQuestionDetail(); // 댓글 작성 후 새로고침
       } catch (error) {
-        console.error("댓글 등록 오류:", error.response ? error.response.data : error);
-        this.error = error.response && error.response.data && error.response.data.message
-          ? error.response.data.message
-          : '댓글 등록에 실패했습니다.';
+        console.error('댓글 작성에 실패했습니다:', error.response ? error.response.data : error);
+        alert('댓글 작성에 실패했습니다.');
       }
     },
     async deleteComment(commentId) {
@@ -252,6 +243,7 @@ export default {
     this.fetchQuestionDetail();
   },
 };
+
 </script>
 
 <style scoped>
@@ -323,7 +315,9 @@ export default {
 }
 
 .comment-form {
-  margin-top: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
 }
 
 .btn_solid {
