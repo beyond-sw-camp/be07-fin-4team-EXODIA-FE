@@ -1,7 +1,7 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/views/HomePage.vue';
-import LoginPage from '@/views/Login.vue';
+import LoginPage from '@/views/LoginPage.vue';
 import { videoRouter } from './videoRouter';
 import { userRouter } from './userRouter';
 import { documentRouter } from './documentRouter';
@@ -25,7 +25,7 @@ const routes = [
 
   {
     path: '/login',
-    name: 'Login',
+    name: 'LoginPage',
     component: LoginPage,
   },
 

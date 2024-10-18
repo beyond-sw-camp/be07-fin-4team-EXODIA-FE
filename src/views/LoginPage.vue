@@ -59,18 +59,8 @@
 </template>
 
 <script>
+import {jwtDecode} from 'jwt-decode';
 import axios from 'axios';
-
-axios.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  error => Promise.reject(error)
-);
 
 export default {
   name: 'LoginPage',
@@ -82,6 +72,13 @@ export default {
       loginSuccessful: false,
     };
   },
+  mounted() {
+    const savedUserNum = localStorage.getItem('savedUserNum');
+    if (savedUserNum) {
+      this.userNum = savedUserNum;
+      this.rememberUserNum = true;
+    }
+  },
   methods: {
     async doLogin() {
       try {
@@ -89,20 +86,43 @@ export default {
           userNum: this.userNum,
           password: this.password,
         };
+
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/user/login`, loginData);
+
         const token = response.data.result;
-        if (!token) throw new Error('로그인 실패');
+        if (!token) {
+          throw new Error('로그인 실패: 토큰이 없습니다.');
+        }
+
+        const decodedToken = jwtDecode(token);
+        const departmentId  = decodedToken.department_id;
+        const positionId = decodedToken.position_id;
+
+        localStorage.setItem('token', token);
+        localStorage.setItem('position_id', positionId);
+        localStorage.setItem('department_id', departmentId );
+        localStorage.setItem('userNum', this.userNum);
+
+        if (this.rememberUserNum) {
+          localStorage.setItem('savedUserNum', this.userNum);
+        } else {
+          localStorage.removeItem('savedUserNum');
+        }
+
         this.loginSuccessful = true;
         setTimeout(() => {
           this.$router.push('/');
         }, 1500);
+
       } catch (e) {
         alert('로그인에 실패했습니다.');
+        console.error(e);
       }
     },
   },
 };
 </script>
+
 
 <style scoped>
 html, body, #app {
