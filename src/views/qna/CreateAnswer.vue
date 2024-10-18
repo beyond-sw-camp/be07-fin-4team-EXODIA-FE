@@ -9,11 +9,16 @@
         <!-- 질문자 정보 -->
         <v-row>
           <v-col cols="6">
-            <v-text-field label="질문자" v-model="questionDetail.questionUserName" readonly />
+            <!-- 질문자가 익명일 경우 '익명'으로 표시 -->
+            <v-text-field 
+              label="질문자" 
+              v-model="questionerName" 
+              readonly 
+            />
           </v-col>
           <v-col cols="6">
-            <!-- 부서명을 department 객체의 id 대신 직접 보여줍니다. -->
-            <v-text-field label="부서명" v-model="departmentName" readonly />
+            <!-- 부서명을 departmentName에서 직접 가져와서 표시 -->
+            <v-text-field label="문의 부서" v-model="questionDetail.departmentName" readonly />
           </v-col>
           <v-col cols="12">
             <v-text-field label="질문 날짜" v-model="formattedQuestionDate" readonly />
@@ -31,23 +36,15 @@
           </v-btn>
         </v-card-actions>
 
-        <!-- 답변 내용 -->
-        <v-card class="mt-5" v-if="questionDetail.answerText">
-          <v-card-title>답변</v-card-title>
-          <v-card-text>{{ questionDetail.answerText }}</v-card-text>
-          <v-card-actions>
-            <v-btn v-if="questionDetail.aFiles && questionDetail.aFiles.length > 0" @click="downloadFile(questionDetail.aFiles[0].filePath)" color="primary">
-              첨부 파일 다운로드
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
         <!-- 답변 작성 폼 -->
-        <v-form @submit.prevent="submitAnswer">
+        <v-form v-if="canAnswer" @submit.prevent="submitAnswer">
           <v-textarea v-model="newAnswerText" label="답변 내용" rows="5" required></v-textarea>
           <v-file-input v-model="answerFiles" multiple label="답변 파일 첨부" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" show-size></v-file-input>
           <v-btn color="success" type="submit" class="mt-3">답변 등록</v-btn>
         </v-form>
+        <v-alert v-else type="error" class="mt-3">
+          답변 권한이 없습니다. 동일 부서 또는 상위 부서에서만 답변이 가능합니다.
+        </v-alert>
       </v-card-text>
     </v-card>
   </v-container>
@@ -60,14 +57,24 @@ export default {
   data() {
     return {
       questionDetail: {}, // 질문 및 답변 세부 정보 객체
-      departmentName: '', // 부서명 표시
       newAnswerText: '', // 새로운 답변 내용
       answerFiles: [], // 새로운 답변 첨부 파일
       formattedQuestionDate: '', // 질문 작성 날짜 포맷팅된 값
+      userDepartment: null, // 현재 사용자 부서
+      departmentTree: [], // 전체 부서 트리
+      canAnswer: false, // 답변 가능 여부
     };
+  },
+  computed: {
+    // 질문자가 익명인지 여부에 따라 표시할 이름 설정
+    questionerName() {
+      return this.questionDetail.anonymous ? '익명' : this.questionDetail.questionUserName;
+    }
   },
   created() {
     this.fetchQuestionDetails();
+    this.userDepartment = localStorage.getItem('userDepartment'); // 사용자 부서를 가져옴
+    this.fetchDepartmentTree();
   },
   methods: {
     // 질문 세부 정보 가져오기
@@ -80,41 +87,82 @@ export default {
         // 질문 작성 날짜를 포맷팅하여 저장
         this.formattedQuestionDate = new Date(this.questionDetail.createdAt).toLocaleString();
 
-        // departmentName은 department 필드 값으로 설정
-        this.departmentName = this.getDepartmentName(this.questionDetail.department);
+        // 질문한 부서와 사용자의 부서를 비교하여 답변 가능 여부 확인
+        this.checkAnswerPermission();
       } catch (error) {
         console.error('질문 정보를 불러오는 중 오류가 발생했습니다:', error);
       }
     },
-    // 부서 ID를 통해 부서명 얻기
-    getDepartmentName(departmentId) {
-      const departments = {
-        1: '인사팀',
-        2: '개발팀',
-        3: '기획팀',
-        4: '영업팀',
-        5: '경영지원팀'
-      };
-      return departments[departmentId] || '부서명 없음';
+
+    // 부서 트리 가져오기
+    async fetchDepartmentTree() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/hierarchy`);
+        this.departmentTree = response.data;
+      } catch (error) {
+        console.error('부서 트리를 가져오는 중 오류가 발생했습니다:', error);
+      }
     },
+
+    // 부모-자식 관계를 고려하여 답변 가능 여부 확인
+    checkAnswerPermission() {
+      const questionDepartmentId = this.questionDetail.departmentId;
+      const userDepartmentId = this.userDepartment;
+
+      // 상위 부서인지 여부 확인
+      if (!questionDepartmentId || !userDepartmentId) {
+        console.error('부서 정보가 없습니다.');
+        this.canAnswer = false;
+        return;
+      }
+
+      this.canAnswer = this.isParentDepartment(questionDepartmentId, userDepartmentId) || questionDepartmentId === userDepartmentId;
+
+      // 로그 출력으로 상태를 확인해봄
+      console.log('부서 답변 가능 여부:', this.canAnswer, '사용자 부서:', userDepartmentId, '문의 부서:', questionDepartmentId);
+    },
+
+    // 부서 트리에서 상위 부서인지 확인하는 함수
+    isParentDepartment(parentId, childId) {
+      const departmentMap = {};
+
+      // 부서 트리를 순회하며 부모-자식 관계 매핑
+      const mapDepartments = (departments) => {
+        departments.forEach(department => {
+          departmentMap[department.id] = department.parentId || null;
+          if (department.children && department.children.length) {
+            mapDepartments(department.children);
+          }
+        });
+      };
+
+      mapDepartments(this.departmentTree);
+
+      // 상위 부서를 찾을 때까지 순회
+      let currentParent = departmentMap[childId];
+      while (currentParent) {
+        if (currentParent === parentId) return true;
+        currentParent = departmentMap[currentParent];
+      }
+
+      return false;
+    },
+
     // 답변 작성 또는 수정
     async submitAnswer() {
       const questionId = this.$route.params.id;
       const userNum = localStorage.getItem("userNum"); // 사용자 ID를 로컬 스토리지에서 가져옴
       try {
-        // 서버로 전송할 FormData 객체 생성
         const formData = new FormData();
-        formData.append('answerText', this.newAnswerText); // DTO에서 필요한 answerText 필드 추가
-        formData.append('userNum', userNum); // 사용자 ID를 FormData에 추가
+        formData.append('answerText', this.newAnswerText);
+        formData.append('userNum', userNum);
 
-        // 첨부된 파일들을 FormData에 추가
         if (this.answerFiles && this.answerFiles.length > 0) {
           this.answerFiles.forEach((file) => {
             formData.append('files', file);
           });
         }
 
-        // 서버로 POST 요청 전송 (파일 업로드를 포함하기 위해 Content-Type을 multipart/form-data로 설정)
         const response = await axios.post(
           `${process.env.VUE_APP_API_BASE_URL}/qna/answer/${questionId}`,
           formData,
@@ -122,19 +170,12 @@ export default {
         );
 
         console.log('답변 등록 성공:', response.data);
-
-        // 답변 등록 후, 해당 질문글의 상세 보기 페이지로 이동
         this.$router.push(`/qna/detail/${questionId}`);
-
       } catch (error) {
         console.error('답변 등록 중 오류가 발생했습니다:', error);
-
-        // 404 오류 발생 시 URL 확인 안내
-        if (error.response && error.response.status === 404) {
-          console.error("요청한 URL을 찾을 수 없습니다. URL이 올바른지 확인하세요.");
-        }
       }
     },
+
     // 파일 다운로드
     downloadFile(filePath) {
       const link = document.createElement('a');

@@ -99,15 +99,16 @@ export default {
       userNum: null, // 현재 로그인된 사용자의 ID
       currentCategory: "", // URL에서 카테고리 가져오기
       boardTitle: "",
-      searchType: "title", // 검색 타입
+      searchType: "titile + content", // 검색 타입
       searchQuery: "", // 검색어
       searchOptions: [
+        { text: "전체", value: "titile + content"},
         { text: "제목", value: "title" },
         { text: "내용", value: "content" },
-        { text: "태그", value: "tags" }, // 태그로 검색 가능하도록 유지
+        { text: "태그", value: "tags" },
       ],
       categoryOptions: [
-        { text: "공지사항", value: "NOTICE" },
+        { text: "공지사항", value: "notice" },
         { text: "경조사", value: "FAMILY_EVENT" },
       ],
     };
@@ -208,8 +209,9 @@ export default {
         alert("관리자만 이 게시판에 글을 작성할 수 있습니다.");
         return;
       }
-      this.$router.push({ name: "BoardCreate" });
+      this.$router.push({ name: "BoardCreate", params: { category: this.currentCategory } });
     },
+
 
     goToDetail(id) {
       this.$router.push({ name: "BoardDetail", params: { id } });

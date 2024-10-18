@@ -15,7 +15,7 @@
           <v-select
             v-model="searchType"
             :items="searchOptions"
-                        variant="underlined"
+            variant="underlined"
             item-title="text"
             item-value="value"
             label="검색 범위"
@@ -35,10 +35,13 @@
           ></v-text-field>
         </v-col>
 
-        <!-- 작성하기 버튼을 검색바 오른쪽에 위치 -->
-        <v-col cols="12" md="3" class="text-right">
+        <!-- 작성하기 및 나의 질문 목록 버튼을 같은 줄에 위치하고 오른쪽 정렬 -->
+        <v-col cols="12" md="3" class="d-flex justify-end">
           <v-btn v-if="isAdmin" class="btn_write" @click="createNewPost">
             작성하기
+          </v-btn>
+          <v-btn class="btn_my_questions" @click="goToMyQuestions">
+            나의 질문 목록
           </v-btn>
         </v-col>
       </v-row>
@@ -69,7 +72,6 @@
   </v-container>
 </template>
 
-
 <script>
 import axios from "axios";
 
@@ -86,9 +88,10 @@ export default {
       boardTitle: "",
 
       // 검색 필드 추가
-      searchType: "title", // 기본값은 제목으로 검색
+      searchType: "titile + content", // 기본값은 제목으로 검색
       searchQuery: "",
       searchOptions: [
+        { text: "전체", value: "titile + content" },
         { text: "제목", value: "title" },
         { text: "내용", value: "content" },
       ],
@@ -174,6 +177,10 @@ export default {
     performSearch() {
       this.currentPage = 1;
       this.fetchBoardItems();
+    },
+    // "나의 질문 목록" 페이지로 이동
+    goToMyQuestions() {
+      this.$router.push({ name: "UserQuestions" });
     },
   },
 };
@@ -270,12 +277,32 @@ export default {
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease;
   padding: 12px 16px;
-  margin-left: 50px; /* 버튼을 오른쪽으로 이동시킴 */
+  margin-left: 10px;
 }
-
 
 .btn_write:hover {
   background-color: #722121;
+}
+
+/* 나의 질문 목록 버튼 스타일 */
+.btn_my_questions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #722121;
+  color: rgb(255, 255, 255);
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 16px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+  padding: 12px 16px;
+  margin-left: 10px;
+}
+
+.btn_my_questions:hover {
+  background-color: #501010;
 }
 
 /* 페이지네이션 스타일 */
