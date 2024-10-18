@@ -59,6 +59,7 @@ export default {
   flex-direction: column;
   flex: 1;
   margin-left: var(--sidebar-width);
+  overflow-y: auto;
 }
 
 .header {
