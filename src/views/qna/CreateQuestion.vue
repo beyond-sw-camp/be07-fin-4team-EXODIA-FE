@@ -49,17 +49,25 @@
             </v-row>
           </div>
 
+          <!-- 익명 여부 설정과 부서 설명 가이드라인 버튼 -->
+          <v-row align="center" justify="space-between" class="mb-4">
+            <v-col cols="8">
+              <v-checkbox 
+                v-model="anonymous" 
+                label="익명으로 작성" 
+              />
+            </v-col>
+            <v-col cols="4" class="text-right">
+              <v-btn color="info" @click="openDepartmentGuide">
+                부서 설명 보기
+              </v-btn>
+            </v-col>
+          </v-row>
+
           <!-- 선택된 부서명 표시 -->
           <div v-if="selectedDepartment" class="selected-department mb-4">
             <p>선택된 부서: <strong>{{ getSelectedDepartmentName() }}</strong></p>
           </div>
-
-          <!-- 익명 여부 설정 -->
-          <v-checkbox 
-            v-model="anonymous" 
-            label="익명으로 작성" 
-            class="mb-4"
-          />
 
           <!-- 파일 업로드 -->
           <v-file-input
@@ -93,6 +101,26 @@
         </v-form>
       </v-card-text>
     </v-card>
+
+    <!-- 부서 설명 모달 -->
+    <v-dialog v-model="showDepartmentGuide" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">부서 설명</span>
+        </v-card-title>
+        <v-card-text>
+          <ul>
+            <li v-for="department in departmentsInfo" :key="department.id">
+              <strong>{{ department.name }}:</strong> {{ department.description }}
+            </li>
+          </ul>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="showDepartmentGuide = false">닫기</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -110,6 +138,14 @@ export default {
       files: [], // 첨부 파일 리스트
       previewFiles: [], // 첨부 파일 미리보기 리스트
       anonymous: false, // 익명 여부
+      showDepartmentGuide: false, // 모달을 표시할지 여부
+      departmentsInfo: [
+        { id: 1, name: '인사팀', description: '직원들의 채용, 퇴직, 인사 관리를 담당합니다.' },
+        { id: 2, name: '개발팀', description: '시스템 개발 및 유지 보수를 담당합니다.' },
+        { id: 3, name: '기획팀', description: '회사의 전략 및 프로젝트 기획을 담당합니다.' },
+        { id: 4, name: '영업팀', description: '영업 활동 및 고객 관리를 담당합니다.' },
+        { id: 5, name: '경영지원팀', description: '회사의 경영 지원 및 관리 업무를 담당합니다.' },
+      ], // 각 부서의 설명
     };
   },
   mounted() {
@@ -162,6 +198,11 @@ export default {
       return this.selectedDepartment ? this.selectedDepartment.name : '선택된 부서가 없습니다';
     },
 
+    // 부서 설명 모달 열기
+    openDepartmentGuide() {
+      this.showDepartmentGuide = true;
+    },
+    
     // 파일 변경 시 처리 메서드
     onFileChange(event) {
       const files = event?.target?.files || event?.dataTransfer?.files;
