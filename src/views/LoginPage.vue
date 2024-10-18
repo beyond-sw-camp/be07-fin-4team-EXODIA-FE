@@ -34,14 +34,38 @@
                   dense
                   class="remember-checkbox"
                 ></v-checkbox>
-                <v-btn
+
+                <!-- <v-btn
                   :class="{'gradient-animation': loginSuccessful}"
                   type="submit"
                   block large
                   class="mt-4 login-btn"
                 >
                   로그인
+                </v-btn> -->
+
+                <v-btn
+                  :class="{'gradient-animation': loginSuccessful, 'is-loading': isLoading}"
+                  type="submit"
+                  block large
+                  class="mt-4 login-btn"
+                  :disabled="isLoading"
+                >
+                  <template v-if="!isLoading">로그인</template>
+                  <template v-else>
+                    <v-progress-circular
+                      indeterminate
+                      color="white"
+                      size="20"
+                    ></v-progress-circular>
+                  </template>
                 </v-btn>
+                <v-progress-linear
+                  v-if="isLoading"
+                  indeterminate
+                  color="primary"
+                  class="mt-4"
+                ></v-progress-linear>
               </v-form>
             </v-card-text>
           </v-card>
@@ -70,6 +94,7 @@ export default {
       password: '',
       rememberUserNum: false,
       loginSuccessful: false,
+      isLoading: false, 
     };
   },
   mounted() {
@@ -82,6 +107,7 @@ export default {
   methods: {
     async doLogin() {
       try {
+        this.isLoading = true;
         const loginData = {
           userNum: this.userNum,
           password: this.password,
@@ -111,10 +137,12 @@ export default {
 
         this.loginSuccessful = true;
         setTimeout(() => {
+          this.isLoading = false; 
           this.$router.push('/');
         }, 1500);
 
       } catch (e) {
+        this.isLoading = false; 
         alert('로그인에 실패했습니다.');
         console.error(e);
       }
@@ -228,4 +256,9 @@ html, body, #app {
 .gradient-animation {
   animation: gradient 1s ease-out forwards;
 }
+
+.login-btn.is-loading {
+  background-color: rgba(0, 150, 136, 0.25);
+}
+
 </style>
