@@ -23,15 +23,6 @@
         ></v-textarea>
       </div>
 
-      <!-- 익명 여부 체크박스 -->
-      <div class="pa-4 white-background mb-4">
-        <v-checkbox
-          v-model="question.anonymous"
-          label="익명으로 작성"
-          :value="!!question.anonymous"
-        ></v-checkbox>
-      </div>
-
       <!-- 파일 선택 -->
       <div class="pa-4 white-background mb-4">
         <v-file-input
@@ -73,7 +64,6 @@ export default {
       question: {
         title: '',
         questionText: '',
-        anonymous: false, // 익명 여부
         files: [], // 기존 파일 목록
         qFiles: [], // 새로 추가된 파일 리스트 (초기값 빈 배열)
       },
@@ -133,9 +123,6 @@ export default {
       const formData = new FormData();
       formData.append('title', this.question.title);
       formData.append('questionText', this.question.questionText);
-
-      // Boolean 값이 올바르게 전송되도록 설정
-      formData.append('anonymous', this.question.anonymous ? 'true' : 'false');
 
       // qFiles가 null인 경우 빈 배열로 대체
       const filesToUpload = this.question.qFiles ? this.question.qFiles : [];
