@@ -9,7 +9,7 @@
                 </v-col>
             </v-row>
 
-            <!-- 검색창 및 돋보기 아이콘 -->
+            <!-- ⭐⭐⭐ 검색창 및 돋보기 아이콘 -->
             <v-row>
                 <v-col cols="10">
                     <v-text-field v-model="searchQuery" placeholder="부서, 이름, 사번으로 검색"></v-text-field>
@@ -19,7 +19,7 @@
                 </v-col>
             </v-row>
 
-            <!-- 검색된 유저 리스트 -->
+            <!-- 검색된 유저 리스트  ⭐⭐⭐ 자기자신 빼고. -->
             <v-row v-for="(userInfos, index) in userList" :key="index" class="user-row">
                 <!-- <v-col cols="2">
                     <v-avatar>
@@ -66,7 +66,7 @@
             </v-row>
         </v-container>
 
-        <!-- 채팅방 이름 작성 화면 -->
+        <!-- 채팅방 이름 작성 화면 ⭐⭐⭐ -> 없으면 참여유저이름들로. -->
         <v-container v-if="showChatRoomName" class="create-container">
             <v-row>
                 <v-col cols="12">

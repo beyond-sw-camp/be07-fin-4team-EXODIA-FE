@@ -12,7 +12,7 @@
             </v-col> -->
 
 
-            <!-- Search bar -->
+            <!-- Search bar ⭐⭐ -->
             <v-col cols="9" v-if="searchBar">
                 <v-text-field v-model="searchQuery" placeholder="채팅방명, 사번, 이름으로 검색" class="search-bar" solo hide-details
                     dense></v-text-field>
@@ -108,6 +108,7 @@ export default {
     methods: {
         async loadChatRoom() {
             try {
+                console.log(this.userNum);
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/list/${this.userNum}`);
                 this.chatRoomList = response.data.result || [];
                 console.log(this.chatRoomList);
