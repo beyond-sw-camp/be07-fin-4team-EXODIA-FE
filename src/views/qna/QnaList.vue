@@ -5,9 +5,16 @@
       <v-col cols="12" md="6">
         <h1 class="board-title">{{ boardTitle }}</h1>
       </v-col>
+
+      <!-- 매니저 관리 버튼 -->
+      <v-col cols="12" md="6" class="d-flex justify-end">
+        <v-btn class="btn_manager_management" @click="openManagerModal">
+          매니저 관리
+        </v-btn>
+      </v-col>
     </v-row>
 
-    <!-- 게시판 상단 검색 폼 - Adjusted layout and search bar size -->
+    <!-- 게시판 상단 검색 폼 -->
     <v-form ref="form" class="search-form d-flex mb-4">
       <v-row justify="center" align="center" class="w-100">
         <!-- 검색 범위 선택 -->
@@ -35,9 +42,9 @@
           ></v-text-field>
         </v-col>
 
-        <!-- 작성하기 및 나의 질문 목록 버튼을 같은 줄에 위치하고 오른쪽 정렬 -->
+        <!-- 작성하기 및 나의 질문 목록 버튼 -->
         <v-col cols="12" md="3" class="d-flex justify-end">
-          <v-btn v-if="isAdmin" class="btn_write" @click="createNewPost">
+          <v-btn class="btn_write" @click="createNewPost">
             작성하기
           </v-btn>
           <v-btn class="btn_my_questions" @click="goToMyQuestions">
@@ -47,11 +54,65 @@
       </v-row>
     </v-form>
 
-    <!-- 게시글 목록 테이블을 아래로 내리기 위해 mt-4 클래스 추가 -->
-    <v-row justify="center" :class="{ 'drawer-open': drawer }" class="mt-4">
+    <!-- Manager Modal -->
+    <v-dialog v-model="showManagerModal" max-width="800px">
+      <v-card>
+        <v-card-title>매니저 관리</v-card-title>
+        <v-card-text>
+          <v-row>
+            <!-- 유저 목록 -->
+            <v-col cols="6">
+              <h3>유저 목록</h3>
+              <v-text-field
+                v-model="userSearchQuery"
+                append-icon="mdi-magnify"
+                label="유저 검색"
+                @input="searchUsers"
+              ></v-text-field>
+              <v-list dense>
+                <v-list-item v-for="user in filteredUsers" :key="user.id">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ user.name }}</v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-btn icon @click="addManager(user)">
+                      <v-icon>mdi-plus</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </v-col>
+
+            <!-- 매니저 목록 -->
+            <v-col cols="6">
+              <h3>매니저 목록</h3>
+              <v-list dense>
+                <v-list-item v-for="manager in managers" :key="manager.id">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ manager.name }}</v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-btn icon @click="removeManager(manager)">
+                      <v-icon>mdi-minus</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="closeManagerModal">닫기</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 게시글 목록 테이블 -->
+    <v-row justify="center" class="mt-4">
       <v-col cols="12">
         <v-row class="mb-2"
-          style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
+          style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px; padding:4px; color:#444444; font-weight:600;">
           <v-col cols="1"><strong>번호</strong></v-col>
           <v-col cols="9"><strong>제목</strong></v-col>
           <v-col cols="2"><strong>작성일</strong></v-col>
@@ -86,12 +147,17 @@ export default {
       userNum: null, // 현재 로그인된 사용자의 ID
       currentCategory: "", // URL에서 카테고리 가져오기
       boardTitle: "",
+      showManagerModal: false,
+      users: [], // 전체 유저 목록
+      filteredUsers: [], // 검색된 유저 목록
+      userSearchQuery: "", // 유저 검색 쿼리
+      managers: [], // 매니저 목록
 
       // 검색 필드 추가
-      searchType: "titile + content", // 기본값은 제목으로 검색
+      searchType: "title + content", // 기본값은 제목과 내용으로 검색
       searchQuery: "",
       searchOptions: [
-        { text: "전체", value: "titile + content" },
+        { text: "전체", value: "title + content" },
         { text: "제목", value: "title" },
         { text: "내용", value: "content" },
       ],
@@ -105,7 +171,7 @@ export default {
     category(newCategory) {
       this.currentCategory = newCategory;
       this.setBoardTitle();
-      this.fetchBoardItems(); // 카테고리 변경 시 게시글 목록을 다시 불러옴
+      this.fetchBoardItems();
     },
   },
   created() {
@@ -132,10 +198,8 @@ export default {
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/qna/list`;
         const response = await axios.get(apiUrl, { params });
 
-        // API 응답 데이터 확인
         if (response.data && response.data.result) {
           const result = response.data.result;
-
           if (result && result.content) {
             this.boardItems = result.content;
             this.totalPages = result.totalPages;
@@ -150,22 +214,77 @@ export default {
         console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
       }
     },
+    async fetchUsersAndManagers() {
+      try {
+        const [userResponse, managerResponse] = await Promise.all([
+          axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`),
+          axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/list`)
+        ]);
 
+        const allUsers = userResponse.data;
+        const managers = managerResponse.data;
+
+        this.users = allUsers.filter(user => !managers.some(manager => manager.userNum === user.userNum));
+        this.filteredUsers = [...this.users]; // 초기 상태에서 전체 유저 목록이 보이도록 설정
+        this.managers = managers;
+      } catch (error) {
+        console.error("유저 또는 매니저 목록을 불러오는 중 오류가 발생했습니다.", error);
+      }
+    },
+    async searchUsers() {
+      try {
+        const params = {
+          search: this.userSearchQuery, // 검색어
+          searchType: 'name', // 이름으로 검색
+        };
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
+        
+        // 검색된 유저 중에서 매니저가 아닌 유저들만 필터링
+        const searchedUsers = response.data;
+        this.filteredUsers = searchedUsers.filter(user => !this.managers.some(manager => manager.userNum === user.userNum));
+      } catch (error) {
+        console.error("유저 검색 중 오류 발생:", error);
+      }
+    },
+    openManagerModal() {
+      this.showManagerModal = true;
+      this.fetchUsersAndManagers();
+    },
+    closeManagerModal() {
+      this.showManagerModal = false;
+    },
+    addManager(user) {
+      axios.post(`${process.env.VUE_APP_API_BASE_URL}/manager/save`, { userNum: user.userNum })
+        .then((response) => {
+          const addedManager = response.data;
+          this.managers.push(addedManager);
+          this.users = this.users.filter(u => u.userNum !== user.userNum);
+          this.filteredUsers = this.filteredUsers.filter(u => u.userNum !== user.userNum);
+        })
+        .catch(error => {
+          console.error("매니저 추가 중 오류 발생:", error);
+        });
+    },
+    removeManager(manager) {
+      axios.delete(`${process.env.VUE_APP_API_BASE_URL}/manager/delete/${manager.userNum}`)
+        .then(() => {
+          this.users.push(manager);
+          this.managers = this.managers.filter(m => m.userNum !== manager.userNum);
+          this.filteredUsers.push(manager);
+        })
+        .catch(error => {
+          console.error("매니저 삭제 중 오류 발생:", error);
+        });
+    },
     onPageChange(newPage) {
       this.currentPage = newPage;
-      this.$nextTick(() => {
-        this.fetchBoardItems();
-      });
+      this.fetchBoardItems();
     },
     setBoardTitle() {
       this.boardTitle = "Q&A";
     },
     formatDate(date) {
-      const options = { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit' 
-      };
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
       return new Date(date).toLocaleDateString('ko-KR', options).replace(/\//g, '.');
     },
     createNewPost() {
@@ -178,13 +297,13 @@ export default {
       this.currentPage = 1;
       this.fetchBoardItems();
     },
-    // "나의 질문 목록" 페이지로 이동
     goToMyQuestions() {
       this.$router.push({ name: "UserQuestions" });
     },
   },
 };
 </script>
+
 
 <style scoped>
 /* 전체 배경 및 컨테이너 스타일 */
@@ -319,5 +438,12 @@ export default {
   font-weight: bold;
   background-color: #c5e1a5;
   color: white;
+}
+
+.btn_manager_management {
+  background-color: #0056b3;
+  color: #ffffff;
+  margin-left: 20px;
+  border-radius: 8px;
 }
 </style>

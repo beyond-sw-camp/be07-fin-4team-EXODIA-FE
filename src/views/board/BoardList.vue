@@ -152,28 +152,28 @@ export default {
     },
 
     async fetchBoardItems() {
-  try {
-    const params = {
-      page: this.currentPage - 1,
-      size: this.itemsPerPage,
-      searchType: this.searchType,
-      searchQuery: this.searchQuery || "",
-    };
-    const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory.toLowerCase()}/list`;
-    const response = await axios.get(apiUrl, { params });
-    if (response.data && response.data.result) {
-      const result = response.data.result;
-      this.boardItems = result.content;
-      this.totalPages = result.totalPages;
+    try {
+      const params = {
+        page: this.currentPage - 1,
+        size: this.itemsPerPage,
+        searchType: this.searchType,
+        searchQuery: this.searchQuery || "",
+      };
+      const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory.toLowerCase()}/list`;
+      const response = await axios.get(apiUrl, { params });
+      if (response.data && response.data.result) {
+        const result = response.data.result;
+        this.boardItems = result.content;
+        this.totalPages = result.totalPages;
 
-      // 콘솔에 받아온 boardItems 항목을 자세히 출력
-      console.log("받아온 boardItems:", JSON.stringify(this.boardItems, null, 2));
+        // 콘솔에 받아온 boardItems 항목을 자세히 출력
+        console.log("받아온 boardItems:", JSON.stringify(this.boardItems, null, 2));
+      }
+    } catch (error) {
+      console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
     }
-  } catch (error) {
-    console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
   }
-}
-,
+  ,
 
 
     onPageChange(newPage) {

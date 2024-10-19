@@ -51,7 +51,13 @@
         </div>
       </div>
 
-      <!-- 댓글 섹션 -->
+      <!-- 댓글 작성 폼 -->
+      <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
+        <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
+        <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
+      </v-form>
+
+      <!-- 댓글 목록 섹션 -->
       <div v-if="isFamilyEventCategory" class="comment-section">
         <h3 class="section-title">댓글</h3>
         <v-list two-line v-if="comments && comments.length > 0">
@@ -61,7 +67,6 @@
                 <p class="comment-text">{{ comment.content }}</p>
                 <small>
                   사번: {{ comment.userNum }} - {{ formatDate(comment.createdAt) }}
-                  <!-- isEdited가 true이면 수정됨 표시 -->
                   <span v-if="comment.isEdited">(수정됨)</span>
                 </small>
               </div>
@@ -72,25 +77,21 @@
             </div>
           </v-list-item>
         </v-list>
-        <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
-          <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
-          <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
-        </v-form>
       </div>
-          </div>
-      
-          <!-- 액션 버튼들 -->
-          <div v-if="board" class="action-section d-flex justify-end mb-5">
-            <v-btn class="btn_solid mr-2" @click="goBack">목록으로</v-btn>
-            <v-btn class="btn_st2 mr-2" @click="editBoard">수정</v-btn>
-            <v-btn class="btn_del" @click="confirmDeleteBoard">삭제</v-btn>
-          </div>
-      
-          <!-- 에러 및 로딩 상태 표시 -->
-          <v-alert type="error" v-if="error">{{ error }}</v-alert>
-          <v-progress-circular v-else-if="!board" indeterminate color="primary"></v-progress-circular>
-        </v-container>
-      </template>
+    </div>
+
+    <!-- 액션 버튼들 -->
+    <div v-if="board" class="action-section d-flex justify-end mb-5">
+      <v-btn class="btn_solid mr-2" @click="goBack">목록으로</v-btn>
+      <v-btn class="btn_st2 mr-2" @click="editBoard">수정</v-btn>
+      <v-btn class="btn_del" @click="confirmDeleteBoard">삭제</v-btn>
+    </div>
+
+    <!-- 에러 및 로딩 상태 표시 -->
+    <v-alert type="error" v-if="error">{{ error }}</v-alert>
+    <v-progress-circular v-else-if="!board" indeterminate color="primary"></v-progress-circular>
+  </v-container>
+</template>
       
       <script>
       import axios from 'axios';
@@ -297,12 +298,16 @@
   background-color: #ffffff;
   border-radius: 8px;
   padding: 20px;
+  width: 100%; /* 댓글 섹션 전체 너비 */
+  max-width: 1200px; /* 최대 너비 설정 */
 }
+
 .comment-item {
   background-color: #f5f5f5;
   border-radius: 8px;
   padding: 10px;
   margin-bottom: 10px;
+  width: 100%; /* 댓글 목록 항목 너비 */
 }
 .comment-content {
   display: flex;
@@ -315,6 +320,8 @@
 }
 .comment-form {
   margin-top: 20px;
+  width: 100%; /* 댓글 작성 폼 너비 */
+  max-width: 1200px; /* 최대 너비 설정 */
 }
 .btn_solid {
   background-color: #3f51b5 !important;

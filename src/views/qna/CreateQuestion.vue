@@ -109,15 +109,27 @@
           <span class="text-h5">부서 설명</span>
         </v-card-title>
         <v-card-text>
+          <!-- 부서 설명 수정 가능 여부를 departmentId로 확인 -->
           <ul>
             <li v-for="department in departmentsInfo" :key="department.id">
-              <strong>{{ department.name }}:</strong> {{ department.description }}
+              <strong>{{ department.name }}:</strong> 
+              <template v-if="isAdmin">
+                <v-text-field
+                  v-model="department.description"
+                  label="부서 설명 수정"
+                  dense
+                />
+              </template>
+              <template v-else>
+                {{ department.description }}
+              </template>
             </li>
           </ul>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="showDepartmentGuide = false">닫기</v-btn>
+          <v-btn color="primary" @click="closeDepartmentGuide">닫기</v-btn>
+          <v-btn v-if="isAdmin" color="success" @click="saveDepartmentInfo">저장</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -139,20 +151,42 @@ export default {
       previewFiles: [], // 첨부 파일 미리보기 리스트
       anonymous: false, // 익명 여부
       showDepartmentGuide: false, // 모달을 표시할지 여부
-      departmentsInfo: [
-        { id: 1, name: '인사팀', description: '직원들의 채용, 퇴직, 인사 관리를 담당합니다.' },
-        { id: 2, name: '개발팀', description: '시스템 개발 및 유지 보수를 담당합니다.' },
-        { id: 3, name: '기획팀', description: '회사의 전략 및 프로젝트 기획을 담당합니다.' },
-        { id: 4, name: '영업팀', description: '영업 활동 및 고객 관리를 담당합니다.' },
-        { id: 5, name: '경영지원팀', description: '회사의 경영 지원 및 관리 업무를 담당합니다.' },
-      ], // 각 부서의 설명
+      departmentsInfo: [], // 각 부서의 설명 정보
+      isAdmin: false, // 관리자인지 여부
     };
   },
   mounted() {
     this.fetchDepartments(); // 컴포넌트가 마운트될 때 부서 목록을 불러옵니다.
+    this.checkAdmin(); // 관리자인지 여부 확인
   },
   methods: {
-    // 부서 목록을 불러오는 메서드
+    // 관리자인지 확인하는 메서드
+    checkAdmin() {
+      const departmentId = localStorage.getItem("departmentId");
+      this.isAdmin = departmentId === "4"; // departmentId가 4일 경우 관리자
+    },
+
+    // 부서 설명 저장 메서드
+    async saveDepartmentInfo() {
+      try {
+        const savePromises = this.departmentsInfo.map(department => {
+          return axios.post(`${process.env.VUE_APP_API_BASE_URL}/department/update`, {
+            departmentId: department.id, // JSON 바디에 departmentId 포함
+            description: department.description
+          });
+        });
+
+        await Promise.all(savePromises);
+        alert('부서 설명이 성공적으로 저장되었습니다.');
+        this.showDepartmentGuide = false;
+      } catch (error) {
+        console.error('부서 설명 저장 중 오류 발생:', error);
+        alert('부서 설명 저장에 실패했습니다.');
+      }
+    },
+
+
+    // 부서 목록과 설명을 불러오는 메서드
     async fetchDepartments() {
       try {
         if (this.flattenedDepartments.length === 0) { // 중복 호출 방지
@@ -161,6 +195,21 @@ export default {
 
           // 최하위 부서만 필터링하여 평탄화된 부서 목록 생성
           this.flattenedDepartments = this.getLeafDepartments(this.departments);
+
+          // 각 부서의 설명을 불러옴
+          const departmentDescriptions = await Promise.all(
+            this.flattenedDepartments.map(department => 
+              axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/description`, {
+                params: { departmentId: department.id }
+              })
+            )
+          );
+
+          this.departmentsInfo = this.flattenedDepartments.map((department, index) => ({
+            id: department.id,
+            name: department.name,
+            description: departmentDescriptions[index].data
+          }));
         }
       } catch (error) {
         console.error('부서 목록을 불러오는 중 오류가 발생했습니다:', error);
@@ -201,6 +250,11 @@ export default {
     // 부서 설명 모달 열기
     openDepartmentGuide() {
       this.showDepartmentGuide = true;
+    },
+
+    // 부서 설명 모달 닫기
+    closeDepartmentGuide() {
+      this.showDepartmentGuide = false;
     },
     
     // 파일 변경 시 처리 메서드
