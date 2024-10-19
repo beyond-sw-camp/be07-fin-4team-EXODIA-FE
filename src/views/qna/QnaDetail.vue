@@ -50,38 +50,11 @@
       </div>
     </div>
 
-    <!-- 답변 섹션 -->
-    <div class="pa-4 mb-5 answer-card" v-if="questionDetail && questionDetail.answerText">
-      <h3 class="text-h6 font-weight-bold">
-        답변
-      </h3>
-      <v-divider></v-divider>
-      <div class="pa-3">
-        <p><strong>답변자:</strong> {{ questionDetail.answerUserName }}</p>
-        <p><strong>답변 시간:</strong> {{ formatDate(questionDetail.answeredAt) }}</p>
-        <p class="text-body-1">{{ questionDetail.answerText }}</p>
-
-        <!-- 답변 첨부 파일 -->
-        <div v-if="questionDetail.aFiles && questionDetail.aFiles.length > 0" class="mb-4 file-list-section">
-          <v-divider></v-divider>
-          <h3 class="text-h6 font-weight-bold">답변 첨부 파일</h3>
-          <v-list>
-            <v-list-item v-for="(file, index) in questionDetail.aFiles" :key="index" class="file-item">
-              <v-list-item-content>
-                <v-list-item-title @click="downloadFile(file.filePath)" class="file-link">
-                  <v-icon left>mdi-file</v-icon> {{ file.fileName }}
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </div>
-
-        <!-- 답변 수정 버튼 -->
-        <v-btn v-if="isAnswerAuthor" class="mt-3 btn_solid" @click="goToEditAnswer" small>
-          <v-icon left>mdi-pencil</v-icon> 답변 수정
-        </v-btn>
-      </div>
-    </div>
+    <!-- 댓글 작성 폼 먼저 표시 -->
+    <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
+      <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
+      <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
+    </v-form>
 
     <!-- 댓글 섹션 -->
     <div class="comment-section">
@@ -103,17 +76,18 @@
           </div>
         </v-list-item>
       </v-list>
-
-      <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
-        <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
-        <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
-      </v-form>
+    </div>
+    <!-- 액션 버튼들 -->
+    <div class="action-section d-flex justify-end mb-5">
+      <v-btn class="btn_solid mr-2" @click="goBack">목록으로</v-btn>
+      <v-btn class="btn_del" @click="confirmDeleteQuestion">삭제</v-btn>
     </div>
 
     <!-- 오류 메시지 표시 -->
     <v-alert type="error" v-if="error" class="mt-4">{{ error }}</v-alert>
   </v-container>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -126,7 +100,7 @@ export default {
       comments: [], // comments를 빈 배열로 초기화
       isLoggedIn: false, // isLoggedIn을 초기화
       error: null, 
-      userNum: '', 
+      userNum: localStorage.getItem('userNum'),
     };
   },
   computed: {
@@ -149,13 +123,25 @@ export default {
       const questionId = this.$route.params.id;
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/detail/${questionId}`);
+        
+        // 질문 세부 정보 저장
         this.questionDetail = response.data.result;
-        this.comments = response.data.comments || []; // 서버에서 댓글 데이터를 가져와 comments에 저장
+        
+        // 댓글 데이터가 있는지 확인
+        console.log("서버에서 받은 질문 데이터:", response.data);
+        
+        // 댓글이 있으면 저장, 없으면 빈 배열로 설정
+        this.comments = response.data.result.comments || [];
+
+        console.log("받은 댓글 목록:", this.comments); // 댓글 목록 확인 로그
       } catch (error) {
         this.error = error.response ? error.response.data.message : '질문 정보를 불러오는 중 오류가 발생했습니다.';
         console.error("Error fetching question detail:", error);
       }
     },
+
+
+
     goToEditQuestion() {
       this.$router.push(`/qna/update/question/${this.$route.params.id}`);
     },
@@ -180,14 +166,32 @@ export default {
       };
 
       try {
-        await axios.post(`http://localhost:8087/comment/create`, newComment);
+        const response = await axios.post(`http://localhost:8087/comment/create`, newComment);
+        console.log("서버 응답:", response.data); // 댓글 등록 성공 후 응답
         this.newCommentContent = '';
-        this.fetchQuestionDetail(); // 댓글 작성 후 새로고침
+        
+        // 댓글 목록을 새로고침
+        this.fetchQuestionDetail();
       } catch (error) {
         console.error('댓글 작성에 실패했습니다:', error.response ? error.response.data : error);
         alert('댓글 작성에 실패했습니다.');
       }
     },
+    async confirmDeleteQuestion() {
+      if (confirm("정말로 이 문의글을 삭제하시겠습니까?")) {
+        try {
+          const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/qna/delete/${this.$route.params.id}`;
+          await axios.get(apiUrl);
+          alert('문의글이 성공적으로 삭제되었습니다.');
+          this.$router.push({ name: 'QnaList' });
+        } catch (error) {
+          console.error('문의글 삭제에 실패했습니다:', error);
+          alert('문의글 삭제에 실패했습니다.');
+        }
+      }
+    },
+
+
     async deleteComment(commentId) {
       if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
         try {
@@ -209,26 +213,38 @@ export default {
           .put(`${process.env.VUE_APP_API_BASE_URL}/comment/update/${comment.id}`, {
             content: updatedContent,
             userNum: this.userNum,
+            isEdited: true,  // 수정됨 상태를 서버에 보냄
           })
-          .then(() => this.fetchQuestionDetail())
+          .then((response) => {
+            console.log('댓글 수정 응답:', response.data);
+            // 수정된 댓글을 comments 배열에서 직접 업데이트
+            const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
+            if (updatedCommentIndex !== -1) {
+              // 배열 요소를 직접 수정
+              this.comments[updatedCommentIndex].content = updatedContent;
+              this.comments[updatedCommentIndex].isEdited = true;  // 수정됨 상태로 변경
+            }
+          })
           .catch((error) => {
             console.error("댓글 수정에 실패했습니다:", error);
-            this.error = '댓글 수정에 실패했습니다.';
+            alert("댓글 수정에 실패했습니다.");
           });
       }
     },
+
     goBack() {
       this.$router.push('/qna/list');
     },
     formatDate(date) {
+      if (!date) return '날짜 없음'; // 날짜가 없을 때 처리
       const options = { 
         year: 'numeric', 
         month: '2-digit', 
         day: '2-digit' 
       };
-      
       return new Date(date).toLocaleDateString('ko-KR', options).replace(/\//g, '.');
     },
+
     downloadFile(filePath) {
       const link = document.createElement('a');
       link.href = filePath;
