@@ -1,45 +1,46 @@
 <template>
-  <v-card class="mb-4 tree-card">
-    <v-card-title>{{ department.name || '이름 없음' }}</v-card-title>
-    <v-card-text>
-      <ul class="tree-root">
-        <li class="tree-item">
-          <details>
-            <summary>
-              <div
-                class="tree-node"
-                :style="getNodeStyle(depth)"
-                :draggable="editMode"
-                @dragstart="$emit('dragStart', department)"
-                @dragover.prevent
-                @drop="$emit('drop', department)"
-                @click="$emit('fetch-users', department.id)" 
-              >
-                <v-icon large>{{ getIconForDepth(depth) }}</v-icon>
-                {{ department.name || '이름 없음' }}
-                <v-btn v-if="editMode" icon @click.stop="$emit('openEditDialog', department)">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-              </div>
-            </summary>
-            <ul v-if="department.children && department.children.length" class="children-nodes">
-              <tree-node
-                v-for="child in department.children"
-                :key="child.id"
-                :department="child"
-                :depth="depth + 1"
-                :edit-mode="editMode"
-                @fetch-users="$emit('fetch-users', $event)" 
-                @dragStart="$emit('dragStart', $event)"
-                @drop="$emit('drop', $event)"
-                @openEditDialog="$emit('openEditDialog', $event)"
-              />
-            </ul>
-          </details>
-        </li>
-      </ul>
-    </v-card-text>
-  </v-card>
+  <ul class="tree-root">
+    <li class="tree-item">
+      <details>
+        <summary>
+          <div
+            class="tree-node"
+            :style="getNodeStyle(depth)"
+            :draggable="editMode"
+            @dragstart="onDragStart(department)"
+            @dragover.prevent
+            @drop="onDrop(department)"
+            @click="$emit('fetch-users', department.id)"
+          >
+            <v-icon large>{{ getIconForDepth(depth) }}</v-icon>
+            {{ department.name || '이름 없음' }}
+
+            <v-btn v-if="editMode" icon @click.stop="onDeleteDepartment(department)">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+
+            <v-btn v-if="editMode" icon @click.stop="$emit('openEditDialog', department)">
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+          </div>
+        </summary>
+
+        <ul v-if="department.children && department.children.length" class="children-nodes">
+          <tree-node
+            v-for="child in department.children"
+            :key="child.id"
+            :department="child"
+            :depth="depth + 1"
+            :edit-mode="editMode"
+            @fetch-users="$emit('fetch-users', $event)"
+            @dragStart="onDragStart($event)"
+            @drop="onDrop($event)"
+            @openEditDialog="$emit('openEditDialog', $event)"
+          />
+        </ul>
+      </details>
+    </li>
+  </ul>
 </template>
 
 <script>
@@ -60,27 +61,41 @@ export default {
         borderRadius: '10px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         textAlign: 'center',
+        position: 'relative',
       };
     },
     getIconForDepth(depth) {
       const icons = ['mdi-domain', 'mdi-office-building', 'mdi-account-group', 'mdi-folder'];
       return icons[depth] || 'mdi-file';
-    }
-  }
-}
+    },
+    onDragStart(department) {
+      this.$emit('drag-start', department);
+    },
+    onDrop(department) {
+      this.$emit('drop', department);
+    },
+    onDeleteDepartment(department) {
+      if (confirm(`부서 '${department.name}'를 정말 삭제하시겠습니까?`)) {
+        this.$emit('delete-department', department.id);
+      }
+    },
+  },
+};
 </script>
-<style scoped>
-.tree-card {
-  margin-right: 20px;
-  height: auto;
-}
 
+
+<style scoped>
 .tree-root {
   list-style-type: none;
   padding-left: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  position: relative;
+}
+
+.tree-item {
+  position: relative;
 }
 
 .tree-node {
@@ -96,8 +111,57 @@ export default {
   text-align: center;
 }
 
+.tree-node::before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  width: 15px;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.tree-node::after {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: #ccc;
+}
+
+.tree-item:first-child .tree-node::after {
+  top: 50%;
+}
+
+.tree-item:last-child .tree-node::after {
+  bottom: 50%;
+}
+
 .children-nodes {
   list-style-type: none;
   padding-left: 40px;
+  position: relative;
+}
+
+.tree-root::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #ccc;
+}
+
+.tree-root .children-nodes::before {
+  content: '';
+  position: absolute;
+  left: -40px;
+  top: 0;
+  bottom: 50%;
+  width: 2px;
+  background-color: #ccc;
 }
 </style>
