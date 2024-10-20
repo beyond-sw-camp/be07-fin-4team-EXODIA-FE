@@ -36,6 +36,7 @@
     "swiper": "^11.1.9",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5",
+    "vuedraggable": "^4.1.0",
     "vuetify": "^3.7.2",
     "vuex": "^4.1.0",
     "webrtc-adapter": "^8.2.3",

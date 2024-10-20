@@ -1,12 +1,12 @@
 <template>
-  <v-container class="qna-container mt-5">
-    <v-card class="pa-4 mx-auto" max-width="800px">
-      <!-- 타이틀 -->
-      <v-card-title class="justify-center">
-        <h2 class="font-weight-bold">QnA 질문 등록</h2>
-      </v-card-title>
+  <v-container class="qna-container mt-5" fluid>
+    <v-row justify="center" no-gutters>
+      <v-col cols="12"> <!-- 여백을 없애고 전체 너비를 차지하게 설정 -->
+        <!-- 타이틀 -->
+        <div class="justify-center text-center mb-4">
+          <h2 class="font-weight-bold">QnA 질문 등록</h2>
+        </div>
 
-      <v-card-text>
         <!-- 질문 등록 폼 -->
         <v-form ref="form" @submit.prevent="submitQuestion">
           <!-- 질문 제목 -->
@@ -99,8 +99,8 @@
             질문 등록하기
           </v-btn>
         </v-form>
-      </v-card-text>
-    </v-card>
+      </v-col>
+    </v-row>
 
     <!-- 부서 설명 모달 -->
     <v-dialog v-model="showDepartmentGuide" max-width="600px">
@@ -109,7 +109,6 @@
           <span class="text-h5">부서 설명</span>
         </v-card-title>
         <v-card-text>
-          <!-- 부서 설명 수정 가능 여부를 departmentId로 확인 -->
           <ul>
             <li v-for="department in departmentsInfo" :key="department.id">
               <strong>{{ department.name }}:</strong> 
@@ -135,7 +134,6 @@
     </v-dialog>
   </v-container>
 </template>
-
 <script>
 import axios from 'axios';
 
@@ -324,8 +322,9 @@ export default {
 <style scoped>
 /* 전체 컨테이너 스타일 */
 .qna-container {
-  max-width: 900px;
-  margin: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* 제목, 내용, 파일 업로드 등의 입력 필드 스타일 */
