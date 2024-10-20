@@ -1,6 +1,7 @@
 <template>
   <div class="department-container">
     <h1>부서 관리</h1>
+
     <div class="button-group">
       <v-btn v-if="editMode" @click="openCreateDialog" color="primary">부서 추가</v-btn>
       <v-btn @click="toggleEditMode" color="success">{{ editMode ? '편집 완료' : '편집' }}</v-btn>
@@ -9,17 +10,18 @@
 
     <div class="content-container">
       <div class="tree-container">
-        <tree-node
-          v-for="department in topLevelDepartments"
-          :key="department.id"
-          :department="department"
-          :depth="0"
-          :edit-mode="editMode"
-          @fetchUsersByDepartment="fetchUsersByDepartment"
-          @dragStart="dragStart"
-          @drop="drop"
-          @openEditDialog="openEditDialog"
-        />
+        <!-- Recursively Render Departments -->
+        <v-card v-for="department in topLevelDepartments" :key="department.id" class="mb-4 tree-card">
+          <DepartmentNode
+            :department="department"
+            :depth="0"
+            :editMode="editMode"
+            @fetch-users="fetchUsersByDepartment"
+            @drag-start="dragStart"
+            @drop="drop"
+            @open-edit-dialog="openEditDialog"
+          />
+        </v-card>
       </div>
 
       <div class="user-box">
@@ -36,36 +38,59 @@
           </v-card>
         </div>
       </div>
+      
     </div>
+
+    <!-- 부서 추가/수정 다이얼로그 -->
+    <v-dialog v-model="dialog" max-width="500">
+      <v-card>
+        <v-card-title>
+          <span class="headline">{{ isEdit ? '부서 수정' : '부서 추가' }}</span>
+        </v-card-title>
+        <v-card-text>
+          <v-text-field label="부서명" v-model="departmentForm.name"></v-text-field>
+          <v-select
+            label="상위 부서"
+            v-model="departmentForm.parentId"
+            :items="parentOptions"
+            item-title="name"
+            item-value="id"
+          ></v-select>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" text @click="saveDepartment">{{ isEdit ? '수정' : '추가' }}</v-btn>
+          <v-btn color="red darken-1" text @click="closeDialog">취소</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script>
 import axios from 'axios';
-import TreeNode from './DepartmentNode.vue';
+import DepartmentNode from './DepartmentNode.vue'; // Recursive child component
 
 export default {
-  components: {
-    TreeNode,
-  },
+  components: { DepartmentNode },
   data() {
     return {
-      hierarchy: [],
-      users: [],
-      defaultProfile: '/assets/default-profile.png',
-      departmentForm: { id: null, name: '', parentId: null },
-      parentOptions: [],
-      dialog: false,
-      isEdit: false,
-      editMode: false,
-      draggedItem: null,
-      positions: [],
-      selectedDepartmentName: '',
+      hierarchy: [], // Department hierarchy data
+      users: [], // User list data
+      defaultProfile: '/assets/default-profile.png', // Default profile image
+      departmentForm: { id: null, name: '', parentId: null }, // Department form data for add/edit
+      parentOptions: [], // Parent department options
+      dialog: false, // Dialog visibility
+      isEdit: false, // Edit mode flag
+      editMode: false, // Toggle edit mode
+      draggedItem: null, // Dragging department reference
+      positions: [], // Positions list
+      selectedDepartmentName: '' // Selected department name
     };
   },
   computed: {
     topLevelDepartments() {
       return this.hierarchy.filter(department => !department.parentId);
-    },
+    }
   },
   methods: {
     async fetchHierarchy() {
@@ -88,26 +113,28 @@ export default {
       departments.forEach(recurse);
       return flat;
     },
-    async fetchUsersByDepartment(departmentId) {
-      try {
-        const response = await axios.get(`/department/${departmentId}/users`);
-        this.users = response.data;
-        const findDepartmentName = (departmentList, id) => {
-          for (const department of departmentList) {
-            if (department.id === id) {
-              return department.name;
-            }
-            if (department.children) {
-              const found = findDepartmentName(department.children, id);
-              if (found) return found;
-            }
-          }
-          return null;
-        };
-        this.selectedDepartmentName = findDepartmentName(this.hierarchy, departmentId) || '부서 없음';
-      } catch (error) {
-        console.error('Error fetching users for department:', error);
+
+    async fetchUsersByDepartment(departmentId) {4
+      console.log("Fetching users for department:", departmentId); 
+  try {
+    const response = await axios.get(`/department/${departmentId}/users`);
+    this.users = response.data;
+    this.selectedDepartmentName = this.findDepartmentName(this.hierarchy, departmentId) || '부서 없음';
+  } catch (error) {
+    console.error('Error fetching users for department:', error);
+  }
+}
+
+,
+    findDepartmentName(departmentList, id) {
+      for (const department of departmentList) {
+        if (department.id === id) return department.name;
+        if (department.children) {
+          const found = this.findDepartmentName(department.children, id);
+          if (found) return found;
+        }
       }
+      return null;
     },
     async fetchPositions() {
       try {
@@ -123,9 +150,7 @@ export default {
     },
     toggleEditMode() {
       this.editMode = !this.editMode;
-      if (!this.editMode) {
-        this.fetchHierarchy();
-      }
+      if (!this.editMode) this.fetchHierarchy();
     },
     openCreateDialog() {
       this.isEdit = false;
@@ -148,14 +173,32 @@ export default {
       this.draggedItem = department;
     },
     async drop(parentDepartment) {
-      if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
-        this.draggedItem.parentId = parentDepartment.id;
-        await axios.put(`/department/${this.draggedItem.id}`, {
-          name: this.draggedItem.name,
-          parentId: parentDepartment.id,
-        });
-        this.fetchHierarchy();
+    if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
+      // parentId 업데이트
+      this.draggedItem.parentId = parentDepartment.id;
+
+        try {
+          await axios.put(`/department/${this.draggedItem.id}`, {
+            name: this.draggedItem.name,
+            parentId: parentDepartment.id,
+          });
+          this.fetchHierarchy(); // 계층 구조 다시 불러오기
+          
+          // 드래그가 완료된 후, 선택된 부서로부터 사용자 목록 가져오기
+          this.fetchUsersByDepartment(parentDepartment.id);
+        } catch (error) {
+          console.error('Error updating department hierarchy:', error);
+        }
       }
+    },
+    isCircular(department, childId) {
+      if (!department.children) return false;
+      for (const child of department.children) {
+        if (child.id === childId || this.isCircular(child, childId)) {
+          return true;
+        }
+      }
+      return false;
     },
     async saveDepartment() {
       try {
@@ -184,12 +227,12 @@ export default {
       } catch (error) {
         console.error('Error deleting department:', error);
       }
-    },
+    }
   },
   mounted() {
     this.fetchHierarchy();
     this.fetchPositions();
-  },
+  }
 };
 </script>
 <style scoped>
@@ -206,8 +249,79 @@ export default {
 .content-container {
   display: flex;
   flex-direction: column;
-  height: auto;
+  height: auto; 
   justify-content: flex-start;
+}
+
+.tree-container {
+  width: 50%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: visible; 
+}
+
+.tree-card {
+  margin-right: 20px;
+  height: auto;
+  flex-grow: 1;
+}
+
+.tree-root {
+  list-style-type: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.tree-node {
+  position: relative;
+  display: inline-block;
+  margin: 15px 0;
+  padding: 10px 30px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  font-size: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.children-nodes {
+  list-style-type: none;
+  padding-left: 40px;
+  overflow: visible;
+  max-height: none;
+}
+
+.tree-node::before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  width: 15px;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.tree-node::after {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: #ccc;
+}
+
+.tree-item:first-child .tree-node::after {
+  top: 50%;
+}
+
+.tree-item:last-child .tree-node::after {
+  bottom: 50%;
 }
 
 .user-box {
@@ -216,11 +330,11 @@ export default {
   background-color: #f8f9fa;
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  width: 28%;
+  width: 28%;    
   height: 50%;
-  border-radius: 5%;
-  bottom: 10%;
-  right: 10%;
+  border-radius: 5%; 
+  bottom: 10%; 
+  right: 10%;   
 }
 
 .user-grid {
@@ -259,14 +373,5 @@ export default {
   padding: 10px;
   border-radius: 5px;
   text-align: center;
-}
-
-.tree-container {
-  width: 50%;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  overflow-y: visible;
 }
 </style>

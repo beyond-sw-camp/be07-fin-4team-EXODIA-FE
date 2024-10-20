@@ -13,7 +13,7 @@
                 @dragstart="$emit('dragStart', department)"
                 @dragover.prevent
                 @drop="$emit('drop', department)"
-                @click="$emit('fetchUsersByDepartment', department.id)"
+                @click="$emit('fetch-users', department.id)" 
               >
                 <v-icon large>{{ getIconForDepth(depth) }}</v-icon>
                 {{ department.name || '이름 없음' }}
@@ -29,7 +29,7 @@
                 :department="child"
                 :depth="depth + 1"
                 :edit-mode="editMode"
-                @fetchUsersByDepartment="$emit('fetchUsersByDepartment', $event)"
+                @fetch-users="$emit('fetch-users', $event)" 
                 @dragStart="$emit('dragStart', $event)"
                 @drop="$emit('drop', $event)"
                 @openEditDialog="$emit('openEditDialog', $event)"
@@ -41,6 +41,7 @@
     </v-card-text>
   </v-card>
 </template>
+
 <script>
 export default {
   name: 'TreeNode',
