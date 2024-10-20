@@ -76,13 +76,10 @@
         </v-card-title>
         <v-card-text>
           <div class="pyramid-container">
-            <!-- 각 레벨을 트리 구조로 렌더링 -->
             <div v-for="(level, index) in departmentLevels" :key="index" class="pyramid-level">
               <div v-for="dept in level" :key="dept.id" class="pyramid-item">
                 {{ dept.name }}
-                <!-- 부모와 자식을 연결하는 수직선 -->
                 <div v-if="index !== 0" class="pyramid-line"></div>
-                <!-- 자식 노드가 여러 개일 때 수평선 표시 -->
                 <div v-if="level.length > 1" class="pyramid-lines"></div>
               </div>
             </div>
@@ -369,7 +366,6 @@ export default {
   text-align: center;
 }
 
-/* 일반 트리 구조에서는 연결선 제거 */
 .tree-node::before,
 .tree-node::after {
   display: none;
@@ -452,7 +448,7 @@ export default {
 .pyramid-level {
   display: flex;
   justify-content: center;
-  margin-bottom: 40px; /* 레벨 간 간격 */
+  margin-bottom: 40px;
   position: relative;
 }
 
@@ -466,50 +462,53 @@ export default {
   position: relative;
 }
 
-/* 자식 노드와 부모 노드를 연결하는 수직선 */
 .pyramid-line {
   position: absolute;
-  top: -30px; /* 부모와 자식을 연결하는 세로선 */
+  top: -30px; /* 부모와 자식을 연결하는 수직선 */
   left: 50%;
   width: 2px;
   height: 30px;
   background-color: #ccc;
 }
 
-/* 자식 노드 간에 연결하는 수평선 */
 .pyramid-lines {
   display: flex;
   justify-content: space-between;
   position: absolute;
-  top: -30px; /* 수평선이 세로선과 만나도록 위치 조정 */
+  top: -30px;
   width: 100%;
   height: 2px;
   background-color: #ccc;
 }
 
-.pyramid-item:hover {
-  background-color: #e3f2fd;
-}
-
-/* 부모-자식 간 연결선과 수평선을 함께 보여주는 경우 */
-.pyramid-item .pyramid-line-horizontal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 2px;
-  background-color: #ccc;
-  width: calc(100% + 40px); /* 자식 간의 간격을 기준으로 선의 길이 조정 */
-}
-
-/* 최상위 부모는 수직선 제거 */
+/* 부모 노드에는 수직선 제거 */
 .pyramid-item:first-child .pyramid-line {
   display: none;
 }
 
 /* 자식 노드 간 수평 정렬 */
 .pyramid-level .pyramid-item {
-  margin: 0 20px; /* 자식 노드 간 간격 */
+  margin: 0 20px;
+}
+
+/* 자식 노드 간 연결선 (수평선) */
+.pyramid-lines::before,
+.pyramid-lines::after {
+  content: '';
+  position: absolute;
+  width: 50%;
+  height: 2px;
+  background-color: #ccc;
+  top: -15px; /* 자식 간의 수평선 위치 조정 */
+}
+
+/* 수평선이 좌우로 펼쳐지게 조정 */
+.pyramid-lines::before {
+  left: -50%;
+}
+
+.pyramid-lines::after {
+  right: -50%;
 }
 
 </style>

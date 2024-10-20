@@ -15,16 +15,17 @@
             <v-icon large>{{ getIconForDepth(depth) }}</v-icon>
             {{ department.name || '이름 없음' }}
 
+            <!-- 삭제 및 수정 버튼 -->
             <v-btn v-if="editMode" icon @click.stop="onDeleteDepartment(department)">
               <v-icon>mdi-delete</v-icon>
             </v-btn>
-
             <v-btn v-if="editMode" icon @click.stop="$emit('openEditDialog', department)">
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
           </div>
         </summary>
 
+        <!-- 자식 노드를 재귀적으로 렌더링 -->
         <ul v-if="department.children && department.children.length" class="children-nodes">
           <tree-node
             v-for="child in department.children"
@@ -83,7 +84,7 @@ export default {
 };
 </script>
 
-
+<!-- 트리 구조에 연결선을 표시하지 않음 -->
 <style scoped>
 .tree-root {
   list-style-type: none;
@@ -111,57 +112,8 @@ export default {
   text-align: center;
 }
 
-.tree-node::before {
-  content: '';
-  position: absolute;
-  left: -15px;
-  top: 50%;
-  width: 15px;
-  height: 1px;
-  background-color: #ccc;
-}
-
-.tree-node::after {
-  content: '';
-  position: absolute;
-  left: -15px;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background-color: #ccc;
-}
-
-.tree-item:first-child .tree-node::after {
-  top: 50%;
-}
-
-.tree-item:last-child .tree-node::after {
-  bottom: 50%;
-}
-
 .children-nodes {
   list-style-type: none;
   padding-left: 40px;
-  position: relative;
-}
-
-.tree-root::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background-color: #ccc;
-}
-
-.tree-root .children-nodes::before {
-  content: '';
-  position: absolute;
-  left: -40px;
-  top: 0;
-  bottom: 50%;
-  width: 2px;
-  background-color: #ccc;
 }
 </style>
