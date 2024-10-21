@@ -2,7 +2,7 @@
   <v-container class="mt-5">
     <v-card>
       <v-card-title>
-        <h3>QnA 상세 보기</h3>
+        <h3>답변</h3>
       </v-card-title>
 
       <v-card-text>
@@ -113,8 +113,9 @@ export default {
 
     // 부모-자식 관계를 고려하여 답변 가능 여부 확인
     checkAnswerPermission() {
-      const questionDepartmentId = this.questionDetail.departmentId;
-      const userDepartmentId = this.userDepartmentId;
+      const questionDepartmentId = Number(this.questionDetail.departmentId);  // 숫자로 변환
+      const userDepartmentId = Number(this.userDepartmentId);  // 숫자로 변환
+
       console.log('사용자 부서:', userDepartmentId, '문의 부서:', questionDepartmentId);
       
 

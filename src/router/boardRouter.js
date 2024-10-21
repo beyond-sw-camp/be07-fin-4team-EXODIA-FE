@@ -17,7 +17,7 @@ export const boardRouter = [
 
   },
   {
-    path: '/board/create',
+    path: '/board/:category/create',
     name: 'BoardCreate',
     component: BoardCreate,
     props: true,

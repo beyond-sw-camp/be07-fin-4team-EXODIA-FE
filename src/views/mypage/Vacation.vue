@@ -26,10 +26,8 @@
                                                 <th>근무 일수</th>
                                                 <th>출근시간</th>
                                                 <th>퇴근시간</th>
-                                                <th>주차
-                                                    누적근무</th>
-                                                <th>주차
-                                                    초과근무</th>
+                                                <th>주차<br />누적근무</th>
+                                                <th>주차<br />초과근무</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -272,8 +270,6 @@ thead th {
     background-color: rgba(122, 86, 86, 0.2);
     text-align: left;
     padding: 10px;
-
-
 }
 
 .custom-leave-table {
@@ -286,7 +282,7 @@ thead th {
 }
 
 .custom-leave-table td {
-    padding: 25px;
+    padding: 15px 30px;
     border: 1px solid #f5f5f5;
     font-weight: 700;
 }
@@ -301,7 +297,7 @@ thead th {
 
 
 tr>td {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
     color: #444444;
 }
