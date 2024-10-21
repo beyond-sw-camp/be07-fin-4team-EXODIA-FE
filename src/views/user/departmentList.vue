@@ -4,7 +4,7 @@
     <div class="button-group">
       <v-btn v-if="editMode" @click="openCreateDialog" class="primary-btn">부서 추가</v-btn>
       <v-btn @click="toggleEditMode" class="success-btn">{{ editMode ? '편집 완료' : '편집' }}</v-btn>
-      <v-btn v-if="editMode" @click="cancelEdit" class="error-btn">취소</v-btn>
+      <v-btn v-if="editMode" @click="cancelEdit" color="error">취소</v-btn>
     </div>
 
     <div class="content-container">
@@ -200,7 +200,7 @@ export default {
       const position = this.positions.find(pos => pos.id === positionId);
       return position ? position.name : '알 수 없음';
     },
-    
+
     async searchUsers() {
       if (!this.selectedDepartmentId) {
         console.error('No department selected');
