@@ -17,82 +17,36 @@
             <v-text-field v-model="formData.content" label="Content" required></v-text-field>
 
             <!-- 타입 선택 -->
-            <v-select
-              v-model="formData.type"
-              :items="eventTypes"
-              label="Event Type"
-              required
-            ></v-select>
+            <v-select v-model="formData.type" :items="eventTypes" label="Event Type" required></v-select>
 
             <!-- 날짜 입력 -->
-            <v-text-field
-              v-model="formData.startDate"
-              label="시작 날짜 (YYYY-MM-DD)"
-              required
-            ></v-text-field>
+            <v-text-field v-model="formData.startDate" label="시작 날짜 (YYYY-MM-DD)" required></v-text-field>
             <!-- 시간 입력 (시, 분 분리) -->
             <v-row>
               <v-col cols="6">
-                <v-text-field
-                  v-model="formData.startHour"
-                  label="시작 시간 (시)"
-                
-                  type="number"
-                  :min="0"
-                  :max="23"
-                  required
-                  v-if="!allDay"
-                ></v-text-field>
+                <v-text-field v-model="formData.startHour" label="시작 시간 (시)" type="number" :min="0" :max="23" required
+                  v-if="!allDay"></v-text-field>
               </v-col>
               <v-col cols="6">
-                <v-text-field
-                  v-model="formData.startMinute"
-                  label="시작 시간 (분)"
-                  type="number"
-                  :min="0"
-                  :max="59"
-                  required
-                  v-if="!allDay"
-                ></v-text-field>
+                <v-text-field v-model="formData.startMinute" label="시작 시간 (분)" type="number" :min="0" :max="59" required
+                  v-if="!allDay"></v-text-field>
               </v-col>
             </v-row>
-            <v-text-field
-              v-model="formData.endDate"
-              label="종료 날짜 (YYYY-MM-DD)"
-              required
-            ></v-text-field>
+            <v-text-field v-model="formData.endDate" label="종료 날짜 (YYYY-MM-DD)" required></v-text-field>
 
             <v-row>
               <v-col cols="6">
-                <v-text-field
-                  v-model="formData.endHour"
-                  label="종료 시간 (시)"
-                  type="number"
-                  :min="0"
-                  :max="23"
-                  required
-                  v-if="!allDay"
-                ></v-text-field>
+                <v-text-field v-model="formData.endHour" label="종료 시간 (시)" type="number" :min="0" :max="23" required
+                  v-if="!allDay"></v-text-field>
               </v-col>
               <v-col cols="6">
-                <v-text-field
-                  v-model="formData.endMinute"
-                  label="종료 시간 (분)"
-                  type="number"
-                  :min="0"
-                  :max="59"
-                  required
-                  v-if="!allDay"
-                ></v-text-field>
+                <v-text-field v-model="formData.endMinute" label="종료 시간 (분)" type="number" :min="0" :max="59" required
+                  v-if="!allDay"></v-text-field>
               </v-col>
             </v-row>
 
             <!-- 하루종일 버튼 -->
-            <v-checkbox
-              v-model="allDay"
-              label="하루종일"
-              @change="handleAllDay"
-            ></v-checkbox>
+            <v-checkbox v-model="allDay" label="하루종일" @change="handleAllDay"></v-checkbox>
 
           </v-form>
         </v-card-text>
@@ -123,7 +77,7 @@ export default {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
         events: [],
-        locale: 'en',
+        locale: 'ko',
 
         headerToolbar: {
           left: 'prev,next today', // 왼쪽에 '월/주/일' 버튼 배치
@@ -141,7 +95,7 @@ export default {
 
         dateClick: this.handleDateClick,
         eventClick: this.handleEventClick,
-  
+
         eventTimeFormat: {
           hour: '2-digit',
           minute: '2-digit',
@@ -166,7 +120,7 @@ export default {
 
         // 당일 예약 스타일링 
         eventContent: this.renderEventContent,
-        
+
       },
       isModalOpen: false,
       isEditing: false,
@@ -187,7 +141,7 @@ export default {
     };
   },
   methods: {
-  
+
     fetchEvents() {
       axios.get(`${process.env.VUE_APP_API_BASE_URL}/calendars/allevents`, {
         headers: {
@@ -211,9 +165,9 @@ export default {
       });
     },
 
-    
-  
-    
+
+
+
     handleSaveEvent() {
       const startTime = `${this.formData.startDate}T${this.formData.startHour.padStart(2, '0')}:${this.formData.startMinute.padStart(2, '0')}:00`;
       const endTime = `${this.formData.endDate}T${this.formData.endHour.padStart(2, '0')}:${this.formData.endMinute.padStart(2, '0')}:00`;
@@ -241,7 +195,7 @@ export default {
         }
       }).then(() => {
         this.isModalOpen = false;
-        this.fetchEvents(); 
+        this.fetchEvents();
       }).catch(error => {
         console.error('이벤트 저장 중 오류 발생:', error);
       });
@@ -297,7 +251,6 @@ export default {
 .v-btn {
   margin: 0 10px;
 }
-
 </style>
 <style>
 .event-dot {
@@ -329,23 +282,35 @@ export default {
 
 
 #calendar-container {
-  width: 100%; /* 캘린더 크기를 90%로 줄여 좌우 여백을 확보 */
+  width: 100%;
+  /* 캘린더 크기를 90%로 줄여 좌우 여백을 확보 */
   /* margin: 20px auto; */
-  padding: 30px; /* 패딩을 좀 더 추가하여 여백 확보 */
+  padding: 30px;
+  /* 패딩을 좀 더 추가하여 여백 확보 */
   border-radius: 10px;
-  background-color: #f9f9f9; /* 배경을 연한 회색으로 */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* 그림자 효과 */
-  border: 1px solid #ddd; /* 테두리를 추가하여 캘린더 강조 */
+  background-color: #f9f9f9;
+  /* 배경을 연한 회색으로 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  /* 그림자 효과 */
+  border: 1px solid #ddd;
+  /* 테두리를 추가하여 캘린더 강조 */
 }
+
 .user-event {
-  background-color: #d0e9ff; /* 유저 이벤트는 연한 파란색 */
+  background-color: #d0e9ff;
+  /* 유저 이벤트는 연한 파란색 */
 }
+
 .department-event {
-  background-color: #c0fac0; /* 부서 이벤트는 연한 초록색 */
+  background-color: #c0fac0;
+  /* 부서 이벤트는 연한 초록색 */
 }
+
 .company-event {
-  background-color: #fccccc; /* 회사 일정은 연한 빨간색 */
+  background-color: #fccccc;
+  /* 회사 일정은 연한 빨간색 */
 }
+
 /* 2024 10 글씨 */
 .fc-toolbar-title {
   font-size: 32px;
@@ -354,19 +319,23 @@ export default {
 }
 
 /* 이전/다음 버튼 스타일 */
-.fc .fc-button-prev, .fc .fc-button-next {
+.fc .fc-button-prev,
+.fc .fc-button-next {
   justify-content: center;
   align-items: center;
   background-color: #d3ccc1;
   color: #5a5246;
   padding: 10px 15px;
 }
-.fc .fc-button-prev:hover, .fc .fc-button-next:hover {
+
+.fc .fc-button-prev:hover,
+.fc .fc-button-next:hover {
   background-color: #cbc2b6;
   justify-content: center;
   align-items: center;
 }
-.fc-direction-ltr .fc-button-group > .fc-button:not(:last-child) {
+
+.fc-direction-ltr .fc-button-group>.fc-button:not(:last-child) {
   justify-content: center;
   align-items: center;
   font-size: 12px;
@@ -376,7 +345,8 @@ export default {
   padding: 10px 15px;
   border-radius: 30px 30px 30px 30px;
 }
-.fc-direction-ltr .fc-button-group > .fc-button:not(:first-child) {
+
+.fc-direction-ltr .fc-button-group>.fc-button:not(:first-child) {
   justify-content: center;
   border: #665f54 solid 3px;
   background-color: none;
@@ -386,8 +356,9 @@ export default {
   font-size: 12px;
   border-radius: 30px 30px 30px 30px;
 }
+
 /* today 버튼 */
-.fc-direction-ltr .fc-toolbar > * > :not(:first-child) {
+.fc-direction-ltr .fc-toolbar>*> :not(:first-child) {
   justify-content: center;
   align-items: center;
   border: #665f54 solid 3px;
@@ -397,26 +368,33 @@ export default {
   font-size: 12px;
   border-radius: 30px 30px 30px 30px;
 }
+
 .fc .fc-button-group .fc-button {
-  background-color: #f9f9f9; /* 기본 회색 배경 */
-  color: #665f54; /* 텍스트 색상 */
+  background-color: #f9f9f9;
+  /* 기본 회색 배경 */
+  color: #665f54;
+  /* 텍스트 색상 */
   border-radius: 25px;
   padding: 8px 20px;
   border: none;
   margin: 0 5px;
 }
+
 .fc .fc-button-primary:disabled {
-    background-color: #665f54;
-    border-color: #665f54;
-    color: white;
+  background-color: #665f54;
+  border-color: #665f54;
+  color: white;
 }
+
 /* 상단 컴포넌트 호버 디자인 */
 .fc .fc-button-group .fc-button:hover {
   background-color: #665f54;
   color: white;
 }
+
 .fc .fc-button-group .fc-button.fc-button-active {
-  background-color: #665f54; /* 활성화된 버튼은 짙은 갈색 */
+  background-color: #665f54;
+  /* 활성화된 버튼은 짙은 갈색 */
   color: white;
 }
 
@@ -425,6 +403,4 @@ export default {
   font-weight: bold;
   text-align: center;
 }
-
-
 </style>

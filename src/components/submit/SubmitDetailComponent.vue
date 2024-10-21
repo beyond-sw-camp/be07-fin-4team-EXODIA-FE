@@ -84,6 +84,12 @@
         </v-col>
     </v-row>
 
+    <v-row v-if="isMySubmitReq == 'true'" justify="end">
+        <v-btn style="background-color:#722121; color:#ffffff;" @click="deleteSubmit(selectedSubmit.id)">
+            취소
+        </v-btn>
+    </v-row>
+
     <!-- 반려 사유 모달 -->
     <v-dialog v-model="isRejectReasonDialogVisible" max-width="500px">
         <v-card>
@@ -111,6 +117,7 @@ export default {
     data() {
         return {
             token: localStorage.getItem('token') || null,
+            userNum: localStorage.getItem('userNum') || null,
 
             selectedSubmit: {},
             approvalStatus: '',
@@ -186,6 +193,15 @@ export default {
                 this.isRejectReasonDialogVisible = false;
             }
         },
+        async deleteSubmit(id) {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/submit/delete/${id}`;
+                await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
+
+            } catch (e) {
+                console.error('결재 요청 정보를 가져오는 중 오류 발생:', e);
+            }
+        }
     }
 }
 </script>

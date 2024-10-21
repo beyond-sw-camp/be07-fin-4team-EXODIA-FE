@@ -1,5 +1,5 @@
 <template>
-  <v-container class="mt-5 white-background qna-container">
+  <v-container class="mt-5 white-background qna-container" fluid>
     <v-form @submit.prevent="updateQuestion">
       <!-- 질문 제목 -->
       <div class="pa-4 white-background mb-4">
@@ -48,8 +48,14 @@
 
       <!-- 제출 및 취소 버튼 -->
       <div class="pa-4 white-background mb-4">
-        <v-btn type="submit" color="primary">수정 완료</v-btn>
-        <v-btn color="secondary" @click="goBack">취소</v-btn>
+        <v-row justify="end">
+          <v-col cols="auto">
+            <v-btn color="white" class="cancel-button" @click="goBack">취소</v-btn>
+          </v-col>
+          <v-col cols="auto">
+            <v-btn type="submit" color="brown" class="submit-button">수정 완료</v-btn>
+          </v-col>
+        </v-row>
       </div>
     </v-form>
   </v-container>
@@ -171,7 +177,7 @@ export default {
 
 <style scoped>
 .v-container {
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto;
   background-color: #ffffff; /* 전체 컨테이너 배경색 흰색으로 설정 */
   padding: 20px;
@@ -183,9 +189,15 @@ export default {
   background-color: #ffffff;
 }
 
-/* 마진 설정 */
-.my-3 {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+/* 버튼 색상 설정 */
+.submit-button {
+  background-color: #8B4513; /* 갈색으로 설정 */
+  color: white;
+}
+
+.cancel-button {
+  background-color: white;
+  border: 1px solid #ccc;
+  color: black;
 }
 </style>

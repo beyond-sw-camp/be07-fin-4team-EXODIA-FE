@@ -2,7 +2,7 @@
   <v-container class="mt-5">
     <v-card>
       <v-card-title>
-        <h3>QnA 상세 보기</h3>
+        <h3>답변</h3>
       </v-card-title>
 
       <v-card-text>
@@ -60,7 +60,7 @@ export default {
       newAnswerText: '', // 새로운 답변 내용
       answerFiles: [], // 새로운 답변 첨부 파일
       formattedQuestionDate: '', // 질문 작성 날짜 포맷팅된 값
-      userDepartment: null, // 현재 사용자 부서
+      userDepartmentId: null, // 현재 사용자 부서 ID
       departmentTree: [], // 전체 부서 트리
       canAnswer: false, // 답변 가능 여부
     };
@@ -73,7 +73,8 @@ export default {
   },
   created() {
     this.fetchQuestionDetails();
-    this.userDepartment = localStorage.getItem('userDepartment'); // 사용자 부서를 가져옴
+    this.userDepartmentId = localStorage.getItem('departmentId'); // 사용자 부서를 로컬스토리지에서 가져옴
+    console.log("로그인한 사용자 부서 ID:", this.userDepartmentId); // 디버그 로그 추가
     this.fetchDepartmentTree();
   },
   methods: {
@@ -82,7 +83,12 @@ export default {
       const questionId = this.$route.params.id;
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/detail/${questionId}`);
+
+        console.log("API 응답 전체:", response.data); // 전체 응답 데이터 확인
         this.questionDetail = response.data.result;
+
+        // departmentId 값이 있는지 확인
+        console.log("질문 departmentId:", this.questionDetail.departmentId);
 
         // 질문 작성 날짜를 포맷팅하여 저장
         this.formattedQuestionDate = new Date(this.questionDetail.createdAt).toLocaleString();
@@ -99,6 +105,7 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/hierarchy`);
         this.departmentTree = response.data;
+        console.log('부서 트리 로드됨:', this.departmentTree); // 부서 트리 로그 추가
       } catch (error) {
         console.error('부서 트리를 가져오는 중 오류가 발생했습니다:', error);
       }
@@ -106,19 +113,26 @@ export default {
 
     // 부모-자식 관계를 고려하여 답변 가능 여부 확인
     checkAnswerPermission() {
-      const questionDepartmentId = this.questionDetail.departmentId;
-      const userDepartmentId = this.userDepartment;
+      const questionDepartmentId = Number(this.questionDetail.departmentId);  // 숫자로 변환
+      const userDepartmentId = Number(this.userDepartmentId);  // 숫자로 변환
+      console.log('사용자 부서:', userDepartmentId, '문의 부서:', questionDepartmentId);
+      
 
-      // 상위 부서인지 여부 확인
       if (!questionDepartmentId || !userDepartmentId) {
         console.error('부서 정보가 없습니다.');
         this.canAnswer = false;
         return;
       }
 
-      this.canAnswer = this.isParentDepartment(questionDepartmentId, userDepartmentId) || questionDepartmentId === userDepartmentId;
+      // 동일 부서이면 바로 true 반환
+      if (questionDepartmentId === userDepartmentId) {
+        console.log('동일 부서입니다. 답변 가능합니다.');
+        this.canAnswer = true;
+        return;
+      }
 
-      // 로그 출력으로 상태를 확인해봄
+      // 상위 부서 또는 동일 부서 여부 확인
+      this.canAnswer = this.isParentDepartment(questionDepartmentId, userDepartmentId);
       console.log('부서 답변 가능 여부:', this.canAnswer, '사용자 부서:', userDepartmentId, '문의 부서:', questionDepartmentId);
     },
 
@@ -136,15 +150,24 @@ export default {
         });
       };
 
+      // 부서 트리를 순회하며 부모-자식 관계 매핑
       mapDepartments(this.departmentTree);
+
+      // 맵이 잘 생성되었는지 로그 출력
+      console.log('부서 관계 맵:', departmentMap);
 
       // 상위 부서를 찾을 때까지 순회
       let currentParent = departmentMap[childId];
       while (currentParent) {
-        if (currentParent === parentId) return true;
+        console.log(`현재 부모 ID: ${currentParent}, 찾는 부모 ID: ${parentId}`);
+        if (currentParent === parentId) {
+          console.log(`상위 부서 확인됨: ${parentId} -> ${childId}`);
+          return true;
+        }
         currentParent = departmentMap[currentParent];
       }
 
+      console.log(`상위 부서 확인 실패: ${parentId} -> ${childId}`);
       return false;
     },
 

@@ -21,7 +21,7 @@
             <v-col cols="12">
                 <v-row class="mb-2"
                     style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
-                    <v-col cols="1"><strong> </strong></v-col>
+                    <v-col cols="1"><strong>번호</strong></v-col>
                     <v-col cols="5"><strong>결재 종류</strong></v-col>
                     <v-col cols="4"><strong>결재 신청 일시</strong></v-col>
                     <v-col cols="2"><strong>결재 상태</strong></v-col>

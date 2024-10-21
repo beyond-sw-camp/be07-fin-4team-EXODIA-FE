@@ -158,13 +158,14 @@ export default {
         this.fetchDepartment();
 
         this.fetchUsers();
-        this.submitCreateData.submitType = '법인 카드 신청';
+        this.submitCreateData.submitType = '법인 카드 사용 신청서';
     },
     methods: {
         async fetchUsers() {
             try {
-                const response = await axios.get(`/user/department-users/${this.departmentId}`);
+                const response = await axios.get(`/department/${this.departmentId}/users`);
                 this.users = response.data;
+                console.log(this.users);
             } catch (e) {
                 console.error('직원 불러오는데 오류 발생:', e);
             }
