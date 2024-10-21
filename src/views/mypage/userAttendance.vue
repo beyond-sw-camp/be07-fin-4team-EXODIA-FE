@@ -58,10 +58,11 @@ export default {
       message: "",      // 알림 메시지
       alertType: "info", // 알림 메시지 유형
 
+      loggedUser: null,
       departmentUsers: [], // 부서원들의 출근 정보
       defaultProfileImage: "https://via.placeholder.com/150", // 기본 프로필 이미지
 
-
+      userNum: localStorage.getItem('userNum') || null,
     };
   },
   methods: {
@@ -108,17 +109,45 @@ export default {
             headers: this.getAuthHeaders(),
           }
         );
+
+        const presentUser = response.data["출근한 사람들"];
+        const absentUser = response.data["출근하지 않은 사람들"];
+
+        if (presentUser.some((user) => user.userNum === this.userNum)) {
+          this.loggedUser = {
+            ...presentUser.find((user) => user.userNum === this.userNum),
+            isPresent: true,
+          };
+        }
+        // 출근하지 않은 사람들 중 본인이 있는지 확인
+        else if (absentUser.some((user) => user.userNum === this.userNum)) {
+          this.loggedUser = {
+            ...absentUser.find((user) => user.userNum === this.userNum),
+            isPresent: false,
+          };
+        }
+
         this.departmentUsers = [
-          ...response.data["출근한 사람들"].map((user) => ({
-            ...user,
-            isPresent: true, // 출근한 사람
-          })),
-          ...response.data["출근하지 않은 사람들"].map((user) => ({
-            ...user,
-            isPresent: false, // 출근하지 않은 사람
-          })),
+          this.loggedUser,
+
+          // 출근한 사람들 (본인 제외)
+          ...presentUser
+            .filter((user) => user.userNum !== this.userNum)
+            .map((user) => ({
+              ...user,
+              isPresent: true, // 출근한 사람
+            })),
+
+          // 출근하지 않은 사람들
+          ...absentUser
+            .filter((user) => user.userNum !== this.userNum)
+            .map((user) => ({
+              ...user,
+              isPresent: false, // 출근하지 않은 사람
+            })),
         ];
-      } catch (error) {
+      }
+      catch (error) {
         console.error("부서 출근 정보를 가져오는 중 오류 발생:", error);
       }
     },
