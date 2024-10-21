@@ -3,8 +3,14 @@
     <!-- Week Selection -->
     <v-row>
       <v-col cols="10" md="6">
-        <v-select v-model="selectedWeek" :items="weeks" label="주차 선택" item-title="text" item-value="weekNumber" outlined
-          style="margin-left: 30px;"></v-select>
+        <v-select v-model="selectedWeek"
+          :items="weeks"
+          label="주차 선택"
+          item-title="text"
+          item-value="weekNumber"
+          outlined
+          style="margin-left: 30px;">
+        </v-select>
       </v-col>
 
       <!-- 출근 버튼 -->

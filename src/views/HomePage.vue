@@ -2,7 +2,7 @@
 
   <v-row>
     <v-col cols="6">
-      <CalendarList style="font-size:12px; background-color:#ffffff;" />
+      <MainCalendarList style="font-size:12px; background-color:#ffffff;" />
 
     </v-col>
     <v-col cols=" 6">
@@ -33,13 +33,13 @@
 <script>
 import axios from 'axios';
 import UserAttendance from './mypage/userAttendance.vue';
-import CalendarList from './calendar/calendarList.vue';
+import MainCalendarList from './calendar/mainCalendarList.vue';
 
 export default {
   name: 'HomePage',
   components: {
     UserAttendance, // 타임라인 컴포넌트 등록
-    CalendarList,
+    MainCalendarList,
   },
   data() {
     return {
