@@ -96,6 +96,7 @@ export default {
 
       // SSE 연결 오류 처리
       this.eventSource.onerror = (error) => {
+        this.eventSource.close();
         console.error('SSE 연결 오류:', error);
         if (this.retryCount < this.maxRetryCount) {
           setTimeout(() => {

@@ -134,9 +134,6 @@ export default {
         console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
 
-        console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
-        console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
-
         // 입사일로부터 현재까지의 근무일수 계산
         if (this.userProfile.joinDate) {
           const joinDate = moment(this.userProfile.joinDate, "YYYY-MM-DD HH:mm:ss.SSSSSS");
@@ -150,15 +147,6 @@ export default {
         this.sickLeave = this.userProfile.sickLeave || 0;
         this.usedLeave = this.userProfile.usedLeave || 0;
         this.absentDays = this.userProfile.absentDays || 0;
-
-        this.attendanceData.clockInTime = this.userProfile.attendanceData?.clockInTime
-          ? moment(this.userProfile.attendanceData.clockInTime).format('HH:mm:ss')
-          : 'N/A';
-        this.attendanceData.clockOutTime = this.userProfile.attendanceData?.clockOutTime
-          ? moment(this.userProfile.attendanceData.clockOutTime).format('HH:mm:ss')
-          : 'N/A';
-        this.attendanceData.weeklyWorkHours = this.userProfile.attendanceData?.weeklyWorkHours || 'N/A';
-        this.attendanceData.weeklyOvertimeHours = this.userProfile.attendanceData?.weeklyOvertimeHours || 'N/A';
 
 
       } catch (error) {
