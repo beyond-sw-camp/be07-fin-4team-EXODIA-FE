@@ -275,8 +275,9 @@ export default {
 }
 </style>
 <style>
-.event-dot {
+#first-calendar-container .event-dot {
   display: inline-block;
+  font-size: 25px;
   width: 8px;
   height: 8px;
   background-color: #2196f3;
@@ -284,21 +285,21 @@ export default {
   margin-right: 5px;
 }
 
-.fc-event {
+#first-calendar-container .fc-event {
   border-radius: 5px;
   font-size: 12px;
   padding: 2px;
   border-style: none;
 }
 
-.fc-daygrid-event {
+#first-calendar-container .fc-daygrid-event {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* more 기능을 위한 height 조정 */
-.fc-daygrid-day-bottom {
+#first-calendar-container .fc-daygrid-day-bottom {
   margin-top: 5px;
 }
 

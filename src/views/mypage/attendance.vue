@@ -51,7 +51,7 @@
         <v-row>
           <div v-for="hour in hours" :key="hour" class="timeline-bar">
             <!-- 근무 시간이 있을 때만 표시 -->
-            <v-progress-linear v-if="isWorkHour(day, hour)" :value="100" height="30" :color="getTimeColor(day, hour)"
+            <v-progress-linear v-if="isWorkHour(day, hour)" :value="100" height="40" :color="getTimeColor(day, hour)"
               class="timeline-progress"></v-progress-linear>
           </div>
         </v-row>
