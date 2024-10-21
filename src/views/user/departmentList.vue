@@ -31,15 +31,26 @@
       <!-- 사용자 목록 -->
       <div class="user-box">
         <h3>{{ selectedDepartmentName }}</h3>
+        <v-text-field
+          label="이름 검색"
+          v-model="searchQuery"
+          @input="searchUsers"
+          clearable
+          class="search-box"
+        ></v-text-field>
         <div v-if="users.length === 0" class="no-users">
           <v-alert type="info" color="blue lighten-4">해당 부서에 소속된 사용자가 없습니다.</v-alert>
         </div>
         <div v-else class="user-grid">
           <v-card v-for="user in users" :key="user.userNum" class="user-card">
-            <img :src="user.profileImage || defaultProfile" alt="profile" class="user-profile" />
-            <p class="user-name">{{ user.name }}</p>
-            <p>사번: {{ user.userNum }}</p>
-            <p>직급: {{ getPositionName(user.positionId) }}</p>
+            <div class="user-card-content">
+              <img :src="user.profileImage || defaultProfile" alt="profile" class="user-profile" />
+              <div class="user-details">
+                <p class="user-name">{{ user.name }}</p>
+                <p>사번: {{ user.userNum }}</p>
+                <p>직급: {{ getPositionName(user.positionId) }}</p>
+              </div>
+            </div>
           </v-card>
         </div>
       </div>
@@ -106,6 +117,7 @@
 import axios from 'axios';
 import DepartmentNode from './DepartmentNode.vue'; // Recursive child component
 
+
 export default {
   components: { DepartmentNode },
   data() { 
@@ -122,7 +134,8 @@ export default {
       editMode: false, // Toggle edit mode
       draggedItem: null, // Dragging department reference
       positions: [], // Positions list
-      selectedDepartmentName: '' // Selected department name
+      selectedDepartmentName: '', // Selected department name
+      searchQuery: '', // 검색 입력값
     };
   },
   computed: {
@@ -157,6 +170,7 @@ export default {
     },
     async fetchUsersByDepartment(departmentId) {
       try {
+        this.selectedDepartmentId = departmentId; 
         const response = await axios.get(`/department/${departmentId}/users`);
         this.users = response.data;
         this.selectedDepartmentName = this.findDepartmentName(this.hierarchy, departmentId) || '부서 없음';
@@ -186,6 +200,25 @@ export default {
       const position = this.positions.find(pos => pos.id === positionId);
       return position ? position.name : '알 수 없음';
     },
+    
+    async searchUsers() {
+      if (!this.selectedDepartmentId) {
+        console.error('No department selected');
+        return;
+      }
+      try {
+        const response = await axios.get(`/user/department/${this.selectedDepartmentId}/search`, {
+          params: {
+            searchQuery: this.searchQuery || '',
+          },
+        });
+        this.users = response.data;
+      } catch (error) {
+        console.error('Error searching users:', error);
+      }
+    },
+
+
     toggleEditMode() {
       this.editMode = !this.editMode;
       if (!this.editMode) this.fetchHierarchy();
@@ -323,27 +356,44 @@ export default {
 }
 
 .user-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .user-card {
-  padding: 20px;
+  display: flex;
+  align-items: center;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.user-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.user-card-content {
   display: flex;
   align-items: center;
-  flex-direction: column;
 }
 
 .user-profile {
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  object-fit: cover;
+  margin-right: 15px;
 }
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
 
 .user-name {
   font-size: 16px;
