@@ -260,7 +260,7 @@ export default {
             token: localStorage.getItem('token') || null,
             userNum: localStorage.getItem('userNum') || null,
             positionId: localStorage.getItem('positionId') || null,
-
+            departmentId: localStorage.getItem('departmentId') || null,
 
             title: '',
             drawer: false,
@@ -437,12 +437,17 @@ export default {
         },
         async submitCreateTag() {
             try {
+                const submitData = {
+                    departmentId: this.departmentId,
+                    tagName: this.tagName
+                };
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/tag/create`;
-                await axios.post(url, this.tagName, {
+                await axios.post(url, submitData, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
                 });
+
                 this.isTagDialogVisible = false;
                 alert(`${this.tagName} 태그가 성공적으로 생성되었습니다.`);
                 location.reload();
