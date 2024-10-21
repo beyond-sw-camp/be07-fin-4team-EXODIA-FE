@@ -1,6 +1,6 @@
 <template>
     <v-row>
-        <h1>문서 업데이트</h1>
+        <h1>파일 업데이트</h1>
     </v-row>
     <v-row justify="center">
         <v-col cols="12">
@@ -11,7 +11,7 @@
                     </v-col>
                     <v-col cols="8">
                         <v-text-field disabled>
-                            {{ document.userName }}
+                            {{ this.userName }}
                         </v-text-field>
                     </v-col>
                 </v-row>
@@ -72,15 +72,25 @@ export default {
             documentId: '',
             tagOptions: [],
             tagNames: [],
+            userName: '',
         }
     },
     mounted() {
         const { id } = history.state;
         this.documentId = id;
+        this.fetchWriter();
         this.fetchDocument();
         this.fetchTypes();
     },
     methods: {
+        async fetchWriter() {
+            try {
+                const response = await axios.get('/user/userName');
+                this.userName = response.data.result;
+            } catch (e) {
+                console.error('회원 이름 불러오는데 오류 발생:', e);
+            }
+        },
         async fetchDocument() {
             try {
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/detail/` + this.documentId, { headers: { Authorization: `Bearer ${this.token}` } });
