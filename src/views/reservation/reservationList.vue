@@ -2,16 +2,18 @@
   <v-container fluid class="timeline-container">
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
     <v-row justify="space-between">
-      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 12px;">
+      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 42px;">
+      
+        <!-- 회의실 예약 탭 -->
+        <v-tab @click="goToMeetingRoomReservation" class="text-body-1">
+          회의실예약
+        </v-tab>
         <!-- 차량 예약 탭 -->
-        <v-tab @click="goToVehicleReservation" class="text-body-1">
+        <v-tab @click="goToVehicleReservation" class="text-body-1"  style="margin-left: -9px;">
           법인차량예약
         </v-tab>
 
-        <!-- 회의실 예약 탭 -->
-        <v-tab @click="goToMeetingRoomReservation" class="text-body-1" style="margin-left: -9px;">
-          회의실예약
-        </v-tab>
+        
       </v-tabs>
 
       <!-- 오른쪽 상단에 관리자 전용 아이콘 추가 (인사팀인 경우에만 표시) -->
@@ -53,7 +55,7 @@
 
         <v-row>
           <v-col>
-            <h3 style="margin: 10px;">차량 예약 내역</h3>
+            <!-- <h3 style="margin: px;">차량 예약 내역</h3> -->
             <br>
 
             <!-- 테이블 헤더 -->
@@ -217,8 +219,8 @@ import { mapGetters, mapActions } from "vuex";
 export default {
   data() {
     return {
-      selectedTab: 0, // 탭 상태: 0이 차량 예약, 1이 회의실 예약
-      selectedDate: new Date(), // Default to today's date
+      selectedTab: 1, // 탭 상태: 0이 차량 예약, 1이 회의실 예약
+      selectedDate: new Date(), // 오늘 날 기본
       vehicles: [], // 차량 데이터
 
       isCarModalOpen: false, 
@@ -236,10 +238,6 @@ export default {
     ...mapGetters({
       departmentName: "getDepartmentName",
     }),
-    isHrDepartment() {
-      console.log("Current departmentName: ", this.departmentName);
-      return this.departmentName === "인사팀"; // Assuming "인사팀" is the HR department name
-    },
   },
   methods: {
     ...mapActions(["setUserAllInfoActions"]), // 사용자 정보를 Vuex에 저장하는 액션 호출
@@ -271,7 +269,7 @@ export default {
     async fetchVehicleAvailability(date) {
       try {
         const token = localStorage.getItem("token");
-        const formattedDate = date.toISOString().split("T")[0]; // Format date as YYYY-MM-DD
+        const formattedDate = date.toISOString().split("T")[0];
         const response = await axios.get(
           `${process.env.VUE_APP_API_BASE_URL}/reservation/allcar/day`,
           {
@@ -283,7 +281,7 @@ export default {
         );
         this.vehicles = response.data;
       } catch (error) {
-        console.error("Error fetching vehicle availability:", error);
+        console.error("차량 정보 파싱 중 오류 발생 :", error);
         if (error.response?.status === 401) {
           alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
           this.$router.push("/login");
@@ -303,19 +301,26 @@ export default {
             },
           }
         );
+        const user = response.data;
+        console.log('내이름은 :', user);
         this.userName = response.data.name;
-        this.departmentName = response.data.name;
+        localStorage.setItem('departmentName', user.departmentName);
+        localStorage.setItem('positionId', user.positionId);
+
         console.log("나 유저, 부서명을 곁들인 : ", response.data.departmentName);
         this.setUserAllInfoActions();
       } catch (error) {
-        console.error("Error fetching user info:", error);
+        console.error("유저정보를 파싱 중 에러 발생 :", error);
         if (error.response?.status === 401) {
           alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
           this.$router.push("/login");
         }
       }
     },
-
+    isHrDepartment() {
+        const departmentName = localStorage.getItem('departmentName');
+        return departmentName === '인사팀';
+      },
   
 
     // 차량 예약 메서드 추가
@@ -416,7 +421,7 @@ export default {
       this.fetchVehicleAvailability(this.selectedDate);
     },
     goToVehicleReservation() {
-      this.selectedTab = 0;
+      this.selectedTab = 1;
     },
     goToMeetingRoomReservation() {
       this.$router.push("/reservation/meetReservationList"); // 회의실 예약 페이지로 라우팅

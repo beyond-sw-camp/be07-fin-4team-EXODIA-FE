@@ -165,12 +165,34 @@ export default {
       });
     },
 
-
-
-
     handleSaveEvent() {
+      if (!this.formData.title || !this.formData.content || !this.formData.startDate || !this.formData.endDate) {
+        alert("모든 필수 항목을 입력해주세요.");
+        return;
+      }
+
+      if (!this.allDay && (!this.formData.startHour || !this.formData.startMinute || !this.formData.endHour || !this.formData.endMinute)) {
+        alert("시작 및 종료 시간을 입력해주세요.");
+        return;
+      }
+      if (this.formData.startHour < 0 || this.formData.startHour > 23 || this.formData.endHour < 0 || this.formData.endHour > 23) {
+        alert("시간은 0에서 23 사이여야 합니다.");
+        return;
+      }
+
+      if (this.formData.startMinute < 0 || this.formData.startMinute > 59 || this.formData.endMinute < 0 || this.formData.endMinute > 59) {
+        alert("분은 0에서 59 사이여야 합니다.");
+        return;
+      }
+
       const startTime = `${this.formData.startDate}T${this.formData.startHour.padStart(2, '0')}:${this.formData.startMinute.padStart(2, '0')}:00`;
       const endTime = `${this.formData.endDate}T${this.formData.endHour.padStart(2, '0')}:${this.formData.endMinute.padStart(2, '0')}:00`;
+      
+      if (new Date(startTime) >= new Date(endTime)) {
+        alert("종료 시간은 시작 시간보다 늦어야 합니다.");
+        return;
+      }
+          
 
       const payload = {
         title: this.formData.title,
@@ -283,8 +305,7 @@ export default {
 
 #calendar-container {
   width: 100%;
-  /* 캘린더 크기를 90%로 줄여 좌우 여백을 확보 */
-  /* margin: 20px auto; */
+
   padding: 30px;
   /* 패딩을 좀 더 추가하여 여백 확보 */
   border-radius: 10px;

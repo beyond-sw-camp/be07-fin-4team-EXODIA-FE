@@ -4,20 +4,18 @@
 
     <v-form ref="form" @submit.prevent="submitForm" class="write-form">
       <v-row>
-        <!-- 게시판 선택 -->
+        <!-- 카테고리를 URL에 따라 표시 -->
         <v-col cols="3">
-          <v-select
-            v-model="selectedCategory"
-            :items="categories"
-            item-text="title"
-            item-value="value"
-            label="게시판 선택"
-            required
+          <!-- 카테고리를 URL에서 전달받아 고정 표시 -->
+          <v-text-field
+            v-model="categoryLabel"
+            label="게시판"
+            readonly
             solo
             flat
             hide-details
-            class="category-select"
-          ></v-select>
+            class="category-label"
+          />
         </v-col>
 
         <!-- 제목 -->
@@ -26,9 +24,10 @@
             v-model="title"
             placeholder="제목을 입력하세요."
             solo
-            hide-details
             flat
+            hide-details
             class="title-input"
+            dense
           />
         </v-col>
       </v-row>
@@ -98,7 +97,6 @@
               <v-btn icon @click="removeTag(tag.id)" class="remove-tag-btn">
                 <v-icon>mdi-close</v-icon>
               </v-btn>
-              
             </div>
           </div>
         </v-col>
@@ -149,33 +147,35 @@ export default {
       title: '', // 제목
       files: [], // 파일
       isPinned: false, // 고정 여부
-      selectedCategory: null, // 선택된 카테고리
+      selectedCategory: '', // 선택된 카테고리
       selectedTags: [], // 선택된 태그들
-      categories: [
-        { value: 'NOTICE', title: '공지사항' },
-        { value: 'FAMILY_EVENT', title: '경조사' },
-      ],
+      categoryLabel: '', // 카테고리 레이블 (공지사항, 경조사)
       tags: [], // 태그 목록
       userNum: localStorage.getItem('userNum'), // 유저 번호
       departmentId: localStorage.getItem('departmentId'), // 부서 아이디
-
       showTagModal: false, // 태그 추가 모달 상태
       newTagName: '', // 새로운 태그 이름
     };
   },
   mounted() {
+    this.setCategoryFromUrl(); // URL에서 카테고리 설정
     this.checkUserRole(); // 유저 권한 확인
     this.fetchTags(); // 태그 목록 불러오기
-    this.setInitialCategory(); // 카테고리 초기 설정
   },
   methods: {
-    // 게시판에 따라 카테고리를 설정
-    setInitialCategory() {
-      const currentPath = this.$route.path;
-      if (currentPath.includes('familyevent')) {
-        this.selectedCategory = 'FAMILY_EVENT';
-      } else if (currentPath.includes('notice')) {
+    // URL에서 카테고리 값을 가져와 설정
+    setCategoryFromUrl() {
+      const currentCategory = this.$route.params.category;
+      console.log("현재 카테고리:", currentCategory); // 디버깅 로그 추가
+
+      if (currentCategory === 'notice') {
         this.selectedCategory = 'NOTICE';
+        this.categoryLabel = '공지사항';
+      } else if (currentCategory === 'familyevent') {
+        this.selectedCategory = 'FAMILY_EVENT';
+        this.categoryLabel = '경조사';
+      } else {
+        console.log('유효하지 않은 카테고리입니다. 기본값을 설정합니다.');
       }
     },
 
@@ -253,13 +253,13 @@ export default {
         await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/tags/delete/${tagId}`);
         this.tags = this.tags.filter(tag => tag.id !== tagId);
       } catch (error) {
-        console.error('태그 삭제에 실패했습니다:', error);
+        console.error('태그 삭제에 실패했습니다.', error);
         alert('태그 삭제에 실패했습니다.');
       }
     },
 
     async submitForm() {
-      console.log('submitForm called')
+      console.log('submitForm called');
       if (this.departmentId !== '4') {
         alert('관리자만 작성할 수 있습니다.');
         return;
@@ -282,7 +282,7 @@ export default {
       }
 
       try {
-        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/create`;
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.selectedCategory.toLowerCase()}/create`;
         const response = await axios.post(apiUrl, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -356,7 +356,7 @@ export default {
   margin: auto;
 }
 
-.category-select,
+.category-label,
 .title-input {
   margin: 10px 0;
 }
