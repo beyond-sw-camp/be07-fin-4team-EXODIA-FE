@@ -132,7 +132,7 @@ export default {
 *:not(h1) {}
 
 .chip-reject {
-    background-color: #e57373;
+    background-color: #b00020;
     color: white;
 }
 
