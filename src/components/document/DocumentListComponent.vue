@@ -64,7 +64,9 @@
                 <!-- 상세 정보 -->
                 <v-tabs-window-item value="1">
                     <v-card-title>
-                        <v-row class="detailFileName">{{ selectedDocument.fileName }}</v-row>
+                        <v-row class="detailFileName ellipsis-text">{{
+                            selectedDocument.fileName
+                        }}</v-row>
                     </v-card-title>
                     <v-divider></v-divider>
                     <v-card-text>

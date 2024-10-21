@@ -127,7 +127,7 @@ export default {
             isMySubmitReq: true,
         }
     },
-    created() {
+    mounted() {
         this.submitId = this.$route.params.submitId;
         this.isMySubmitReq = this.$route.query.isMySubmitReq
 
