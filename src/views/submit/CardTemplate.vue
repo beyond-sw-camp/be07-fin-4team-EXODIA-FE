@@ -205,6 +205,7 @@ export default {
         },
         removeUser(index) {
             this.droppedUsers.splice(index, 1);
+            this.submitCreateData.submitUserDtos.splice(index, 1);
         },
         async createSubmit() {
             try {
