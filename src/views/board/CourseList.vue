@@ -396,7 +396,7 @@ export default {
 }
 
 .v-btn {
-  margin-top: 20px;
+  /* margin-top: 20px; */
   width: 120px;
   height: 40px;
   font-size: 16px;
