@@ -15,6 +15,12 @@
                 파일 등록
             </v-btn>
         </v-col>
+        <!-- 팀장만 태그 생성 가능 -->
+        <v-col v-if="this.positionId == 1">
+            <v-btn @click="handleCreateTag()">
+                태그 생성
+            </v-btn>
+        </v-col>
     </v-row>
 
     <!-- 문서 리스트 -->
@@ -66,7 +72,7 @@
                     <v-card-title>
                         <v-row class="detailFileName ellipsis-text">{{
                             selectedDocument.fileName
-                        }}</v-row>
+                            }}</v-row>
                     </v-card-title>
                     <v-divider></v-divider>
                     <v-card-text>
@@ -226,6 +232,22 @@
         </v-navigation-drawer>
     </v-card>
 
+    <!-- 태그 생성 모달 -->
+    <v-dialog v-model="isTagDialogVisible" max-width="500px">
+        <v-card style="padding:30px">
+            <v-card-title>
+                <h4>태그 생성</h4>
+            </v-card-title>
+            <v-card-text style="margin-bottom:0">
+                <v-text-field label="태그 이름" v-model="tagName" required></v-text-field>
+            </v-card-text>
+            <v-card-actions>
+                <v-btn color="blue darken-1" text @click="isTagDialogVisible = false">취소</v-btn>
+                <v-btn color="blue darken-1" text @click="submitCreateTag">확인</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
 </template>
 
 <script>
@@ -237,6 +259,8 @@ export default {
         return {
             token: localStorage.getItem('token') || null,
             userNum: localStorage.getItem('userNum') || null,
+            positionId: localStorage.getItem('positionId') || null,
+
 
             title: '',
             drawer: false,
@@ -253,6 +277,9 @@ export default {
             comments: {},
             showComments: true,
             commentInput: '',
+
+            isTagDialogVisible: false,
+            tagName: '',
         }
     },
     mounted() {
@@ -401,6 +428,24 @@ export default {
                 await axios.post(url);
                 location.reload();
 
+            } catch (e) {
+                console.error('롤백 중 오류 발생:', e);
+            }
+        },
+        handleCreateTag() {
+            this.isTagDialogVisible = true;
+        },
+        async submitCreateTag() {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/document/tag/create`;
+                await axios.post(url, this.tagName, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                this.isTagDialogVisible = false;
+                alert(`${this.tagName} 태그가 성공적으로 생성되었습니다.`);
+                location.reload();
             } catch (e) {
                 console.error('롤백 중 오류 발생:', e);
             }

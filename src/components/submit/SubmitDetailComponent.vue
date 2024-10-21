@@ -105,11 +105,11 @@
 
     <!-- 반려 사유 모달 -->
     <v-dialog v-model="isRejectReasonDialogVisible" max-width="500px">
-        <v-card>
+        <v-card style="padding:30px">
             <v-card-title>
                 <h4>반려 사유 입력</h4>
             </v-card-title>
-            <v-card-text>
+            <v-card-text style="margin-bottom:0">
                 <v-text-field label="반려 사유" v-model="reason" :rules="[v => !!v || '반려 사유를 작성하세요']"
                     required></v-text-field>
             </v-card-text>
