@@ -1,6 +1,6 @@
 <!-- 채팅방 이름, 작성. 유저 검색(이름, 사번) 추가, 삭제 -->
 <template>
-    <v-container max-width="500px">
+    <v-container>
         <!-- 채팅 상대 선택 화면 -->
         <v-container v-if="showChatUser" class="create-container">
             <v-row>
@@ -131,10 +131,10 @@ export default {
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`);
                 console.log(response);
                 this.userList = response.data;
+                // 자기자신 제외하는 인원리스트 가져오는 거 백단에서 +서치 붙여서 만들기. 
             } catch (e) {
                 console.error('사원 목록 조회 실패', e);
             }
-
         },
 
         searchUser() {
@@ -151,9 +151,6 @@ export default {
             }
             this.selectUser.push(userInfos);
         },
-        // checkUser(){ // 선택된 채팅 유저 중 중복된 인원이 있으면 안된다.
-
-        // },
 
         showChatRoomNameCreate() {
             if (this.selectUser.length === 0) {
@@ -177,8 +174,8 @@ export default {
                     alert("이미 존재하는 채팅방입니다.");
                     this.$emit('update:dialog', false);
                     this.$emit('update:check', true);
-                    // window.location.href='/chatRoom/list';
-                    window.location.reload('/chatRoom/list');
+                    window.location.href='/chatRoom/list';
+                    // window.location.reload('/chatRoom/list');
                 } else {
                     alert("채팅방이 생성 성공");
                     this.$emit('update:dialog', false);

@@ -6,11 +6,6 @@
     <v-container v-if="chatRoomListCheck" class="chat-container">
         <!-- Top section with search and buttons -->
         <v-row class="top-bar">
-            <!-- Close icon -->
-            <!-- <v-col cols="1">
-                <v-icon class="icon close-icon" @click="closeChatList">mdi-close</v-icon>
-            </v-col> -->
-
 
             <!-- Search bar ⭐⭐ -->
             <v-col cols="9">
@@ -40,12 +35,11 @@
                     <v-list-item-content @click="enterToChatRoom(index)">
                         <v-list-item-title>{{ chatroom.roomName }}</v-list-item-title>
                         <v-list-item-subtitle>{{ chatroom.recentChat }}</v-list-item-subtitle>
-                        <span>{{ chatroom.unreadChatNum }}</span>
-                        <!-- <v-list-item-subtitle>{{ chatroom.lastMessage }}</v-list-item-subtitle> -->
+                        <!-- <span>{{ chatroom.unreadChatNum }}</span> -->
                     </v-list-item-content>
 
                     <!-- Unread message count -->
-                    <!-- <v-badge :value="chatroom.unreadCount" color="red" v-if="chatroom.unreadCount > 0" class="unread-badge"></v-badge> -->
+                    <v-badge :value="chatroom.unreadChatNum" color="red" v-if="chatroom.unreadChatNum > 0" class="unread-badge"></v-badge>
                 </v-list-item>
             </v-list-item-group>
             <!-- <v-card-text v-else>채팅방이 없습니다.</v-card-text> -->

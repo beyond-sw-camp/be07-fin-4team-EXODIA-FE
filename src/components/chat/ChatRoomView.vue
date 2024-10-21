@@ -14,23 +14,53 @@
             </v-col>
             <v-col cols="10" class="chat-room-title">
                 <span class="chat-room-name">{{ chatRoomNameProp }}</span>
-                <v-menu>
-                    <template v-slot:activator="{ props }">
-                        <v-icon class="user-mini-icon" v-bind="props">mdi-account</v-icon>
-                        <span class="chat-user-num">{{ chatRoomUserNumsProp.length }}</span>
-                    </template>
+                <v-icon id="user-activator" class="user-mini-icon">mdi-account</v-icon>
+                <span class="chat-user-num">{{ chatRoomUserNumsProp.length }}</span>
+                <v-menu activator="#user-activator">
                     <v-list>
                         <v-list-item v-for="(user, index) in chatUserList" :key="index">
-                            <v-list-item-title>{{ user.chatUserDepName }} {{ user.chatUserName }} {{ user.chatUserPosName }}님</v-list-item-title>
+                            <v-list-item-title>{{ user.chatUserDepName }} {{ user.chatUserName }} {{
+                                user.chatUserPosName }}님</v-list-item-title>
                         </v-list-item>
                     </v-list>
                 </v-menu>
             </v-col>
             <v-col cols="1" class="header-icons">
                 <!--<v-icon class="icon">mdi-magnify</v-icon>--> <!-- 검색 -->
-                <v-icon class="icon">mdi-dots-vertical</v-icon> <!-- 메뉴 -->
+                <v-icon id="menu-activator" class="icon">mdi-dots-vertical</v-icon> <!-- 메뉴 -->
+                <v-menu activator="#menu-activator">
+                    <v-list>
+                        <v-list-item v-on:click="showchatUserInviteModal">
+                            <v-list-item-title>
+                                <v-icon>mdi-plus</v-icon>
+                                채팅 상대 초대
+                            </v-list-item-title>
+                        </v-list-item>
+                        <!-- <v-list-item>
+                            <v-list-item-title> 
+                                <v-icon>mdi-file</v-icon>
+                                채팅 파일 모아보기
+                            </v-list-item-title>
+                        </v-list-item> -->
+                        <v-divider></v-divider>
+                        <v-list-item v-on:click="showexitChatRoomModal">
+                            <v-list-item-title>
+                                <v-icon>mdi-exit-to-app</v-icon>
+                                채팅방 나가기
+                            </v-list-item-title> <!--모달창 뜨게 해라.-->
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
             </v-col>
         </v-row>
+
+        <InviteChatUserModal v-model="inviteUserModal" @update:dialog="inviteUserModal = $event"
+            :chatRoomIdProp="chatRoomId" :existChatUsersProp="chatUserList">
+        </InviteChatUserModal>
+
+        <ExitChatRoomModal v-model="exitAlertModal" @update:dialog="exitAlertModal = $event"
+            :chatRoomIdProp="chatRoomId">
+        </ExitChatRoomModal>
 
         <!-- 채팅 내용 -->
         <div class="chat-content">
@@ -42,8 +72,21 @@
                     </div>
                 </div>
 
+                <div v-if="chat.messageType=='ENTER'">
+                    <div class="date-divider">
+                        <span class="date-text">{{ chat.senderName }}님이 입장했습니다.</span>
+                    </div>
+                </div>
+
+                <div v-if="chat.messageType=='QUIT'">
+                    <div class="date-divider">
+                        <span class="date-text">{{ chat.senderName }}님이 퇴장했습니다.</span>
+                    </div>
+                </div>
+
                 <!-- 메시지 -->
-                <div :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
+                <div  v-if="chat.messageType == 'TALK' || chat.messageType == 'FILE'"
+                 :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
                     <v-row v-if="chat.senderNum !== chatSenderNum" class="message-row">
                         <span class="sender-name">{{ chat.senderDepName }} {{ chat.senderName }} {{ chat.senderPosName
                             }}님</span>
@@ -103,6 +146,8 @@ import axios from 'axios';
 import Stomp from 'webstomp-client'
 import SockJS from 'sockjs-client'
 import ChatFileBox from '@/components/chat/ChatFileBox.vue'
+import InviteChatUserModal from './InviteChatUserModal.vue';
+import ExitChatRoomModal from './ExitChatRoomModal.vue';
 
 export default {
     props: [
@@ -111,7 +156,7 @@ export default {
         'chatRoomUserNumsProp',
     ], // 채팅방리스트에서 받아오는 값.
     components: {
-        ChatFileBox,
+        ChatFileBox, InviteChatUserModal, ExitChatRoomModal
     },
     data() {
         return {
@@ -121,6 +166,9 @@ export default {
 
             // chatUserListCheck: false, // 채팅유저리스트 제어
             chatUserList: [], // 채팅유저리스트
+
+            inviteUserModal: false, // 채팅유저초대 모달 제어
+            exitAlertModal: false, // 채팅방나가기 모달 제어
 
             chatSenderNum: '', // 채팅방을 여는 사람 == 채팅보내는 사람
 
@@ -150,6 +198,7 @@ export default {
         window.addEventListener('beforeunload', this.leave)
     },
     beforeUnmount() {
+        // disconnect
         window.removeEventListener('beforeunload', this.leave)
     },
     methods: {
@@ -312,12 +361,48 @@ export default {
         },
 
         async goBack() {
+            // disconnect
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
             console.log(response);
             window.location.href = '/chatRoom/list';
             this.$emit('update:dialog', false);
             this.$emit('update:check', true);
             // window.location.reload('/chatRoom/list');
+        },
+
+        showchatUserInviteModal() {
+            this.inviteUserModal = true;
+        },
+
+        inviteUserMessage(inviteUserData) {
+            console.log("들어가니");
+            const messageReq = {
+                senderNum: inviteUserData,
+                roomId: this.chatRoomId,
+                messageType: "ENTER",
+                message: "",
+                files: null,
+            };
+            if (this.stompClient && this.stompClient.connected) {
+                this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
+            }
+        },
+
+        showexitChatRoomModal() {
+            this.exitAlertModal = true;
+        },
+
+        exitUserMesssage(exitUserData) {
+            const messageReq = {
+                senderNum: exitUserData,
+                roomId: this.chatRoomId,
+                messageType: "QUIT",
+                message: "",
+                files: null,
+            };
+            if (this.stompClient && this.stompClient.connected) {
+                this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
+            }
         },
 
     }
