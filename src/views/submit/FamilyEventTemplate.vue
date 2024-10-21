@@ -37,6 +37,15 @@
                 </v-row>
             </v-col>
 
+            <v-row>
+                <v-col cols="3">
+                    <v-list-subheader>게시물 올리기</v-list-subheader>
+                </v-col>
+                <v-col cols="9">
+                    <v-checkbox label="경조사 게시판에 등록됩니다." v-model="formData.uploadBoard"></v-checkbox>
+                </v-col>
+            </v-row>
+
             <!-- 결재 라인 -->
             <v-col cols="4">
                 <v-card style="background-color: rgba(123, 86, 86, 0.3);">
@@ -101,6 +110,7 @@ export default {
             formData: {
                 경조종류: '',
                 휴가일수: '',
+                uploadBoard: false, 
             },
             users: [],
             droppedUsers: [],
@@ -111,6 +121,7 @@ export default {
                 submitType: '경조사 신청서',
                 contents: '',
                 submitUserDtos: [],
+                uploadBoard: false, 
             },
         }
     },
@@ -168,18 +179,35 @@ export default {
         removeUser(index) {
             this.droppedUsers.splice(index, 1);
         },
+        // async createSubmit() {
+        //     try {
+        //         this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
+        //         await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
+
+        //         console.log(this.submitCreateData)
+        //         alert("결재 요청이 성공적으로 처리되었습니다.")
+        //         location.reload();
+        //     } catch (e) {
+        //         console.error('결재 요청 실패:', e);
+        //     }
+        // },
         async createSubmit() {
             try {
-                this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
-                await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
+                this.submitCreateData.contents = JSON.stringify(this.formData);
+                this.submitCreateData.uploadBoard = this.formData.uploadBoard;
 
-                console.log(this.submitCreateData)
-                alert("결재 요청이 성공적으로 처리되었습니다.")
+                await axios.post('/submit/create', this.submitCreateData, { 
+                    headers: { Authorization: `Bearer ${this.token}` } 
+                });
+
+                console.log(this.submitCreateData);
+                alert("결재 요청이 성공적으로 처리되었습니다.");
                 location.reload();
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }
         },
+
         formatDate(date) {
             return new Date(date).toLocaleDateString();
         },

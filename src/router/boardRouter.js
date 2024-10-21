@@ -5,6 +5,8 @@ import BoardUpdate from "@/views/board/BoardUpdate.vue";
 import BoardDetail from "@/views/board/BoardDetail.vue";
 import CourseList from "@/views/board/CourseList.vue";
 
+
+
 export const boardRouter = [
 
   {
