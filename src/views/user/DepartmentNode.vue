@@ -1,3 +1,5 @@
+<!-- src\views\user\DepartmentNode.vue -->
+
 <template>
   <ul class="tree-root">
     <li class="tree-item">

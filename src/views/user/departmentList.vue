@@ -1,6 +1,5 @@
 <template>
   <div class="department-container">
-    <!-- 부서 관리 버튼 및 레이아웃 -->
     <h1>부서 관리</h1>
     <div class="button-group">
       <v-btn v-if="editMode" @click="openCreateDialog" class="primary-btn">부서 추가</v-btn>
@@ -21,9 +20,9 @@
             @open-edit-dialog="openEditDialog"
             @delete-department="deleteDepartment"
           />
-          <div class="detailed-view-btn">
-            <v-btn @click="showDetailedView(department)" icon>
-              <v-icon>mdi-eye</v-icon>
+          <div v-if="!editMode" class="detailed-view-btn">
+            <v-btn @click="showDetailedView(department)" icon class="detailed-view-icon">
+              <v-icon small>mdi-magnify</v-icon> <!-- 아이콘 변경 -->
             </v-btn>
           </div>
         </v-card>
@@ -69,20 +68,30 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="detailedViewDialog" max-width="800px">
+    <!-- 부서 상세 조회 모달 -->
+    <v-dialog v-model="detailedViewDialog" max-width="90%" max-height="90vh">
       <v-card>
         <v-card-title>
           <span class="headline">부서 구조 ({{ selectedDepartment.name }})</span>
         </v-card-title>
-        <v-card-text>
-          <div class="pyramid-container">
-            <div v-for="(level, index) in departmentLevels" :key="index" class="pyramid-level">
-              <div v-for="dept in level" :key="dept.id" class="pyramid-item">
-                {{ dept.name }}
-                <div v-if="index !== 0" class="pyramid-line"></div>
-                <div v-if="level.length > 1" class="pyramid-lines"></div>
-              </div>
-            </div>
+        <v-card-text class="scrollable-content">
+          <div class="container">
+            <h1 class="level-1 rectangle">{{ selectedDepartment.name }}</h1>
+            <ol class="level-2-wrapper">
+              <li v-for="child in selectedDepartment.children" :key="child.id">
+                <h2 class="level-2 rectangle">{{ child.name }}</h2>
+                <ol class="level-3-wrapper">
+                  <li v-for="subChild in child.children" :key="subChild.id">
+                    <h3 class="level-3 rectangle">{{ subChild.name }}</h3>
+                    <ol class="level-4-wrapper">
+                      <li v-for="subSubChild in subChild.children" :key="subSubChild.id">
+                        <h4 class="level-4 rectangle">{{ subSubChild.name }}</h4>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
           </div>
         </v-card-text>
         <v-card-actions>
@@ -99,7 +108,7 @@ import DepartmentNode from './DepartmentNode.vue'; // Recursive child component
 
 export default {
   components: { DepartmentNode },
-  data() {
+  data() { 
     return {
       hierarchy: [], // Department hierarchy data
       users: [], // User list data
@@ -107,9 +116,8 @@ export default {
       departmentForm: { id: null, name: '', parentId: null }, // Department form data for add/edit
       parentOptions: [], // Parent department options
       dialog: false, // Dialog visibility
-      detailedViewDialog: false,
-      selectedDepartment: null,
-      departmentLevels: [], 
+      detailedViewDialog: false, // Detailed view dialog visibility
+      selectedDepartment: null, // Currently selected department
       isEdit: false, // Edit mode flag
       editMode: false, // Toggle edit mode
       draggedItem: null, // Dragging department reference
@@ -143,41 +151,19 @@ export default {
       departments.forEach(recurse);
       return flat;
     },
-
     showDetailedView(department) {
-    this.selectedDepartment = department;
-    this.buildPyramidStructure(department);
-    this.detailedViewDialog = true;
-  },
-  buildPyramidStructure(department) {
-    let levels = [];
-    const buildLevel = (dept, depth = 0) => {
-      if (!levels[depth]) levels[depth] = [];
-      levels[depth].push(dept);
-      if (dept.children && dept.children.length) {
-        dept.children.forEach(child => buildLevel(child, depth + 1));
+      this.selectedDepartment = department;
+      this.detailedViewDialog = true;
+    },
+    async fetchUsersByDepartment(departmentId) {
+      try {
+        const response = await axios.get(`/department/${departmentId}/users`);
+        this.users = response.data;
+        this.selectedDepartmentName = this.findDepartmentName(this.hierarchy, departmentId) || '부서 없음';
+      } catch (error) {
+        console.error('Error fetching users for department:', error);
       }
-    };
-    buildLevel(department);
-    this.departmentLevels = levels;
-  },
-  hasParent(dept) {
-    return dept.parentId !== null;
-  },
-  // 자식이 있는지 체크
-  hasChildren(dept) {
-    return dept.children && dept.children.length > 0;
-  },
-    async fetchUsersByDepartment(departmentId) {4
-      console.log("Fetching users for department:", departmentId); 
-  try {
-    const response = await axios.get(`/department/${departmentId}/users`);
-    this.users = response.data;
-    this.selectedDepartmentName = this.findDepartmentName(this.hierarchy, departmentId) || '부서 없음';
-  } catch (error) {
-    console.error('Error fetching users for department:', error);
-  }
-},
+    },
     findDepartmentName(departmentList, id) {
       for (const department of departmentList) {
         if (department.id === id) return department.name;
@@ -223,37 +209,21 @@ export default {
     },
     dragStart(department) {
       this.draggedItem = department;
-      console.log('Dragging department:', department);
     },
     async drop(parentDepartment) {
-    if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
-      // parentId 업데이트
-      this.draggedItem.parentId = parentDepartment.id;
-
+      if (this.draggedItem && this.draggedItem.id !== parentDepartment.id) {
+        this.draggedItem.parentId = parentDepartment.id;
         try {
           await axios.put(`/department/${this.draggedItem.id}`, {
             name: this.draggedItem.name,
             parentId: parentDepartment.id,
           });
-          this.fetchHierarchy(); // 계층 구조 다시 불러오기
-          
-          // 드래그가 완료된 후, 선택된 부서로부터 사용자 목록 가져오기
-          this.fetchUsersByDepartment(parentDepartment.id);
+          this.fetchHierarchy();
         } catch (error) {
           console.error('Error updating department hierarchy:', error);
         }
       }
     },
-    isCircular(department, childId) {
-      if (!department.children) return false;
-      for (const child of department.children) {
-        if (child.id === childId || this.isCircular(child, childId)) {
-          return true;
-        }
-      }
-      return false;
-    },
-
     async saveDepartment() {
       try {
         if (this.isEdit) {
@@ -281,7 +251,7 @@ export default {
       } catch (error) {
         console.error('Error deleting department:', error);
       }
-    }
+    },
   },
   mounted() {
     this.fetchHierarchy();
@@ -289,7 +259,9 @@ export default {
   }
 };
 </script>
-<style scoped>
+
+<style>
+
 .department-container {
   padding: 20px;
 }
@@ -335,47 +307,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow-y: visible;
-}
-
-.tree-card {
-  padding: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.tree-root {
-  list-style-type: none;
-  padding-left: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.tree-node {
-  position: relative;
-  display: inline-block;
-  margin: 15px 0;
-  padding: 10px 30px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-  font-size: 20px;
-  color: #333;
-  text-align: center;
-}
-
-.tree-node::before,
-.tree-node::after {
-  display: none;
-}
-
-.children-nodes {
-  list-style-type: none;
-  padding-left: 40px;
-  overflow: visible;
-  max-height: none;
 }
 
 .user-box {
@@ -421,94 +352,99 @@ export default {
   color: #333;
 }
 
-.no-users {
-  color: #1565c0;
-  background-color: #e3f2fd;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
+/* 부서 구조 상세 조회 스타일 */
+/* 부서 구조 상세 조회 스타일 */
+/* 부서 구조 상세 조회 스타일 */
+:root {
+  --level-1: #a8d5ba; /* Pastel Green */
+  --level-2: #f9d7a5; /* Pastel Yellow */
+  --level-3: #a7c7e7; /* Pastel Blue */
+  --level-4: #f7a8b8; /* Pastel Pink */
 }
 
-.detailed-view-btn {
-  margin-top: 10px;
+/* 노드 스타일 */
+.rectangle {
   display: flex;
-  justify-content: flex-end;
-}
-
-/* 자세히 보기 트리 구조 */
-.pyramid-container {
-  display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  justify-content: center;
-  margin-top: 20px;
-  position: relative;
-}
-
-.pyramid-level {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 40px;
-  position: relative;
-}
-
-.pyramid-item {
-  padding: 10px 20px;
-  background-color: #f5f5f5;
+  font-size: 12px; /* 노드 안의 글자 크기 */
+  padding: 10px;
+  background-color: #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  margin: 0 10px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 120px; /* 가로 크기 축소 */
+  height: 40px; /* 직사각형으로 만들기 위한 세로 크기 */
+}
+
+/* 숫자 제거 */
+ol {
+  list-style-type: none; /* 리스트에서 숫자 없애기 */
+  padding-left: 0;
+}
+
+/* 레벨별 간격 조정 */
+.level-1 {
+  width: 20%;
+  margin: 0 auto 50px; /* 위 아래 간격 */
+  background-color: var(--level-1);
+}
+
+.level-2-wrapper {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: 50px; /* 위 아래 간격 */
+}
+
+.level-2 {
+  width: 30%; 
+  margin: 0 auto 50px; /* 위 아래 간격 */
+  background-color: var(--level-2);
+}
+
+.level-3-wrapper {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-column-gap: 20px;
+  width: 50%;
+  margin: 0 auto 50px; /* 위 아래 간격 */
+}
+
+.level-3 {
+  margin-bottom: 50px; /* 위 아래 간격 */
+  background-color: var(--level-3);
+}
+
+.level-4-wrapper {
+  width: 80%;
+  margin-left: auto;
   position: relative;
 }
 
-.pyramid-line {
-  position: absolute;
-  top: -30px; /* 부모와 자식을 연결하는 수직선 */
-  left: 50%;
-  width: 2px;
-  height: 30px;
-  background-color: #ccc;
+.level-4 {
+  background-color: var(--level-4);
+  border-radius: 8px;
+  margin-bottom: 50px; /* 위 아래 간격 */
 }
 
-.pyramid-lines {
-  display: flex;
-  justify-content: space-between;
-  position: absolute;
-  top: -30px;
-  width: 100%;
-  height: 2px;
-  background-color: #ccc;
-}
-
-/* 부모 노드에는 수직선 제거 */
-.pyramid-item:first-child .pyramid-line {
+/* 연결 선 제거 */
+.level-1::before,
+.level-2-wrapper::before,
+.level-2::before,
+.level-3-wrapper::before,
+.level-4-wrapper::before {
   display: none;
 }
 
-/* 자식 노드 간 수평 정렬 */
-.pyramid-level .pyramid-item {
-  margin: 0 20px;
-}
-
-/* 자식 노드 간 연결선 (수평선) */
-.pyramid-lines::before,
-.pyramid-lines::after {
-  content: '';
+/* 추가 스타일 */
+.detailed-view-btn {
   position: absolute;
-  width: 50%;
-  height: 2px;
-  background-color: #ccc;
-  top: -15px; /* 자식 간의 수평선 위치 조정 */
+  top: 10px;
+  right: 10px;
 }
 
-/* 수평선이 좌우로 펼쳐지게 조정 */
-.pyramid-lines::before {
-  left: -50%;
-}
-
-.pyramid-lines::after {
-  right: -50%;
+.detailed-view-icon {
+  font-size: 12px;
 }
 
 </style>
