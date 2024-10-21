@@ -87,20 +87,31 @@ export default {
     };
   },
   watch: {
-    selectedWeek() {
+    selectedWeek(newVal) {
+    console.log('selectedWeek 변경됨: ', newVal);
       this.fetchWeeklyDetails(); // 주차가 변경될 때마다 데이터 불러오기
-
     },
   },
   mounted() {
     const today = new Date();
     const currentWeek = this.getISOWeekNumber(today); // 현재 주차 계산
-    this.selectedWeek = `${currentWeek}주차`; // 선택된 주차 기본 설정
-    this.fetchWeeklyDetails(); // 기본 주차 데이터 로드
+
+    // this.selectedWeek = `${currentWeek}주차`; 
+    this.selectedWeek = currentWeek;
     this.emitAttendanceData(); // 데이터 전송
+    this.fetchWeeklyDetails();
     this.fetchWeeklyAttendance();
+    this.initializeCurrentWeek();
   },
   methods: {
+    async initializeCurrentWeek() {
+      const today = new Date();
+      const currentWeek = this.getISOWeekNumber(today); 
+
+      await this.fetchWeeklyAttendance(); 
+      this.selectedWeek = this.weeks.find(week => week.weekNumber === currentWeek); 
+      this.fetchWeeklyDetails(); 
+    },
 
     async fetchWeeklyAttendance() {
       try {
@@ -120,7 +131,10 @@ export default {
         }));
 
         // 기본으로 첫 번째 주차 선택
-        this.selectedWeek = this.weeks[0].weekNumber;
+        if (!this.selectedWeek) {
+          this.selectedWeek = this.weeks[0].weekNumber;
+          await this.fetchWeeklyDetails(); // 주차에 맞는 데이터 로드
+        }
       } catch (error) {
         console.error('주차 정보를 불러오는 중 오류 발생:', error);
       }
@@ -200,30 +214,41 @@ export default {
     },
     // 선택된 주차의 데이터를 API에서 가져오는 함수
     async fetchWeeklyDetails() {
-      if (!this.selectedWeek) return;
+    // selectedWeek가 없을 때 오늘 기준으로 주차를 설정하고 데이터를 불러옴
+  if (!this.selectedWeek) {
+    const today = new Date();
+    this.selectedWeek = this.getISOWeekNumber(today); // 현재 주차로 설정
+    console.log('selectedWeek가 없어 현재 주차를 설정: ', this.selectedWeek);
+  }
 
-      try {
-        const weekNumber = this.selectedWeek.replace('주차', ''); // '1주차' 같은 값을 숫자로 변환
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/weekly`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          params: {
-            year: new Date().getFullYear(),
-          },
-        });
+  try {
+    const weekNumber = this.selectedWeek; // 숫자로 전송
+    console.log('Fetching data for week: ', weekNumber);
 
-        const weekData = response.data.find(week => week.weekNumber == weekNumber);
-        if (weekData) {
-          this.attendanceData = weekData.days;
-        } else {
-          this.attendanceData = {};
-        }
-      } catch (error) {
-        console.error('주차별 데이터를 불러오는 중 오류 발생:', error);
-      }
-      this.emitAttendanceData(); // 데이터 넘기기
-    },
+    const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/weekly`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      params: {
+        year: new Date().getFullYear(),
+        weekNumber: weekNumber, // 숫자 주차 전송
+      },
+    });
+
+    const weekData = response.data.find(week => week.weekNumber === weekNumber);
+    if (weekData) {
+      this.attendanceData = weekData.days;
+      console.log('attendanceData: ', this.attendanceData);
+    } else {
+      console.error('해당 주차에 대한 데이터가 없습니다.');
+      this.attendanceData = {};
+    }
+    this.emitAttendanceData();
+  } catch (error) {
+    console.error('주차별 데이터를 불러오는 중 오류 발생:', error);
+  }
+},
+
 
     async fetchAttendanceData() {
       try {
