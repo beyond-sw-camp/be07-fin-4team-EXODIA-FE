@@ -12,7 +12,8 @@
             <!-- 검색창 및 돋보기 아이콘 -->
             <v-row>
                 <v-col cols="10">
-                    <v-text-field v-model="searchQuery" @input="searchUser" placeholder="부서, 직급, 이름으로 검색"></v-text-field>
+                    <v-text-field v-model="searchQuery" @input="searchUser"
+                        placeholder="부서, 직급, 이름으로 검색"></v-text-field>
                 </v-col>
                 <v-col cols="2">
                     <v-icon @click="searchUser">mdi-magnify</v-icon>
@@ -130,23 +131,15 @@ export default {
                     searchType: "all",
                 };
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
-                this.userList= response.data;
-                console.log("모든 유저 리스트가 나와야한다.");
-                console.log(this.userList);
-
-                //⭐ 애초에 쿼리문에서 거르는게 좋을 거 같다. // 이거 지금 뭔가 이상해...
-                for(let i =0 ; i< this.userList.length ; i++){
-                    if(this.userList[i].userNum == this.chatroomData.userNum){
-                        this.userList.splice(i,1);
-                        break;
-                    }
-                }
+                this.userList = response.data;
+                //⭐ 애초에 쿼리문에서 거르는게 좋을 거 같다.
+                this.userList = this.userList.filter((user) => user.userNum != this.chatroomData.userNum);
             } catch (error) {
                 console.error("유저 검색 중 오류 발생:", error);
             }
         },
 
-        async searchUser() {
+        searchUser() {
             this.loadUserList();
         },
 
@@ -215,6 +208,7 @@ export default {
 .create-container {
     background-color: #f0f0f0;
 }
+
 .select-line {
     border: 0px;
     border-top: 2px solid #000000;

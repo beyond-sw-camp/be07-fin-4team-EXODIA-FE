@@ -89,23 +89,14 @@ export default {
                 };
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
                 this.userList = response.data;
-                console.log("모든 유저 리스트가 나와야한다.");
-                console.log(this.userList);
-
-                //⭐ 애초에 쿼리문에서 거르는게 좋을 거 같다. // 이거 지금 뭔가 이상해...
-                for (let i = 0; i < this.userList.length; i++) {
-                    for (let j = 0; j < this.existChatUsersProp.length; j++) {
-                        if (this.userList[i].userNum == this.existChatUsersProp[j]) {
-                            this.userList.splice(i, 1);
-                        }
-                    }
-                }
+                //⭐ 애초에 쿼리문에서 거르는게 좋을 거 같다.
+                this.userList = this.userList.filter((user) => !this.existChatUsersProp.includes(user.userNum));
             } catch (error) {
                 console.error("유저 검색 중 오류 발생:", error);
             }
         },
 
-        async searchUser() {
+        searchUser() {
             this.loadUserList();
         },
 
