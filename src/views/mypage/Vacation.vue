@@ -20,7 +20,6 @@
                                         <thead>
                                             <tr>
                                                 <th>잔여 휴가</th>
-                                                <th>사용 휴가</th>
                                                 <th>병가</th>
                                                 <th>결근</th>
                                                 <th>근무 일수</th>
@@ -33,14 +32,13 @@
                                         <tbody>
                                             <tr>
                                                 <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
-                                                <td>{{ usedLeave || 'N/A' }}일</td>
                                                 <td>{{ sickLeave || 'N/A' }}일</td>
                                                 <td>{{ absentDays || 'N/A' }}일</td>
                                                 <td>{{ workDays || 'N/A' }}일</td>
-                                                <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
-                                                <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
-                                                <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
-                                                <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
+                                                <td>{{ this.attendanceData.clockInTime || 'N/A' }}</td>
+                                                <td>{{ this.attendanceData.clockOutTime || 'N/A' }}</td>
+                                                <td>{{ this.attendanceData.weeklyWorkHours || 'N/A' }}</td>
+                                                <td>{{ this.attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
