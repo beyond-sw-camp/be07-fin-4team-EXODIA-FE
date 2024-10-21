@@ -322,12 +322,12 @@ thead th {
 
 tbody td {
   padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 2px solid rgba(122, 86, 86, 0.2);
 }
 
 td:first-child {
   font-weight: bold;
-
+  border-right: 2px solid rgba(122, 86, 86, 0.2);
 }
 
 .leave-info-table {
@@ -367,7 +367,7 @@ td:first-child {
   background-color: rgba(122, 86, 86, 0.2);
   font-weight: bold;
   text-align: left;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(122, 86, 86, 0.2);
 }
 
 .custom-table td:first-child {
