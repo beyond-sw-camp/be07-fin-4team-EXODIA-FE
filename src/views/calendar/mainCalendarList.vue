@@ -1,6 +1,6 @@
 <template>
-    <div id="calendar-container">
-      <FullCalendar :options="calendarOptions">
+    <div id="second-calendar-container" class="calendar-container">
+      <FullCalendar :options="secondCalendarOptions">
         <template v-slot:eventContent="arg">
           <div>
             <strong>{{ arg.event.title }}</strong>
@@ -23,7 +23,7 @@ export default {
   },
   data() {
     return {
-      calendarOptions: {
+        secondCalendarOptions: {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: 'timeGridWeek',
         editable: true,  // 드래그 앤 드롭 가능하게 설정
@@ -169,7 +169,7 @@ export default {
     
 </style>
 <style>
-.event-dot {
+#second-calendar-container .event-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -178,7 +178,7 @@ export default {
   margin-right: 5px;
 }
 
-.fc-event {
+#second-calendar-container .fc-event {
   border-radius: 5px;
   font-size: 12px;
   padding: 2px;
@@ -186,22 +186,22 @@ export default {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);  /* 그림자 추가 */
   transition: transform 0.2s;  /* 호버 시 부드럽게 확대 */
 }
-.fc-event:hover {
+#second-calendar-container .fc-event:hover {
   transform: scale(1.03);  /* 호버 시 살짝 확대 */
 }
-.fc-daygrid-event {
+#second-calendar-container .fc-daygrid-event {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* more 기능을 위한 height 조정 */
-.fc-daygrid-day-bottom {
+#second-calendar-container .fc-daygrid-day-bottom {
   margin-top: 5px;
 }
 
 
-#calendar-container {
+#second-calendar-container {
    padding: 30px;
    background-color: #f9f9f9;
    border-radius: 10px;
@@ -211,28 +211,28 @@ export default {
 }
 
 
-.user-event {
+#second-calendar-container .user-event {
   background-color: #d0e9ff;
   /* 유저 이벤트는 연한 파란색 */
 }
 
-.department-event {
+#second-calendar-container .department-event {
   background-color: #c0fac0;
   /* 부서 이벤트는 연한 초록색 */
 }
 
-.company-event {
+#second-calendar-container .company-event {
   background-color: #fccccc;
   /* 회사 일정은 연한 빨간색 */
 }
 
 
-.fc-toolbar-title {
+#second-calendar-container .fc-toolbar-title {
     font-size: 14px;
     color: #665f54;
     margin-left: 10px;
 }
-.fc .fc-button {
+#second-calendar-container .fc .fc-button {
     background-color: #f9f9f9;
     color: #665f54;
     border: 1px solid #ddd;
@@ -242,77 +242,86 @@ export default {
     height: 30px;
     width: 30px; 
     display: flex;
+    margin-right: 10px;
     justify-content: center;
     align-items: center;
+    outline: none;
     transition: background-color 0.3s, color 0.3s;  /* 여기가 배경색 수정 부분이니 펼요시 수정 */
 }
-.fc .fc-button.fc-today-button {
+
+#second-calendar-container .fc .fc-button:focus {
+    outline: none;
+}
+#second-calendar-container .fc .fc-button.fc-today-button {
     padding: 5px 15px;
     font-size: 12px;
     border-radius: 20px;
     height: 30px;
     width: auto;
+    
 }
-.fc-toolbar {
+#second-calendar-container .fc-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
+    
 }
-.fc-toolbar .fc-button:hover {
+#second-calendar-container .fc-toolbar .fc-button:hover {
    background-color: #cbc2b6;
    color: white;
+   outline: none;
 }
-.fc .fc-button.fc-today-button:hover {
+#second-calendar-container .fc .fc-button.fc-today-button:hover {
     background-color: #cbc2b6;
     border-style: none;
     color: white;
 }
 
-.fc-toolbar-chunk {
+#second-calendar-container .fc-toolbar-chunk {
     display: flex;
     align-items: center;
 }
 
 
 /* 오늘 날 표시 */
-.fc-timegrid-slot {
+#second-calendar-container .fc-timegrid-slot {
    background-color: #fff;
    border-bottom: 1px solid #ddd;
 }
-.v-dialog {
+#second-calendar-container .v-dialog {
   max-width: 500px;
   border-radius: 10px;
 }
 
-.v-card-title {
+#second-calendar-container .v-card-title {
   font-weight: bold;
   font-size: 16px;
   color: #333;
 }
 
-.v-text-field input {
+#second-calendar-container .v-text-field input {
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ddd;
 }
 
-.v-btn {
+#second-calendar-container .v-btn {
   border-radius: 5px;
   padding: 10px 20px;
 }
-.fc-event-dragging, .fc-event-resizing {
+#second-calendar-container .fc-event-dragging, .fc-event-resizing {
   opacity: 0.7;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
 }
-.fc-timegrid-axis-cushion {
+#second-calendar-container .fc-timegrid-axis-cushion {
   font-size: 10px;  /* 글씨를 작게 */
   color: #666;  /* 글씨 색을 회색으로 */
   padding: 2px;  /* 여백을 줄여 더 간결하게 */
 }
 
 /* 시간 라벨 추가 조정 */
-.fc-timegrid-slot-label {
+#second-calendar-container .fc-timegrid-slot-label {
   font-size: 11px;
   font-weight: 500;
   color: #444;
@@ -320,19 +329,21 @@ export default {
   background-image: linear-gradient(135deg, #f0f4f8, #f9f9f9); /* 여기가 배경색 수정 부분이니 펼요시 수정 */
 }
 
-#calendar-container ::-webkit-scrollbar {
+#second-calendar-container ::-webkit-scrollbar {
   width: 12px;
 }
-#calendar-container ::-webkit-scrollbar-track {
+#second-calendar-container ::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 10px;
 }
-#calendar-container ::-webkit-scrollbar-thumb {
+#second-calendar-container ::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 10px;
   border: 2px solid #f1f1f1;
 }
-#calendar-container ::-webkit-scrollbar-thumb:hover {
+#second-calendar-container ::-webkit-scrollbar-thumb:hover {
   background: #555; 
 }
+
+
 </style>
