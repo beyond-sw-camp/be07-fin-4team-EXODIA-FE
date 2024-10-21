@@ -14,7 +14,7 @@
 import axios from 'axios';
 
 export default {
-    props: ['chatRoomIdProp'],
+    props: ['chatRoomIdProp', 'exit'],
     methods: {
         closeModal() {
             this.$emit('update:dialog', false);
@@ -23,7 +23,7 @@ export default {
         async exitChatRoom() {
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/hardExit/${this.chatRoomIdProp}`);
             console.log(response);
-            this.$emit("exitUserMesssage",response.data.result);
+            this.$emit("exit",response.data.result);
             window.location.href = '/chatRoom/list';
         }
     }

@@ -15,7 +15,7 @@
             <v-col cols="10" class="chat-room-title">
                 <span class="chat-room-name">{{ chatRoomNameProp }}</span>
                 <v-icon id="user-activator" class="user-mini-icon">mdi-account</v-icon>
-                <span class="chat-user-num">{{ chatRoomUserNumsProp.length }}</span>
+                <span class="chat-user-num">{{ chatUserList.length }}</span>
                 <v-menu activator="#user-activator">
                     <v-list>
                         <v-list-item v-for="(user, index) in chatUserList" :key="index">
@@ -55,15 +55,15 @@
         </v-row>
 
         <InviteChatUserModal v-model="inviteUserModal" @update:dialog="inviteUserModal = $event"
-            :chatRoomIdProp="chatRoomId" :existChatUsersProp="chatUserList">
+            @invite="inviteUserMessage" :chatRoomIdProp="chatRoomId" :existChatUsersProp="chatRoomUserNumsProp">
         </InviteChatUserModal>
 
-        <ExitChatRoomModal v-model="exitAlertModal" @update:dialog="exitAlertModal = $event"
+        <ExitChatRoomModal v-model="exitAlertModal" @update:dialog="exitAlertModal = $event" @exit="exitUserMesssage"
             :chatRoomIdProp="chatRoomId">
         </ExitChatRoomModal>
 
         <!-- 채팅 내용 -->
-        <div class="chat-content">
+        <div class="chat-content" id="messageContainer">
             <div v-for="(chat, index) in chatMessageList" :key="chat.id">
                 <!-- 날짜 구분 -->
                 <div v-if="index === 0 || isDifferentDay(chat.createAt, chatMessageList[index - 1].createAt)">
@@ -72,21 +72,21 @@
                     </div>
                 </div>
 
-                <div v-if="chat.messageType=='ENTER'">
+                <div v-if="chat.messageType == 'ENTER'">
                     <div class="date-divider">
                         <span class="date-text">{{ chat.senderName }}님이 입장했습니다.</span>
                     </div>
                 </div>
 
-                <div v-if="chat.messageType=='QUIT'">
+                <div v-if="chat.messageType == 'QUIT'">
                     <div class="date-divider">
                         <span class="date-text">{{ chat.senderName }}님이 퇴장했습니다.</span>
                     </div>
                 </div>
 
                 <!-- 메시지 -->
-                <div  v-if="chat.messageType == 'TALK' || chat.messageType == 'FILE'"
-                 :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
+                <div v-if="chat.messageType == 'TALK' || chat.messageType == 'FILE'"
+                    :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
                     <v-row v-if="chat.senderNum !== chatSenderNum" class="message-row">
                         <span class="sender-name">{{ chat.senderDepName }} {{ chat.senderName }} {{ chat.senderPosName
                             }}님</span>
@@ -192,19 +192,31 @@ export default {
         if (usersResponse.data) {
             this.chatUserList = usersResponse.data.result;
         }
+        this.scrollToBottom();
     },
     mounted() {
         this.connect();
         window.addEventListener('beforeunload', this.leave)
     },
     beforeUnmount() {
-        // disconnect
+        // ⭐⭐⭐ disconnect
         window.removeEventListener('beforeunload', this.leave)
     },
     methods: {
         async leave() {
+            // ⭐⭐⭐ disconnect
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
             console.log(response);
+        },
+        scrollToBottom() {
+            // 메시지 목록을 감싸는 컨테이너 찾기
+            const container = document.getElementById('messageContainer');
+            if (container) {
+                // 잠시 딜레이를 주고 스크롤을 최하단으로 이동
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 100);
+            }
         },
         connect() {
             if (this.stompClient && this.stompClient.connected) { return; } // 연결확인
@@ -217,6 +229,7 @@ export default {
                     console.log("frame : " + frame);
                     console.log("Connected to WebSocket");
                     this.stompClient.subscribe(`/topic/chat/room/${this.chatRoomId}`, (message) => {
+                        this.scrollToBottom();
                         const receivedMessage = JSON.parse(message.body);
                         this.chatMessageList.push(receivedMessage);
                     });
@@ -226,6 +239,7 @@ export default {
                     setTimeout(() => this.connect(), 5000);  // 재연결 시도
                 }
             )
+            this.scrollToBottom();
         },
 
         async sendMessage() {
@@ -273,7 +287,7 @@ export default {
                 this.messageToSend = ''; // 입력 필드 초기화
                 this.fileList = []; // 빈 배열로 초기화
                 this.fileRes = null;
-
+                this.scrollToBottom();
             } else {
                 console.error('WebSocket unconnected');
                 setTimeout(() => this.connect(), 5000);
@@ -361,7 +375,7 @@ export default {
         },
 
         async goBack() {
-            // disconnect
+            // ⭐⭐⭐ disconnect
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
             console.log(response);
             window.location.href = '/chatRoom/list';
@@ -374,8 +388,7 @@ export default {
             this.inviteUserModal = true;
         },
 
-        inviteUserMessage(inviteUserData) {
-            console.log("들어가니");
+        async inviteUserMessage(inviteUserData) {
             const messageReq = {
                 senderNum: inviteUserData,
                 roomId: this.chatRoomId,
@@ -385,6 +398,10 @@ export default {
             };
             if (this.stompClient && this.stompClient.connected) {
                 this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
+            }
+            const usersResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/chatUsers/${this.chatRoomId}`);
+            if (usersResponse.data) {
+                this.chatUserList = usersResponse.data.result;
             }
         },
 

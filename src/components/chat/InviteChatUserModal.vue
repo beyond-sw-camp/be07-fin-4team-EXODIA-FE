@@ -7,30 +7,31 @@
                 </v-col>
             </v-row>
 
-            <!-- ⭐⭐⭐ 검색창 및 돋보기 아이콘 -->
+            <!-- 검색창 및 돋보기 아이콘 -->
             <v-row>
                 <v-col cols="10">
-                    <v-text-field v-model="searchQuery" placeholder="부서, 이름, 사번으로 검색"></v-text-field>
+                    <v-text-field v-model="searchQuery" @input="searchUser"
+                        placeholder="부서, 직급, 이름으로 검색"></v-text-field>
                 </v-col>
                 <v-col cols="2">
                     <v-icon @click="searchUser">mdi-magnify</v-icon>
                 </v-col>
             </v-row>
 
-            <!-- 검색된 유저 리스트  ⭐⭐⭐ 자기자신 빼고. -->
+            <!-- 검색된 유저 리스트 -->
             <v-row v-for="(userInfos, index) in userList" :key="index">
                 <v-col cols="8">
                     <span>{{ userInfos.name }}</span>
                 </v-col>
                 <v-col cols="2">
-                    <v-btn icon @click="addUser(userInfos)">
-                        <v-icon>mdi-plus</v-icon>
-                    </v-btn>
+                    <v-icon @click="addUser(userInfos)">mdi-plus</v-icon>
                 </v-col>
             </v-row>
 
             <div v-if="selectUser !== null">
-                <span>------------------------------------------------</span>
+                <br>
+                <hr class="select-line" />
+                <br>
             </div>
 
             <v-row v-if="selectUser !== null">
@@ -38,9 +39,7 @@
                     <span>{{ selectUser.name }}</span>
                 </v-col>
                 <v-col cols="2">
-                    <v-btn icon @click="removeUser()">
-                        <v-icon>mdi-minus</v-icon>
-                    </v-btn>
+                    <v-icon @click="removeUser()">mdi-minus</v-icon>
                 </v-col>
             </v-row>
 
@@ -60,13 +59,13 @@
 import axios from 'axios';
 
 export default {
-    props: ['chatRoomIdProp','existChatUsersProp'],
+    props: ['chatRoomIdProp', 'existChatUsersProp', 'invite'],
     data() {
         return {
             chatRoomId: null,
             searchQuery: "", // 유저 선택 검색어
 
-            userList: [], // 사원
+            userList: [], // 사원 목록
             selectUser: null, // 선택한 사원
 
             inviteChatUserData: {
@@ -83,14 +82,30 @@ export default {
 
     methods: {
         async loadUserList() {
-            const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`);
-            console.log(response);
-            this.userList = response.data;
-            // 자기자신 제외하는 인원리스트 가져오는 거 백단에서 +서치 붙여서 만들기.
-            
+            try {
+                const params = {
+                    search: this.searchQuery,
+                    searchType: "all",
+                };
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
+                this.userList = response.data;
+                console.log("모든 유저 리스트가 나와야한다.");
+                console.log(this.userList);
+
+                //⭐ 애초에 쿼리문에서 거르는게 좋을 거 같다. // 이거 지금 뭔가 이상해...
+                for (let i = 0; i < this.userList.length; i++) {
+                    for (let j = 0; j < this.existChatUsersProp.length; j++) {
+                        if (this.userList[i].userNum == this.existChatUsersProp[j]) {
+                            this.userList.splice(i, 1);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("유저 검색 중 오류 발생:", error);
+            }
         },
 
-        searchUser() {
+        async searchUser() {
             this.loadUserList();
         },
 
@@ -102,15 +117,17 @@ export default {
         },
 
         async inviteChatUser() {
+            // ⭐ 중복인원이 있는 채팅방을 초대로 만들 수 있다...
             this.inviteChatUserData.roomId = this.chatRoomId;
             this.inviteChatUserData.inviteUserNum = this.selectUser.userNum;
             const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/invite`, this.inviteChatUserData);
-            console.log(response);
-            this.$emit("inviteUserMessage",response.data.result);
+            this.$emit("invite", response.data.result);
+            this.selectUser = null;
             this.$emit('update:dialog', false);
         },
 
         closeModal() {
+            this.selectUser = null;
             this.$emit('update:dialog', false);
         }
 
@@ -121,5 +138,10 @@ export default {
 <style scoped>
 .invite-container {
     background-color: #f0f0f0;
+}
+
+.select-line {
+    border: 0px;
+    border-top: 2px solid #000000;
 }
 </style>

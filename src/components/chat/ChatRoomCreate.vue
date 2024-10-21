@@ -9,17 +9,17 @@
                 </v-col>
             </v-row>
 
-            <!-- ⭐⭐⭐ 검색창 및 돋보기 아이콘 -->
+            <!-- 검색창 및 돋보기 아이콘 -->
             <v-row>
                 <v-col cols="10">
-                    <v-text-field v-model="searchQuery" placeholder="부서, 이름, 사번으로 검색"></v-text-field>
+                    <v-text-field v-model="searchQuery" @input="searchUser" placeholder="부서, 직급, 이름으로 검색"></v-text-field>
                 </v-col>
                 <v-col cols="2">
                     <v-icon @click="searchUser">mdi-magnify</v-icon>
                 </v-col>
             </v-row>
 
-            <!-- 검색된 유저 리스트  ⭐⭐⭐ 자기자신 빼고. -->
+            <!-- 검색된 유저 리스트-->
             <v-row v-for="(userInfos, index) in userList" :key="index" class="user-row">
                 <!-- <v-col cols="2">
                     <v-avatar>
@@ -37,7 +37,9 @@
             </v-row>
 
             <div v-if="selectUser.length !== 0">
-                <span>------------------------------------------------</span>
+                <br>
+                <hr class="select-line" />
+                <br>
             </div>
 
             <!-- 선택된 유저 리스트 -->
@@ -123,21 +125,28 @@ export default {
     methods: {
         async loadUserList() {
             try {
-                // const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`, {
-                //     params: {
-                //         ...{ searchName: this.searchQuery } )
-                //     }
-                // });
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`);
-                console.log(response);
-                this.userList = response.data;
-                // 자기자신 제외하는 인원리스트 가져오는 거 백단에서 +서치 붙여서 만들기. 
-            } catch (e) {
-                console.error('사원 목록 조회 실패', e);
+                const params = {
+                    search: this.searchQuery,
+                    searchType: "all",
+                };
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
+                this.userList= response.data;
+                console.log("모든 유저 리스트가 나와야한다.");
+                console.log(this.userList);
+
+                //⭐ 애초에 쿼리문에서 거르는게 좋을 거 같다. // 이거 지금 뭔가 이상해...
+                for(let i =0 ; i< this.userList.length ; i++){
+                    if(this.userList[i].userNum == this.chatroomData.userNum){
+                        this.userList.splice(i,1);
+                        break;
+                    }
+                }
+            } catch (error) {
+                console.error("유저 검색 중 오류 발생:", error);
             }
         },
 
-        searchUser() {
+        async searchUser() {
             this.loadUserList();
         },
 
@@ -145,7 +154,7 @@ export default {
             this.selectUser.splice(index, 1);
         },
         addUser(userInfos) {
-            if(this.selectUser.indexOf(userInfos) != -1){
+            if (this.selectUser.indexOf(userInfos) != -1) {
                 alert("이미 선택한 유저입니다.");
                 return;
             }
@@ -163,7 +172,7 @@ export default {
 
         async createChatRoom() {
             try {
-                if(this.chatroomData.roomName.trim() === ''){
+                if (this.chatroomData.roomName.trim() === '') {
                     alert("채팅방명을 작성해주세요.");
                     return;
                 }
@@ -174,13 +183,13 @@ export default {
                     alert("이미 존재하는 채팅방입니다.");
                     this.$emit('update:dialog', false);
                     this.$emit('update:check', true);
-                    window.location.href='/chatRoom/list';
+                    window.location.href = '/chatRoom/list';
                     // window.location.reload('/chatRoom/list');
                 } else {
                     alert("채팅방이 생성 성공");
                     this.$emit('update:dialog', false);
                     this.$emit('update:check', true);
-                    window.location.href='/chatRoom/list';
+                    window.location.href = '/chatRoom/list';
                 }
             } catch (e) {
                 console.error("채팅방 생성 실패", e);
@@ -205,5 +214,9 @@ export default {
 <style scoped>
 .create-container {
     background-color: #f0f0f0;
+}
+.select-line {
+    border: 0px;
+    border-top: 2px solid #000000;
 }
 </style>
