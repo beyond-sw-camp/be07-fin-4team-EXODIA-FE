@@ -66,11 +66,11 @@ meetReservation
           <div v-for="slot in timeSlots" :key="slot" class="timeline-bar">
             <v-progress-linear
               height="50"
-              :color="getTimeColor(room.id, slot)"
+              :color="isReserved(room.id, slot) ? 'blue darken-2' : 'white'"
               class="timeline-progress"
               :value="100"
               @click="handleSlotClick(room.id, slot)"
-              style="width: 100%; padding: 0; margin: 0;"
+              style="width: 100%; padding: 0; margin: 0; opacity: 1 !important; background-color: none;"
             ></v-progress-linear>
           </div>
         </v-row>
@@ -381,7 +381,7 @@ export default {
       });
     },
     getTimeColor(roomId, timeSlot) {
-      return this.isReserved(roomId, timeSlot) ? "blue" : "#f5f5f5";
+      return this.isReserved(roomId, timeSlot) ? "blue darken-2 !important" : "white";
     },
     displayHourLabel(hour, index) {
       return index % 2 === 0 ? parseInt(hour, 10) : '';
@@ -511,12 +511,13 @@ export default {
   height: 50px;
   border: 1px solid #B9B9B9;
   margin: 0;
-  opacity: 0.7;
+  /* opacity: 0.7; */
 }
 
 .v-progress-linear {
   height: 50px;
   padding: 0;
+  opacity: 1 !important;
 }
 
 .reserved-slot {
