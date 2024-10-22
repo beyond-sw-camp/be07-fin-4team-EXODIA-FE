@@ -47,7 +47,7 @@
                             <v-list-item-title>
                                 <v-icon>mdi-exit-to-app</v-icon>
                                 채팅방 나가기
-                            </v-list-item-title> <!--모달창 뜨게 해라.-->
+                            </v-list-item-title>
                         </v-list-item>
                     </v-list>
                 </v-menu>
@@ -125,15 +125,15 @@
                 <p class="custom-contents">{{ file.name }}</p>
             </div>
         </div>
-        <!-- 채팅 입력 -->
+        <!-- 채팅 입력-->
         <v-container class="input-container">
-            <v-row>
-                <v-text-field class="input-field" v-model="messageToSend" @keydown.shift.enter="newLine"
-                    v-on:keypress.enter="sendMessage"></v-text-field>
+            <v-row> <!--v-on:keypress.enter="sendMessage" auto-grow @keydown.shift.enter="insertNewLine"-->
+                <v-textarea class="input-field" v-model="messageToSend" outlined 
+                v-on:keypress.enter="sendMessage"></v-textarea>
             </v-row>
-            <v-row class="file-input-container">
-                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input
-                    prepend-icon="mdi-paperclip"></v-file-input>
+            <v-row ><!-- class="file-input-container"-->
+                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input prepend-icon="mdi-paperclip"
+                    class="file-input-icon-left"></v-file-input>
                 <v-btn class="send-btn" @click="sendMessage">전송</v-btn>
             </v-row>
         </v-container>
@@ -199,12 +199,15 @@ export default {
         window.addEventListener('beforeunload', this.leave)
     },
     beforeUnmount() {
-        // ⭐⭐⭐ disconnect
         window.removeEventListener('beforeunload', this.leave)
     },
     methods: {
         async leave() {
-            // ⭐⭐⭐ disconnect
+            if (this.stompClient && this.stompClient.connected) {
+                this.stompClient.disconnect(() => {
+                    console.log('WebSocket disconnected');
+                });
+            }
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
             console.log(response);
         },
@@ -242,16 +245,8 @@ export default {
             this.scrollToBottom();
         },
 
-        newLine(event) {
-            const textarea = event.target;
-            const cursorPosition = textarea.selectionStart;
-            this.messageToSend =
-                this.messageToSend.slice(0, cursorPosition) + '\n' + this.messageToSend.slice(cursorPosition);
-
-            // Move cursor after the new line
-            this.$nextTick(() => {
-                textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
-            });
+        insertNewLine() {
+            this.messageToSend += '\n'; // 현재 입력된 텍스트에 줄바꿈을 추가
         },
 
         async sendMessage() {
@@ -387,7 +382,11 @@ export default {
         },
 
         async goBack() {
-            // ⭐⭐⭐ disconnect
+            if (this.stompClient && this.stompClient.connected) {
+                this.stompClient.disconnect(() => {
+                    console.log('WebSocket disconnected');
+                });
+            }
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
             console.log(response);
             window.location.href = '/chatRoom/list';
@@ -497,7 +496,10 @@ export default {
 .chat-content {
     flex: 1;
     padding: 10px;
-    /* height: calc(100vh - 150px); */
+    max-height: calc(100vh - 150px);
+    /* 화면의 상단 영역을 침범하지 않도록 높이 제한 */
+    padding-top: 10px;
+    /* 적절한 padding 추가 */
     height: 400px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -555,6 +557,7 @@ export default {
     border-radius: 10px;
     max-width: 60%;
     display: inline-block;
+    white-space: pre-wrap;
 }
 
 .my-row {
@@ -618,11 +621,11 @@ export default {
     width: 100%;
     height: 60px;
     /* height: 100px; */
-    padding: 10px;
+    /* padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
     resize: none;
-    font-size: 1rem;
+    font-size: 1rem; */
 }
 
 .file-input-container {
@@ -630,6 +633,11 @@ export default {
     display: flex;
     justify-content: flex-start;
     /* 파일 전송 아이콘을 왼쪽 정렬 */
+}
+
+.file-input-icon-left .v-input__prepend-inner {
+    justify-content: flex-start;
+    /* 아이콘을 왼쪽으로 정렬 */
 }
 
 .send-btn {
