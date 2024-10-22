@@ -32,8 +32,8 @@
                                         <tbody>
                                             <tr>
                                                 <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
-                                                <td>{{ sickLeave || 'N/A' }}일</td>
-                                                <td>{{ absentDays || 'N/A' }}일</td>
+                                                <td>{{ this.userProfile.sickDay }}일</td>
+                                                <td>{{ this.userProfile.absentDay }}일</td>
                                                 <td>{{ workDays || 'N/A' }}일</td>
                                                 <td>{{ this.attendanceData.clockInTime || 'N/A' }}</td>
                                                 <td>{{ this.attendanceData.clockOutTime || 'N/A' }}</td>
@@ -87,10 +87,6 @@ export default {
             activeTab: 0,
             userProfile: {},
             workDays: null, // 근무 일수
-            usedLeave: 0, // 사용된 휴가
-            sickLeave: 0, // 병가
-            absentDays: 0, // 결근일수
-            flexWork: '8-5', // 유연 근무제 정보
             attendanceData: {
                 clockInTime: null,
                 clockOutTime: null,
@@ -140,11 +136,6 @@ export default {
                     console.log('Work Days : ', this.workDays);
                 }
 
-
-                // 여기서 추가적인 데이터를 설정할 수 있음 (병가, 결근 등)
-                this.sickLeave = this.userProfile.sickLeave || 0;
-                this.usedLeave = this.userProfile.usedLeave || 0;
-                this.absentDays = this.userProfile.absentDays || 0;
 
                 // this.attendanceData.clockInTime = this.userProfile.attendanceData?.clockInTime
                 //     ? moment(this.userProfile.attendanceData.clockInTime).format('HH:mm:ss')
