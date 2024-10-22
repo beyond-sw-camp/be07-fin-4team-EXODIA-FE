@@ -21,8 +21,8 @@
                                 <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">상태</td>
                                 <td style="width:70%;">
                                     <v-chip class="d-inline-flex align-center" v-bind:class="{
-                                        'chip-reject': selectedSubmit.submitStatus === 'REJECT',
-                                        'chip-accept': selectedSubmit.submitStatus === 'ACCEPT'
+                                        'chip-reject': selectedSubmit.submitStatus === '반려',
+                                        'chip-accept': selectedSubmit.submitStatus === '승인'
                                     }">{{ selectedSubmit.submitStatus }}</v-chip>
                                 </td>
                             </tr>
@@ -53,8 +53,8 @@
                                         {{ submitLines.length - index }}차 결재자:
                                         {{ dto.userName }} {{ dto.positionName }}
                                         <v-chip class="d-inline-flex align-center" v-bind:class="{
-                                            'chip-reject': dto.submitStatus === 'REJECT',
-                                            'chip-accept': dto.submitStatus === 'ACCEPT'
+                                            'chip-reject': dto.submitStatus === '반려',
+                                            'chip-accept': dto.submitStatus === '승인'
                                         }">{{ dto.submitStatus }}</v-chip>
                                     </v-col>
                                 </td>
@@ -75,16 +75,16 @@
 
 
     <!-- 승인 거절 -->
-    <v-row v-if="selectedSubmit.submitStatus === 'WAITING' && isMySubmitReq == 'false'" class="approveOrReject"
+    <v-row v-if="selectedSubmit.submitStatus === '대기중' && isMySubmitReq == 'false'" class="approveOrReject"
         justify="end">
         <v-col cols="1">
-            <v-btn value="REJECT" v-model="approvalStatus" style="border-color:#722121;" @click="
-                handleApprovalChange('REJECT')">
+            <v-btn value="반려" v-model="approvalStatus" style="border-color:#722121;" @click="
+                handleApprovalChange('반려')">
                 반려
             </v-btn>
         </v-col>
         <v-col cols="1">
-            <v-btn value="ACCEPT" v-model="approvalStatus" style="background-color:#722121; color:#ffffff;"
+            <v-btn value="승인" v-model="approvalStatus" style="background-color:#722121; color:#ffffff;"
                 @click="confirmApprove()">
                 승인
             </v-btn>
@@ -166,7 +166,7 @@ export default {
             }
         },
         async submitDecision() {
-            if (this.approvalStatus === 'REJECT' && !this.reason) {
+            if (this.approvalStatus === '반려' && !this.reason) {
                 alert('반려 사유를 작성하세요');
                 return;
             }
@@ -175,7 +175,7 @@ export default {
             const submitData = {
                 submitId: this.submitId,
                 status: this.approvalStatus,
-                reason: this.approvalStatus === 'REJECT' ? this.reason : null
+                reason: this.approvalStatus === '반려' ? this.reason : null
             };
             console.log(submitData);
 
@@ -195,8 +195,8 @@ export default {
             return new Date(date).toLocaleTimeString();
         },
         handleApprovalChange(value) {
-            this.approvalStatus = 'REJECT';
-            if (value === 'REJECT') {
+            this.approvalStatus = '반려';
+            if (value === '반려') {
                 this.isRejectReasonDialogVisible = true;
             }
         },
@@ -220,7 +220,7 @@ export default {
         confirmApprove() {
             const isConfirmed = window.confirm("결재 문서를 승인하시겠습니까?");
             if (isConfirmed) {
-                this.approvalStatus = 'ACCEPT';
+                this.approvalStatus = '승인';
                 this.submitDecision();
             }
         }

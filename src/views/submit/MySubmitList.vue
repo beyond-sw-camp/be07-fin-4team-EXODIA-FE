@@ -35,8 +35,8 @@
                     <v-col cols="4">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime) }}</v-col>
                     <v-col cols="2" class="d-flex justify-center align-center">
                         <v-chip class="d-flex justify-center align-center" v-bind:class="{
-                            'chip-reject': submit.submitStatus === 'REJECT',
-                            'chip-accept': submit.submitStatus === 'ACCEPT'
+                            'chip-reject': submit.submitStatus === '반려',
+                            'chip-accept': submit.submitStatus === '승인'
                         }" style="width: 80px; height: 32px;">{{ submit.submitStatus }}</v-chip>
                     </v-col>
                 </v-row>
