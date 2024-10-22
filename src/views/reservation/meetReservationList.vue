@@ -186,7 +186,7 @@ meetReservation
       <v-dialog v-model="dialogInfo" max-width="400px">
         <v-card v-if="selectedReservation">
           <v-card-title class="headline" style="background-color: #f5f5f5; padding: 20px; font-size: 18px; font-weight: bold;">
-            예약 정보
+            예약정보
           </v-card-title>
           <v-card-text style="padding: 20px;">
             <!-- 프로필 이미지와 예약자 정보 섹션 -->
@@ -212,18 +212,17 @@ meetReservation
               </v-col>
             </v-row>
 
-            <!-- 예약 시간 정보 섹션 -->
-            <v-divider class="my-4"></v-divider> <!-- 구분선 추가 -->
+            <v-divider class="my-4"></v-divider>
             <v-row>
               <v-col cols="12">
-                <div style="margin-bottom: 10px;"><strong>회의실:</strong> {{ getMeetingRoomName(selectedReservation.meetingRoomId) }}</div>
-                <div style="margin-bottom: 10px;"><strong>시작 시간:</strong> {{ formatDateTime(selectedReservation.startTime) }}</div>
-                <div><strong>종료 시간:</strong> {{ formatDateTime(selectedReservation.endTime) }}</div>
+                <div style="margin-bottom: 10px; margin-left: -70px;"><strong>회의실</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ getMeetingRoomName(selectedReservation.meetingRoomId) }}</div>
+                <div style="margin-bottom: 10px;"><strong>시작시간</strong> &nbsp;&nbsp;{{ formatDateTime(selectedReservation.startTime) }}</div>
+                <div><strong>종료시간</strong>&nbsp;&nbsp; {{ formatDateTime(selectedReservation.endTime) }}</div>
               </v-col>
             </v-row>
           </v-card-text>
 
-          <v-card-actions style="background-color: #f5f5f5; padding: 15px;">
+          <v-card-actions style="padding: 15px;">
             <v-spacer></v-spacer>
             <v-btn color="primary" @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
           </v-card-actions>
