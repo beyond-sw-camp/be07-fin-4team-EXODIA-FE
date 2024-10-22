@@ -24,12 +24,8 @@
                         <v-list-subheader>경조 종류</v-list-subheader>
                     </v-col>
                     <v-col cols="9">
-                        <v-select 
-                            label="경조사 종류" 
-                            v-model="formData.mainEventType" 
-                            :items="mainEventOptions" 
-                            outlined
-                        ></v-select>
+                        <v-select label="경조사 종류" v-model="formData.mainEventType" :items="mainEventOptions"
+                            outlined></v-select>
                     </v-col>
                 </v-row>
 
@@ -39,12 +35,19 @@
                         <v-list-subheader>가족 관계</v-list-subheader>
                     </v-col>
                     <v-col cols="9">
-                        <v-select 
-                            label="가족 관계" 
-                            v-model="formData.familyRelation" 
-                            :items="filteredFamilyRelationOptions" 
-                            outlined
-                        ></v-select>
+                        <v-select label="가족 관계" v-model="formData.familyRelation" :items="filteredFamilyRelationOptions"
+                            outlined></v-select>
+                    </v-col>
+                </v-row>
+
+                <v-row>
+                    <v-col cols="3">
+                        <v-list-subheader>신청일</v-list-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                        <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
+                            :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
+                            :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
                     </v-col>
                 </v-row>
 
@@ -54,22 +57,15 @@
                         <v-list-subheader>휴가일수</v-list-subheader>
                     </v-col>
                     <v-col cols="9">
-                        <v-text-field 
-                            label="휴가 일수" 
-                            v-model="formData.휴가일수" 
-                            disabled
-                        ></v-text-field>
+                        <v-text-field label="휴가 일수" v-model="formData.휴가일수" disabled></v-text-field>
                     </v-col>
                 </v-row>
 
                 <!-- 게시판 등록 여부 -->
-                <v-row>
-                    <v-checkbox 
-                        v-model="formData.uploadBoard" 
-                        label="게시판에 등록하시겠습니까?"
-                    ></v-checkbox>
+                <!-- 게시판 등록 여부 -->
+                <v-row v-if="showUploadCheckbox">
+                    <v-checkbox v-model="formData.uploadBoard" label="게시판에 등록하시겠습니까?"></v-checkbox>
                 </v-row>
-
             </v-col>
 
             <!-- 결재 라인 -->
@@ -77,13 +73,8 @@
                 <v-card style="background-color: rgba(123, 86, 86, 0.3);">
                     <v-card-title>결재 라인</v-card-title>
                     <v-list style="background-color: rgba(123, 86, 86, 0.3);">
-                        <v-list-item 
-                            v-for="user in users.filter(u => u.positionId < this.positionId)" 
-                            :key="user.id"
-                            draggable="true" 
-                            @dragstart="onDragStart(user)" 
-                            class="draggable-item"
-                        >
+                        <v-list-item v-for="user in users.filter(u => u.positionId < this.positionId)" :key="user.id"
+                            draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
                             <v-list-item-content>{{ user.name }}</v-list-item-content>
                         </v-list-item>
                     </v-list>
@@ -91,21 +82,14 @@
                 <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
                     <v-card-text v-if="droppedUsers.length == 0">결재자를 선택하시오.</v-card-text>
                     <v-list>
-                        <v-list-item 
-                            v-for="(droppedUser, index) in droppedUsers" 
-                            :key="droppedUser.id"
-                        >
+                        <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
                             <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
                             <v-icon style="border:none" @click="removeUser(index)">mdi-close</v-icon>
                         </v-list-item>
                     </v-list>
                 </v-card>
                 <v-row class="submitBtn">
-                    <v-btn 
-                        style="background-color:#722121; color:#ffffff;" 
-                        class="mt-8" 
-                        @click="createSubmit"
-                    >
+                    <v-btn style="background-color:#722121; color:#ffffff;" class="mt-8" @click="createSubmit">
                         결재라인 등록
                     </v-btn>
                 </v-row>
@@ -139,7 +123,8 @@ export default {
                 mainEventType: '',
                 familyRelation: '',
                 휴가일수: '',
-                uploadBoard: false, 
+                신청일: '',
+                uploadBoard: false,
             },
             users: [],
             droppedUsers: [],
@@ -154,8 +139,13 @@ export default {
     },
     computed: {
         filteredFamilyRelationOptions() {
-            // 선택된 경조 종류에 따른 가족 관계 필터링
             return this.familyRelationOptions[this.formData.mainEventType] || [];
+        },
+        showUploadCheckbox() {
+            if (this.formData.mainEventType === '출산') {
+                return false;
+            }
+            return this.formData.familyRelation === '본인' || this.formData.mainEventType !== '결혼';
         }
     },
     mounted() {
@@ -166,9 +156,11 @@ export default {
     watch: {
         'formData.mainEventType': function (newValue) {
             this.formData.familyRelation = '';  // 가족 관계 초기화
+            this.formData.uploadBoard = false;
             this.formData.휴가일수 = this.getLeaveDays(newValue, this.formData.familyRelation);
         },
         'formData.familyRelation': function (newValue) {
+            this.formData.uploadBoard = false;
             this.formData.휴가일수 = this.getLeaveDays(this.formData.mainEventType, newValue);
         }
     },
@@ -219,14 +211,13 @@ export default {
                 this.submitCreateData.contents = `{"경조종류": "${this.formData.mainEventType} ${this.formData.familyRelation}"}`;
                 this.submitCreateData.uploadBoard = this.formData.uploadBoard;
 
-                await axios.post('/submit/create', this.submitCreateData, { 
-                    headers: { Authorization: `Bearer ${this.token}` } 
+                await axios.post('/submit/create', this.submitCreateData, {
+                    headers: { Authorization: `Bearer ${this.token}` }
                 });
 
                 console.log(this.submitCreateData);
                 alert("결재 요청이 성공적으로 처리되었습니다.");
                 this.$router.push("/submit/list/my")
-                location.reload();
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }

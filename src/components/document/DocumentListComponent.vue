@@ -33,7 +33,7 @@
     <div v-else :class="{ 'drawer-open': drawer }">
         <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center; ">
             <v-col cols="12">
-                <v-row class="mb-2"
+                <v-row class="mb-2" :class="{ 'drawer-open': drawer }"
                     style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
                     <v-col cols="1"><strong>번호</strong></v-col>
                     <v-col cols="6"><strong>제목</strong></v-col>
@@ -46,7 +46,7 @@
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
                     <v-col cols="6" class="ellipsis-text" style="text-align:start;">{{ document.fileName }}</v-col>
-                    <v-col cols=" 3">{{ formatDate(document.createdAt) }}</v-col>
+                    <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
                     <v-col cols="2">{{ document.userName }}</v-col>
                 </v-row>
             </v-col>
@@ -60,7 +60,7 @@
 
     <!-- 상세 정보 -->
     <v-card>
-        <v-navigation-drawer v-model="drawer" location="right" temporary width="500">
+        <v-navigation-drawer v-model="drawer" location="right" temporary width="700">
             <v-tabs v-model="tab" align-tabs="center" background-color="transparent">
                 <v-tab class="tabs" value="1">상세보기</v-tab>
                 <v-tab class="tabs" value="2" @click="fetchHistory(this.selectedDocument.id)">히스토리</v-tab>
@@ -72,7 +72,7 @@
                     <v-card-title>
                         <v-row class="detailFileName ellipsis-text">{{
                             selectedDocument.fileName
-                            }}</v-row>
+                        }}</v-row>
                     </v-card-title>
                     <v-divider></v-divider>
                     <v-card-text>
@@ -123,51 +123,42 @@
                 <v-tabs-window-item value="2">
                     <v-card-title>
                         <span class="headline">히스토리</span>
-
                         <v-icon class="icon" @click="toggleHistoryVisibility"> {{ showHistory ? 'mdi-chevron-up' :
                             'mdi-chevron-down' }}</v-icon>
                         <v-divider></v-divider>
                     </v-card-title>
 
-                    <v-timeline dense v-if="showHistory" style="margin:10px">
+                    <v-timeline dense v-if="showHistory" style="margin:10px" width="600px">
                         <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
 
-                            <v-card>
+                            <v-card width="250px" style="padding:20px">
                                 <v-row justify="space-between">
-                                    <v-col>
-                                        <v-card-text style="margin-bottom:0; padding:0">
-                                            <div class="fileName">
-                                                <v-icon left>mdi-file-document-outline</v-icon>
-                                                <span class="ellipsis-text">{{ history.fileName }}</span>
-                                            </div>
-                                        </v-card-text>
+                                    <v-col cols="1">
+                                        <v-icon left>mdi-file-document-outline</v-icon>
                                     </v-col>
-                                    <v-col>
-                                        <v-card-actions style=" margin:0;">
-                                            <v-btn small text @click="confirmRevert(history.id)" style="font-size:12px">
-                                                복원
-                                            </v-btn>
-                                        </v-card-actions>
+                                    <v-col cols="10">
+                                        <span class="ellipsis-text-detail">{{ history.fileName }}</span>
                                     </v-col>
                                 </v-row>
+                                <v-row
+                                    style="margin-bottom:0; padding-bottom:0; padding-top:0; padding-left:10px; padding-right:10px">
+                                    <span style="font-size:12px">설명: {{ history.description }}</span>
+                                </v-row>
 
-                                <v-card-text class="userName" style="margin-bottom:5px; padding:0 10px">
+                                <v-row class="user-info">
                                     <v-avatar class="icon">
                                         <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
                                             style="width: 100%; height: 100%; object-fit: cover;" />
                                     </v-avatar>
-                                    <span style="padding:20px; font-size:14px">{{ history.userName }}</span>
-                                </v-card-text>
-
-                                <v-card-text style="margin-bottom:0; padding:10px">
-                                    <div>
-                                        <span>설명: {{ history.description }}</span>
-                                    </div>
-                                </v-card-text>
+                                    <v-col style="padding:20px; font-size:14px">{{ history.userName }}</v-col>
+                                </v-row>
                             </v-card>
 
                             <template v-slot:opposite>
-                                <div class="fileModifiedDate">{{ formatDate(history.updatedAt) }}</div>
+                                <div>{{ formatDate(history.updatedAt) }}</div>
+                                <v-btn @click="confirmRevert(history.id)">
+                                    복원
+                                </v-btn>
                             </template>
                         </v-timeline-item>
                     </v-timeline>
@@ -508,6 +499,17 @@ v-card-title,
     width: 100%;
 }
 
+
+.ellipsis-text-detail {
+    /* 말줄임 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 200px;
+    width: 100%;
+}
+
 .v-tabs-window {
     margin: 50px;
 }
@@ -546,10 +548,10 @@ v-card-title,
     align-content: center;
 }
 
-.addComment {
+
+.user-info {
     display: flex;
     justify-content: center;
     align-content: center;
-
 }
 </style>
