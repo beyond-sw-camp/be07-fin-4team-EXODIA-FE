@@ -40,7 +40,7 @@
                                             {{ key }}: {{ formatDate(value) }}
                                         </div>
                                         <div v-else>
-                                            {{ key }}:{{ value }}
+                                            {{ key }}: {{ value }}
                                         </div>
                                     </v-col>
                                 </td>
@@ -57,6 +57,16 @@
                                             'chip-accept': dto.submitStatus === '승인'
                                         }">{{ dto.submitStatus }}</v-chip>
                                     </v-col>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">
+                                    게시판 등록 여부
+                                </td>
+                                <td style="width:70%;">
+                                    <v-checkbox v-if="selectedSubmit.uploadBoard" :model-value="true"
+                                        disabled></v-checkbox>
+                                    <v-checkbox v-else :model-value="false" disabled></v-checkbox>
                                 </td>
                             </tr>
                         </tbody>
@@ -151,8 +161,9 @@ export default {
                 if (typeof this.selectedSubmit.contents === 'string') {
                     this.selectedSubmit.contents = JSON.parse(this.selectedSubmit.contents);
                 }
-
-                console.log(this.selectedSubmit.contents);
+                console.log("upload: " + this.selectedSubmit.uploadBoard)
+                console.log(this.selectedSubmit.uploadBoard == 'true')
+                console.log(this.selectedSubmit);
             } catch (e) {
                 console.error('결재 상세 정보를 가져오는 중 오류 발생:', e);
             }
@@ -284,5 +295,12 @@ export default {
     border-bottom: 2px solid rgba(122, 86, 86, 0.2);
     border-bottom: 2px solid rgba(122, 86, 86, 0.2);
 
+}
+
+.v-checkbox {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    padding: 0
 }
 </style>
