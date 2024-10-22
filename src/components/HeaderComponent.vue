@@ -18,7 +18,7 @@
         <div v-if="showNotifications" class="notification-dropdown">
           <ul @click.stop>
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
-              <div class="notification-item">
+              <div class="notification-item" @click="handleNotificationClick(notification)">
                 <span>{{ truncatedMessage(notification.message, 20) }}</span>
                 <small>{{ formatDate(notification.createdAt) }}</small>
               </div>
@@ -155,6 +155,24 @@ export default {
     // 알림 페이지로 이동
     goToNotifications() {
       this.$router.push('/notification/notificationList');
+    },
+    handleNotificationClick(notification) {
+      let targetUrl = '';
+
+      // 알림 유형에 따른 URL 설정
+      if (notification.type === '공지사항') {
+        targetUrl = 'http://localhost:8082/board/notice/list';
+      } else if (notification.type === '경조사') {
+        targetUrl = 'http://localhost:8082/board/familyevent/list';
+      } else if (notification.type === '예약') {
+        targetUrl = 'http://localhost:8082/reservation/meetReservationList';
+      } else if (notification.type === '결재') {
+        targetUrl = 'http://localhost:8082/submit/list';
+      } else if (notification.type === '문서') {
+        targetUrl = 'http://localhost:8082/document';
+      }
+
+      window.location.href = targetUrl;  
     },
 
     // 인증 헤더 가져오기
