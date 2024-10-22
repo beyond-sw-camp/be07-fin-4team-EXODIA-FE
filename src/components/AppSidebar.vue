@@ -132,20 +132,14 @@
         <v-row @click="$router.push('/employee-management')">
           직원 목록
         </v-row>
-        <v-row style="font-weight:700; font-size:16px;">
+        <v-row style="font-weight:700; font-size:16px;" @click="$router.push('/salary-management')">
           급여 관리
-        </v-row>
-        <v-row @click="$router.push('/salary-management')">
-          직원 급여 목록
         </v-row>
         <v-row @click="$router.push('/eventList')" style="font-weight:700; font-size:16px;">
           일정 관리
         </v-row>
-        <v-row style="font-weight:700; font-size:16px;">
+        <v-row style="font-weight:700; font-size:16px;" @click="$router.push('/department-management')">
           부서 관리
-        </v-row>
-        <v-row @click="$router.push('/department-management')">
-          부서 조회
         </v-row>
       </div>
     </div>
