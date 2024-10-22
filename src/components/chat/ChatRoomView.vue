@@ -128,7 +128,7 @@
         <!-- 채팅 입력 -->
         <v-container class="input-container">
             <v-row>
-                <v-text-field class="input-field" v-model="messageToSend"
+                <v-text-field class="input-field" v-model="messageToSend" @keydown.shift.enter="newLine"
                     v-on:keypress.enter="sendMessage"></v-text-field>
             </v-row>
             <v-row class="file-input-container">
@@ -240,6 +240,18 @@ export default {
                 }
             )
             this.scrollToBottom();
+        },
+
+        newLine(event) {
+            const textarea = event.target;
+            const cursorPosition = textarea.selectionStart;
+            this.messageToSend =
+                this.messageToSend.slice(0, cursorPosition) + '\n' + this.messageToSend.slice(cursorPosition);
+
+            // Move cursor after the new line
+            this.$nextTick(() => {
+                textarea.selectionStart = textarea.selectionEnd = cursorPosition + 1;
+            });
         },
 
         async sendMessage() {
@@ -604,8 +616,13 @@ export default {
 
 .input-field {
     width: 100%;
+    height: 60px;
     /* height: 100px; */
-    /* 입력 필드 넓이 조정 */
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    resize: none;
+    font-size: 1rem;
 }
 
 .file-input-container {
