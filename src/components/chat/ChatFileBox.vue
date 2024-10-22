@@ -11,7 +11,7 @@
     <div :class="isMyMessage ? 'my-file' : 'other-file'">
         <div v-for="(file, index) in chatFilesProp" :key="index" class="image-container">
             <v-icon color="green" class="download-icon" @click="downloadFile(index)">mdi-download-circle</v-icon>
-            <img :src="file.chatFileUrl" @error="e => e.target.src = require('@/assets/user.png')"
+            <img :src="file.chatFileUrl" @error="e => e.target.src = require('@/assets/file.png')"
                 style="height: 120px; width: 120px; object-fit: cover;">
             <p class="custom-contents">{{ file.chatFileName }}</p>
         </div>
