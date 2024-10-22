@@ -151,6 +151,7 @@ export default {
         }
       } catch (error) {
         console.error('게시글을 불러오는 데 실패했습니다:', error);
+        alert('게시글을 불러오는 데 실패했습니다.');
         this.error = '게시글을 불러오는 데 실패했습니다.';
       }
     },
@@ -171,7 +172,7 @@ export default {
         this.fetchBoardDetail();
       } catch (error) {
         console.error('댓글 작성에 실패했습니다:', error);
-        alert('댓글 작성에 실패했습니다.');
+        alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
       }
     },
     formatDate(date) {
@@ -195,7 +196,7 @@ export default {
           this.$router.push({ name: 'BoardList', params: { category: this.board.category } });
         } catch (error) {
           console.error('게시물 삭제에 실패했습니다:', error);
-          alert('게시물 삭제에 실패했습니다.');
+          alert('게시물 삭제에 실패했습니다. 다시 시도해주세요.');
         }
       }
     },
@@ -217,7 +218,7 @@ export default {
           })
           .catch((error) => {
             console.error("댓글 수정에 실패했습니다:", error);
-            alert("댓글 수정에 실패했습니다.");
+            alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
           });
       }
     },
@@ -230,7 +231,7 @@ export default {
           this.fetchBoardDetail();
         } catch (error) {
           console.error("댓글 삭제에 실패했습니다:", error);
-          alert("댓글 삭제에 실패했습니다.");
+          alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
         }
       }
     },
@@ -238,16 +239,22 @@ export default {
       return fileType.includes('image/');
     },
     downloadFile(fileUrl, fileName) {
-      const link = document.createElement('a');
-      link.href = fileUrl;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('파일 다운로드에 실패했습니다:', error);
+        alert('파일 다운로드에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   }
 };
 </script>
+
 <style scoped>
 .board-container {
   background-color: #f9fafb;

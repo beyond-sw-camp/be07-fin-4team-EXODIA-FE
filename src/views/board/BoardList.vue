@@ -64,10 +64,8 @@
           style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
         >
           <v-col cols="1" class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
-          <v-col cols="8">
-            <div>
-              <span>{{ itemTitle(item) }}</span> <!-- 제목 처리 -->
-            </div>
+          <v-col cols="7" class="title-ellipsis" style="max-width: 80%; display: inline-block;">
+            {{ item.title }}
           </v-col>
           <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
           <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
@@ -152,36 +150,38 @@ export default {
       this.userNum = localStorage.getItem("userNum");
     },
 
+    // 게시글 목록을 서버에서 가져옴
     async fetchBoardItems() {
-    try {
-      const params = {
-        page: this.currentPage - 1,
-        size: this.itemsPerPage,
-        searchType: this.searchType,
-        searchQuery: this.searchQuery || "",
-      };
-      const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory.toLowerCase()}/list`;
-      const response = await axios.get(apiUrl, { params });
-      if (response.data && response.data.result) {
-        const result = response.data.result;
-        this.boardItems = result.content;
-        this.totalPages = result.totalPages;
+      try {
+        const params = {
+          page: this.currentPage - 1,
+          size: this.itemsPerPage,
+          searchType: this.searchType,
+          searchQuery: this.searchQuery || "",
+        };
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory.toLowerCase()}/list`;
+        const response = await axios.get(apiUrl, { params });
 
-        // 콘솔에 받아온 boardItems 항목을 자세히 출력
-        console.log("받아온 boardItems:", JSON.stringify(this.boardItems, null, 2));
+        if (response.data && response.data.result) {
+          const result = response.data.result;
+          this.boardItems = result.content;
+          this.totalPages = result.totalPages;
+
+          console.log("받아온 boardItems:", JSON.stringify(this.boardItems, null, 2));
+        }
+      } catch (error) {
+        console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
+        alert("게시글 목록을 불러오는 중 문제가 발생했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
       }
-    } catch (error) {
-      console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
-    }
-  }
-  ,
+    },
 
-
+    // 페이지 변경
     onPageChange(newPage) {
       this.currentPage = newPage;
       this.fetchBoardItems();
     },
 
+    // 카테고리에 맞는 게시판 제목 설정
     setBoardTitle() {
       if (this.currentCategory.toLowerCase() === "familyevent") {
         this.boardTitle = "경조사";
@@ -192,36 +192,47 @@ export default {
       }
     },
 
+    // 날짜 형식 포맷
     formatDate(date) {
       return new Date(date)
         .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
         .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
         .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
     },
+
+    // 핀 고정된 글 처리
     itemTitle(item) {
       return item.pinned ? '📌 ' + item.title : item.title; 
     },
 
+    // 새 글 작성 시 처리
     createNewPost() {
       if (!this.isAdmin) {
-        alert("관리자만 이 게시판에 글을 작성할 수 있습니다.");
+        alert("관리자만 새 글을 작성할 수 있습니다.");
         return;
       }
       this.$router.push({ name: "BoardCreate", params: { category: this.currentCategory } });
     },
 
-
+    // 게시글 상세 페이지로 이동
     goToDetail(id) {
       this.$router.push({ name: "BoardDetail", params: { id } });
     },
 
+    // 검색 실행
     performSearch() {
-      this.currentPage = 1;
-      this.fetchBoardItems();
+      try {
+        this.currentPage = 1;
+        this.fetchBoardItems();
+      } catch (error) {
+        console.error("검색 중 오류가 발생했습니다:", error);
+        alert("검색 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
     },
   },
 };
 </script>
+
 
 
 
@@ -321,4 +332,12 @@ export default {
   transition: margin-right 0.3s ease;
   margin-right: 200px;
 }
+
+.title-ellipsis {
+  white-space: nowrap; /* 텍스트를 한 줄로 표시 */
+  overflow: hidden;    /* 넘치는 텍스트를 숨김 */
+  text-overflow: ellipsis; /* 넘치는 부분을 '...'로 표시 */
+  display: inline-block; /* 텍스트를 한 줄로 보이게 설정 */
+}
+
 </style>

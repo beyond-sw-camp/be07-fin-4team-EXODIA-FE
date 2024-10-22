@@ -121,7 +121,10 @@
           @click="goToDetail(item.id)"
           style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
           <v-col cols="1" class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
-          <v-col cols="7">{{ item.title }}</v-col>
+          <v-col cols="7" class="title-ellipsis" style="max-width: 100%; display: inline-block;">
+            {{ item.title }}
+          </v-col>
+          
           <v-col cols="2" class="text-center">
             <v-chip :color="item.answeredAt ? 'green' : 'red'" dark small>
               {{ item.answeredAt ? '답변완료' : '미답변' }}
@@ -207,9 +210,7 @@ export default {
 
         if (response.data && response.data.result) {
           const result = response.data.result;
-          console.log(result.content); // 서버로부터 받은 데이터를 확인
           if (result && result.content) {
-            // 상태 값 추가: answeredAt을 기준으로 답변 유무 판단
             this.boardItems = result.content.map(item => ({
               ...item,
               hasAnswer: item.answeredAt !== null, // answeredAt이 존재하면 true
@@ -223,7 +224,8 @@ export default {
       } catch (error) {
         this.boardItems = [];
         this.totalPages = 1;
-        console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
+        console.error("게시글 목록을 불러오는 중 오류가 발생했습니다:", error);
+        alert("게시글 목록을 불러오는 중 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.");
       }
     },
 
@@ -242,9 +244,11 @@ export default {
         this.filteredUsers = [...this.users]; // 초기 상태에서 전체 유저 목록이 보이도록 설정
         this.managers = managers;
       } catch (error) {
-        console.error("유저 또는 매니저 목록을 불러오는 중 오류가 발생했습니다.", error);
+        console.error("유저 및 매니저 목록을 불러오는 중 오류가 발생했습니다:", error);
+        alert("유저 및 매니저 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.");
       }
     },
+    
     // 유저 검색
     async searchUsers() {
       try {
@@ -259,18 +263,22 @@ export default {
           user => !this.managers.some(manager => manager.userNum === user.userNum)
         );
       } catch (error) {
-        console.error("유저 검색 중 오류 발생:", error);
+        console.error("유저 검색 중 오류가 발생했습니다:", error);
+        alert("유저를 검색하는 중 문제가 발생했습니다. 검색어를 확인하고 다시 시도해주세요.");
       }
     },
+    
     // 매니저 관리 모달 열기
     openManagerModal() {
       this.showManagerModal = true;
       this.fetchUsersAndManagers();
     },
+    
     // 매니저 관리 모달 닫기
     closeManagerModal() {
       this.showManagerModal = false;
     },
+    
     // 매니저 추가
     addManager(user) {
       axios
@@ -280,11 +288,14 @@ export default {
           this.managers.push(addedManager);
           this.users = this.users.filter(u => u.userNum !== user.userNum);
           this.filteredUsers = this.filteredUsers.filter(u => u.userNum !== user.userNum);
+          alert("매니저가 성공적으로 추가되었습니다.");
         })
         .catch(error => {
-          console.error("매니저 추가 중 오류 발생:", error);
+          console.error("매니저 추가 중 오류가 발생했습니다:", error);
+          alert("매니저 추가 중 문제가 발생했습니다. 다시 시도해주세요.");
         });
     },
+    
     // 매니저 삭제
     removeManager(manager) {
       axios
@@ -293,39 +304,48 @@ export default {
           this.users.push(manager);
           this.managers = this.managers.filter(m => m.userNum !== manager.userNum);
           this.filteredUsers.push(manager);
+          alert("매니저가 성공적으로 삭제되었습니다.");
         })
         .catch(error => {
-          console.error("매니저 삭제 중 오류 발생:", error);
+          console.error("매니저 삭제 중 오류가 발생했습니다:", error);
+          alert("매니저 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
         });
     },
+    
     // 페이지 변경
     onPageChange(newPage) {
       this.currentPage = newPage;
       this.fetchBoardItems();
     },
+    
     // 게시판 제목 설정
     setBoardTitle() {
       this.boardTitle = "Q&A";
     },
+    
     formatDate(date) {
       return new Date(date)
         .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
         .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
         .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
     },
+    
     // 새 글 작성 페이지로 이동
     createNewPost() {
       this.$router.push({ name: "CreateQuestion" });
     },
+    
     // 게시글 상세 페이지로 이동
     goToDetail(id) {
       this.$router.push({ name: "QnaDetail", params: { id } });
     },
+    
     // 검색 실행
     performSearch() {
       this.currentPage = 1;
       this.fetchBoardItems();
     },
+    
     // 나의 질문 목록으로 이동
     goToMyQuestions() {
       this.$router.push({ name: "UserQuestions" });
@@ -346,6 +366,12 @@ export default {
   font-weight: bold;
   margin-bottom: 120px;
   color: #000000;
+}
+
+.title-ellipsis {
+  white-space: nowrap; /* 텍스트를 한 줄로 표시 */
+  overflow: hidden;    /* 넘치는 텍스트를 숨김 */
+  text-overflow: ellipsis; /* 넘치는 부분을 '...'로 표시 */
 }
 
 .search-form {

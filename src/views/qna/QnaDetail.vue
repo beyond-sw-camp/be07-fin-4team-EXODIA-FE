@@ -120,6 +120,7 @@ export default {
       this.userNum = localStorage.getItem('userNum');
       this.isLoggedIn = !!this.userNum;
       if (!this.userNum) {
+        alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
         this.$router.push('/login');
       }
     },
@@ -130,7 +131,8 @@ export default {
         this.questionDetail = response.data.result;
         this.comments = response.data.result.comments || [];
       } catch (error) {
-        this.error = error.response ? error.response.data.message : '질문 정보를 불러오는 중 오류가 발생했습니다.';
+        this.error = error.response ? error.response.data.message : '질문 정보를 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.';
+        alert(this.error);
       }
     },
     goToEditQuestion() {
@@ -146,7 +148,7 @@ export default {
     },
     async submitComment() {
       if (!this.newCommentContent.trim()) {
-        alert('댓글 내용을 입력하세요.');
+        alert('댓글 내용을 입력해주세요.');
         return;
       }
       const qnaId = this.$route.params.id;
@@ -159,20 +161,21 @@ export default {
         await axios.post(`${process.env.VUE_APP_API_BASE_URL}/comment/create`, newComment);
         this.newCommentContent = '';
         this.fetchQuestionDetail();
+        alert('댓글이 성공적으로 등록되었습니다.');
       } catch (error) {
-        alert('댓글 작성에 실패했습니다.');
+        alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
       }
     },
     async deleteComment(commentId) {
-      if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
+      if (confirm("이 댓글을 삭제하시겠습니까?")) {
         try {
           await axios.get(`${process.env.VUE_APP_API_BASE_URL}/comment/delete/${commentId}`, {
             params: { userNum: this.userNum }
           });
-          alert("댓글이 성공적으로 삭제되었습니다.");
+          alert("댓글이 삭제되었습니다.");
           this.fetchQuestionDetail();
         } catch (error) {
-          this.error = '댓글 삭제에 실패했습니다.';
+          alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.');
         }
       }
     },
@@ -190,9 +193,10 @@ export default {
             this.comments[updatedCommentIndex].content = updatedContent;
             this.comments[updatedCommentIndex].isEdited = true; 
           }
+          alert('댓글이 성공적으로 수정되었습니다.');
         })
         .catch(() => {
-          alert("댓글 수정에 실패했습니다.");
+          alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
         });
       }
     },

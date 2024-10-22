@@ -146,7 +146,7 @@ export default {
 
         if (!userNum) {
           console.warn("userNum 값이 설정되지 않았습니다.");
-          alert("사용자 번호가 설정되지 않았습니다. 로그인을 확인해주세요.");
+          alert("로그인 정보가 확인되지 않습니다. 다시 로그인해주세요.");
           return;
         }
 
@@ -157,14 +157,14 @@ export default {
         const post = response.data.result;
 
         // 게시글 데이터를 Vue 컴포넌트의 상태로 설정
-        this.title = post?.title || ''; // null이나 undefined일 때 빈 문자열 할당
-        this.content = post?.content || ''; // null이나 undefined일 때 빈 문자열 할당
+        this.title = post?.title || ''; 
+        this.content = post?.content || ''; 
         this.currentCategory = post?.category || 'NOTICE';
         this.isPinned = post?.isPinned || false;
         this.existingFiles = post?.files || [];
       } catch (error) {
         console.error("게시글을 불러오는 데 실패했습니다:", error);
-        alert('게시글을 불러오는 데 실패했습니다.');
+        alert('게시글을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
@@ -174,7 +174,7 @@ export default {
         this.tags = response.data.result;
       } catch (error) {
         console.error('태그 목록을 불러오는 데 실패했습니다:', error);
-        alert('태그 목록을 불러오는 데 실패했습니다.');
+        alert('태그 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
     cancel() {
@@ -195,7 +195,7 @@ export default {
     // 새로운 태그 추가하기
     async addNewTag() {
       if (!this.newTagName.trim()) {
-        alert('태그 이름을 입력하세요.');
+        alert('새로운 태그 이름을 입력해주세요.');
         return;
       }
 
@@ -210,7 +210,7 @@ export default {
         this.closeTagModal();
       } catch (error) {
         console.error('태그 추가에 실패했습니다:', error);
-        alert('태그 추가에 실패했습니다.');
+        alert('새 태그를 추가하는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
@@ -233,9 +233,10 @@ export default {
       try {
         await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/tags/delete/${tagId}`);
         this.tags = this.tags.filter(tag => tag.id !== tagId); // 태그 목록에서 삭제
+        alert('태그가 성공적으로 삭제되었습니다.');
       } catch (error) {
         console.error('태그 삭제에 실패했습니다:', error);
-        alert('태그 삭제에 실패했습니다.');
+        alert('태그를 삭제하는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
@@ -267,12 +268,13 @@ export default {
         this.$router.push({ name: 'BoardList', params: { category: this.currentCategory } });
       } catch (error) {
         console.error('게시글을 수정하는 데 실패했습니다:', error);
-        alert('게시글 수정에 실패했습니다.');
+        alert('게시글 수정 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     }
   }
 };
 </script>
+
 
 <style scoped>
 .board-container {
