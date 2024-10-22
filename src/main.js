@@ -47,8 +47,20 @@ axios.interceptors.response.use(
         if (decodedToken.exp < currentTime) {
           localStorage.clear();
           alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
-          router.push('/login'); 
+          router.push('/login').then(() => {
+            window.location.reload();
+          });
+        } else {
+          localStorage.clear();
+          alert('중복 로그인이 감지되었습니다. 강제 로그아웃 됩니다.');
+          router.push('/login').then(() => {
+            window.location.reload();
+          });
         }
+      } else {
+        router.push('/login').then(() => {
+          window.location.reload();
+        });
       }
     }
     return Promise.reject(error);
@@ -63,8 +75,6 @@ app.config.globalProperties.$axios = axios;
 
 app.use(router);
 app.use(store);
-
 app.use(vuetifyInstance);
-
 
 app.mount('#app');

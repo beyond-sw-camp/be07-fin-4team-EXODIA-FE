@@ -1,130 +1,100 @@
 <template>
-  <div class="main-view">
-    <v-container fluid>
-      <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-        <v-tab @click="navigateTab(0)">전사 근태 통계</v-tab>
-        <v-tab @click="navigateTab(1)">프로필</v-tab>
-        <v-tab @click="navigateTab(2)">평가리스트</v-tab>
-        <v-tab @click="navigateTab(3)">오늘의 점심</v-tab>
-        <v-tab @click="navigateTab(4)">인사평가</v-tab>
-      </v-tabs>
+  <v-container fluid>
+    <v-row no-gutters>
+      <v-col cols="12" md="4" class="profile-content">
+        <v-row class="profile-card" style="margin-top: 40px;">
+          <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1" class="profile-img"></v-img>
+        </v-row>
+      </v-col>
 
-      <v-tabs-items v-model="activeTab">
-        <v-tab-item v-if="activeTab === 0">
-          <!-- 전사 근태 통계 -->
-        </v-tab-item>
+      <v-col cols="12" md="7" class="profile-info">
+        <v-row class="info-card">
+          <v-card-text>
+            <table class="custom-table">
+              <tbody>
+                <tr>
+                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">이름</td>
+                  <td style="width:70%;">{{ userProfile?.name || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">사번</td>
+                  <td style="width:70%;">{{ userProfile?.userNum || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">부서명</td>
+                  <td style="width:70%;">{{ userProfile?.departmentName || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">직책</td>
+                  <td style="width:70%;">{{ userProfile?.positionName || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">전화번호</td>
+                  <td style="width:70%;">{{ userProfile?.phone || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">입사일</td>
+                  <td style="width:70%;">{{ userProfile?.joinDate || 'N/A' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </v-card-text>
+        </v-row>
+      </v-col>
+    </v-row>
 
-        <v-tab-item v-if="activeTab === 1">
+    <v-btn @click="openPasswordChangeModal">비밀번호 변경</v-btn>
 
-          <v-row no-gutters>
-            <v-col cols="12" md="4" class="profile-content">
-              <v-row class="profile-card" style="margin-top: 40px;">
-                <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"
-                  class="profile-img"></v-img>
-              </v-row>
-            </v-col>
+    <v-dialog v-model="passwordChangeDialog" persistent max-width="500px">
+      <v-card>
+        <v-card-title class="headline">비밀번호 변경</v-card-title>
 
-            <v-col cols="12" md="7" class="profile-info">
-              <v-row class="info-card">
-                <v-card-text>
-                  <table class="custom-table">
-                    <tbody>
-                      <tr>
-                        <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">
-                          이름</td>
-                        <td style="width:70%;">{{ userProfile?.name || 'N/A' }}</td>
-                      </tr>
-                      <tr>
-                        <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">
-                          사번</td>
-                        <td style="width:70%;">{{ userProfile?.userNum || 'N/A' }}</td>
-                      </tr>
-                      <tr>
-                        <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">부서명</td>
-                        <td style="width:70%;">{{ userProfile?.departmentName || 'N/A' }}</td>
-                      </tr>
-                      <tr>
-                        <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">직책</td>
-                        <td style="width:70%;">{{ userProfile?.positionName || 'N/A' }}</td>
-                      </tr>
-                      <tr>
-                        <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">전화번호</td>
-                        <td style="width:70%;">{{ userProfile?.phone || 'N/A' }}</td>
-                      </tr>
-                      <tr>
-                        <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">입사일</td>
-                        <td style="width:70%;">{{ userProfile?.joinDate || 'N/A' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </v-card-text>
-              </v-row>
-            </v-col>
+        <v-card-text>
+          <v-form ref="passwordForm" v-model="valid">
+            <v-text-field v-model="passwordData.currentPassword" label="현재 비밀번호" type="password" required></v-text-field>
+            <v-text-field v-model="passwordData.newPassword" label="새 비밀번호" type="password" required></v-text-field>
+            <v-text-field v-model="passwordData.confirmNewPassword" label="새 비밀번호 확인" type="password" required></v-text-field>
 
-          </v-row>
-        </v-tab-item>
+            <v-alert v-if="passwordError" type="error" border="top" elevation="2" dense>
+              {{ passwordError }}
+            </v-alert>
+          </v-form>
+        </v-card-text>
 
-        <v-tab-item v-if="activeTab === 2">
-          <!-- 평가리스트 -->
-        </v-tab-item>
-        <v-tab-item v-if="activeTab === 3">
-          <!-- 오늘의 점심 -->
-        </v-tab-item>
-        <v-tab-item v-if="activeTab === 4">
-          <!-- 인사평가 -->
-        </v-tab-item>
-
-      </v-tabs-items>
-    </v-container>
-  </div>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" @click="changePassword">변경</v-btn>
+          <v-btn color="grey" @click="closePasswordChangeModal">취소</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script>
 import axios from 'axios';
-import moment from 'moment'; // 날짜 계산에 사용할 라이브러리
-// import AttendanceRecord from './attendance.vue';
+import moment from 'moment';
 
 export default {
   name: "UserProfile",
-  components: {
-    // AttendanceRecord // 타임라인 컴포넌트 등록
-  },
   data() {
     return {
-      activeTab: 1,
       userProfile: {},
-      workDays: null, // 근무 일수
-      usedLeave: 0, // 사용된 휴가
-      sickLeave: 0, // 병가
-      absentDays: 0, // 결근일수
-      flexWork: '8-5', // 유연 근무제 정보
-      attendanceData: {
-        clockInTime: null,
-        clockOutTime: null,
-        weeklyWorkHours: 0,
-        weeklyOvertimeHours: 0,
+      passwordChangeDialog: false,
+      passwordData: {
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
       },
-      tabs: [
-        { label: "프로필" },
-        { label: "평가리스트" },
-        { label: "오늘의 점심" },
-        { label: "인사평가" },
-        { label: "전사 근태 통계" }
-      ],
-      defaultProfileImage: 'https://via.placeholder.com/150'
+      valid: false,
+      passwordError: '',
+      defaultProfileImage: 'https://via.placeholder.com/150',
     };
   },
   mounted() {
     this.fetchUserProfile();
-    this.fetchTodayAttendance(); //
   },
-
   methods: {
-
-
-    updateAttendanceData(data) {
-      this.attendanceData = data;
-    },
     async fetchUserProfile() {
       try {
         const token = localStorage.getItem('token');
@@ -134,90 +104,49 @@ export default {
             Authorization: `Bearer ${token}`
           }
         });
-
-        console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
-
-        // 입사일로부터 현재까지의 근무일수 계산
-        if (this.userProfile.joinDate) {
-          const joinDate = moment(this.userProfile.joinDate, "YYYY-MM-DD HH:mm:ss.SSSSSS");
-          const currentDate = moment();
-          this.workDays = currentDate.diff(joinDate, 'days'); // 근무 일수 계산
-          console.log('Joindate : ', joinDate);
-          console.log('Work Days : ', this.workDays);
-        }
-
-        // 여기서 추가적인 데이터를 설정할 수 있음 (병가, 결근 등)
-        this.sickLeave = this.userProfile.sickLeave || 0;
-        this.usedLeave = this.userProfile.usedLeave || 0;
-        this.absentDays = this.userProfile.absentDays || 0;
-
-
       } catch (error) {
         console.error('유저 정보 가져오기 실패:', error);
       }
     },
-    async fetchTodayAttendance() {
+    openPasswordChangeModal() {
+      this.passwordChangeDialog = true;
+    },
+    closePasswordChangeModal() {
+      this.passwordChangeDialog = false;
+      this.passwordError = '';
+      this.passwordData = {
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      };
+    },
+    async changePassword() {
+      if (this.passwordData.newPassword !== this.passwordData.confirmNewPassword) {
+        this.passwordError = '새 비밀번호와 비밀번호 확인이 일치하지 않습니다.';
+        return;
+      }
+
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/today`, {
+        const response = await axios.put(`${process.env.VUE_APP_API_BASE_URL}/user/change-password`, {
+          currentPassword: this.passwordData.currentPassword,
+          newPassword: this.passwordData.newPassword
+        }, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
-        const data = response.data.result; // API 응답의 result 부분을 사용
-
-        console.log("Today attendance data:", data); // 로그로 데이터 확인
-
-        // 출퇴근 시간 및 근무시간 바인딩
-        this.attendanceData.clockInTime = data.inTime
-          ? moment(data.inTime).format('HH:mm:ss')
-          : 'N/A';
-        this.attendanceData.clockOutTime = data.outTime
-          ? moment(data.outTime).format('HH:mm:ss')
-          : 'N/A';
-        this.attendanceData.weeklyWorkHours = data.hoursWorked
-          ? data.hoursWorked.toFixed(1) + '(시간)' // 소숫점 .1 자리까지 설정함
-          : 'N/A';
-        this.attendanceData.weeklyOvertimeHours = data.overtimeHours || 'N/A';
-
-        const clockInTime = moment(data.inTime);
-        const clockOutTime = data.outTime ? moment(data.outTime) : moment(); // 퇴근 시간이 없으면 현재 시간 사용
-
-        // 09:00 ~ 18:00 근무 시간 이외의 시간 계산
-        const standardStartTime = moment(clockInTime).set({ hour: 9, minute: 0, second: 0 });
-        const standardEndTime = moment(clockInTime).set({ hour: 18, minute: 0, second: 0 });
-
-        let overtimeHours = 0;
-        if (clockInTime.isBefore(standardStartTime)) {
-          overtimeHours += standardStartTime.diff(clockInTime, 'hours', true); // 출근 시간이 09:00보다 이른 경우 초과 근무 계산
+        if (response.status === 200) {
+          this.$toast.success('비밀번호가 성공적으로 변경되었습니다.');
+          this.closePasswordChangeModal();
+        } else {
+          this.passwordError = '비밀번호 변경에 실패했습니다. 다시 시도해주세요.';
         }
-        if (clockOutTime.isAfter(standardEndTime)) {
-          overtimeHours += clockOutTime.diff(standardEndTime, 'hours', true); // 퇴근 시간이 18:00보다 늦은 경우 초과 근무 계산
-        }
-
-        this.attendanceData.weeklyOvertimeHours = overtimeHours.toFixed(1) + '(시간)'; // 소수점 1자리로 표시
-
       } catch (error) {
-        console.error('오늘의 출퇴근 기록을 가져오는 중 오류 발생:', error);
-      }
-    },
-
-
-    navigateTab(index) {
-      if (index == 0) {
-        this.$router.push('/mypage/vacation');
-      } else if (index === 1) {
-        this.$router.push('/mypage/userProfile');
-      } else if (index === 2) {
-        this.$router.push('/mypage/evalutionFrame');
-      } else if (index === 3) {
-        this.$router.push('/mypage/spinWheel');
-      } else if (index === 4) {
-        this.$router.push('/mypage/evalutionList');
-      } else {
-        this.activeTab = index;
+        console.error(error);
+        this.passwordError = error.response?.data?.message || '비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요.';
       }
     }
   }
