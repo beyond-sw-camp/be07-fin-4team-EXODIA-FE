@@ -315,11 +315,15 @@ export default {
 
 .badge {
   position: absolute;
-  top: -13px;
+  top: -12px;
   background-color: red;
   color: white;
   border-radius: 50%;
-  padding: 4px 8px;
+  width: 23px;
+  height: 23px;
+  justify-content: center;
+  align-items: center;
+  padding: 3px 8px;
   font-size: 0.8rem;
 }
 
