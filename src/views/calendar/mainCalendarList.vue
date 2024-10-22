@@ -100,7 +100,7 @@ export default {
           },
           classNames: [event.type === '유저' ? 'user-event' : event.type === '부서' ? 'department-event' : 'company-event']
         }));
-        this.calendarOptions.events = events;
+        this.secondCalendarOptions.events = events;
       }).catch(error => {
         console.error('이벤트 불러오기 오류:', error);
       });
