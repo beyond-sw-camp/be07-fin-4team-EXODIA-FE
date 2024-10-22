@@ -30,11 +30,11 @@
       <!-- 채팅방리스트 -->
       <div class="icon-item">
         <v-icon class="icon" @click="showChatRoomList">mdi-chat</v-icon>
-        <!-- <span v-if="chatAlarm > 0" class="badge">{{ chatAlarm }}</span> -->
       </div>
 
       <v-avatar class="icon" @click="$router.push('/mypage/vacation')">
-        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
+          style="width: 100%; height: 100%; object-fit: cover;" />
       </v-avatar>
 
 
@@ -56,13 +56,12 @@
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
 
-
 export default {
   name: 'HeaderComponent',
   data() {
     return {
-      unreadCount: 0, // 읽지 않은 알림 개수
-      timeRemaining: 0, // 토큰의 남은 유효기간
+      unreadCount: 0,  // 읽지 않은 알림 개수
+      timeRemaining: 0,  // 토큰의 남은 유효기간
       showNotifications: false,  // 알림 드롭다운 상태
       notifications: [],  // 알림 목록
       eventSource: null,  // SSE 객체
@@ -71,9 +70,8 @@ export default {
     };
   },
   created() {
-    // 컴포넌트 생성 시 읽지 않은 알림 개수를 가져옴
-    this.fetchUnreadCount();
-    this.calculateTokenTimeRemaining();
+    this.fetchUnreadCount();  // 읽지 않은 알림 개수 불러오기
+    this.fetchNotifications();  // 최근 알림 불러오기
     this.calculateTokenTimeRemaining();  // 토큰 유효 시간 계산
     this.initSSE();
   },
@@ -161,7 +159,7 @@ export default {
 
     // 채팅룸 리스트 열기
     showChatRoomList() {
-      window.open("/chatRoom/list", "chatRoomList", "width=480, height=650")
+      window.open("/chatRoom/list", "_blank", "width=480, height=650")
     },
 
     // 로그인 연장

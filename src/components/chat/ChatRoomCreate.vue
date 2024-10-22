@@ -31,9 +31,7 @@
                     <span>{{ userInfos.name }}</span>
                 </v-col>
                 <v-col cols="2">
-                    <v-btn icon @click="addUser(userInfos)">
-                        <v-icon>mdi-plus</v-icon>
-                    </v-btn>
+                        <v-icon @click="addUser(userInfos)">mdi-plus</v-icon>
                 </v-col>
             </v-row>
 
@@ -54,9 +52,7 @@
                     <span>{{ userInfo.name }}</span>
                 </v-col>
                 <v-col cols="2">
-                    <v-btn icon @click="removeUser(index)">
-                        <v-icon>mdi-minus</v-icon>
-                    </v-btn>
+                        <v-icon @click="removeUser(index)">mdi-minus</v-icon>
                 </v-col>
             </v-row>
 
@@ -79,7 +75,7 @@
 
             <v-row>
                 <v-col cols="12">
-                    <v-text-field v-model="chatroomData.roomName" placeholder="채팅방 이름을 입력하세요"></v-text-field>
+                    <v-text-field v-model="chatroomData.roomName" label="채팅방명을 작성해주세요."></v-text-field>
                 </v-col>
             </v-row>
 

@@ -9,8 +9,8 @@
 
             <!-- Search bar-->
             <v-col cols="9">
-                <v-text-field v-model="searchQuery" @input="searchChatRoom" placeholder="채팅방명, 사원이름으로 검색" class="search-bar" solo hide-details
-                    dense></v-text-field>
+                <v-text-field v-model="searchQuery" v-on:keypress.enter="searchChatRoom" @input="searchChatRoom"
+                    placeholder="채팅방명, 사원이름으로 검색" class="search-bar" solo hide-details dense></v-text-field>
             </v-col>
             <v-col cols="1" location="right">
                 <v-icon @click="searchChatRoom">mdi-magnify</v-icon>
@@ -25,7 +25,7 @@
         <!-- Chat room list -->
         <v-list class="chat-room-list" v-if="chatRoomList.length !== 0">
             <v-list-item-group v-for="(chatroom, index) in chatRoomList" :key="chatroom.roomId">
-                <v-list-item >
+                <v-list-item>
                     <!-- ⭐ Profile image -->
                     <!-- <v-list-item-avatar>
             <img :src="chatroom.profileImage" alt="Profile" />
@@ -39,26 +39,22 @@
                     </v-list-item-content>
 
                     <!-- Unread message count -->
-                    <v-badge :content="chatroom.unreadChatNum" color="red" v-if="chatroom.unreadChatNum > 0" class="unread-badge"></v-badge>
+                    <v-badge :content="chatroom.unreadChatNum" color="red" v-if="chatroom.unreadChatNum > 0"
+                        class="unread-badge"></v-badge>
                 </v-list-item>
+                <v-divider></v-divider>
             </v-list-item-group>
         </v-list>
         <v-card-text v-else>채팅방이 없습니다.</v-card-text>
     </v-container>
 
 
-    <ChatRoomView
-     v-if = "chatRoomCheck"
-     @update:dialog="chatRoomCheck=$event"
-     @update:check="chatRoomListCheck=$event"
-     :chatRoomIdProp="chatRoomId"
-     :chatRoomNameProp="chatRoomName"
-     :chatRoomUserNumsProp="chatRoomUserNums">
+    <ChatRoomView v-if="chatRoomCheck" @update:dialog="chatRoomCheck = $event" @update:check="chatRoomListCheck = $event"
+        :chatRoomIdProp="chatRoomId" :chatRoomNameProp="chatRoomName" :chatRoomUserNumsProp="chatRoomUserNums">
     </ChatRoomView>
 
-    <ChatRoomCreate v-if="createChatRoom"
-    @update:dialog="createChatRoom = $event"
-    @update:check="chatRoomListCheck=$event">
+    <ChatRoomCreate v-if="createChatRoom" @update:dialog="createChatRoom = $event"
+        @update:check="chatRoomListCheck = $event">
     </ChatRoomCreate>
 
 </template>
@@ -103,7 +99,7 @@ export default {
                     userNum: this.userNum,
                     searchValue: this.searchQuery
                 };
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/search`, {params});
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/search`, { params });
                 this.chatRoomList = response.data.result || [];
             } catch (e) {
                 console.error('채팅방 목록 조회 실패', e);
@@ -125,7 +121,7 @@ export default {
 
         openCreateChatRoom() { // 채팅방 생성창 열기
             this.createChatRoom = true;
-            this.chatRoomListCheck= false;
+            this.chatRoomListCheck = false;
         },
 
     }
@@ -159,7 +155,7 @@ export default {
     margin-top: 8px;
 }
 
-.chat-room-list-content{
+.chat-room-list-content {
     position: relative;
     cursor: pointer;
 }

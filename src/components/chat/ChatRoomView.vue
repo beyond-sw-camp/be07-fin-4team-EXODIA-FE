@@ -410,6 +410,7 @@ export default {
         },
 
         exitUserMesssage(exitUserData) {
+            // ⭐ 나갔을 때 채팅방 변화
             const messageReq = {
                 senderNum: exitUserData,
                 roomId: this.chatRoomId,
