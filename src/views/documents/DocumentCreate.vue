@@ -30,10 +30,11 @@
                         문서 태그
                     </v-col>
                     <v-col>
-                        <v-select v-model="tagNames" :items="tagOptions" label="태그를 선택하세요" multiple>
+                        <v-select v-model="tagNames" :items="tagOptions" label="태그를 선택하세요" multiple item-text="tagName"
+                            item-value="tagName">
                             <template v-slot:selection="{ item, index }">
                                 <v-chip v-if="index >= 0">
-                                    <span>{{ item.title }}</span>
+                                    <span>{{ item.value }}</span>
                                 </v-chip>
                             </template>
                         </v-select>
@@ -90,7 +91,8 @@ export default {
         async fetchTypes() {
             try {
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/document/list/tags`, { headers: { Authorization: `Bearer ${this.token}` } });
-                this.tagOptions = response.data.result;
+                this.tagOptions = response.data.result.map(tag => tag.tagName);
+
             } catch (e) {
                 console.error('문서 타입 가져오는 중 오류 발생:', e);
             }

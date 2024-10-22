@@ -173,6 +173,7 @@ export default {
         },
         removeUser(index) {
             this.droppedUsers.splice(index, 1);
+            this.submitCreateData.submitUserDtos.splice(index, 1);
         },
         async createSubmit() {
             try {
@@ -181,7 +182,7 @@ export default {
 
                 console.log(this.submitCreateData)
                 alert("결재 요청이 성공적으로 처리되었습니다.")
-                location.reload();
+                this.$router.push("/submit/list/my")
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }

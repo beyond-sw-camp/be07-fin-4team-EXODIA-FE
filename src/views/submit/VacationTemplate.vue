@@ -23,7 +23,7 @@
                         <v-list-subheader>휴가 종류</v-list-subheader>
                     </v-col>
                     <v-col cols="9">
-                        <v-select label="휴가 종류" v-model="formData.휴가종류" :items="vacationOptions" outlined></v-select>
+                        <v-select label="휴가 종류" v-model="formData.휴가종류" :items="vacationOptions" outlined> </v-select>
 
                     </v-col>
                 </v-row>
@@ -34,7 +34,8 @@
                     </v-col>
                     <v-col cols="9">
                         <VueDatePicker locale="ko" v-model="formData.휴가시작일" :type="'date'" format="yyyy-MM-dd"
-                            :min-date="new Date()" :enable-time-picker="false"></VueDatePicker>
+                            :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
+                            :enable-time-picker="false"></VueDatePicker>
                     </v-col>
                 </v-row>
 
@@ -45,7 +46,8 @@
                     </v-col>
                     <v-col cols="9">
                         <VueDatePicker locale="ko" v-model="formData.휴가종료일" :type="'date'" format="yyyy-MM-dd"
-                            :min-date="new Date()" :enable-time-picker="false"></VueDatePicker>
+                            :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
+                            :enable-time-picker="false"></VueDatePicker>
                     </v-col>
                 </v-row>
 
@@ -55,7 +57,7 @@
                     </v-col>
 
                     <v-col cols="9">
-                        <v-text-field label="총 휴가 일수" v-model="formData.총휴가일수"></v-text-field>
+                        <v-text-field label="총 휴가 일수" v-model="formData.총휴가일수" disabled></v-text-field>
                     </v-col>
                 </v-row>
 
@@ -80,6 +82,8 @@
                             draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
                             <v-list-item-content>{{ user.name
                                 }}</v-list-item-content>
+                            <v-list-item-content>{{ user.positionName
+                                }}</v-list-item-content>
                         </v-list-item>
                     </v-list>
                 </v-card>
@@ -103,6 +107,9 @@
 
 </template>
 
+
+
+
 <script>
 import axios from 'axios';
 export default {
@@ -122,9 +129,11 @@ export default {
                 휴가종류: '',
                 휴가시작일: new Date().toISOString().split("T")[0],
                 휴가종료일: new Date().toISOString().split("T")[0],
-                총휴가일수: '',
+                총휴가일수: 0,
                 사유: ''
             },
+            totalLeaveDays: 0,
+
             users: [],
             droppedUsers: [],
             draggedUser: null,
@@ -142,6 +151,17 @@ export default {
         this.fetchDepartment();
         this.fetchUsers();
         this.submitCreateData.submitType = '휴가 신청서';
+    },
+    watch: {
+        'formData.휴가종류'(newVal) {
+            this.calculateDays(newVal);
+        },
+        // 'formData.휴가시작일'(newVal) {
+        //     this.calculateDays(newVal);
+        // },
+        'formData.휴가종료일'(newVal) {
+            this.calculateDays(newVal);
+        }
     },
     methods: {
         async fetchUsers() {
@@ -183,6 +203,7 @@ export default {
         },
         removeUser(index) {
             this.droppedUsers.splice(index, 1);
+            this.submitCreateData.submitUserDtos.splice(index, 1);
         },
         async createSubmit() {
             try {
@@ -191,7 +212,7 @@ export default {
 
                 console.log(this.submitCreateData)
                 alert("결재 요청이 성공적으로 처리되었습니다.")
-                location.reload();
+                this.$router.push("/submit/list/my")
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }
@@ -201,6 +222,41 @@ export default {
         },
         formatLocalTime(date) {
             return new Date(date).toLocaleTimeString();
+        },
+        calculateDays() {
+            console.log("시작: " + this.formData.휴가시작일);
+            const startDate = new Date(this.formData.휴가시작일);
+            const endDate = new Date(this.formData.휴가종료일);
+            let totalDays = 0;
+
+            console.log("alsdfjkasldf")
+
+            // 시작일과 종료일이 유효한 경우만 계산
+            if (startDate && endDate && startDate <= endDate) {
+                // 날짜 차이 계산
+                const dayInMillis = 1000 * 60 * 60 * 24;
+                const totalTime = (endDate - startDate) / dayInMillis;
+
+                // 주말 제외하고 계산
+                for (let i = 0; i <= totalTime; i++) {
+                    const currentDate = new Date(startDate);
+                    currentDate.setDate(startDate.getDate() + i);
+                    const dayOfWeek = currentDate.getDay();
+
+                    // 0: 일요일, 6: 토요일
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                        totalDays++;
+                    }
+                }
+            }
+
+
+            if (this.formData.휴가종류 === '반차') {
+                this.formData.총휴가일수 = totalDays - 0.5;
+            } else {
+                this.formData.총휴가일수 = totalDays;
+            }
+
         }
     }
 }

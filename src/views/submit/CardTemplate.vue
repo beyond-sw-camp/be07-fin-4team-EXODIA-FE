@@ -23,7 +23,8 @@
                     </v-col>
                     <v-col cols="9">
                         <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
-                            :min-date="new Date()" :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
+                            :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
+                            :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
                     </v-col>
                 </v-row>
                 <v-row>
@@ -204,6 +205,7 @@ export default {
         },
         removeUser(index) {
             this.droppedUsers.splice(index, 1);
+            this.submitCreateData.submitUserDtos.splice(index, 1);
         },
         async createSubmit() {
             try {
