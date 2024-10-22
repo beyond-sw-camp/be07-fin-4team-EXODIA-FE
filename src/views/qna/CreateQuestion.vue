@@ -151,6 +151,8 @@ export default {
       showDepartmentGuide: false, // 모달을 표시할지 여부
       departmentsInfo: [], // 각 부서의 설명 정보
       isAdmin: false, // 관리자인지 여부
+      titleMaxLength: 100, // 제목 최대 길이
+      contentMaxLength: 5000, // 내용 최대 길이
     };
   },
   mounted() {
@@ -179,10 +181,9 @@ export default {
         this.showDepartmentGuide = false;
       } catch (error) {
         console.error('부서 설명 저장 중 오류 발생:', error);
-        alert('부서 설명 저장에 실패했습니다.');
+        alert('부서 설명을 저장하는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
-
 
     // 부서 목록과 설명을 불러오는 메서드
     async fetchDepartments() {
@@ -212,6 +213,7 @@ export default {
       } catch (error) {
         console.error('부서 목록을 불러오는 중 오류가 발생했습니다:', error);
         this.departments = []; // 오류 발생 시 빈 배열로 초기화
+        alert('부서 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
@@ -269,6 +271,18 @@ export default {
 
     // 질문 제출 메서드
     async submitQuestion() {
+      // 제목 길이 검증
+      if (this.questionTitle.length > this.titleMaxLength) {
+        alert(`제목은 최대 ${this.titleMaxLength}자까지 작성할 수 있습니다. 현재 ${this.questionTitle.length}자를 입력하셨습니다.`);
+        return;
+      }
+
+      // 내용 길이 검증
+      if (this.questionText.length > this.contentMaxLength) {
+        alert(`내용은 최대 ${this.contentMaxLength}자까지 작성할 수 있습니다. 현재 ${this.questionText.length}자를 입력하셨습니다.`);
+        return;
+      }
+
       if (!this.selectedDepartment) {
         alert('부서를 선택해주세요.');
         return;
@@ -317,7 +331,9 @@ export default {
     },
   },
 };
+
 </script>
+
 
 <style scoped>
 /* 전체 컨테이너 스타일 */
