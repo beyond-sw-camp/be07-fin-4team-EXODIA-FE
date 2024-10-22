@@ -29,6 +29,17 @@
 
                 <v-row>
                     <v-col cols="3">
+                        <v-list-subheader>신청일</v-list-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                        <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
+                            :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
+                            :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
+                    </v-col>
+                </v-row>
+
+                <v-row>
+                    <v-col cols="3">
                         <v-list-subheader>휴가일수</v-list-subheader>
                     </v-col>
                     <v-col cols="9">
@@ -106,6 +117,7 @@ export default {
             formData: {
                 경조종류: '',
                 휴가일수: '',
+                신청일: '',
             },
             users: [],
             droppedUsers: [],
