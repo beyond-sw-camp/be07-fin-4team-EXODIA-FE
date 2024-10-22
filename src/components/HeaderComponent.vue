@@ -15,7 +15,7 @@
         <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
 
         <!-- 알림 목록 -->
-        <div v-if="showNotifications" class="notification-dropdown" >
+        <div v-if="showNotifications" class="notification-dropdown">
           <ul>
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
               <div class="notification-item">
@@ -34,8 +34,9 @@
       </div>
 
       <v-avatar class="icon" @click="$router.push('/mypage/vacation')">
-        <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
-          style="width: 100%; height: 100%; object-fit: cover;" />
+        <!-- <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
+          style="width: 100%; height: 100%; object-fit: cover;" /> -->
+        <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1" class="profile-img"></v-img>
       </v-avatar>
 
 
@@ -68,6 +69,9 @@ export default {
       eventSource: null,  // SSE 객체
       retryCount: 0, // 재연결 시도 횟수
       maxRetryCount: 5, // 최대 재연결 시도 횟수
+      userProfile: {},
+      defaultProfileImage: 'https://via.placeholder.com/150'
+
     };
   },
   created() {
@@ -75,6 +79,7 @@ export default {
     this.fetchNotifications();  // 최근 알림 불러오기
     this.calculateTokenTimeRemaining();  // 토큰 유효 시간 계산
     this.initSSE();
+    this.fetchUserProfile();
   },
   methods: {
     // SSE 연결 설정
@@ -221,6 +226,23 @@ export default {
       }
       return date.toLocaleDateString(); // 유효한 경우 날짜 포맷 반환
     },
+    async fetchUserProfile() {
+      try {
+        const token = localStorage.getItem('token');
+        const userNum = localStorage.getItem('userNum');
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/profile/${userNum}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        console.log('Received User Profile:', response.data);
+        this.userProfile = response.data;
+        console.log(this.userProfile.profileImage);
+      } catch (error) {
+        console.error('유저 정보 가져오기 실패:', error);
+      }
+    },
   },
   computed: {
     formattedTimeRemaining() {
@@ -295,11 +317,14 @@ export default {
   right: 0;
   width: 300px;
   background-color: white;
-  border-radius: 10px; /* 동글동글하게 변경 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 그림자 수정으로 부드럽게 */
+  border-radius: 10px;
+  /* 동글동글하게 변경 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* 그림자 수정으로 부드럽게 */
   z-index: 1001;
   overflow: hidden;
-  border: 1px solid #e0e0e0; /* 경계선 추가 */
+  border: 1px solid #e0e0e0;
+  /* 경계선 추가 */
 }
 
 .notification-dropdown ul {
@@ -312,13 +337,17 @@ export default {
   padding: 15px;
   border-bottom: 1px solid #ddd;
   transition: background-color 0.2s ease-in-out;
-  border-radius: 8px; /* 알림 항목도 동글동글하게 */
-  margin: 5px; /* 간격 추가 */
-  background-color: #f9f9f9; /* 배경색 부드럽게 */
+  border-radius: 8px;
+  /* 알림 항목도 동글동글하게 */
+  margin: 5px;
+  /* 간격 추가 */
+  background-color: #f9f9f9;
+  /* 배경색 부드럽게 */
 }
 
 .notification-item:hover {
-  background-color: #f1f1f1; /* 마우스 호버 시 부드러운 색 변경 */
+  background-color: #f1f1f1;
+  /* 마우스 호버 시 부드러운 색 변경 */
 }
 
 .notification-item small {
@@ -335,11 +364,22 @@ export default {
   text-align: center;
   padding: 10px;
   cursor: pointer;
-  color: #007bff; /* 파란색 강조 */
-  border-radius: 0 0 10px 10px; /* 더보기 버튼도 동글동글 */
+  color: #007bff;
+  /* 파란색 강조 */
+  border-radius: 0 0 10px 10px;
+  /* 더보기 버튼도 동글동글 */
 }
 
 .view-more:hover {
-  background-color: #e0e0e0; /* 호버 시 색상 */
+  background-color: #e0e0e0;
+  /* 호버 시 색상 */
+}
+
+.profile-img {
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin: 0 auto;
 }
 </style>
