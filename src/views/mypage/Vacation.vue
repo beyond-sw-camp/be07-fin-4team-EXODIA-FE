@@ -20,7 +20,6 @@
                                         <thead>
                                             <tr>
                                                 <th>잔여 휴가</th>
-                                                <th>사용 휴가</th>
                                                 <th>병가</th>
                                                 <th>결근</th>
                                                 <th>근무 일수</th>
@@ -33,14 +32,13 @@
                                         <tbody>
                                             <tr>
                                                 <td>{{ userProfile?.annualLeave || 'N/A' }}일</td>
-                                                <td>{{ usedLeave || 'N/A' }}일</td>
                                                 <td>{{ sickLeave || 'N/A' }}일</td>
                                                 <td>{{ absentDays || 'N/A' }}일</td>
                                                 <td>{{ workDays || 'N/A' }}일</td>
-                                                <td>{{ attendanceData.clockInTime || 'N/A' }}</td>
-                                                <td>{{ attendanceData.clockOutTime || 'N/A' }}</td>
-                                                <td>{{ attendanceData.weeklyWorkHours || 'N/A' }}</td>
-                                                <td>{{ attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
+                                                <td>{{ this.attendanceData.clockInTime || 'N/A' }}</td>
+                                                <td>{{ this.attendanceData.clockOutTime || 'N/A' }}</td>
+                                                <td>{{ this.attendanceData.weeklyWorkHours || 'N/A' }}</td>
+                                                <td>{{ this.attendanceData.weeklyOvertimeHours || 'N/A' }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -130,11 +128,7 @@ export default {
                     }
                 });
 
-                console.log('Received User Profile:', response.data);
                 this.userProfile = response.data;
-
-                console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
-                console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
 
                 // 입사일로부터 현재까지의 근무일수 계산
                 if (this.userProfile.joinDate) {
@@ -144,22 +138,6 @@ export default {
                     console.log('Joindate : ', joinDate);
                     console.log('Work Days : ', this.workDays);
                 }
-
-                // 여기서 추가적인 데이터를 설정할 수 있음 (병가, 결근 등)
-                this.sickLeave = this.userProfile.sickLeave || 0;
-                this.usedLeave = this.userProfile.usedLeave || 0;
-                this.absentDays = this.userProfile.absentDays || 0;
-
-                this.attendanceData.clockInTime = this.userProfile.attendanceData?.clockInTime
-                    ? moment(this.userProfile.attendanceData.clockInTime).format('HH:mm:ss')
-                    : 'N/A';
-                this.attendanceData.clockOutTime = this.userProfile.attendanceData?.clockOutTime
-                    ? moment(this.userProfile.attendanceData.clockOutTime).format('HH:mm:ss')
-                    : 'N/A';
-                this.attendanceData.weeklyWorkHours = this.userProfile.attendanceData?.weeklyWorkHours || 'N/A';
-                this.attendanceData.weeklyOvertimeHours = this.userProfile.attendanceData?.weeklyOvertimeHours || 'N/A';
-
-
             } catch (error) {
                 console.error('유저 정보 가져오기 실패:', error);
             }
@@ -175,7 +153,7 @@ export default {
 
                 const data = response.data.result; // API 응답의 result 부분을 사용
 
-                console.log("Today attendance data:", data); // 로그로 데이터 확인
+                // console.log("Today attendance data:", data); // 로그로 데이터 확인
 
                 // 출퇴근 시간 및 근무시간 바인딩
                 this.attendanceData.clockInTime = data.inTime

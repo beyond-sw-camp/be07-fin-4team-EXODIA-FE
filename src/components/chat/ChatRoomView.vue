@@ -14,15 +14,56 @@
             </v-col>
             <v-col cols="10" class="chat-room-title">
                 <span class="chat-room-name">{{ chatRoomNameProp }}</span>
+                <v-icon id="user-activator" class="user-mini-icon">mdi-account</v-icon>
+                <span class="chat-user-num">{{ chatUserList.length }}</span>
+                <v-menu activator="#user-activator">
+                    <v-list>
+                        <v-list-item v-for="(user, index) in chatUserList" :key="index">
+                            <v-list-item-title>{{ user.chatUserDepName }} {{ user.chatUserName }} {{
+                                user.chatUserPosName }}님</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
             </v-col>
             <v-col cols="1" class="header-icons">
                 <!--<v-icon class="icon">mdi-magnify</v-icon>--> <!-- 검색 -->
-                <v-icon class="icon">mdi-dots-vertical</v-icon> <!-- 메뉴 -->
+                <v-icon id="menu-activator" class="icon">mdi-dots-vertical</v-icon> <!-- 메뉴 -->
+                <v-menu activator="#menu-activator">
+                    <v-list>
+                        <v-list-item v-on:click="showchatUserInviteModal">
+                            <v-list-item-title>
+                                <v-icon>mdi-plus</v-icon>
+                                채팅 상대 초대
+                            </v-list-item-title>
+                        </v-list-item>
+                        <!-- <v-list-item>
+                            <v-list-item-title> 
+                                <v-icon>mdi-file</v-icon>
+                                채팅 파일 모아보기
+                            </v-list-item-title>
+                        </v-list-item> -->
+                        <v-divider></v-divider>
+                        <v-list-item v-on:click="showexitChatRoomModal">
+                            <v-list-item-title>
+                                <v-icon>mdi-exit-to-app</v-icon>
+                                채팅방 나가기
+                            </v-list-item-title> <!--모달창 뜨게 해라.-->
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
             </v-col>
         </v-row>
 
+        <InviteChatUserModal v-model="inviteUserModal" @update:dialog="inviteUserModal = $event"
+            @invite="inviteUserMessage" :chatRoomIdProp="chatRoomId" :existChatUsersProp="chatRoomUserNumsProp">
+        </InviteChatUserModal>
+
+        <ExitChatRoomModal v-model="exitAlertModal" @update:dialog="exitAlertModal = $event" @exit="exitUserMesssage"
+            :chatRoomIdProp="chatRoomId">
+        </ExitChatRoomModal>
+
         <!-- 채팅 내용 -->
-        <div class="chat-content">
+        <div class="chat-content" id="messageContainer">
             <div v-for="(chat, index) in chatMessageList" :key="chat.id">
                 <!-- 날짜 구분 -->
                 <div v-if="index === 0 || isDifferentDay(chat.createAt, chatMessageList[index - 1].createAt)">
@@ -31,8 +72,21 @@
                     </div>
                 </div>
 
+                <div v-if="chat.messageType == 'ENTER'">
+                    <div class="date-divider">
+                        <span class="date-text">{{ chat.senderName }}님이 입장했습니다.</span>
+                    </div>
+                </div>
+
+                <div v-if="chat.messageType == 'QUIT'">
+                    <div class="date-divider">
+                        <span class="date-text">{{ chat.senderName }}님이 퇴장했습니다.</span>
+                    </div>
+                </div>
+
                 <!-- 메시지 -->
-                <div :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
+                <div v-if="chat.messageType == 'TALK' || chat.messageType == 'FILE'"
+                    :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
                     <v-row v-if="chat.senderNum !== chatSenderNum" class="message-row">
                         <span class="sender-name">{{ chat.senderDepName }} {{ chat.senderName }} {{ chat.senderPosName
                             }}님</span>
@@ -66,7 +120,7 @@
         <div class="image-group">
             <div v-for="(file, index) in fileList" :key="index" class="image-container">
                 <v-icon color="red" class="close-icon" @click="deleteImage(index)">mdi-close-circle</v-icon>
-                <img :src="file.fileUrl" @error="e => e.target.src = require('@/assets/user.png')"
+                <img :src="file.fileUrl" @error="e => e.target.src = require('@/assets/file.png')"
                     style="height: 120px; width: 120px; object-fit: cover;">
                 <p class="custom-contents">{{ file.name }}</p>
             </div>
@@ -92,6 +146,8 @@ import axios from 'axios';
 import Stomp from 'webstomp-client'
 import SockJS from 'sockjs-client'
 import ChatFileBox from '@/components/chat/ChatFileBox.vue'
+import InviteChatUserModal from './InviteChatUserModal.vue';
+import ExitChatRoomModal from './ExitChatRoomModal.vue';
 
 export default {
     props: [
@@ -100,13 +156,19 @@ export default {
         'chatRoomUserNumsProp',
     ], // 채팅방리스트에서 받아오는 값.
     components: {
-        ChatFileBox,
+        ChatFileBox, InviteChatUserModal, ExitChatRoomModal
     },
     data() {
         return {
             stompClient: null,
             chatRoomId: this.chatRoomIdProp, // 채팅방 id
             chatMessageList: [], // 주고받은 채팅내역
+
+            // chatUserListCheck: false, // 채팅유저리스트 제어
+            chatUserList: [], // 채팅유저리스트
+
+            inviteUserModal: false, // 채팅유저초대 모달 제어
+            exitAlertModal: false, // 채팅방나가기 모달 제어
 
             chatSenderNum: '', // 채팅방을 여는 사람 == 채팅보내는 사람
 
@@ -121,15 +183,41 @@ export default {
         this.chatRoomId = this.chatRoomIdProp;
         this.chatSenderNum = localStorage.getItem('userNum');
         // 메세지 불러오기
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
-        if (response.data) {
-            this.chatMessageList = response.data.result;
+        const chatResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/${this.chatRoomId}`);
+        if (chatResponse.data) {
+            this.chatMessageList = chatResponse.data.result;
         }
+        // chatUsers 불러오기
+        const usersResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/chatUsers/${this.chatRoomId}`);
+        if (usersResponse.data) {
+            this.chatUserList = usersResponse.data.result;
+        }
+        this.scrollToBottom();
     },
     mounted() {
         this.connect();
+        window.addEventListener('beforeunload', this.leave)
+    },
+    beforeUnmount() {
+        // ⭐⭐⭐ disconnect
+        window.removeEventListener('beforeunload', this.leave)
     },
     methods: {
+        async leave() {
+            // ⭐⭐⭐ disconnect
+            const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
+            console.log(response);
+        },
+        scrollToBottom() {
+            // 메시지 목록을 감싸는 컨테이너 찾기
+            const container = document.getElementById('messageContainer');
+            if (container) {
+                // 잠시 딜레이를 주고 스크롤을 최하단으로 이동
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 100);
+            }
+        },
         connect() {
             if (this.stompClient && this.stompClient.connected) { return; } // 연결확인
             const socket = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws`);
@@ -141,6 +229,7 @@ export default {
                     console.log("frame : " + frame);
                     console.log("Connected to WebSocket");
                     this.stompClient.subscribe(`/topic/chat/room/${this.chatRoomId}`, (message) => {
+                        this.scrollToBottom();
                         const receivedMessage = JSON.parse(message.body);
                         this.chatMessageList.push(receivedMessage);
                     });
@@ -150,6 +239,7 @@ export default {
                     setTimeout(() => this.connect(), 5000);  // 재연결 시도
                 }
             )
+            this.scrollToBottom();
         },
 
         async sendMessage() {
@@ -197,7 +287,7 @@ export default {
                 this.messageToSend = ''; // 입력 필드 초기화
                 this.fileList = []; // 빈 배열로 초기화
                 this.fileRes = null;
-
+                this.scrollToBottom();
             } else {
                 console.error('WebSocket unconnected');
                 setTimeout(() => this.connect(), 5000);
@@ -284,10 +374,55 @@ export default {
             return `${createdTime.getFullYear()}년 ${createdTime.getMonth() + 1}월 ${createdTime.getDate()}일`;
         },
 
-        goBack() {
+        async goBack() {
+            // ⭐⭐⭐ disconnect
+            const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
+            console.log(response);
+            window.location.href = '/chatRoom/list';
             this.$emit('update:dialog', false);
             this.$emit('update:check', true);
+            // window.location.reload('/chatRoom/list');
         },
+
+        showchatUserInviteModal() {
+            this.inviteUserModal = true;
+        },
+
+        async inviteUserMessage(inviteUserData) {
+            const messageReq = {
+                senderNum: inviteUserData,
+                roomId: this.chatRoomId,
+                messageType: "ENTER",
+                message: "",
+                files: null,
+            };
+            if (this.stompClient && this.stompClient.connected) {
+                this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
+            }
+            const usersResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/chatUsers/${this.chatRoomId}`);
+            if (usersResponse.data) {
+                this.chatUserList = usersResponse.data.result;
+            }
+        },
+
+        showexitChatRoomModal() {
+            this.exitAlertModal = true;
+        },
+
+        exitUserMesssage(exitUserData) {
+            // ⭐ 나갔을 때 채팅방 변화
+            const messageReq = {
+                senderNum: exitUserData,
+                roomId: this.chatRoomId,
+                messageType: "QUIT",
+                message: "",
+                files: null,
+            };
+            if (this.stompClient && this.stompClient.connected) {
+                this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
+            }
+        },
+
     }
 }
 
@@ -326,7 +461,20 @@ export default {
 }
 
 .chat-room-name {
+    font-size: 20px;
     margin-left: 10px;
+}
+
+.user-mini-icon {
+    cursor: pointer;
+    margin-left: 15px;
+    color: gray;
+    font-size: 14px;
+}
+
+.chat-user-num {
+    color: gray;
+    font-size: 11px;
 }
 
 .header-icons {

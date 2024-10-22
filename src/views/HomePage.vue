@@ -14,7 +14,7 @@
             <!-- 게시글 목록 -->
             <v-row v-for="item in boardItems" :key="item.id" class="board-item" @click="goToDetail(item.id)">
               <v-col cols="10" class="ellipsis-text"> {{ item.title }}</v-col>
-              <v-col style="color:#808080">{{ formatDate(item.createdAt) }}</v-col>
+              <v-col style="color:#808080; padding-left:12px;">{{ formatDate(item.createdAt) }}</v-col>
             </v-row>
           </v-row>
         </v-col>
