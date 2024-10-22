@@ -1,6 +1,6 @@
 <template>
-  <div id="calendar-container">
-    <FullCalendar :options="calendarOptions">
+  <div id="first-calendar-container" class="calendar-container"> 
+    <FullCalendar :options="firstCalendarOptions">
       <template v-slot:eventContent="arg">
         <div>
           <strong>{{ arg.event.title }}</strong>
@@ -73,7 +73,7 @@ export default {
   },
   data() {
     return {
-      calendarOptions: {
+      firstCalendarOptions: {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
         events: [],
@@ -275,8 +275,9 @@ export default {
 }
 </style>
 <style>
-.event-dot {
+#first-calendar-container .event-dot {
   display: inline-block;
+  font-size: 25px;
   width: 8px;
   height: 8px;
   background-color: #2196f3;
@@ -284,26 +285,26 @@ export default {
   margin-right: 5px;
 }
 
-.fc-event {
+#first-calendar-container .fc-event {
   border-radius: 5px;
   font-size: 12px;
   padding: 2px;
   border-style: none;
 }
 
-.fc-daygrid-event {
+#first-calendar-container .fc-daygrid-event {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* more 기능을 위한 height 조정 */
-.fc-daygrid-day-bottom {
+#first-calendar-container .fc-daygrid-day-bottom {
   margin-top: 5px;
 }
 
 
-#calendar-container {
+#first-calendar-container {
   width: 100%;
 
   padding: 30px;
@@ -317,31 +318,31 @@ export default {
   /* 테두리를 추가하여 캘린더 강조 */
 }
 
-.user-event {
+#first-calendar-container .user-event {
   background-color: #d0e9ff;
   /* 유저 이벤트는 연한 파란색 */
 }
 
-.department-event {
+#first-calendar-container .department-event {
   background-color: #c0fac0;
   /* 부서 이벤트는 연한 초록색 */
 }
 
-.company-event {
+#first-calendar-container .company-event {
   background-color: #fccccc;
   /* 회사 일정은 연한 빨간색 */
 }
 
 /* 2024 10 글씨 */
-.fc-toolbar-title {
+#first-calendar-container .fc-toolbar-title {
   font-size: 32px;
   font-weight: bold;
   text-align: center;
 }
 
 /* 이전/다음 버튼 스타일 */
-.fc .fc-button-prev,
-.fc .fc-button-next {
+#first-calendar-container .fc .fc-button-prev,
+#first-calendar-container .fc .fc-button-next {
   justify-content: center;
   align-items: center;
   background-color: #d3ccc1;
@@ -349,14 +350,14 @@ export default {
   padding: 10px 15px;
 }
 
-.fc .fc-button-prev:hover,
-.fc .fc-button-next:hover {
+#first-calendar-container .fc .fc-button-prev:hover,
+#first-calendar-container .fc .fc-button-next:hover {
   background-color: #cbc2b6;
   justify-content: center;
   align-items: center;
 }
 
-.fc-direction-ltr .fc-button-group>.fc-button:not(:last-child) {
+#first-calendar-container .fc-direction-ltr .fc-button-group>.fc-button:not(:last-child) {
   justify-content: center;
   align-items: center;
   font-size: 12px;
@@ -367,7 +368,7 @@ export default {
   border-radius: 30px 30px 30px 30px;
 }
 
-.fc-direction-ltr .fc-button-group>.fc-button:not(:first-child) {
+#first-calendar-container .fc-direction-ltr .fc-button-group>.fc-button:not(:first-child) {
   justify-content: center;
   border: #665f54 solid 3px;
   background-color: none;
@@ -379,7 +380,7 @@ export default {
 }
 
 /* today 버튼 */
-.fc-direction-ltr .fc-toolbar>*> :not(:first-child) {
+#first-calendar-container .fc-direction-ltr .fc-toolbar>*> :not(:first-child) {
   justify-content: center;
   align-items: center;
   border: #665f54 solid 3px;
@@ -390,7 +391,7 @@ export default {
   border-radius: 30px 30px 30px 30px;
 }
 
-.fc .fc-button-group .fc-button {
+#first-calendar-container .fc .fc-button-group .fc-button {
   background-color: #f9f9f9;
   /* 기본 회색 배경 */
   color: #665f54;
@@ -401,25 +402,25 @@ export default {
   margin: 0 5px;
 }
 
-.fc .fc-button-primary:disabled {
+#first-calendar-container .fc .fc-button-primary:disabled {
   background-color: #665f54;
   border-color: #665f54;
   color: white;
 }
 
 /* 상단 컴포넌트 호버 디자인 */
-.fc .fc-button-group .fc-button:hover {
+#first-calendar-container .fc .fc-button-group .fc-button:hover {
   background-color: #665f54;
   color: white;
 }
 
-.fc .fc-button-group .fc-button.fc-button-active {
+#first-calendar-container .fc .fc-button-group .fc-button.fc-button-active {
   background-color: #665f54;
   /* 활성화된 버튼은 짙은 갈색 */
   color: white;
 }
 
-.fc-toolbar-title {
+#first-calendar-container .fc-toolbar-title {
   font-size: 14px;
   font-weight: bold;
   text-align: center;

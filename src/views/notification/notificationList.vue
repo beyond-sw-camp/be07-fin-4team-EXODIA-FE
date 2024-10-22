@@ -27,12 +27,16 @@
               :key="notification.id"
               @click="markAsRead(notification.id)"
               class="notification-item"
+              :class="{ read: notification.isRead }"
             >
               <v-list-item-content>
-                <v-list-item-subtitle><strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{ formatDate(notification.notificationTime) }}</v-list-item-subtitle>
+                <v-list-item-subtitle>
+                  <strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{ formatDate(notification.notificationTime) }}
+                </v-list-item-subtitle>
                 <br>
                 <v-list-item-title>
-                  <strong v-if="!notification.isRead">[NEW]</strong>
+                  <!-- isRead가 0일 때만 [NEW] 표시 -->
+                  <strong v-if="notification.isRead == 0">[NEW]</strong>
                   {{ notification.message }}
                 </v-list-item-title>
                 <br>
@@ -71,7 +75,7 @@ export default {
   created() {
     this.fetchNotifications();
     this.fetchUnreadCount();
-    this.initSSE();  // SSE 초기화
+    this.initSSE(); // SSE 초기화
   },
   computed: {
     // 선택된 타입에 따른 알림 필터링
@@ -82,7 +86,9 @@ export default {
           (notification) => notification.type === this.selectedType
         );
       }
-      return filtered.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
+      return filtered.sort(
+        (a, b) => new Date(b.notificationTime) - new Date(a.notificationTime)
+      );
     },
   },
   methods: {
@@ -96,13 +102,9 @@ export default {
 
       try {
         // EventSource 객체 생성
-        this.eventSource = new EventSource(`${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`);
-
-        // EventSource 객체가 정상적으로 생성되었는지 확인
-        if (!this.eventSource) {
-          console.error("SSE 연결에 실패했습니다.");
-          return;
-        }
+        this.eventSource = new EventSource(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`
+        );
 
         // 메시지 수신 처리
         this.eventSource.onmessage = (event) => {
@@ -114,7 +116,6 @@ export default {
         this.eventSource.onerror = (error) => {
           console.error("SSE 연결 오류 발생:", error);
 
-          // 재연결 로직 추가 (필요할 경우)
           if (this.retryCount < this.maxRetryCount) {
             setTimeout(() => {
               this.retryCount++;
@@ -124,7 +125,6 @@ export default {
             console.error("최대 재연결 시도 횟수에 도달했습니다.");
           }
         };
-
       } catch (error) {
         console.error("SSE 연결 중 예외가 발생했습니다.", error);
       }
@@ -137,13 +137,16 @@ export default {
       const date = new Date(notificationTime);
       return date.toLocaleDateString();
     },
-    
+
     // 전체 알림 리스트 가져오기
     async fetchNotifications() {
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/list`, {
-          headers: this.getAuthHeaders(),
-        });
+        const response = await axios.get(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/list`,
+          {
+            headers: this.getAuthHeaders(),
+          }
+        );
         this.notifications = response.data;
       } catch (error) {
         console.error("알림 데이터를 가져오는 중 오류 발생:", error);
@@ -153,9 +156,12 @@ export default {
     // 읽지 않은 알림 개수 가져오기
     async fetchUnreadCount() {
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/unread-count`, {
-          headers: this.getAuthHeaders(),
-        });
+        const response = await axios.get(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/unread-count`,
+          {
+            headers: this.getAuthHeaders(),
+          }
+        );
         this.unreadCount = response.data;
       } catch (error) {
         console.error("읽지 않은 알림 개수를 가져오는 중 오류 발생:", error);
@@ -165,10 +171,14 @@ export default {
     // 알림 읽음 처리
     async markAsRead(notificationId) {
       try {
-        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`, null, {
-          headers: this.getAuthHeaders(),
-        });
-        this.fetchNotifications(); // 알림 리스트 다시 가져오기
+        await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`,
+          null,
+          {
+            headers: this.getAuthHeaders(),
+          }
+        );
+        this.fetchNotifications();
         this.fetchUnreadCount(); // 읽지 않은 알림 개수 다시 가져오기
       } catch (error) {
         console.error("알림 읽음 처리 중 오류 발생:", error);
@@ -224,5 +234,10 @@ export default {
   border-radius: 10px !important;
   background-color: #f9f9f9 !important;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+.notification-item.read {
+  color: gray;
+  background-color: #e0e0e0;
 }
 </style>
