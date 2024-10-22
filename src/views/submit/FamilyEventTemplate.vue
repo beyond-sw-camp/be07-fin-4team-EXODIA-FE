@@ -63,13 +63,13 @@
                 </v-row>
 
                 <!-- 게시판 등록 여부 -->
-                <v-row>
-                    <v-checkbox 
-                        v-model="formData.uploadBoard" 
-                        label="게시판에 등록하시겠습니까?"
-                    ></v-checkbox>
-                </v-row>
-
+     <!-- 게시판 등록 여부 -->
+        <v-row v-if="showUploadCheckbox">
+            <v-checkbox 
+            v-model="formData.uploadBoard" 
+            label="게시판에 등록하시겠습니까?"
+            ></v-checkbox>
+        </v-row>
             </v-col>
 
             <!-- 결재 라인 -->
@@ -154,8 +154,13 @@ export default {
     },
     computed: {
         filteredFamilyRelationOptions() {
-            // 선택된 경조 종류에 따른 가족 관계 필터링
             return this.familyRelationOptions[this.formData.mainEventType] || [];
+        },
+        showUploadCheckbox() {
+        if (this.formData.mainEventType === '출산') {
+            return false;
+        }
+        return this.formData.familyRelation === '본인' || this.formData.mainEventType !== '결혼';
         }
     },
     mounted() {
@@ -166,9 +171,11 @@ export default {
     watch: {
         'formData.mainEventType': function (newValue) {
             this.formData.familyRelation = '';  // 가족 관계 초기화
+            this.formData.uploadBoard = false; 
             this.formData.휴가일수 = this.getLeaveDays(newValue, this.formData.familyRelation);
         },
         'formData.familyRelation': function (newValue) {
+            this.formData.uploadBoard = false; 
             this.formData.휴가일수 = this.getLeaveDays(this.formData.mainEventType, newValue);
         }
     },
@@ -226,7 +233,6 @@ export default {
                 console.log(this.submitCreateData);
                 alert("결재 요청이 성공적으로 처리되었습니다.");
                 this.$router.push("/submit/list/my")
-                location.reload();
             } catch (e) {
                 console.error('결재 요청 실패:', e);
             }
