@@ -307,10 +307,11 @@ export default {
     setBoardTitle() {
       this.boardTitle = "Q&A";
     },
-    // 날짜 형식 변환
     formatDate(date) {
-      const options = { year: "numeric", month: "2-digit", day: "2-digit" };
-      return new Date(date).toLocaleDateString("ko-KR", options).replace(/\//g, ".");
+      return new Date(date)
+        .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+        .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
     },
     // 새 글 작성 페이지로 이동
     createNewPost() {

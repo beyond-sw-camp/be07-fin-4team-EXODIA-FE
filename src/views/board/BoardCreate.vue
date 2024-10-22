@@ -210,10 +210,16 @@ export default {
       this.showTagModal = false;
     },
 
-    // 새로운 태그 추가하기
     async addNewTag() {
       if (!this.newTagName.trim()) {
         alert('태그 이름을 입력하세요.');
+        return;
+      }
+
+      // 입력한 태그 이름이 이미 존재하는지 확인
+      const existingTag = this.tags.find(tag => tag.tag === this.newTagName.trim());
+      if (existingTag) {
+        alert('이미 존재하는 태그입니다.');
         return;
       }
 
@@ -231,6 +237,7 @@ export default {
         alert('태그 추가에 실패했습니다.');
       }
     },
+
 
     // 태그 선택/해제 토글
     toggleTagSelection(tagId) {

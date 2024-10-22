@@ -193,14 +193,11 @@ export default {
     },
 
     formatDate(date) {
-      const options = { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit' 
-      };
-      return new Date(date).toLocaleDateString('ko-KR', options).replace(/\./g, '.');
+      return new Date(date)
+        .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+        .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
     },
-
     itemTitle(item) {
       return item.pinned ? '📌 ' + item.title : item.title; 
     },
