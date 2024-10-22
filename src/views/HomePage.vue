@@ -2,7 +2,7 @@
 
   <v-row>
     <v-col cols="6">
-      <CalendarList style="font-size:12px; background-color:#ffffff;" />
+      <MainCalendarList style="font-size:12px; background-color:#ffffff;" />
 
     </v-col>
     <v-col cols=" 6">
@@ -14,7 +14,7 @@
             <!-- 게시글 목록 -->
             <v-row v-for="item in boardItems" :key="item.id" class="board-item" @click="goToDetail(item.id)">
               <v-col cols="10" class="ellipsis-text"> {{ item.title }}</v-col>
-              <v-col style="color:#808080">{{ formatDate(item.createdAt) }}</v-col>
+              <v-col style="color:#808080; padding-left:12px;">{{ formatDate(item.createdAt) }}</v-col>
             </v-row>
           </v-row>
         </v-col>
@@ -33,13 +33,13 @@
 <script>
 import axios from 'axios';
 import UserAttendance from './mypage/userAttendance.vue';
-import CalendarList from './calendar/calendarList.vue';
+import MainCalendarList from './calendar/mainCalendarList.vue';
 
 export default {
   name: 'HomePage',
   components: {
     UserAttendance, // 타임라인 컴포넌트 등록
-    CalendarList,
+    MainCalendarList,
   },
   data() {
     return {

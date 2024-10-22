@@ -115,6 +115,7 @@ export default {
     checkAnswerPermission() {
       const questionDepartmentId = Number(this.questionDetail.departmentId);  // 숫자로 변환
       const userDepartmentId = Number(this.userDepartmentId);  // 숫자로 변환
+
       console.log('사용자 부서:', userDepartmentId, '문의 부서:', questionDepartmentId);
       
 

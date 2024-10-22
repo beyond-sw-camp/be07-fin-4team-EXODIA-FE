@@ -182,9 +182,8 @@ v-card-title,
     margin: 20px 0;
 }
 
-
 .chip-reject {
-    background-color: #e57373;
+    background-color: #b00020;
     color: white;
 }
 

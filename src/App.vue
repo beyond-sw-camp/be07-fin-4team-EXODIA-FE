@@ -5,7 +5,7 @@
       <div class="main-layout">
         <HeaderComponent />
         <div class="main-content">
-          <v-card style="padding:40px; border-radius:10px">
+          <v-card style="padding:40px; border-radius:10px;  height: auto; flex: 1;">
             <router-view />
           </v-card>
         </div>
@@ -59,6 +59,7 @@ export default {
   flex-direction: column;
   flex: 1;
   margin-left: var(--sidebar-width);
+  overflow-y: visible;
 }
 
 .header {

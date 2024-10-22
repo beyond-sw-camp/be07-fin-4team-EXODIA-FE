@@ -18,10 +18,9 @@
 
           <v-row no-gutters>
             <v-col cols="12" md="4" class="profile-content">
-              <v-row class="profile-card" style="margin-top: 40px;"> 
+              <v-row class="profile-card" style="margin-top: 40px;">
                 <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"
                   class="profile-img"></v-img>
-                <v-card-title class="profile-name">{{ userProfile?.name || '이름' }}</v-card-title>
               </v-row>
             </v-col>
 
@@ -30,6 +29,11 @@
                 <v-card-text>
                   <table class="custom-table">
                     <tbody>
+                      <tr>
+                        <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">
+                          이름</td>
+                        <td style="width:70%;">{{ userProfile?.name || 'N/A' }}</td>
+                      </tr>
                       <tr>
                         <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">
                           사번</td>
@@ -134,9 +138,6 @@ export default {
         console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
 
-        console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
-        console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
-
         // 입사일로부터 현재까지의 근무일수 계산
         if (this.userProfile.joinDate) {
           const joinDate = moment(this.userProfile.joinDate, "YYYY-MM-DD HH:mm:ss.SSSSSS");
@@ -150,15 +151,6 @@ export default {
         this.sickLeave = this.userProfile.sickLeave || 0;
         this.usedLeave = this.userProfile.usedLeave || 0;
         this.absentDays = this.userProfile.absentDays || 0;
-
-        this.attendanceData.clockInTime = this.userProfile.attendanceData?.clockInTime
-          ? moment(this.userProfile.attendanceData.clockInTime).format('HH:mm:ss')
-          : 'N/A';
-        this.attendanceData.clockOutTime = this.userProfile.attendanceData?.clockOutTime
-          ? moment(this.userProfile.attendanceData.clockOutTime).format('HH:mm:ss')
-          : 'N/A';
-        this.attendanceData.weeklyWorkHours = this.userProfile.attendanceData?.weeklyWorkHours || 'N/A';
-        this.attendanceData.weeklyOvertimeHours = this.userProfile.attendanceData?.weeklyOvertimeHours || 'N/A';
 
 
       } catch (error) {
@@ -318,12 +310,12 @@ thead th {
 
 tbody td {
   padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 2px solid rgba(122, 86, 86, 0.2);
 }
 
 td:first-child {
   font-weight: bold;
-
+  border-right: 2px solid rgba(122, 86, 86, 0.2);
 }
 
 .leave-info-table {
@@ -363,7 +355,7 @@ td:first-child {
   background-color: rgba(122, 86, 86, 0.2);
   font-weight: bold;
   text-align: left;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(122, 86, 86, 0.2);
 }
 
 .custom-table td:first-child {
