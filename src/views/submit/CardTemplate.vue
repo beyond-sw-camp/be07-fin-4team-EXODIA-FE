@@ -1,122 +1,126 @@
 <template>
-    <h1 style="margin:25px 0; font-weight:800">법인 카드 사용 신청서</h1>
-    <v-card style="padding:50px">
-        <v-row justify="justify-space-around">
-            <v-col cols="8">
-                <v-row>
-                    <v-col cols="2">
-                        <v-list-subheader>신청인</v-list-subheader>
-                    </v-col>
-                    <v-col cols="4">
-                        <v-text-field disabled>{{ this.userName }}</v-text-field>
-                    </v-col>
-                    <v-col cols="2">
-                        <v-list-subheader>부서</v-list-subheader>
-                    </v-col>
-                    <v-col cols="4">
-                        <v-text-field disabled>{{ this.departmentName }}</v-text-field>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>신청일</v-list-subheader>
-                    </v-col>
-                    <v-col cols="9">
-                        <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
-                            :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
-                            :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>사용 기간</v-list-subheader>
-                    </v-col>
+    <v-container class="board-container">
 
-                    <v-col cols="9">
-                        <v-text-field label="사용 기간" v-model="formData.사용기간"></v-text-field>
-                    </v-col>
-                </v-row>
+        <h1 style="margin:25px 0; font-weight:800">법인 카드 사용 신청서</h1>
 
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>사유</v-list-subheader>
-                    </v-col>
+        <v-row style="padding:50px">
+            <v-row justify="justify-space-around">
+                <v-col cols="8">
+                    <v-row>
+                        <v-col cols="2">
+                            <v-list-subheader>신청인</v-list-subheader>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-text-field disabled>{{ this.userName }}</v-text-field>
+                        </v-col>
+                        <v-col cols="2">
+                            <v-list-subheader>부서</v-list-subheader>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-text-field disabled>{{ this.departmentName }}</v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>신청일</v-list-subheader>
+                        </v-col>
+                        <v-col cols="9">
+                            <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
+                                :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
+                                :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>사용 기간</v-list-subheader>
+                        </v-col>
 
-                    <v-col cols="9">
-                        <v-text-field label="사유" v-model="formData.사유"></v-text-field>
-                    </v-col>
-                </v-row>
+                        <v-col cols="9">
+                            <v-text-field label="사용 기간" v-model="formData.사용기간"></v-text-field>
+                        </v-col>
+                    </v-row>
 
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>사용 인원</v-list-subheader>
-                    </v-col>
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>사유</v-list-subheader>
+                        </v-col>
 
-                    <v-col cols="9">
-                        <v-text-field label="사용 인원" v-model="formData.사용인원"></v-text-field>
-                    </v-col>
-                </v-row>
+                        <v-col cols="9">
+                            <v-text-field label="사유" v-model="formData.사유"></v-text-field>
+                        </v-col>
+                    </v-row>
 
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>사용 금액</v-list-subheader>
-                    </v-col>
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>사용 인원</v-list-subheader>
+                        </v-col>
 
-                    <v-col cols="9">
-                        <v-text-field label="사용 금액" v-model="formData.사용금액"></v-text-field>
-                    </v-col>
-                </v-row>
+                        <v-col cols="9">
+                            <v-text-field label="사용 인원" v-model="formData.사용인원"></v-text-field>
+                        </v-col>
+                    </v-row>
 
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>총 금액</v-list-subheader>
-                    </v-col>
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>사용 금액</v-list-subheader>
+                        </v-col>
 
-                    <v-col cols="9">
-                        <v-text-field label="총 금액" v-model="formData.총금액"></v-text-field>
-                    </v-col>
-                </v-row>
+                        <v-col cols="9">
+                            <v-text-field label="사용 금액" v-model="formData.사용금액"></v-text-field>
+                        </v-col>
+                    </v-row>
 
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>기타</v-list-subheader>
-                    </v-col>
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>총 금액</v-list-subheader>
+                        </v-col>
 
-                    <v-col cols="9">
-                        <v-text-field label="기타" v-model="formData.기타"></v-text-field>
-                    </v-col>
-                </v-row>
-            </v-col>
+                        <v-col cols="9">
+                            <v-text-field label="총 금액" v-model="formData.총금액"></v-text-field>
+                        </v-col>
+                    </v-row>
 
-            <v-col cols="4" class="createSubmit">
-                <v-card style="background-color: rgba(123, 86, 86, 0.3);">
-                    <v-card-title>결재 라인</v-card-title>
-                    <v-list style="background-color: rgba(123, 86, 86, 0.3);">
-                        <v-list-item v-for="user in users.filter(u => u.positionId <= this.positionId)" :key="user.id"
-                            draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
-                            <v-list-item-content>{{ user.name
-                                }}</v-list-item-content>
-                        </v-list-item>
-                    </v-list>
-                </v-card>
-                <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
-                    <v-card-text v-if="droppedUsers.length == 0">결재자를 선택하시오.</v-card-text>
-                    <v-list>
-                        <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
-                            <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
-                            <v-icon @click="removeUser(index)" style="border:none">mdi-close</v-icon>
-                        </v-list-item>
-                    </v-list>
-                </v-card>
-                <v-row class="submitBtn">
-                    <v-btn style="background-color:#722121; color:#ffffff;" class="mt-8" @click="createSubmit">
-                        결재라인 등록
-                    </v-btn>
-                </v-row>
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>기타</v-list-subheader>
+                        </v-col>
 
-            </v-col>
+                        <v-col cols="9">
+                            <v-text-field label="기타" v-model="formData.기타"></v-text-field>
+                        </v-col>
+                    </v-row>
+                </v-col>
+
+                <v-col cols="4" class="createSubmit">
+                    <v-card style="background-color: rgba(123, 86, 86, 0.3);">
+                        <v-card-title>결재 라인</v-card-title>
+                        <v-list style="background-color: rgba(123, 86, 86, 0.3);">
+                            <v-list-item v-for="user in users.filter(u => u.positionId <= this.positionId)"
+                                :key="user.id" draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
+                                <v-list-item-content>{{ user.name
+                                    }}</v-list-item-content>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                    <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
+                        <v-card-text v-if="droppedUsers.length == 0">결재자를 선택하시오.</v-card-text>
+                        <v-list>
+                            <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
+                                <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
+                                <v-icon @click="removeUser(index)" style="border:none">mdi-close</v-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                    <v-row class="submitBtn">
+                        <v-btn style="background-color:#722121; color:#ffffff;" class="mt-8" @click="createSubmit">
+                            결재라인 등록
+                        </v-btn>
+                    </v-row>
+
+                </v-col>
+            </v-row>
         </v-row>
-    </v-card>
+    </v-container>
 </template>
 
 <script>
@@ -246,5 +250,11 @@ export default {
     display: flex;
     justify-content: center;
     align-content: center;
+}
+
+.board-container {
+
+    padding: 20px;
+    border-radius: 12px;
 }
 </style>
