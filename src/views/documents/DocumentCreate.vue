@@ -1,63 +1,63 @@
 <template>
-    <v-row>
-        <h1>파일 업로드</h1>
-
-    </v-row>
-    <v-row justify="center">
-        <v-col cols="12">
-            <v-form>
-                <v-row>
-                    <v-col cols=4>
-                        첨부파일
-                    </v-col>
-                    <v-col cols="8">
-                        <v-file-input v-model="selectedFile" label="파일 선택" @change="fileUpdate()">
-                        </v-file-input>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols=4>
-                        작성자
-                    </v-col>
-                    <v-col cols="8">
-                        <v-text-field disabled>
-                            {{ this.userName }}
-                        </v-text-field>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols=4>
-                        문서 태그
-                    </v-col>
-                    <v-col>
-                        <v-select v-model="tagNames" :items="tagOptions" label="태그를 선택하세요" multiple item-text="tagName"
-                            item-value="tagName">
-                            <template v-slot:selection="{ item, index }">
-                                <v-chip v-if="index >= 0">
-                                    <span>{{ item.value }}</span>
-                                </v-chip>
-                            </template>
-                        </v-select>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols=4>
-                        설명
-                    </v-col>
-                    <v-col cols="8">
-                        <v-textarea v-model="description" label="설명" rows="3" class="custom-textarea"></v-textarea>
-                    </v-col>
-                </v-row>
-                <v-row justify="end">
-                    <v-card-actions>
-                        <v-btn style="background-color:#4CAF50; color:#ffffff" @click="submitForm">등록</v-btn>
-                        <v-btn style="background-color:#AF2626; color:#ffffff" @click="closeForm">닫기</v-btn>
-                    </v-card-actions>
-                </v-row>
-            </v-form>
-        </v-col>
-    </v-row>
-
+    <v-container class="container">
+        <v-row class="mb-12" style="padding-left:30px">
+            <h1>파일 업로드</h1>
+        </v-row>
+        <v-row justify="center">
+            <v-col cols="9">
+                <v-form>
+                    <v-row>
+                        <v-col cols=4>
+                            첨부파일
+                        </v-col>
+                        <v-col cols="8">
+                            <v-file-input v-model="selectedFile" label="파일 선택" @change="fileUpdate()">
+                            </v-file-input>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols=4>
+                            작성자
+                        </v-col>
+                        <v-col cols="8">
+                            <v-text-field disabled>
+                                {{ this.userName }}
+                            </v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols=4>
+                            문서 태그
+                        </v-col>
+                        <v-col>
+                            <v-select v-model="tagNames" :items="tagOptions" label="태그를 선택하세요" multiple
+                                item-text="tagName" item-value="tagName">
+                                <template v-slot:selection="{ item, index }">
+                                    <v-chip v-if="index >= 0">
+                                        <span>{{ item.value }}</span>
+                                    </v-chip>
+                                </template>
+                            </v-select>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols=4>
+                            설명
+                        </v-col>
+                        <v-col cols="8">
+                            <v-textarea v-model="description" label="설명" rows="3" class="custom-textarea"></v-textarea>
+                        </v-col>
+                    </v-row>
+                    <v-row justify="end">
+                        <v-card-actions>
+                            <v-btn style="background-color:#4CAF50; color:#ffffff" @click="submitForm">등록</v-btn>
+                            <v-btn style="background-color:#AF2626; color:#ffffff" @click="closeForm">닫기</v-btn>
+                        </v-card-actions>
+                    </v-row>
+                </v-form>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script>

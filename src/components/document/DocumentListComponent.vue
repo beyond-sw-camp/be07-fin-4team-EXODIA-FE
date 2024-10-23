@@ -1,7 +1,6 @@
 <template>
     <v-container class="container">
-
-        <v-row>
+        <v-row class="mb-12" style="padding-left:30px">
             <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle }}</h1>
         </v-row>
 
@@ -17,12 +16,12 @@
         <v-row justify="end" style="margin-bottom:5px;">
             <!-- 팀장만 태그 생성 가능 -->
 
-            <v-col cols="auto" v-if="this.positionId == 1">
+            <v-col cols="auto" v-if="this.positionId == 1 && this.pageTitle == '전체 파일'">
                 <v-btn variant="outlined" @click="handleCreateTag()">
                     태그 생성
                 </v-btn>
             </v-col>
-            <v-col cols="auto" v-if="this.pageTitle === '전체파일'">
+            <v-col cols="auto" v-if="this.pageTitle === '전체 파일'">
                 <v-btn variant="outlined" @click="$router.push('/document/create')">
                     파일 등록
                 </v-btn>
@@ -78,7 +77,7 @@
                         <v-card-title>
                             <v-row class="detailFileName ellipsis-text">{{
                                 selectedDocument.fileName
-                            }}</v-row>
+                                }}</v-row>
                         </v-card-title>
                         <v-divider></v-divider>
                         <v-card-text>
@@ -300,11 +299,11 @@ export default {
             try {
                 let url = '';
 
-                if (this.pageTitle == '전체파일') {
+                if (this.pageTitle == '전체 파일') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/all`;
-                } else if (this.pageTitle == '최근 조회 문서') {
+                } else if (this.pageTitle == '최근 조회 파일') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/viewed`;
-                } else if (this.pageTitle == '최근 업데이트 문서') {
+                } else if (this.pageTitle == '최근 수정 파일') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
                 }
                 const response = await axios.get(url, {
