@@ -48,26 +48,22 @@
       </div>
 
       <!-- 마이페이지 -->
-      <div class="icons" @click="toggleMyPage" style="height:100%">
-
+      <div class="icons" @click="toggleMyPage" ref="myPageIcon" style="height:100%">
         <v-avatar class="icon">
           <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"></v-img>
         </v-avatar>
 
         <!-- 로그아웃 버튼 -->
-        <div v-if="showMyPage" class="mypage-dropdown">
+        <div v-if="showMyPage" class="mypage-dropdown" ref="myPageDropdown" @click.stop>
           <v-row justify="center">
             <v-avatar class="icon" size="80">
               <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"
                 style="width: 100%; height: 100%;"></v-img>
             </v-avatar>
-
           </v-row>
           <v-row justify="center">
-            <div class="user-department">{{ this.userProfile.departmentName }} {{
-              this.userProfile.positionName }}</div>
+            <div class="user-department">{{ this.userProfile.departmentName }} {{ this.userProfile.positionName }}</div>
           </v-row>
-
           <v-row justify="center" class="toggle-btn">
             <v-icon style="padding-right:5px; font-size:20px">mdi-account</v-icon>
             <btn @click="$router.push('/mypage/vacation')">
@@ -82,6 +78,7 @@
           </v-row>
         </div>
       </div>
+
     </div>
   </header>
 
@@ -178,10 +175,13 @@ export default {
     toggleNotifications() {
       this.showNotifications = !this.showNotifications;
     },
-    handleClickOutside(event) {
-      const notificationIcon = this.$refs.notificationIcon;
-      if (notificationIcon && !notificationIcon.contains(event.target)) {
-        this.showNotifications = false;
+    clickOutside(event) {
+      const myPageDropdown = this.$refs.myPageDropdown;
+      const myPageIcon = this.$refs.myPageIcon;
+
+      // 클릭한 곳이 드롭다운이나 마이페이지 아이콘이 아니면 드롭다운을 닫음
+      if (this.showMyPage && myPageDropdown && !myPageDropdown.contains(event.target) && myPageIcon && !myPageIcon.contains(event.target)) {
+        this.showMyPage = false;
       }
     },
     // 읽지 않은 알림 개수 가져오기
@@ -328,9 +328,11 @@ export default {
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
+    document.addEventListener('click', this.clickOutside);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
+    document.removeEventListener('click', this.clickOutside);
     if (this.eventSource) {
       this.eventSource.close();  // 컴포넌트가 파괴될 때 SSE 연결 종료
       document.removeEventListener("click", this.handleClickOutside);
