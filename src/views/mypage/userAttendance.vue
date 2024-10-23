@@ -25,7 +25,7 @@
 
         <!-- 부서원 출근 정보 목록 -->
         <v-row class="container">
-          <v-col cols="6" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
+          <v-col cols="6" class="profile-item" v-for="user in departmentUsers" :key="user.userNum">
             <v-row class="profile-container">
               <v-col class="profile-item">
                 <!-- 프로필 이미지 -->
@@ -52,7 +52,7 @@
 
 <script>
 import axios from "axios";
-import MypageTemplate from './MypageTemplate.vue'; 
+import MypageTemplate from './MypageTemplate.vue';
 
 export default {
   name: "UserAttendance",
