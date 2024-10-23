@@ -67,9 +67,9 @@
     </v-row>
 
 
-    <v-row v-if="isMySubmitReq == 'true'" justify="end">
-        <v-btn style="background-color:#722121; color:#ffffff;" @click="deleteSubmit(selectedSubmit.id)">
-            취소
+    <v-row v-if="isMySubmitReq == 'true' && selectedSubmit.submitStatus === '대기중'" justify="end">
+        <v-btn style="background-color:#722121; color:#ffffff;" @click="confirmCancel(selectedSubmit.id)">
+            결재 취소
         </v-btn>
     </v-row>
 
@@ -130,6 +130,7 @@ export default {
             submitLines: {},
             isRejectReasonDialogVisible: false,
             isMySubmitReq: true,
+            isCancel: false,
         }
     },
     mounted() {
@@ -222,6 +223,13 @@ export default {
             if (isConfirmed) {
                 this.approvalStatus = '승인';
                 this.submitDecision();
+            }
+        },
+        confirmCancel(submitId) {
+            const isConfirmed = window.confirm("결재를 취소하시겠습니까?");
+            if (isConfirmed) {
+                this.isCancel = true;
+                this.deleteSubmit(submitId);
             }
         }
 

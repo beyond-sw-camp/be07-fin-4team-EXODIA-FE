@@ -54,6 +54,7 @@ export default {
         files: [], // 새로 선택된 파일 리스트
       },
       previewFiles: [], // 미리보기용 파일 리스트
+      answerMaxLength: 5000, // 답변 내용 최대 길이
     };
   },
   created() {
@@ -77,7 +78,7 @@ export default {
         // 파일 미리보기용 리스트 업데이트
         this.previewFiles = this.answer.files;
       } catch (error) {
-        alert('답변 정보를 불러오는 중 오류가 발생했습니다.');
+        alert('답변 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.');
         this.$router.push(`/qna/detail/${questionId}`);
       }
     },
@@ -94,6 +95,12 @@ export default {
     },
     // 답변 수정 요청 메서드
     async updateAnswer() {
+      // 답변 길이 검증
+      if (this.answer.answerText.length > this.answerMaxLength) {
+        alert(`답변 내용은 최대 ${this.answerMaxLength}자까지 작성할 수 있습니다. 현재 ${this.answer.answerText.length}자를 입력하셨습니다.`);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('answerText', this.answer.answerText);
 
@@ -126,7 +133,7 @@ export default {
         alert('답변이 성공적으로 수정되었습니다!');
         this.$router.push(`/qna/detail/${this.$route.params.id}`);
       } catch (error) {
-        alert('답변 수정에 실패했습니다.');
+        alert('답변 수정 중 문제가 발생했습니다. 다시 시도해 주세요.');
         console.error(error);
       }
     },
@@ -137,7 +144,9 @@ export default {
     },
   },
 };
+
 </script>
+
 
 <style scoped>
 .v-container {

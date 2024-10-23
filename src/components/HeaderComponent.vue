@@ -1,24 +1,37 @@
-
 <template>
   <header class="header">
+    <!-- 로그인 연장 버튼과 토큰 유효시간 표시 -->
+    <!-- <v-btn color="primary" class="mx-2" @click="extendSession">로그인 연장</v-btn> -->
+    <div>
+      <v-icon class="icon" style="padding-right:8px;">mdi-clock-time-three-outline</v-icon>
+      <span v-if="timeRemaining > 0" style="font-size:14px;">남은 시간:
+      </span>
+      <span class="remain-time"> {{ formattedTimeRemaining }}</span>
+      <span @click="extendSession" style="font-size:14px" class="extend-session">
+        | 연장
+      </span>
+    </div>
+
+    <!-- 캘린더 -->
     <div class="icons">
       <div class="icon-item" @click="$router.push('/calendar/calendarList')"
         :class="{ 'active': $route.path.startsWith('/calendar') }">
         <v-icon class="icon">mdi-calendar</v-icon>
       </div>
 
+
       <!-- 알림 아이콘 클릭 시 알림 목록 토글 -->
       <div class="notification-icon" @click="toggleNotifications">
+        <!-- 읽지 않은 알림 개수 표시 -->
+        <v-badge :content="unreadCount" color="red" v-if="unreadCount > 0" class="unread-badge"></v-badge>
         <v-icon class="icon">mdi-bell</v-icon>
 
-        <!-- 읽지 않은 알림 개수 표시 -->
-        <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
 
         <!-- 알림 목록 -->
         <div v-if="showNotifications" class="notification-dropdown">
-          <ul>
+          <ul @click.stop>
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
-              <div class="notification-item">
+              <div class="notification-item" @click="handleNotificationClick(notification)">
                 <span>{{ truncatedMessage(notification.message, 20) }}</span>
                 <small>{{ formatDate(notification.createdAt) }}</small>
               </div>
@@ -29,26 +42,46 @@
       </div>
 
       <!-- 채팅방리스트 -->
-      <div class="icon-item">
+      <div class="chat-icon">
+        <v-badge :content="unreadChatNum" color="red" v-if="unreadChatNum > 0" class="unread-badge"></v-badge>
         <v-icon class="icon" @click="showChatRoomList">mdi-chat</v-icon>
       </div>
 
-      <v-avatar class="icon" @click="$router.push('/mypage/vacation')">
-        <!-- <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
-          style="width: 100%; height: 100%; object-fit: cover;" /> -->
-        <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1" class="profile-img"></v-img>
-      </v-avatar>
+      <!-- 마이페이지 -->
+      <div class="icons" @click="toggleMyPage" style="height:100%">
 
+        <v-avatar class="icon">
+          <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"></v-img>
+        </v-avatar>
 
-      <!-- 로그인 연장 버튼과 토큰 유효시간 표시 -->
-      <!-- <v-btn color="primary" class="mx-2" @click="extendSession">로그인 연장</v-btn> -->
-      <v-btn class="mx-2" text style="background-color: transparent; color: blue;" @click="extendSession">로그인 연장</v-btn>
+        <!-- 로그아웃 버튼 -->
+        <div v-if="showMyPage" class="mypage-dropdown">
+          <v-row justify="center">
+            <v-avatar class="icon" size="80">
+              <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"
+                style="width: 100%; height: 100%;"></v-img>
+            </v-avatar>
 
+          </v-row>
+          <v-row justify="center">
+            <div class="user-department">{{ this.userProfile.departmentName }} {{
+              this.userProfile.positionName }}</div>
+          </v-row>
 
-      <span v-if="timeRemaining > 0">남은 시간: {{ formattedTimeRemaining }}</span>
-
-      <!-- 로그아웃 버튼 -->
-      <v-btn color="error" @click="logout">로그아웃</v-btn>
+          <v-row justify="center" class="toggle-btn">
+            <v-icon style="padding-right:5px; font-size:20px">mdi-account</v-icon>
+            <btn @click="$router.push('/mypage/vacation')">
+              마이페이지
+            </btn>
+          </v-row>
+          <v-row justify="center" class="toggle-btn">
+            <v-icon style="padding-right:5px; font-size:20px">mdi-logout</v-icon>
+            <btn @click="logout">
+              로그아웃
+            </btn>
+          </v-row>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -70,8 +103,11 @@ export default {
       retryCount: 0, // 재연결 시도 횟수
       maxRetryCount: 5, // 최대 재연결 시도 횟수
       userProfile: {},
-      defaultProfileImage: 'https://via.placeholder.com/150'
+      defaultProfileImage: 'https://via.placeholder.com/150',
 
+      unreadChatNum: 0,
+
+      showMyPage: false,
     };
   },
   created() {
@@ -95,6 +131,19 @@ export default {
       // 새로운 알림 수신 시 처리
       this.eventSource.onmessage = (event) => {
         const newNotification = JSON.parse(event.data);
+        if (newNotification.type == '채팅알림') {
+          this.unreadChatNum = newNotification.alarmNum;
+          console.log(newNotification);
+          return;
+        } else if (newNotification.type == '채팅입장') {
+          this.unreadChatNum = newNotification.alarmNum;
+          console.log(newNotification);
+          return;
+        } else if (newNotification.type == '채팅목록') {
+          console.log(newNotification);
+          return;
+        }
+        console.log(newNotification);
         this.notifications.unshift(newNotification);  // 새로운 알림을 맨 위에 추가
         this.unreadCount += 1;  // 읽지 않은 알림 개수 증가
       };
@@ -129,7 +178,12 @@ export default {
     toggleNotifications() {
       this.showNotifications = !this.showNotifications;
     },
-
+    handleClickOutside(event) {
+      const notificationIcon = this.$refs.notificationIcon;
+      if (notificationIcon && !notificationIcon.contains(event.target)) {
+        this.showNotifications = false;
+      }
+    },
     // 읽지 않은 알림 개수 가져오기
     async fetchUnreadCount() {
       try {
@@ -151,6 +205,25 @@ export default {
     goToNotifications() {
       this.$router.push('/notification/notificationList');
     },
+    handleNotificationClick(notification) {
+      let targetUrl = '';
+
+      // 알림 유형에 따른 URL 설정
+      if (notification.type === '공지사항') {
+        targetUrl = 'http://localhost:8082/board/notice/list';
+      } else if (notification.type === '경조사') {
+        targetUrl = 'http://localhost:8082/board/familyevent/list';
+      } else if (notification.type === '예약') {
+        targetUrl = 'http://localhost:8082/reservation/meetReservationList';
+      } else if (notification.type === '결재') {
+        targetUrl = 'http://localhost:8082/submit/list';
+      } else if (notification.type === '문서') {
+        targetUrl = 'http://localhost:8082/document';
+      }
+
+      window.location.href = targetUrl;
+    },
+
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
@@ -166,7 +239,7 @@ export default {
 
     // 채팅룸 리스트 열기
     showChatRoomList() {
-      window.open("/chatRoom/list", "_blank", "width=480, height=650")
+      window.open("/chatRoom/list", "chatRoomList", "width=480, height=650")
     },
 
     // 로그인 연장
@@ -238,11 +311,13 @@ export default {
 
         console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
-        console.log(this.userProfile.profileImage);
       } catch (error) {
         console.error('유저 정보 가져오기 실패:', error);
       }
     },
+    toggleMyPage() {
+      this.showMyPage = !this.showMyPage;
+    }
   },
   computed: {
     formattedTimeRemaining() {
@@ -251,9 +326,14 @@ export default {
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
   },
+  mounted() {
+    document.addEventListener("click", this.handleClickOutside);
+  },
   beforeUnmount() {
+    document.removeEventListener("click", this.handleClickOutside);
     if (this.eventSource) {
       this.eventSource.close();  // 컴포넌트가 파괴될 때 SSE 연결 종료
+      document.removeEventListener("click", this.handleClickOutside);
     }
   },
 };
@@ -303,11 +383,15 @@ export default {
 
 .badge {
   position: absolute;
-  top: -13px;
+  top: -12px;
   background-color: red;
   color: white;
   border-radius: 50%;
-  padding: 4px 8px;
+  width: 23px;
+  height: 23px;
+  justify-content: center;
+  align-items: center;
+  padding: 3px 8px;
   font-size: 0.8rem;
 }
 
@@ -315,10 +399,9 @@ export default {
   position: absolute;
   top: 50px;
   right: 0;
-  width: 300px;
+  width: 350px;
   background-color: white;
   border-radius: 10px;
-  /* 동글동글하게 변경 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   /* 그림자 수정으로 부드럽게 */
   z-index: 1001;
@@ -381,5 +464,72 @@ export default {
   height: 100px;
   object-fit: cover;
   margin: 0 auto;
+}
+
+.unread-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 1;
+  margin-right: 16px;
+}
+
+.chat-icon {
+  position: relative;
+}
+
+.mypage-dropdown {
+  position: absolute;
+  top: 8vh;
+  right: 20px;
+  width: 340px;
+
+  margin-top: 2px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* 그림자 수정으로 부드럽게 */
+  z-index: 1001;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  /* 경계선 추가 */
+  padding: 40px;
+
+}
+
+.profile-icon {
+  height: 300px;
+  width: 300px;
+}
+
+.user-department {
+  font-size: 24px;
+  font-weight: 600;
+  color: #000000;
+  margin-top: 10px;
+  margin-bottom: 25px;
+}
+
+.toggle-btn {
+  text-align: center;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  font-weight: 600;
+  color: #722121;
+  background-color: #ffffff;
+  border: 1px solid #777777;
+  border-radius: 40px;
+  margin: 20px;
+  cursor: pointer;
+}
+
+.remain-time {
+  display: inline-block;
+  width: 35px;
+  font-size: 14px;
+}
+
+.extend-session {
+  cursor: pointer;
 }
 </style>

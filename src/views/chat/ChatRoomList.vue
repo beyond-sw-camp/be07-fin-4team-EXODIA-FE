@@ -49,8 +49,9 @@
     </v-container>
 
 
-    <ChatRoomView v-if="chatRoomCheck" @update:dialog="chatRoomCheck = $event" @update:check="chatRoomListCheck = $event"
-        :chatRoomIdProp="chatRoomId" :chatRoomNameProp="chatRoomName" :chatRoomUserNumsProp="chatRoomUserNums">
+    <ChatRoomView v-if="chatRoomCheck" @update:dialog="chatRoomCheck = $event"
+        @update:check="chatRoomListCheck = $event" :chatRoomIdProp="chatRoomId" :chatRoomNameProp="chatRoomName"
+        :chatRoomUserNumsProp="chatRoomUserNums">
     </ChatRoomView>
 
     <ChatRoomCreate v-if="createChatRoom" @update:dialog="createChatRoom = $event"
@@ -91,8 +92,50 @@ export default {
     created() {
         this.userNum = localStorage.getItem('userNum');
         this.loadChatRoom();
+        // this.initSSE();
     },
     methods: {
+        // // SSE 연결 설정
+        // initSSE() {
+        //     const token = localStorage.getItem("token");
+        //     if (!token) {
+        //         console.error("JWT 토큰이 없습니다.");
+        //         return;
+        //     }
+
+        //     this.eventSource = new EventSource(`${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`);
+
+        //     // 새로운 알림 수신 시 처리
+        //     this.eventSource.onmessage = (event) => {
+        //         const newNotification = JSON.parse(event.data);
+        //         if (newNotification.type == '채팅알림') {
+        //             this.unreadChatNum = newNotification.alarmNum;
+        //             console.log(newNotification);
+        //             return;
+        //         } else if (newNotification.type == '채팅입장') {
+        //             this.unreadChatNum = newNotification.alarmNum;
+        //             console.log(newNotification);
+        //             return;
+        //         } else if (newNotification.type == '채팅목록') {
+        //             window.location.href = '/chatRoom/list';
+        //             console.log(newNotification);
+        //             return;
+        //         }
+        //     };
+
+        //     // SSE 연결 오류 처리
+        //     this.eventSource.onerror = (error) => {
+        //         this.eventSource.close();
+        //         console.error('SSE 연결 오류:', error);
+        //         if (this.retryCount < this.maxRetryCount) {
+        //             setTimeout(() => {
+        //                 this.retryCount++;
+        //                 this.initSSE(); // SSE 재연결 시도
+        //             }, 3000); // 3초 후에 재연결 시도
+        //         }
+        //     };
+        // },
+        
         async loadChatRoom() {
             try {
                 const params = {

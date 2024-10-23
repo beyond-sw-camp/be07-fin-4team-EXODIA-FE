@@ -113,14 +113,14 @@ export default {
                 }
 
                 submitData.append("file", this.selectedFile);
-                await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/uploadFile`, submitData,
+                const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/uploadFile`, submitData,
                     { headers: { Authorization: `Bearer ${this.token}` } }
                 );
-                alert("파일이 성공적으로 업로드 되었습니다");
+                alert(response.data.status_message);
                 this.$router.push('/document');
 
             } catch (e) {
-                console.error('파일 업로드 중 오류 발생:', e);
+                alert(e.response.data.status_message);
             }
         },
         fileUpdate() {

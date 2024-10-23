@@ -24,11 +24,14 @@
             <!-- 시간 입력 (시, 분 분리) -->
             <v-row>
               <v-col cols="6">
-                <v-text-field v-model="formData.startHour" label="시작 시간 (시)" type="number" :min="0" :max="23" required
+                <small style="margin-top: -10px; color: red;">* 시간을 입력해주세요 00~23</small>
+                <v-text-field v-model="formData.startHour" label="시작 시간 (00시)" type="number" :min="0" :max="23" required
                   v-if="!allDay"></v-text-field>
+                  
               </v-col>
               <v-col cols="6">
-                <v-text-field v-model="formData.startMinute" label="시작 시간 (분)" type="number" :min="0" :max="59" required
+                <small style="color: red;">* 분을 입력해주세요</small>
+                <v-text-field v-model="formData.startMinute" label="시작 시간 (00분)" type="number" :min="0" :max="59" required
                   v-if="!allDay"></v-text-field>
               </v-col>
             </v-row>
@@ -36,11 +39,13 @@
 
             <v-row>
               <v-col cols="6">
-                <v-text-field v-model="formData.endHour" label="종료 시간 (시)" type="number" :min="0" :max="23" required
+                <small style="margin-top: -10px; color: red;">* 시간을 입력해주세요 00~23</small>
+                <v-text-field v-model="formData.endHour" label="종료 시간 (00시)" type="number" :min="0" :max="23" required
                   v-if="!allDay"></v-text-field>
               </v-col>
               <v-col cols="6">
-                <v-text-field v-model="formData.endMinute" label="종료 시간 (분)" type="number" :min="0" :max="59" required
+                <small style="margin-top: -10px; color: red;">* 분을 입력해주세요</small>
+                <v-text-field v-model="formData.endMinute" label="종료 시간 (00분)" type="number" :min="0" :max="59" required
                   v-if="!allDay"></v-text-field>
               </v-col>
             </v-row>
