@@ -85,7 +85,53 @@
                 </div>
 
                 <!-- 메시지 -->
-                <div v-if="chat.messageType == 'TALK' || chat.messageType == 'FILE'"
+                <div v-if="chat.senderNum !== chatSenderNum" class="other-message-container">
+                    <!-- 이름 -->
+                    <div class="sender-name">
+                        {{ chat.senderDepName }} {{ chat.senderName }} {{ chat.senderPosName }}님
+                    </div>
+
+                    <!-- 메시지 -->
+                    <div v-if="chat.messageType == 'TALK'" class="message-text">
+                        {{ chat.message }}
+                    </div>
+
+                    <div v-if="chat.messageType == 'FILE'">
+                        <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="false"></ChatFileBox>
+                        <div v-if="chat.message.length != 0" class="message-text">
+                            {{ chat.message }}
+                        </div>
+                    </div>
+
+                    <!-- 시간 -->
+                    <div class="message-time">
+                        {{ getTime(chat.createAt) }}
+                    </div>
+                </div>
+
+                <!-- 내 메시지 -->
+                <div v-if="chat.senderNum === chatSenderNum" class="my-message-container">
+                    <!-- 메시지 -->
+                    <div v-if="chat.messageType == 'TALK'" class="message-text">
+                        {{ chat.message }}
+                    </div>
+
+                    <div v-if="chat.messageType == 'FILE'">
+                        <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="true"></ChatFileBox>
+                        <div v-if="chat.message.length != 0" class="message-text">
+                            {{ chat.message }}
+                        </div>
+                    </div>
+
+                    <!-- 시간 -->
+                    <div class="message-time">
+                        {{ getTime(chat.createAt) }}
+                    </div>
+                </div>
+
+
+
+                <!-- <div v-if="chat.messageType == 'TALK' || chat.messageType == 'FILE'"
                     :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'">
                     <v-row v-if="chat.senderNum !== chatSenderNum" class="message-row">
                         <span class="sender-name">{{ chat.senderDepName }} {{ chat.senderName }} {{ chat.senderPosName
@@ -102,18 +148,17 @@
 
                     <v-row v-if="chat.senderNum === chatSenderNum" class="message-row my-row">
                         <v-col class="message" v-if="chat.messageType == 'TALK'">
-                            <div class="message-text">{{ chat.message }}</div>
+                            <div class="my-message-text">{{ chat.message }}</div>
                         </v-col>
                         <v-col class="message" v-if="chat.messageType == 'FILE'">
                             <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="chat.senderNum === chatSenderNum">
                             </ChatFileBox>
-                            <div v-if="chat.message.length != 0" class="message-text">{{ chat.message }}</div>
+                            <div v-if="chat.message.length != 0" class="my-message-text">{{ chat.message }}</div>
                         </v-col>
                     </v-row>
 
-                    <!-- 보낸 시간 -->
                     <span class="message-time">{{ getTime(chat.createAt) }}</span>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -125,15 +170,15 @@
                 <p class="custom-contents">{{ file.name }}</p>
             </div>
         </div>
-        <!-- 채팅 입력-->
-        <v-container class="input-container">
-            <v-row> <!--v-on:keypress.enter="sendMessage" auto-grow @keydown.shift.enter="insertNewLine"-->
-                <v-textarea class="input-field" v-model="messageToSend" outlined 
-                v-on:keypress.enter="sendMessage"></v-textarea>
+        <!-- 채팅 입력  class="input-container"-->
+        <v-container>
+            <v-row>
+                <!-- class="input-field" v-on:keypress.enter="sendMessage" auto-grow @keydown.shift.enter="insertNewLine"-->
+                <v-text-field v-model="messageToSend" outlined v-on:keypress.enter="sendMessage"></v-text-field>
             </v-row>
-            <v-row ><!-- class="file-input-container"-->
-                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input prepend-icon="mdi-paperclip"
-                    class="file-input-icon-left"></v-file-input>
+            <v-row><!-- class="file-input-container" class="file-input-icon-left"-->
+                <v-file-input v-model="files" @change="fileUpdate" multiple hide-input prepend-icon="mdi-paperclip">
+                </v-file-input>
                 <v-btn class="send-btn" @click="sendMessage">전송</v-btn>
             </v-row>
         </v-container>
@@ -245,9 +290,9 @@ export default {
             this.scrollToBottom();
         },
 
-        insertNewLine() {
-            this.messageToSend += '\n'; // 현재 입력된 텍스트에 줄바꿈을 추가
-        },
+        // insertNewLine() { // ⭐⭐⭐ 엔터가 이상하게 먹어요.
+        //     this.messageToSend += '\n'; // 현재 입력된 텍스트에 줄바꿈을 추가
+        // },
 
         async sendMessage() {
 
@@ -450,14 +495,13 @@ export default {
 .chat-room-header {
     display: flex;
     align-items: center;
-    padding: 10px;
-    background-color: #e9f4e4;
+    padding: 5px;
+    background-color: #7A5656;
     border-bottom: 1px solid #ccc;
 }
 
 .icon {
     cursor: pointer;
-    margin-right: 10px;
 }
 
 /* .chat-room-avatar img {
@@ -498,7 +542,7 @@ export default {
     padding: 10px;
     max-height: calc(100vh - 150px);
     /* 화면의 상단 영역을 침범하지 않도록 높이 제한 */
-    padding-top: 10px;
+    margin-top: 15px;
     /* 적절한 padding 추가 */
     height: 400px;
     overflow-y: auto;
@@ -517,7 +561,37 @@ export default {
     border-radius: 10px;
 }
 
-.my-message {
+.other-message-container,
+.my-message-container {
+    display: flex;
+    flex-direction: column; /* 세로로 정렬 */
+    margin-bottom: 10px;
+}
+
+.sender-name {
+    font-weight: bold;
+    margin-bottom: 5px; /* 메시지와 이름 사이에 간격 */
+}
+
+.message-text {
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 5px; /* 메시지와 시간 사이에 간격 */
+}
+
+.my-message-container .message-text {
+    background-color: #d1e7ff; /* 내 메시지 색상 */
+}
+
+.message-time {
+    font-size: 0.8rem;
+    color: gray;
+    align-self: flex-end; /* 시간이 오른쪽 끝에 정렬됨 */
+}
+
+
+/* .my-message {
     text-align: right;
 }
 
@@ -529,7 +603,7 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 0px;
-}
+} */
 
 /* .profile-avatar img {
     width: 30px;
@@ -537,7 +611,7 @@ export default {
     border-radius: 50%;
 } */
 
-.sender-name {
+/* .sender-name {
     font-weight: bold;
 }
 
@@ -549,6 +623,18 @@ export default {
 }
 
 .message-text {
+    background-color: rgba(122, 86, 86, 0.2);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    max-width: 60%;
+    display: inline-block;
+    white-space: pre-wrap;
+}
+
+.my-message-text {
     background-color: #e0f7fa;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -568,7 +654,7 @@ export default {
     font-size: 0.8em;
     color: gray;
     margin-left: 5px;
-}
+} */
 
 .image-group {
     display: flex;
@@ -611,34 +697,31 @@ export default {
     /* 텍스트 줄 바꿈 방지 */
 }
 
-.input-container {
+/* .input-container {
     padding: 10px;
     background-color: #f1f1f1;
     border-top: 1px solid #ccc;
-}
+} */
 
-.input-field {
+/* .input-field {
     width: 100%;
     height: 60px;
-    /* height: 100px; */
-    /* padding: 10px;
+    padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
     resize: none;
-    font-size: 1rem; */
-}
+    font-size: 1rem;
+} */
 
-.file-input-container {
+/* .file-input-container {
     position: relative;
     display: flex;
     justify-content: flex-start;
-    /* 파일 전송 아이콘을 왼쪽 정렬 */
 }
 
 .file-input-icon-left .v-input__prepend-inner {
     justify-content: flex-start;
-    /* 아이콘을 왼쪽으로 정렬 */
-}
+} */
 
 .send-btn {
     background-color: #4CAF50;
