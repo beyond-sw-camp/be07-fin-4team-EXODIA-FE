@@ -32,7 +32,7 @@
           <ul @click.stop>
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
               <div class="notification-item" @click="handleNotificationClick(notification)">
-                <span>{{ truncatedMessage(notification.message, 20) }}</span>
+                <span>{{ truncatedMessage(notification.message, 25) }}</span>
                 <small>{{ formatDate(notification.createdAt) }}</small>
               </div>
             </li>
