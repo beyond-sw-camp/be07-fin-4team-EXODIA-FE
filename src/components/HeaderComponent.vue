@@ -7,7 +7,7 @@
       <span v-if="timeRemaining > 0" style="font-size:14px;">남은 시간:
       </span>
       <span class="remain-time"> {{ formattedTimeRemaining }}</span>
-      <span @click="extendSession" style="font-size:14px">
+      <span @click="extendSession" style="font-size:14px" class="extend-session">
         | 연장
       </span>
     </div>
@@ -527,5 +527,9 @@ export default {
   display: inline-block;
   width: 35px;
   font-size: 14px;
+}
+
+.extend-session {
+  cursor: pointer;
 }
 </style>
