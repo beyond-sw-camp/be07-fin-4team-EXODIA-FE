@@ -1,82 +1,89 @@
 <template>
-  <v-container fluid>
-    <v-row no-gutters>
-      <v-col cols="12" md="4" class="profile-content">
-        <v-row class="profile-card" style="margin-top: 40px;">
-          <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1" class="profile-img"></v-img>
+  <MypageTemplate>
+    <template #profile>
+      <v-container fluid>
+        <v-row no-gutters>
+          <v-col cols="12" md="4" class="profile-content">
+            <v-row class="profile-card" style="margin-top: 40px;">
+              <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1" class="profile-img"></v-img>
+            </v-row>
+          </v-col>
+
+          <v-col cols="12" md="7" class="profile-info">
+            <v-row class="info-card">
+              <v-card-text>
+                <table class="custom-table">
+                  <tbody>
+                    <tr>
+                      <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">이름</td>
+                      <td style="width:70%;">{{ userProfile?.name || 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                      <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">사번</td>
+                      <td style="width:70%;">{{ userProfile?.userNum || 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                      <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">부서명</td>
+                      <td style="width:70%;">{{ userProfile?.departmentName || 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                      <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">직책</td>
+                      <td style="width:70%;">{{ userProfile?.positionName || 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                      <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">전화번호</td>
+                      <td style="width:70%;">{{ userProfile?.phone || 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                      <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">입사일</td>
+                      <td style="width:70%;">{{ userProfile?.joinDate || 'N/A' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </v-card-text>
+            </v-row>
+          </v-col>
         </v-row>
-      </v-col>
 
-      <v-col cols="12" md="7" class="profile-info">
-        <v-row class="info-card">
-          <v-card-text>
-            <table class="custom-table">
-              <tbody>
-                <tr>
-                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">이름</td>
-                  <td style="width:70%;">{{ userProfile?.name || 'N/A' }}</td>
-                </tr>
-                <tr>
-                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">사번</td>
-                  <td style="width:70%;">{{ userProfile?.userNum || 'N/A' }}</td>
-                </tr>
-                <tr>
-                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">부서명</td>
-                  <td style="width:70%;">{{ userProfile?.departmentName || 'N/A' }}</td>
-                </tr>
-                <tr>
-                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">직책</td>
-                  <td style="width:70%;">{{ userProfile?.positionName || 'N/A' }}</td>
-                </tr>
-                <tr>
-                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">전화번호</td>
-                  <td style="width:70%;">{{ userProfile?.phone || 'N/A' }}</td>
-                </tr>
-                <tr>
-                  <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">입사일</td>
-                  <td style="width:70%;">{{ userProfile?.joinDate || 'N/A' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </v-card-text>
-        </v-row>
-      </v-col>
-    </v-row>
+        <v-btn @click="openPasswordChangeModal">비밀번호 변경</v-btn>
 
-    <v-btn @click="openPasswordChangeModal">비밀번호 변경</v-btn>
+        <v-dialog v-model="passwordChangeDialog" persistent max-width="500px">
+          <v-card>
+            <v-card-title class="headline">비밀번호 변경</v-card-title>
 
-    <v-dialog v-model="passwordChangeDialog" persistent max-width="500px">
-      <v-card>
-        <v-card-title class="headline">비밀번호 변경</v-card-title>
+            <v-card-text>
+              <v-form ref="passwordForm" v-model="valid">
+                <v-text-field v-model="passwordData.currentPassword" label="현재 비밀번호" type="password" required></v-text-field>
+                <v-text-field v-model="passwordData.newPassword" label="새 비밀번호" type="password" required></v-text-field>
+                <v-text-field v-model="passwordData.confirmNewPassword" label="새 비밀번호 확인" type="password" required></v-text-field>
 
-        <v-card-text>
-          <v-form ref="passwordForm" v-model="valid">
-            <v-text-field v-model="passwordData.currentPassword" label="현재 비밀번호" type="password" required></v-text-field>
-            <v-text-field v-model="passwordData.newPassword" label="새 비밀번호" type="password" required></v-text-field>
-            <v-text-field v-model="passwordData.confirmNewPassword" label="새 비밀번호 확인" type="password" required></v-text-field>
+                <v-alert v-if="passwordError" type="error" border="top" elevation="2" dense>
+                  {{ passwordError }}
+                </v-alert>
+              </v-form>
+            </v-card-text>
 
-            <v-alert v-if="passwordError" type="error" border="top" elevation="2" dense>
-              {{ passwordError }}
-            </v-alert>
-          </v-form>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" @click="changePassword">변경</v-btn>
-          <v-btn color="grey" @click="closePasswordChangeModal">취소</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-container>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" @click="changePassword">변경</v-btn>
+              <v-btn color="grey" @click="closePasswordChangeModal">취소</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-container>
+    </template>
+  </MypageTemplate>
 </template>
 
 <script>
 import axios from 'axios';
-import moment from 'moment';
+import MypageTemplate from './MypageTemplate.vue'; 
 
 export default {
   name: "UserProfile",
+  components: {
+    MypageTemplate
+  },
   data() {
     return {
       userProfile: {},
