@@ -1,6 +1,4 @@
 <template>
-  <MypageTemplate>
-    <template v-slot:attendance>
       <div class="userAttendance">
         <v-row>
           <v-col cols="4">
@@ -46,19 +44,14 @@
           </v-col>
         </v-row>
       </div>
-    </template>
-  </MypageTemplate>
 </template>
 
 <script>
 import axios from "axios";
-import MypageTemplate from './MypageTemplate.vue'; 
 
 export default {
   name: "UserAttendance",
-  components: {
-    MypageTemplate
-  },
+
   data() {
     return {
       isWorkIn: false,

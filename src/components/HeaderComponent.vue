@@ -70,15 +70,15 @@
 
           <v-row justify="center" class="toggle-btn">
             <v-icon style="padding-right:5px; font-size:20px">mdi-account</v-icon>
-            <btn @click="$router.push('/mypage/vacation')">
+            <button @click="$router.push('/mypage/vacation')">
               마이페이지
-            </btn>
+            </button>
           </v-row>
           <v-row justify="center" class="toggle-btn">
             <v-icon style="padding-right:5px; font-size:20px">mdi-logout</v-icon>
-            <btn @click="logout">
+            <button @click="logout">
               로그아웃
-            </btn>
+            </button>
           </v-row>
         </div>
       </div>
