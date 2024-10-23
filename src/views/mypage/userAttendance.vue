@@ -1,63 +1,59 @@
 <template>
-  <MypageTemplate>
-    <template v-slot:attendance>
-      <div class="userAttendance">
-        <v-row>
-          <v-col cols="4">
-            <h3>출·퇴근 기록</h3>
-          </v-col>
-          <v-col cols="2">
-            <!-- 출근 버튼 -->
-            <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn">
-              출근
-            </v-btn>
-          </v-col>
-          <v-col cols="2">
-            <!-- 퇴근 버튼 -->
-            <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut">
-              퇴근
-            </v-btn>
+  <div class="userAttendance">
+    <v-row>
+      <v-col cols="4">
+        <h3>출·퇴근 기록</h3>
+      </v-col>
+      <v-col cols="2">
+        <!-- 출근 버튼 -->
+        <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn">
+          출근
+        </v-btn>
+      </v-col>
+      <v-col cols="2">
+        <!-- 퇴근 버튼 -->
+        <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut">
+          퇴근
+        </v-btn>
+      </v-col>
+
+      <!-- 상태 표시 -->
+      <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
+    </v-row>
+
+    <!-- 부서원 출근 정보 목록 -->
+    <v-row class="container">
+      <v-col cols="6" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
+        <v-row class="profile-container">
+          <v-col class="profile-item">
+            <!-- 프로필 이미지 -->
+            <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
+            <!-- 출근 여부 뱃지 -->
+            <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
+            <!-- 이름, 직책, 부서명 -->
           </v-col>
 
-          <!-- 상태 표시 -->
-          <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
-        </v-row>
-
-        <!-- 부서원 출근 정보 목록 -->
-        <v-row class="container">
-          <v-col cols="6" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
-            <v-row class="profile-container">
-              <v-col class="profile-item">
-                <!-- 프로필 이미지 -->
-                <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
-                <!-- 출근 여부 뱃지 -->
-                <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
-                <!-- 이름, 직책, 부서명 -->
-              </v-col>
-
-              <v-col>
-                <div class="user-info">
-                  <div class="user-name">{{ user.name }}</div>
-                  <div class="user-position">{{ user.positionName }}</div>
-                  <div class="user-department">{{ user.departmentName }}</div>
-                </div>
-              </v-col>
-            </v-row>
+          <v-col>
+            <div class="user-info">
+              <div class="user-name">{{ user.name }}</div>
+              <div class="user-position">{{ user.positionName }}</div>
+              <div class="user-department">{{ user.departmentName }}</div>
+            </div>
           </v-col>
         </v-row>
-      </div>
-    </template>
-  </MypageTemplate>
+      </v-col>
+    </v-row>
+  </div>
+
 </template>
 
 <script>
 import axios from "axios";
-import MypageTemplate from './MypageTemplate.vue'; 
 
 export default {
   name: "UserAttendance",
   components: {
-    MypageTemplate
+
   },
   data() {
     return {

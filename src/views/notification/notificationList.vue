@@ -93,6 +93,10 @@ export default {
     },
   },
   methods: {
+    navigateToType(value) {
+      this.selectedType = value;
+
+    },
     // JWT 토큰을 URL의 쿼리 파라미터로 포함한 SSE 연결
     initSSE() {
       const token = localStorage.getItem("token");
