@@ -1,4 +1,3 @@
-
 <template>
   <header class="header">
     <div class="icons">
@@ -8,11 +7,12 @@
       </div>
 
       <!-- 알림 아이콘 클릭 시 알림 목록 토글 -->
-      <div class="notification-icon" ref="notificationIcon" @click.stop="toggleNotifications">
-        <v-icon class="icon">mdi-bell</v-icon>
-
+      <div class="notification-icon" @click="toggleNotifications">
         <!-- 읽지 않은 알림 개수 표시 -->
-        <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+        <v-badge :content="unreadCount" color="red" v-if="unreadCount > 0" class="unread-badge"></v-badge>
+        <v-icon class="icon">mdi-bell</v-icon>
+        
+        <!-- <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span> -->
 
         <!-- 알림 목록 -->
         <div v-if="showNotifications" class="notification-dropdown">
@@ -29,7 +29,8 @@
       </div>
 
       <!-- 채팅방리스트 -->
-      <div class="icon-item">
+      <div class="chat-icon" >
+        <v-badge :content="unreadChatNum" color="red" v-if="unreadChatNum > 0" class="unread-badge"></v-badge>
         <v-icon class="icon" @click="showChatRoomList">mdi-chat</v-icon>
       </div>
 
@@ -70,8 +71,9 @@ export default {
       retryCount: 0, // 재연결 시도 횟수
       maxRetryCount: 5, // 최대 재연결 시도 횟수
       userProfile: {},
-      defaultProfileImage: 'https://via.placeholder.com/150'
+      defaultProfileImage: 'https://via.placeholder.com/150',
 
+      unreadChatNum: 0,
     };
   },
   created() {
@@ -95,6 +97,19 @@ export default {
       // 새로운 알림 수신 시 처리
       this.eventSource.onmessage = (event) => {
         const newNotification = JSON.parse(event.data);
+        if (newNotification.type == '채팅알림') {
+          this.unreadChatNum = newNotification.alarmNum;
+          console.log(newNotification);
+          return;
+        } else if (newNotification.type == '채팅입장') {
+          this.unreadChatNum = newNotification.alarmNum;
+          console.log(newNotification);
+          return;
+        } else if (newNotification.type == '채팅목록') {
+          console.log(newNotification);
+          return;
+        }
+        console.log(newNotification);
         this.notifications.unshift(newNotification);  // 새로운 알림을 맨 위에 추가
         this.unreadCount += 1;  // 읽지 않은 알림 개수 증가
       };
@@ -189,7 +204,7 @@ export default {
 
     // 채팅룸 리스트 열기
     showChatRoomList() {
-      window.open("/chatRoom/list", "_blank", "width=480, height=650")
+      window.open("/chatRoom/list", "chatRoomList", "width=480, height=650")
     },
 
     // 로그인 연장
@@ -414,5 +429,17 @@ export default {
   height: 100px;
   object-fit: cover;
   margin: 0 auto;
+}
+
+.unread-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 1;
+  margin-right: 16px;
+}
+
+.chat-icon {
+  position: relative;
 }
 </style>

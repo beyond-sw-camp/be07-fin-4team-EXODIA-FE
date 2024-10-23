@@ -155,6 +155,7 @@ export default {
                 alert("유저를 고르세요.");
                 return;
             }
+            this.chatroomData.roomName = this.selectUser.map(user=>user.name).join();
             this.showChatUser = false;
             this.showChatRoomName = true;
         },
