@@ -41,8 +41,8 @@
                     <v-col cols="2"><strong>작성자</strong></v-col>
                 </v-row>
 
-                <v-row v-for="(document, index) in documents" :key="document.id" class="document" oulined
-                    @click="openDrawer(document.id)"
+                <v-row :class="{ 'drawer-open': drawer }" v-for="(document, index) in documents" :key="document.id"
+                    class="document" oulined @click="openDrawer(document.id)"
                     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                     <v-col cols="1">{{ index + 1 }}</v-col>
                     <v-col cols="6" class="ellipsis-text" style="text-align:start;">{{ document.fileName }}</v-col>
@@ -72,7 +72,7 @@
                     <v-card-title>
                         <v-row class="detailFileName ellipsis-text">{{
                             selectedDocument.fileName
-                        }}</v-row>
+                            }}</v-row>
                     </v-card-title>
                     <v-divider></v-divider>
                     <v-card-text>
@@ -128,7 +128,7 @@
                         <v-divider></v-divider>
                     </v-card-title>
 
-                    <v-timeline dense v-if="showHistory" style="margin:10px" width="600px">
+                    <v-timeline dense v-if="showHistory" style="margin:10px" width="500px">
                         <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
 
                             <v-card width="250px" style="padding:20px">
@@ -190,11 +190,13 @@
                                         </v-avatar>
                                     </v-col>
                                     <v-col cols="5">{{ comment.userName }}</v-col>
-                                    <v-col cols="5" style="font-size:12px">{{ formatDate(comment.createdAt) }} {{
-                                        formatLocalTime(comment.createdAt) }}</v-col>
                                 </v-row>
-                                <v-row cols="12" style="padding-left:50px">
+                                <v-row cols="12" style="padding-left:50px" class="comment-content">
                                     {{ comment.contents }}
+                                </v-row>
+                                <v-row style="font-size:12px; padding:20px" class="justify-end">
+                                    {{ formatDate(comment.createdAt) }} {{
+                                        formatLocalTime(comment.createdAt) }}
                                 </v-row>
                                 <v-divider v-if="!showHistory"></v-divider>
                             </v-col>
@@ -314,7 +316,7 @@ export default {
                 const response = await axios.get(url);
                 this.comments = response.data.result;
             } catch (e) {
-                console.error('댓글 목록 가져오는 중 오류 발생:', e);
+                alert(e.response.data.status_message);
             }
         },
         async submitComments(id) {
@@ -327,16 +329,17 @@ export default {
                     contents: this.comment
                 };
 
-                await axios.post(url, createData, {
+                const response = await axios.post(url, createData, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
                 });
-                alert("댓글 작성이 성공적으로 처리되었습니다.");
+
+                alert(response.data.status_message);
                 this.comment = '';
                 this.fetchComments();
             } catch (e) {
-                console.error('댓글 등록 중 오류 발생:', e);
+                alert(e.response.data.status_message);
             }
         },
         async openDrawer(id) {
@@ -376,9 +379,9 @@ export default {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                alert("파일 다운로드 성공");
+                alert(response.data.status_message);
             } catch (e) {
-                console.error('파일 다운로드 중 오류 발생:', e);
+                alert(e.response.data.status_message);
             }
         },
         async fetchHistory(id) {
@@ -388,7 +391,7 @@ export default {
 
                 this.historyDocument = response.data.result;
             } catch (e) {
-                console.error('히스토리 정보를 가져오는 중 오류 발생:', e);
+                alert(e.response.data.status_message);
             }
         },
         async searchFilter(input) {
@@ -403,7 +406,7 @@ export default {
                 this.localDocuments = response.data.result;
             }
             catch (e) {
-                console.error("검색 중 오류 발생: ", e)
+                alert(e.response.data.status_message);
             }
         },
         confirmRevert(versionId) {
@@ -418,9 +421,8 @@ export default {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/rollback/${id} `;
                 await axios.post(url);
                 location.reload();
-
             } catch (e) {
-                console.error('롤백 중 오류 발생:', e);
+                alert(e.response.data.status_message);
             }
         },
         handleCreateTag() {
@@ -433,17 +435,18 @@ export default {
                     tagName: this.tagName
                 };
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/tag/create`;
-                await axios.post(url, submitData, {
+                const response = await axios.post(url, submitData, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
                 });
 
                 this.isTagDialogVisible = false;
-                alert(`${this.tagName} 태그가 성공적으로 생성되었습니다.`);
+                alert(response.data.status_message);
                 location.reload();
             } catch (e) {
-                console.error('롤백 중 오류 발생:', e);
+                alert(e.response.data.status_message);
+                location.reload();
             }
         },
         formatDate(date) {
@@ -544,7 +547,7 @@ v-card-title,
 
 .comments-item {
     display: flex;
-    justify-content: space-between;
+    justify-content: start;
     align-content: center;
 }
 
@@ -553,5 +556,11 @@ v-card-title,
     display: flex;
     justify-content: center;
     align-content: center;
+}
+
+.comment-content {
+    display: inline-block;
+    max-width: 700px;
+    width: 100%;
 }
 </style>

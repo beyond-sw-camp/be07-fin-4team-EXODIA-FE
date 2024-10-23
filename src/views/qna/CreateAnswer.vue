@@ -63,6 +63,7 @@ export default {
       userDepartmentId: null, // 현재 사용자 부서 ID
       departmentTree: [], // 전체 부서 트리
       canAnswer: false, // 답변 가능 여부
+      answerMaxLength: 5000, // 답변 최대 길이 제한
     };
   },
   computed: {
@@ -84,11 +85,7 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/detail/${questionId}`);
 
-        console.log("API 응답 전체:", response.data); // 전체 응답 데이터 확인
         this.questionDetail = response.data.result;
-
-        // departmentId 값이 있는지 확인
-        console.log("질문 departmentId:", this.questionDetail.departmentId);
 
         // 질문 작성 날짜를 포맷팅하여 저장
         this.formattedQuestionDate = new Date(this.questionDetail.createdAt).toLocaleString();
@@ -97,6 +94,7 @@ export default {
         this.checkAnswerPermission();
       } catch (error) {
         console.error('질문 정보를 불러오는 중 오류가 발생했습니다:', error);
+        alert('질문 정보를 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
@@ -105,43 +103,35 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/hierarchy`);
         this.departmentTree = response.data;
-        console.log('부서 트리 로드됨:', this.departmentTree); // 부서 트리 로그 추가
       } catch (error) {
         console.error('부서 트리를 가져오는 중 오류가 발생했습니다:', error);
+        alert('부서 정보를 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
     // 부모-자식 관계를 고려하여 답변 가능 여부 확인
     checkAnswerPermission() {
-      const questionDepartmentId = Number(this.questionDetail.departmentId);  // 숫자로 변환
-      const userDepartmentId = Number(this.userDepartmentId);  // 숫자로 변환
-
-      console.log('사용자 부서:', userDepartmentId, '문의 부서:', questionDepartmentId);
-      
+      const questionDepartmentId = Number(this.questionDetail.departmentId);
+      const userDepartmentId = Number(this.userDepartmentId);
 
       if (!questionDepartmentId || !userDepartmentId) {
-        console.error('부서 정보가 없습니다.');
+        alert('부서 정보가 누락되었습니다. 다시 시도해주세요.');
         this.canAnswer = false;
         return;
       }
 
-      // 동일 부서이면 바로 true 반환
       if (questionDepartmentId === userDepartmentId) {
-        console.log('동일 부서입니다. 답변 가능합니다.');
         this.canAnswer = true;
         return;
       }
 
-      // 상위 부서 또는 동일 부서 여부 확인
       this.canAnswer = this.isParentDepartment(questionDepartmentId, userDepartmentId);
-      console.log('부서 답변 가능 여부:', this.canAnswer, '사용자 부서:', userDepartmentId, '문의 부서:', questionDepartmentId);
     },
 
     // 부서 트리에서 상위 부서인지 확인하는 함수
     isParentDepartment(parentId, childId) {
       const departmentMap = {};
 
-      // 부서 트리를 순회하며 부모-자식 관계 매핑
       const mapDepartments = (departments) => {
         departments.forEach(department => {
           departmentMap[department.id] = department.parentId || null;
@@ -151,31 +141,29 @@ export default {
         });
       };
 
-      // 부서 트리를 순회하며 부모-자식 관계 매핑
       mapDepartments(this.departmentTree);
 
-      // 맵이 잘 생성되었는지 로그 출력
-      console.log('부서 관계 맵:', departmentMap);
-
-      // 상위 부서를 찾을 때까지 순회
       let currentParent = departmentMap[childId];
       while (currentParent) {
-        console.log(`현재 부모 ID: ${currentParent}, 찾는 부모 ID: ${parentId}`);
         if (currentParent === parentId) {
-          console.log(`상위 부서 확인됨: ${parentId} -> ${childId}`);
           return true;
         }
         currentParent = departmentMap[currentParent];
       }
 
-      console.log(`상위 부서 확인 실패: ${parentId} -> ${childId}`);
       return false;
     },
 
     // 답변 작성 또는 수정
     async submitAnswer() {
+      if (this.newAnswerText.length > this.answerMaxLength) {
+        alert(`답변은 최대 ${this.answerMaxLength}자까지 작성할 수 있습니다. 현재 ${this.newAnswerText.length}자를 입력하셨습니다.`);
+        return;
+      }
+
       const questionId = this.$route.params.id;
-      const userNum = localStorage.getItem("userNum"); // 사용자 ID를 로컬 스토리지에서 가져옴
+      const userNum = localStorage.getItem("userNum");
+
       try {
         const formData = new FormData();
         formData.append('answerText', this.newAnswerText);
@@ -187,29 +175,38 @@ export default {
           });
         }
 
-        const response = await axios.post(
+        await axios.post(
           `${process.env.VUE_APP_API_BASE_URL}/qna/answer/${questionId}`,
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
 
-        console.log('답변 등록 성공:', response.data);
+        alert('답변이 성공적으로 등록되었습니다.');
         this.$router.push(`/qna/detail/${questionId}`);
       } catch (error) {
         console.error('답변 등록 중 오류가 발생했습니다:', error);
+        alert('답변을 등록하는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
     // 파일 다운로드
     downloadFile(filePath) {
-      const link = document.createElement('a');
-      link.href = filePath;
-      link.download = filePath.split('/').pop();
-      link.click();
+      try {
+        const link = document.createElement('a');
+        link.href = filePath;
+        link.download = filePath.split('/').pop();
+        link.click();
+        alert('파일 다운로드가 시작되었습니다.');
+      } catch (error) {
+        console.error('파일 다운로드 중 오류가 발생했습니다:', error);
+        alert('파일 다운로드 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
     },
   },
 };
+
 </script>
+
 
 <style scoped>
 .v-container {

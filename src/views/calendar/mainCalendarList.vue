@@ -30,7 +30,7 @@ export default {
         droppable: true,  // 외부에서 드롭 가능하게 설정
         eventResizableFromStart: true,  // 시작 시간부터 이벤트를 조정할 수 있게 설정
         locale: 'ko', // 한국어 로케일 설정
-
+        height: 700, 
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
@@ -67,6 +67,7 @@ export default {
       isModalOpen: false,
       isEditing: false,
       allDay: false, // 하루종일 여부
+      
       formData: {
         id: null,
         title: '',
@@ -100,7 +101,7 @@ export default {
           },
           classNames: [event.type === '유저' ? 'user-event' : event.type === '부서' ? 'department-event' : 'company-event']
         }));
-        this.calendarOptions.events = events;
+        this.secondCalendarOptions.events = events;
       }).catch(error => {
         console.error('이벤트 불러오기 오류:', error);
       });
@@ -138,7 +139,7 @@ export default {
     updateEvent(event) {
       const payload = {
         title: event.title, 
-        content: event.extendedProps.content, // 이벤트 객체에서 content를 가져옴
+        content: event.extendedProps.content,
         type: event.extendedProps.type, 
         startTime: this.formatLocalDateTime(event.start),
         endTime: this.formatLocalDateTime(event.end),
@@ -176,6 +177,8 @@ export default {
   background-color: #2196f3;
   border-radius: 50%;
   margin-right: 5px;
+  height: auto; /* 높이를 자동으로 설정 */
+  min-height: 1000px; /* 최소 높이 설정 */
 }
 
 #second-calendar-container .fc-event {
@@ -344,6 +347,8 @@ export default {
 #second-calendar-container ::-webkit-scrollbar-thumb:hover {
   background: #555; 
 }
-
+#second-calendar-container {
+  height: 800px;
+}
 
 </style>
