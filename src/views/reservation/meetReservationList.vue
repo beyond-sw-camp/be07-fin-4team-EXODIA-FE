@@ -66,10 +66,11 @@ meetReservation
           <div v-for="slot in timeSlots" :key="slot" class="timeline-bar">
             <v-progress-linear
               height="50"
-              :color="getTimeColor(room.id, slot)"
+              :color="isReserved(room.id, slot) ? 'blue darken-2' : 'white'"
               class="timeline-progress"
               :value="100"
-              style="width: 100%; padding: 0; margin: 0;"
+              @click="handleSlotClick(room.id, slot)"
+              style="width: 100%; padding: 0; margin: 0; opacity: 1 !important; background-color: none;"
             ></v-progress-linear>
           </div>
         </v-row>
@@ -158,29 +159,77 @@ meetReservation
 
     <!-- 사용자 예약 내역 표시 -->
 
-  <v-row>
-    <v-col>
-      <h3 style="margin-top: 20px;">내 예약 내역</h3>
-      <br>
-      
-      <!-- 테이블 헤더 -->
-      <v-row class="mb-2" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
-        <v-col cols="3"><strong>회의실</strong></v-col>
-        <v-col cols="3"><strong>시작 시간</strong></v-col>
-        <v-col cols="3"><strong>종료 시간</strong></v-col>
-        <v-col cols="3"><strong>상태</strong></v-col>
-      </v-row>
+      <v-row>
+        <v-col>
+          <h3 style="margin-top: 20px;">내 예약 내역</h3>
+          <br>
+          
+          <!-- 테이블 헤더 -->
+          <v-row class="mb-2" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
+            <v-col cols="3"><strong>회의실</strong></v-col>
+            <v-col cols="3"><strong>시작 시간</strong></v-col>
+            <v-col cols="3"><strong>종료 시간</strong></v-col>
+            <v-col cols="3"><strong>상태</strong></v-col>
+          </v-row>
 
-      <!-- 예약 내역 리스트 -->
-      <v-row v-for="(item, index) in userReservations" :key="index" class="meetReservation-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
-        <v-col cols="3">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
-        <!-- 날짜와 시간만 표시하도록 변경 -->
-        <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
-        <v-col cols="3">{{ formatDateTime(item.endTime) }}</v-col>
-        <v-col cols="3">{{ item.status }}</v-col>
+          <!-- 예약 내역 리스트 -->
+          <v-row v-for="(item, index) in userReservations" :key="index" class="meetReservation-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+            <v-col cols="3">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
+            <!-- 날짜와 시간만 표시하도록 변경 -->
+            <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
+            <v-col cols="3">{{ formatDateTime(item.endTime) }}</v-col>
+            <v-col cols="3">{{ item.status }}</v-col>
+          </v-row>
+        </v-col>
       </v-row>
-    </v-col>
-  </v-row>
+      <!-- 예약 정보 모달 -->
+      <v-dialog v-model="dialogInfo" max-width="400px">
+        <v-card v-if="selectedReservation">
+          <v-card-title class="headline" style="background-color: #f5f5f5; padding: 20px; font-size: 18px; font-weight: bold;">
+            예약정보
+          </v-card-title>
+          <v-card-text style="padding: 20px;">
+            <!-- 프로필 이미지와 예약자 정보 섹션 -->
+            <v-row align="center">
+              <v-col cols="2">
+
+              </v-col>
+              <!-- 프로필 이미지 -->
+              <v-col cols="3" style="text-align: left; ">
+                <v-avatar size="80" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-left: 10px;"> <!-- 여기에 margin-left 추가 -->
+                  <v-img :src="selectedReservation.userProfileImage || defaultProfileImage" alt="프로필 이미지" />
+                </v-avatar>
+              </v-col>
+
+              <!-- 예약자 정보 -->
+              <v-col cols="7" style="display: flex; flex-direction: column; justify-content: center;">
+                <div style="margin-bottom: 10px;">
+                  {{ selectedReservation.userNum }}
+                </div>
+                <div>
+                  {{ selectedReservation.userName }}
+                </div>
+              </v-col>
+            </v-row>
+
+            <v-divider class="my-4"></v-divider>
+            <v-row>
+              <v-col cols="12">
+                <div style="margin-bottom: 10px; margin-left: -70px;"><strong>회의실</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ getMeetingRoomName(selectedReservation.meetingRoomId) }}</div>
+                <div style="margin-bottom: 10px;"><strong>시작시간</strong> &nbsp;&nbsp;{{ formatDateTime(selectedReservation.startTime) }}</div>
+                <div><strong>종료시간</strong>&nbsp;&nbsp; {{ formatDateTime(selectedReservation.endTime) }}</div>
+              </v-col>
+            </v-row>
+          </v-card-text>
+
+          <v-card-actions style="padding: 15px;">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+
 
   </v-container>
 </template>
@@ -192,6 +241,7 @@ import moment from 'moment';
 export default {
   data() {
     return {
+      selectedReservation: null,
       selectedTab: 0,
       selectedDate: new Date(),
       meetingRooms: [],
@@ -199,6 +249,7 @@ export default {
       timeSlots: this.generateTimeSlots(),
       userReservations: [], // 사용자 예약 내역을 저장할 배열
       dialog: false,
+      dialogInfo: false,  
       selectedMeetingRoom: null,
       startDate: new Date(), // 시작 날짜
       startHour: null,
@@ -276,6 +327,30 @@ export default {
         }
       }
     },
+
+    handleSlotClick(roomId, timeSlot) {
+      const selectedDateFormatted = this.formattedDate(this.selectedDate);
+      const fullTimeSlot = moment(`${selectedDateFormatted}T${timeSlot}`, "YYYY-MM-DDTHH:mm");
+
+      // 해당 시간에 예약된 회의실과 타임슬롯을 찾아냄
+      const reservation = this.reservations.find(reservation => {
+        const startTime = moment(reservation.startTime);
+        const endTime = moment(reservation.endTime);
+        return reservation.meetingRoomId === roomId && fullTimeSlot.isBetween(startTime, endTime, null, "[)");
+      });
+
+      if (reservation) {
+        this.selectedReservation = reservation;
+        this.dialogInfo = true;  // 예약 정보가 있을 때만 모달을 엶
+      } else {
+        console.log("해당 시간에 예약된 정보가 없습니다.");
+      }
+    },
+    showReservationInfo(reservation) {
+      
+      this.dialogInfo  = true;  // 모달을 여는 플래그
+      this.selectedReservation = reservation;  // 선택된 예약을 저장
+    },
     async fetchUserReservations() {
       try {
         const token = localStorage.getItem("token");
@@ -306,7 +381,7 @@ export default {
       });
     },
     getTimeColor(roomId, timeSlot) {
-      return this.isReserved(roomId, timeSlot) ? "blue" : "#f5f5f5";
+      return this.isReserved(roomId, timeSlot) ? "blue darken-2 !important" : "white";
     },
     displayHourLabel(hour, index) {
       return index % 2 === 0 ? parseInt(hour, 10) : '';
@@ -349,10 +424,19 @@ export default {
           alert("로그인 후 예약을 시도해 주세요.");
           return;
         }
+        if (this.startHour === null || this.startMinute === null || this.endHour === null || this.endMinute === null) {
+          alert("시작 및 종료 시간을 모두 입력해 주세요.");
+          return;
+        }
 
         // 사용자가 선택한 날짜와 시간을 조합
         const startTime = moment(`${this.startDate.getFullYear()}-${String(this.startDate.getMonth() + 1).padStart(2, '0')}-${String(this.startDate.getDate()).padStart(2, '0')}T${String(this.startHour).padStart(2, '0')}:${String(this.startMinute).padStart(2, '0')}`).format('YYYY-MM-DDTHH:mm:ss');
         const endTime = moment(`${this.startDate.getFullYear()}-${String(this.startDate.getMonth() + 1).padStart(2, '0')}-${String(this.startDate.getDate()).padStart(2, '0')}T${String(this.endHour).padStart(2, '0')}:${String(this.endMinute).padStart(2, '0')}`).format('YYYY-MM-DDTHH:mm:ss');
+
+        if (moment(endTime).isBefore(startTime)) {
+          alert("종료 시간이 시작 시간보다 빠를 수 없습니다.");
+          return;
+        }
 
         await axios.post(`${process.env.VUE_APP_API_BASE_URL}/reservation/meet/create`, {
           meetingRoomId: this.selectedMeetingRoom,
@@ -427,12 +511,13 @@ export default {
   height: 50px;
   border: 1px solid #B9B9B9;
   margin: 0;
-  opacity: 0.7;
+  /* opacity: 0.7; */
 }
 
 .v-progress-linear {
   height: 50px;
   padding: 0;
+  opacity: 1 !important;
 }
 
 .reserved-slot {
@@ -473,4 +558,15 @@ export default {
   text-align: center;
 }
 
+
+
+.v-avatar {
+  border: 2px solid #ccc; /* 프로필 이미지에 테두리 추가 */
+  border-radius: 50%;
+}
+
+
+/* .v-card-actions {
+  justify-content: flex-end;
+} */
 </style>

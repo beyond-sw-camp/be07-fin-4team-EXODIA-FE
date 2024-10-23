@@ -1,4 +1,3 @@
-
 <template>
   <header class="header">
     <div class="icons">
@@ -9,16 +8,17 @@
 
       <!-- 알림 아이콘 클릭 시 알림 목록 토글 -->
       <div class="notification-icon" @click="toggleNotifications">
-        <v-icon class="icon">mdi-bell</v-icon>
-
         <!-- 읽지 않은 알림 개수 표시 -->
-        <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+        <v-badge :content="unreadCount" color="red" v-if="unreadCount > 0" class="unread-badge"></v-badge>
+        <v-icon class="icon">mdi-bell</v-icon>
+        
+        <!-- <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span> -->
 
         <!-- 알림 목록 -->
         <div v-if="showNotifications" class="notification-dropdown">
-          <ul>
+          <ul @click.stop>
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
-              <div class="notification-item">
+              <div class="notification-item" @click="handleNotificationClick(notification)">
                 <span>{{ truncatedMessage(notification.message, 20) }}</span>
                 <small>{{ formatDate(notification.createdAt) }}</small>
               </div>
@@ -29,7 +29,8 @@
       </div>
 
       <!-- 채팅방리스트 -->
-      <div class="icon-item">
+      <div class="chat-icon" >
+        <v-badge :content="unreadChatNum" color="red" v-if="unreadChatNum > 0" class="unread-badge"></v-badge>
         <v-icon class="icon" @click="showChatRoomList">mdi-chat</v-icon>
       </div>
 
@@ -70,8 +71,9 @@ export default {
       retryCount: 0, // 재연결 시도 횟수
       maxRetryCount: 5, // 최대 재연결 시도 횟수
       userProfile: {},
-      defaultProfileImage: 'https://via.placeholder.com/150'
+      defaultProfileImage: 'https://via.placeholder.com/150',
 
+      unreadChatNum: 0,
     };
   },
   created() {
@@ -95,6 +97,19 @@ export default {
       // 새로운 알림 수신 시 처리
       this.eventSource.onmessage = (event) => {
         const newNotification = JSON.parse(event.data);
+        if (newNotification.type == '채팅알림') {
+          this.unreadChatNum = newNotification.alarmNum;
+          console.log(newNotification);
+          return;
+        } else if (newNotification.type == '채팅입장') {
+          this.unreadChatNum = newNotification.alarmNum;
+          console.log(newNotification);
+          return;
+        } else if (newNotification.type == '채팅목록') {
+          console.log(newNotification);
+          return;
+        }
+        console.log(newNotification);
         this.notifications.unshift(newNotification);  // 새로운 알림을 맨 위에 추가
         this.unreadCount += 1;  // 읽지 않은 알림 개수 증가
       };
@@ -129,7 +144,12 @@ export default {
     toggleNotifications() {
       this.showNotifications = !this.showNotifications;
     },
-
+    handleClickOutside(event) {
+      const notificationIcon = this.$refs.notificationIcon;
+      if (notificationIcon && !notificationIcon.contains(event.target)) {
+        this.showNotifications = false;
+      }
+    },
     // 읽지 않은 알림 개수 가져오기
     async fetchUnreadCount() {
       try {
@@ -151,6 +171,24 @@ export default {
     goToNotifications() {
       this.$router.push('/notification/notificationList');
     },
+    handleNotificationClick(notification) {
+      let targetUrl = '';
+
+      // 알림 유형에 따른 URL 설정
+      if (notification.type === '공지사항') {
+        targetUrl = 'http://localhost:8082/board/notice/list';
+      } else if (notification.type === '경조사') {
+        targetUrl = 'http://localhost:8082/board/familyevent/list';
+      } else if (notification.type === '예약') {
+        targetUrl = 'http://localhost:8082/reservation/meetReservationList';
+      } else if (notification.type === '결재') {
+        targetUrl = 'http://localhost:8082/submit/list';
+      } else if (notification.type === '문서') {
+        targetUrl = 'http://localhost:8082/document';
+      }
+
+      window.location.href = targetUrl;  
+    },
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
@@ -166,7 +204,7 @@ export default {
 
     // 채팅룸 리스트 열기
     showChatRoomList() {
-      window.open("/chatRoom/list", "_blank", "width=480, height=650")
+      window.open("/chatRoom/list", "chatRoomList", "width=480, height=650")
     },
 
     // 로그인 연장
@@ -251,11 +289,18 @@ export default {
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
   },
+  mounted() {
+    document.addEventListener("click", this.handleClickOutside);
+  },
   beforeUnmount() {
+    document.removeEventListener("click", this.handleClickOutside);
     if (this.eventSource) {
       this.eventSource.close();  // 컴포넌트가 파괴될 때 SSE 연결 종료
+      document.removeEventListener("click", this.handleClickOutside);
     }
   },
+
+
 };
 </script>
 
@@ -303,11 +348,15 @@ export default {
 
 .badge {
   position: absolute;
-  top: -13px;
+  top: -12px;
   background-color: red;
   color: white;
   border-radius: 50%;
-  padding: 4px 8px;
+  width: 23px;
+  height: 23px;
+  justify-content: center;
+  align-items: center;
+  padding: 3px 8px;
   font-size: 0.8rem;
 }
 
@@ -315,10 +364,9 @@ export default {
   position: absolute;
   top: 50px;
   right: 0;
-  width: 300px;
+  width: 350px;
   background-color: white;
   border-radius: 10px;
-  /* 동글동글하게 변경 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   /* 그림자 수정으로 부드럽게 */
   z-index: 1001;
@@ -381,5 +429,17 @@ export default {
   height: 100px;
   object-fit: cover;
   margin: 0 auto;
+}
+
+.unread-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 1;
+  margin-right: 16px;
+}
+
+.chat-icon {
+  position: relative;
 }
 </style>

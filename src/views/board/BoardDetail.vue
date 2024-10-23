@@ -93,58 +93,68 @@
   </v-container>
 </template>
       
-      <script>
-      import axios from 'axios';
-      export default {
-        data() {
-          return {
-            board: null,
-            comments: [],
-            newCommentContent: '',
-            isLoggedIn: false,
-            error: null,
-            userNum: localStorage.getItem('userNum'),
-            boardTitle: '게시글 상세보기',
-            tags: [] // 태그 목록을 담을 배열
-          };
-        },
-        computed: {
-          isFamilyEventCategory() {
-            return this.board?.category === 'FAMILY_EVENT';
-          }
-        },
-        created() {
-          this.checkLoginStatus();
-          this.fetchBoardDetail();
-        },
-        methods: {
-          checkLoginStatus() {
-            const token = localStorage.getItem('token');
-            this.isLoggedIn = !!token;
-          },
-          async fetchBoardDetail() {
-        try {
-          // 게시글 ID와 사용자 번호를 가져옴
-          const boardId = this.$route.params.id;
-          const userNum = localStorage.getItem('userNum');
-          // 게시글 상세 정보를 가져옴
-          const boardResponse = await axios.get(`/board/detail/${boardId}`, {
-            params: { userNum }
-          });
-          this.board = boardResponse.data.result;
-          // 댓글 데이터를 제대로 받아오는지 확인
-    if (this.board.comments) {
-      this.comments = this.board.comments;
-      console.log('댓글 목록:', this.comments);
-    } else {
-      this.comments = [];
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      board: null,
+      comments: [],
+      newCommentContent: '',
+      isLoggedIn: false,
+      error: null,
+      userNum: localStorage.getItem('userNum'),
+      boardTitle: '게시글 상세보기',
+      tags: [] // 태그 목록을 담을 배열
+    };
+  },
+  computed: {
+    isFamilyEventCategory() {
+      return this.board?.category === 'FAMILY_EVENT';
     }
-  } catch (error) {
-    console.error('게시글을 불러오는 데 실패했습니다:', error);
-    this.error = '게시글을 불러오는 데 실패했습니다.';
-  }
-}
-,
+  },
+  created() {
+    this.checkLoginStatus();
+    this.fetchBoardDetail();
+  },
+  methods: {
+    checkLoginStatus() {
+      const token = localStorage.getItem('token');
+      this.isLoggedIn = !!token;
+    },
+    async fetchBoardDetail() {
+      try {
+        // 게시글 ID와 사용자 번호를 가져옴
+        const boardId = this.$route.params.id;
+        const userNum = localStorage.getItem('userNum');
+        
+        // 게시글 상세 정보를 가져옴
+        const boardResponse = await axios.get(`/board/detail/${boardId}`, {
+          params: { userNum }
+        });
+        this.board = boardResponse.data.result;
+        
+        // 태그 목록 받아오기
+        if (this.board.tags) {
+          this.tags = this.board.tags;
+        } else {
+          this.tags = [];
+        }
+
+        // 댓글 데이터를 제대로 받아오는지 확인
+        if (this.board.comments) {
+          this.comments = this.board.comments;
+          console.log('댓글 목록:', this.comments);
+        } else {
+          this.comments = [];
+        }
+      } catch (error) {
+        console.error('게시글을 불러오는 데 실패했습니다:', error);
+        alert('게시글을 불러오는 데 실패했습니다.');
+        this.error = '게시글을 불러오는 데 실패했습니다.';
+      }
+    },
     async submitComment() {
       if (!this.newCommentContent.trim()) {
         alert('댓글 내용을 입력하세요.');
@@ -162,7 +172,7 @@
         this.fetchBoardDetail();
       } catch (error) {
         console.error('댓글 작성에 실패했습니다:', error);
-        alert('댓글 작성에 실패했습니다.');
+        alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
       }
     },
     formatDate(date) {
@@ -186,33 +196,32 @@
           this.$router.push({ name: 'BoardList', params: { category: this.board.category } });
         } catch (error) {
           console.error('게시물 삭제에 실패했습니다:', error);
-          alert('게시물 삭제에 실패했습니다.');
+          alert('게시물 삭제에 실패했습니다. 다시 시도해주세요.');
         }
       }
     },
     editComment(comment) {
       const updatedContent = prompt("댓글을 수정하세요:", comment.content);
-  if (updatedContent && updatedContent !== comment.content) {
-    const userNum = localStorage.getItem("userNum");
-    axios
-      .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum, isEdited: true })
-      .then((response) => {
-        console.log('댓글 수정 응답:', response.data);
-        // 수정된 댓글을 comments 배열에서 직접 업데이트
-        const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
-        if (updatedCommentIndex !== -1) {
-          // 배열 요소를 직접 수정
-          this.comments[updatedCommentIndex].content = updatedContent;
-          this.comments[updatedCommentIndex].isEdited = true;
-        }
-      })
-      .catch((error) => {
-        console.error("댓글 수정에 실패했습니다:", error);
-        alert("댓글 수정에 실패했습니다.");
-      });
-  }
-}
-,
+      if (updatedContent && updatedContent !== comment.content) {
+        const userNum = localStorage.getItem("userNum");
+        axios
+          .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum, isEdited: true })
+          .then((response) => {
+            console.log('댓글 수정 응답:', response.data);
+            // 수정된 댓글을 comments 배열에서 직접 업데이트
+            const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
+            if (updatedCommentIndex !== -1) {
+              // 배열 요소를 직접 수정
+              this.comments[updatedCommentIndex].content = updatedContent;
+              this.comments[updatedCommentIndex].isEdited = true;
+            }
+          })
+          .catch((error) => {
+            console.error("댓글 수정에 실패했습니다:", error);
+            alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
+          });
+      }
+    },
     async deleteComment(commentId) {
       if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
         const userNum = localStorage.getItem("userNum");
@@ -222,7 +231,7 @@
           this.fetchBoardDetail();
         } catch (error) {
           console.error("댓글 삭제에 실패했습니다:", error);
-          alert("댓글 삭제에 실패했습니다.");
+          alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
         }
       }
     },
@@ -230,16 +239,22 @@
       return fileType.includes('image/');
     },
     downloadFile(fileUrl, fileName) {
-      const link = document.createElement('a');
-      link.href = fileUrl;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('파일 다운로드에 실패했습니다:', error);
+        alert('파일 다운로드에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   }
 };
 </script>
+
 <style scoped>
 .board-container {
   background-color: #f9fafb;

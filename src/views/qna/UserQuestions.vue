@@ -58,25 +58,29 @@ export default {
   methods: {
     // 사용자가 작성한 질문 목록을 서버에서 가져오는 메서드
     async fetchQnAList() {
-  try {
-    const userNum = localStorage.getItem('userNum'); // 사용자 번호를 로컬 스토리지에서 가져옴
-    if (!userNum) {
-      throw new Error('사용자 정보가 없습니다. 다시 로그인 해주세요.');
-    }
+      try {
+        const userNum = localStorage.getItem('userNum'); // 사용자 번호를 로컬 스토리지에서 가져옴
+        if (!userNum) {
+          alert('사용자 정보가 없습니다. 다시 로그인 해주세요.');
+          return;
+        }
 
-    const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/my`, {
-      params: { userNum }  // userNum을 요청 파라미터로 전달
-    });
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/my`, {
+          params: { userNum }  // userNum을 요청 파라미터로 전달
+        });
 
-    if (response.status === 200) {
-      this.qnaList = response.data.result;
-    } else {
-      console.error('Q&A 리스트 가져오기 실패:', response.data.message || response.statusText);
-    }
-  } catch (error) {
-    console.error('Q&A 리스트 가져오기 중 오류 발생:', error.response ? error.response.data.message : error.message);
-  }
-},
+        if (response.status === 200) {
+          this.qnaList = response.data.result;
+        } else {
+          console.error('Q&A 리스트 가져오기 실패:', response.data.message || response.statusText);
+          alert('Q&A 리스트를 가져오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        }
+      } catch (error) {
+        console.error('Q&A 리스트 가져오기 중 오류 발생:', error.response ? error.response.data.message : error.message);
+        alert('Q&A 목록을 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      }
+    },
+
 
     // 날짜 형식을 보기 좋게 변환하는 메서드
     formatDate(dateString) {

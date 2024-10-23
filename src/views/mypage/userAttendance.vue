@@ -22,8 +22,8 @@
     </v-row>
 
     <!-- 부서원 출근 정보 목록 -->
-    <v-row class="container">
-      <v-col cols="6" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
+    <v-row class="in-out">
+      <v-col cols="6" class="user-card-in-out" v-for="user in departmentUsers" :key="user.userNum">
         <v-row class="profile-container">
           <v-col class="profile-item">
             <!-- 프로필 이미지 -->
@@ -193,7 +193,7 @@ v-alert {
 }
 
 /* 유저 카드 스타일 */
-.user-card {
+.user-card-in-out {
   display: flex;
   justify-content: center;
   align-content: center;
@@ -252,5 +252,9 @@ v-alert {
 .profile-item {
   display: flex;
   justify-content: center;
+}
+
+.in-out {
+  border: none;
 }
 </style>

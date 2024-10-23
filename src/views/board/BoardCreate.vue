@@ -64,6 +64,7 @@
 
       <!-- 내용 입력 필드 -->
       <div id="editor" class="content-input" contenteditable="true"></div>
+      
 
       <!-- 파일 첨부 -->
       <v-file-input
@@ -155,6 +156,8 @@ export default {
       departmentId: localStorage.getItem('departmentId'), // 부서 아이디
       showTagModal: false, // 태그 추가 모달 상태
       newTagName: '', // 새로운 태그 이름
+      titleMaxLength: 100, // 제목 최대 길이
+      contentMaxLength: 5000, // 내용 최대 길이
     };
   },
   mounted() {
@@ -165,26 +168,34 @@ export default {
   methods: {
     // URL에서 카테고리 값을 가져와 설정
     setCategoryFromUrl() {
-      const currentCategory = this.$route.params.category;
-      console.log("현재 카테고리:", currentCategory); // 디버깅 로그 추가
+      try {
+        const currentCategory = this.$route.params.category;
 
-      if (currentCategory === 'notice') {
-        this.selectedCategory = 'NOTICE';
-        this.categoryLabel = '공지사항';
-      } else if (currentCategory === 'familyevent') {
-        this.selectedCategory = 'FAMILY_EVENT';
-        this.categoryLabel = '경조사';
-      } else {
-        console.log('유효하지 않은 카테고리입니다. 기본값을 설정합니다.');
+        if (currentCategory === 'notice') {
+          this.selectedCategory = 'NOTICE';
+          this.categoryLabel = '공지사항';
+        } else if (currentCategory === 'familyevent') {
+          this.selectedCategory = 'FAMILY_EVENT';
+          this.categoryLabel = '경조사';
+        } else {
+          alert('잘못된 페이지입니다. 올바른 경로로 접근해주세요.');
+        }
+      } catch (error) {
+        console.error('카테고리 설정 중 오류 발생:', error);
+        alert('카테고리 설정 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
     // 유저가 관리자 권한을 갖고 있는지 확인
     checkUserRole() {
-      if (!this.userNum || !this.departmentId) {
-        alert('로그인이 필요합니다.');
-        this.$router.push('/login');
-        return;
+      try {
+        if (!this.userNum || !this.departmentId) {
+          alert('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
+          this.$router.push('/login');
+        }
+      } catch (error) {
+        console.error('권한 확인 중 오류 발생:', error);
+        alert('사용자 권한을 확인하는 중 문제가 발생했습니다. 다시 로그인해주세요.');
       }
     },
 
@@ -195,73 +206,87 @@ export default {
         this.tags = response.data.result;
       } catch (error) {
         console.error('태그 목록을 불러오는 데 실패했습니다:', error);
-        alert('태그 목록을 불러오는 데 실패했습니다.');
+        alert('태그 목록을 불러오는 중 문제가 발생했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.');
       }
+    },
+
+    // 제목과 내용의 길이 확인
+    validateForm() {
+      if (this.title.length > this.titleMaxLength) {
+        alert(`제목은 최대 ${this.titleMaxLength}자까지 입력 가능합니다. 현재 ${this.title.length}자입니다.`);
+        return false;
+      }
+
+      const content = document.getElementById('editor').innerHTML;
+      if (content.length > this.contentMaxLength) {
+        alert(`내용은 최대 ${this.contentMaxLength}자까지 입력 가능합니다. 현재 ${content.length}자입니다.`);
+        return false;
+      }
+
+      return true;
     },
 
     // 태그 추가 모달 열기
     openTagModal() {
-      this.newTagName = '';
-      this.showTagModal = true;
+      try {
+        this.newTagName = '';
+        this.showTagModal = true;
+      } catch (error) {
+        console.error('태그 추가 모달을 여는 중 오류 발생:', error);
+        alert('태그 추가 창을 여는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
     },
 
     // 태그 추가 모달 닫기
     closeTagModal() {
-      this.showTagModal = false;
+      try {
+        this.showTagModal = false;
+      } catch (error) {
+        console.error('태그 추가 모달을 닫는 중 오류 발생:', error);
+        alert('태그 추가 창을 닫는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
     },
 
     // 새로운 태그 추가하기
     async addNewTag() {
       if (!this.newTagName.trim()) {
-        alert('태그 이름을 입력하세요.');
+        alert('태그 이름을 입력해주세요.');
         return;
       }
 
+      const existingTag = this.tags.find(tag => tag.tag === this.newTagName.trim());
+      if (existingTag) {
+        alert('이미 존재하는 태그입니다. 다른 이름을 입력해주세요.');
+        return;
+      }
+
+      const existingTag = this.tags.find(tag => tag.tag === this.newTagName.trim());
+        if (existingTag) {
+          alert('이미 존재하는 태그입니다.');
+          return;
+      }
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/tags/create`, {
           tag: this.newTagName.trim(),
         });
 
-        // 새로 추가된 태그를 태그 목록에 추가
         this.tags.push(response.data.result);
         this.selectedTags.push(response.data.result.id);
         this.closeTagModal();
       } catch (error) {
         console.error('태그 추가에 실패했습니다:', error);
-        alert('태그 추가에 실패했습니다.');
+        alert('새 태그를 추가하는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
-    // 태그 선택/해제 토글
-    toggleTagSelection(tagId) {
-      const index = this.selectedTags.indexOf(tagId);
-      if (index === -1) {
-        this.selectedTags.push(tagId);
-      } else {
-        this.selectedTags.splice(index, 1);
-      }
-    },
-
-    // 태그 삭제
-    async removeTag(tagId) {
-      console.log("삭제할 태그 ID:", tagId);
-      if (!tagId) {
-        console.error('tagId가 유효하지 않습니다.');
+    // 폼 제출 처리
+    async submitForm() {
+      if (!this.validateForm()) {
         return;
       }
-      try {
-        await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/tags/delete/${tagId}`);
-        this.tags = this.tags.filter(tag => tag.id !== tagId);
-      } catch (error) {
-        console.error('태그 삭제에 실패했습니다.', error);
-        alert('태그 삭제에 실패했습니다.');
-      }
-    },
 
-    async submitForm() {
-      console.log('submitForm called');
       if (this.departmentId !== '4') {
-        alert('관리자만 작성할 수 있습니다.');
+        alert('이 작업은 관리자만 할 수 있습니다.');
         return;
       }
 
@@ -292,7 +317,7 @@ export default {
 
         const boardId = response.data.result?.id || response.data?.id;
         if (!boardId) {
-          console.error('게시글 ID를 가져오지 못했습니다. 응답 데이터:', response.data);
+          alert('게시글을 저장하는 중 문제가 발생했습니다. 다시 시도해주세요.');
           return;
         }
 
@@ -308,11 +333,12 @@ export default {
           this.$router.push({ name: 'BoardList' });
         }
       } catch (error) {
-        console.error('저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
-        alert('게시글 저장에 실패했습니다.');
+        console.error('게시글 저장 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
+        alert('게시글을 저장하는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
+    // 게시글 상단 고정 처리
     async pinBoard(boardId) {
       try {
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/pin/${boardId}`;
@@ -323,20 +349,35 @@ export default {
         console.log('상단 고정 성공:', response.data);
       } catch (error) {
         console.error('상단 고정 실패:', error.response?.data || '서버와의 통신에 실패했습니다.');
-        alert('상단 고정 처리에 실패했습니다.');
+        alert('게시글을 상단에 고정하는 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
 
+    // 작성 취소 처리
     cancel() {
-      this.$router.go(-1);
+      try {
+        this.$router.go(-1);
+      } catch (error) {
+        console.error('취소 처리 중 오류 발생:', error);
+        alert('작성을 취소하는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
     },
 
+    // 에디터에서 텍스트 포맷팅 처리
     formatText(command) {
-      document.execCommand(command, false, null);
+      try {
+        document.execCommand(command, false, null);
+      } catch (error) {
+        console.error('텍스트 포맷팅 중 오류 발생:', error);
+        alert('텍스트 스타일을 적용하는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
     },
   },
 };
+
 </script>
+
+
 
 <style scoped>
 .write-container {
