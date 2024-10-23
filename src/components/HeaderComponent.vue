@@ -26,9 +26,8 @@
         <v-badge :content="unreadCount" color="red" v-if="unreadCount > 0" class="unread-badge"></v-badge>
         <v-icon class="icon">mdi-bell</v-icon>
 
-
         <!-- 알림 목록 -->
-        <div v-if="showNotifications" class="notification-dropdown">
+        <div v-if="showNotifications" class="notification-dropdown" ref="notificationDropdown">
           <ul @click.stop>
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
               <div class="notification-item" @click="handleNotificationClick(notification)">
@@ -174,6 +173,15 @@ export default {
     // 알림 목록 토글
     toggleNotifications() {
       this.showNotifications = !this.showNotifications;
+    },
+    clickNotificationOutside(event) {
+      const notificationDropdown = this.$refs.notificationDropdown;
+      const notificationIcon = this.$refs.notificationIcon;
+
+      // 클릭한 곳이 알림 드롭다운이나 아이콘이 아니면 드롭다운을 닫음
+      if (this.showNotifications && notificationDropdown && !notificationDropdown.contains(event.target) && notificationIcon && !notificationIcon.contains(event.target)) {
+        this.showNotifications = false;
+      }
     },
     clickOutside(event) {
       const myPageDropdown = this.$refs.myPageDropdown;
@@ -325,14 +333,22 @@ export default {
       const seconds = this.timeRemaining % 60;
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
+    // 남은 시간이 10분 이하일 경우 클래스 적용
+    ,
+    timeClass() {
+      return this.timeRemaining <= 600 ? 'time-critical' : ''; // 600초 = 10분
+    }
+
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
     document.addEventListener('click', this.clickOutside);
+    document.addEventListener('click', this.clickNotificationOutside);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
     document.removeEventListener('click', this.clickOutside);
+    document.addEventListener('click', this.clickNotificationOutside);
     if (this.eventSource) {
       this.eventSource.close();  // 컴포넌트가 파괴될 때 SSE 연결 종료
       document.removeEventListener("click", this.handleClickOutside);
@@ -533,5 +549,10 @@ export default {
 
 .extend-session {
   cursor: pointer;
+}
+
+/* 시간이 10분 이하일 때 빨간색 텍스트 */
+.time-critical {
+  color: red;
 }
 </style>
