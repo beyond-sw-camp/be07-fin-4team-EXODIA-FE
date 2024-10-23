@@ -8,7 +8,7 @@
       </div>
 
       <!-- 알림 아이콘 클릭 시 알림 목록 토글 -->
-      <div class="notification-icon" @click="toggleNotifications">
+      <div class="notification-icon" ref="notificationIcon" @click.stop="toggleNotifications">
         <v-icon class="icon">mdi-bell</v-icon>
 
         <!-- 읽지 않은 알림 개수 표시 -->
@@ -16,9 +16,9 @@
 
         <!-- 알림 목록 -->
         <div v-if="showNotifications" class="notification-dropdown">
-          <ul>
+          <ul @click.stop>
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
-              <div class="notification-item">
+              <div class="notification-item" @click="handleNotificationClick(notification)">
                 <span>{{ truncatedMessage(notification.message, 20) }}</span>
                 <small>{{ formatDate(notification.createdAt) }}</small>
               </div>
@@ -129,7 +129,12 @@ export default {
     toggleNotifications() {
       this.showNotifications = !this.showNotifications;
     },
-
+    handleClickOutside(event) {
+      const notificationIcon = this.$refs.notificationIcon;
+      if (notificationIcon && !notificationIcon.contains(event.target)) {
+        this.showNotifications = false;
+      }
+    },
     // 읽지 않은 알림 개수 가져오기
     async fetchUnreadCount() {
       try {
@@ -150,6 +155,24 @@ export default {
     // 알림 페이지로 이동
     goToNotifications() {
       this.$router.push('/notification/notificationList');
+    },
+    handleNotificationClick(notification) {
+      let targetUrl = '';
+
+      // 알림 유형에 따른 URL 설정
+      if (notification.type === '공지사항') {
+        targetUrl = 'http://localhost:8082/board/notice/list';
+      } else if (notification.type === '경조사') {
+        targetUrl = 'http://localhost:8082/board/familyevent/list';
+      } else if (notification.type === '예약') {
+        targetUrl = 'http://localhost:8082/reservation/meetReservationList';
+      } else if (notification.type === '결재') {
+        targetUrl = 'http://localhost:8082/submit/list';
+      } else if (notification.type === '문서') {
+        targetUrl = 'http://localhost:8082/document';
+      }
+
+      window.location.href = targetUrl;  
     },
 
     // 인증 헤더 가져오기
@@ -251,11 +274,18 @@ export default {
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
   },
+  mounted() {
+    document.addEventListener("click", this.handleClickOutside);
+  },
   beforeUnmount() {
+    document.removeEventListener("click", this.handleClickOutside);
     if (this.eventSource) {
       this.eventSource.close();  // 컴포넌트가 파괴될 때 SSE 연결 종료
+      document.removeEventListener("click", this.handleClickOutside);
     }
   },
+
+
 };
 </script>
 
@@ -303,11 +333,15 @@ export default {
 
 .badge {
   position: absolute;
-  top: -13px;
+  top: -12px;
   background-color: red;
   color: white;
   border-radius: 50%;
-  padding: 4px 8px;
+  width: 23px;
+  height: 23px;
+  justify-content: center;
+  align-items: center;
+  padding: 3px 8px;
   font-size: 0.8rem;
 }
 
@@ -315,10 +349,9 @@ export default {
   position: absolute;
   top: 50px;
   right: 0;
-  width: 300px;
+  width: 350px;
   background-color: white;
   border-radius: 10px;
-  /* 동글동글하게 변경 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   /* 그림자 수정으로 부드럽게 */
   z-index: 1001;

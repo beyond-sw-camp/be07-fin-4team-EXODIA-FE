@@ -14,6 +14,7 @@
             :value="value"
             class="custom-btn"
             :class="{ active: selectedType === value }"
+            @click="navigateToType(value)"
           >
             {{ label }}
           </v-btn>
@@ -25,7 +26,7 @@
             <v-list-item
               v-for="notification in filteredNotifications"
               :key="notification.id"
-              @click="markAsRead(notification.id)"
+              @click="handleNotificationClick(notification)"
               class="notification-item"
               :class="{ read: notification.isRead }"
             >
@@ -196,7 +197,25 @@ export default {
         Authorization: `Bearer ${token}`,
       };
     },
-  },
+    handleNotificationClick(notification) {
+      let targetUrl = '';
+
+      // 알림 유형에 따른 URL 설정
+      if (notification.type === '공지사항') {
+        targetUrl = 'http://localhost:8082/board/notice/list';
+      } else if (notification.type === '경조사') {
+        targetUrl = 'http://localhost:8082/board/familyevent/list';
+      } else if (notification.type === '예약') {
+        targetUrl = 'http://localhost:8082/reservation/meetReservationList';
+      } else if (notification.type === '결재') {
+        targetUrl = 'http://localhost:8082/submit/list';
+      } else if (notification.type === '문서') {
+        targetUrl = 'http://localhost:8082/document';
+      }
+
+      window.location.href = targetUrl;  
+    },
+  }
 };
 </script>
 

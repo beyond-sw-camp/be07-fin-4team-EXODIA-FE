@@ -260,6 +260,11 @@ export default {
         return;
       }
 
+      const existingTag = this.tags.find(tag => tag.tag === this.newTagName.trim());
+        if (existingTag) {
+          alert('이미 존재하는 태그입니다.');
+          return;
+      }
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/tags/create`, {
           tag: this.newTagName.trim(),
