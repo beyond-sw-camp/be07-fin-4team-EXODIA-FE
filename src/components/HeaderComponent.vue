@@ -21,7 +21,7 @@
 
 
       <!-- 알림 아이콘 클릭 시 알림 목록 토글 -->
-      <div class="notification-icon" @click="toggleNotifications">
+      <div class="notification-icon" ref="notificationIcon" @click.stop="toggleNotifications">
         <!-- 읽지 않은 알림 개수 표시 -->
         <v-badge :content="unreadCount" color="red" v-if="unreadCount > 0" class="unread-badge"></v-badge>
         <v-icon class="icon">mdi-bell</v-icon>
