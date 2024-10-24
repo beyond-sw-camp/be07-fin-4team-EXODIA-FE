@@ -389,6 +389,20 @@ export default {
 </script>
 
 <style scoped>
+
+/*  */
+.v-btn{
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.course-row > .v-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
 .course-row {
   cursor: pointer;
   transition: background-color 0.2s ease;
