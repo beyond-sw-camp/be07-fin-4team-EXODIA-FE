@@ -12,7 +12,7 @@
         <div v-for="(file, index) in chatFilesProp" :key="index" class="image-container">
             <v-icon color="green" class="download-icon" @click="downloadFile(index)">mdi-download-circle</v-icon>
             <img :src="file.chatFileUrl" @error="e => e.target.src = require('@/assets/file.png')"
-                style="height: 120px; width: 120px; object-fit: cover;">
+                style="height: 70px; width: 70px; object-fit: cover;">
             <p class="custom-contents">{{ file.chatFileName }}</p>
         </div>
     </div>
@@ -69,9 +69,9 @@ export default {
 
 .download-icon {
     position: absolute;
-    top: 5px;
+    top: 1px;
     /* 이미지 위쪽에서 5px */
-    left: 5px;
+    left: 1px;
     /* 이미지 왼쪽에서 5px */
     z-index: 1;
     /* 이미지보다 아이콘이 위에 표시되도록 z-index 설정 */
@@ -80,7 +80,7 @@ export default {
 }
 
 .custom-contents {
-    max-width: 120px;
+    max-width: 70px;
     /* 제목의 최대 너비를 설정 */
     overflow: hidden;
     /* 내용이 넘칠 경우 숨김 처리 */

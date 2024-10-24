@@ -1,16 +1,12 @@
 <template>
   <v-container class="board-container">
     <!-- Adjusted the title size and positioning -->
-    <v-row justify="start">
-      <v-col cols="12" md="6">
-        <h1 class="board-title">{{ boardTitle }}</h1>
-      </v-col>
+    <v-row class="mb-12" style="padding-left:30px" justify="space-between">
+      <h1>질의 응답 ( {{ boardTitle }} )</h1>
 
       <!-- 매니저 관리 버튼 -->
-      <v-col cols="12" md="6" class="d-flex justify-end">
-        <v-btn class="btn_manager_management" @click="openManagerModal">
-          매니저 관리
-        </v-btn>
+      <v-col cols="auto" class="d-flex justify-end">
+        <v-icon size="36" @click="openManagerModal">mdi-cog-outline</v-icon>
       </v-col>
     </v-row>
 
@@ -64,73 +60,57 @@
       </v-card>
     </v-dialog>
 
-    <!-- 게시판 상단 검색 폼 -->
-    <v-form ref="form" class="search-form d-flex mb-4">
-      <v-row justify="center" align="center" class="w-100">
-        <!-- 검색 범위 선택 -->
-        <v-col cols="12" md="3">
-          <v-select
-            v-model="searchType"
-            :items="searchOptions"
-            variant="underlined"
-            item-title="text"
-            item-value="value"
-            label="검색 범위"
-            required
-          ></v-select>
-        </v-col>
+    <v-row justify="center" align="center">
+      <!-- 검색 범위 선택 -->
+      <v-col cols="12" md="2">
+        <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text" item-value="value"
+          label="검색 범위" required></v-select>
+      </v-col>
 
-        <!-- 검색어 입력 -->
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="searchQuery"
-            variant="underlined"
-            label="검색어를 입력하세요."
-            append-icon="mdi-magnify"
-            @click:append="performSearch"
-            required
-          ></v-text-field>
-        </v-col>
+      <!-- 검색어 입력 -->
+      <v-col cols="12" md="8">
+        <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
+          @click:append="performSearch" required></v-text-field>
+      </v-col>
 
-        <!-- 작성하기 및 나의 질문 목록 버튼 -->
-        <v-col cols="12" md="3" class="d-flex justify-end">
-          <v-btn class="btn_write" @click="createNewPost">
-            작성하기
-          </v-btn>
-          <v-btn class="btn_my_questions" @click="goToMyQuestions">
-            나의 질문 목록
-          </v-btn>
-        </v-col>
-      </v-row>
-    </v-form>
+    </v-row>
+    <v-row justify="end">
+      <v-col cols="12" md="3" class="d-flex justify-end">
+        <v-btn class="btn_write" @click="createNewPost">
+          작성하기
+        </v-btn>
+        <v-btn class="btn_my_questions" @click="goToMyQuestions">
+          나의 질문 목록
+        </v-btn>
+      </v-col>
+    </v-row>
 
     <!-- 게시글 목록 테이블 -->
     <v-row justify="center" class="mt-4">
       <v-col cols="12">
         <!-- 테이블 헤더에 상태 추가 -->
-        <v-row class="mb-2"
+        <v-row class="mb-2 text-center"
           style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px; padding:4px; color:#444444; font-weight:600;">
-          <v-col cols="1" class="text-center"><strong>번호</strong></v-col>
+          <v-col cols="1"><strong>번호</strong></v-col>
           <v-col cols="7"><strong>제목</strong></v-col>
-          <v-col cols="2" class="text-center"><strong>상태</strong></v-col>
-          <v-col cols="2" class="text-center"><strong>작성일</strong></v-col>
+          <v-col cols="2"><strong>상태</strong></v-col>
+          <v-col cols="2"><strong>작성일</strong></v-col>
         </v-row>
 
         <!-- 게시글 목록 데이터 -->
-        <v-row v-for="(item, index) in boardItems" :key="item.id" class="board"
-          @click="goToDetail(item.id)"
-          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
-          <v-col cols="1" class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
-          <v-col cols="7" class="title-ellipsis" style="max-width: 100%; display: inline-block;">
+        <v-row v-for="(item, index) in boardItems" :key="item.id" class="board text-center" @click="goToDetail(item.id)"
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500; cursor:pointer">
+          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+          <v-col cols="7" class="title-ellipsis text-start" style="max-width: 100%; display: inline-block;">
             {{ item.title }}
           </v-col>
-          
-          <v-col cols="2" class="text-center">
+
+          <v-col cols="2">
             <v-chip :color="item.answeredAt ? 'green' : 'red'" dark small>
               {{ item.answeredAt ? '답변완료' : '미답변' }}
             </v-chip>
           </v-col>
-          <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
+          <v-col cols="2">{{ formatDate(item.createdAt) }}</v-col>
         </v-row>
       </v-col>
     </v-row>
@@ -248,7 +228,7 @@ export default {
         alert("유저 및 매니저 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.");
       }
     },
-    
+
     // 유저 검색
     async searchUsers() {
       try {
@@ -267,18 +247,18 @@ export default {
         alert("유저를 검색하는 중 문제가 발생했습니다. 검색어를 확인하고 다시 시도해주세요.");
       }
     },
-    
+
     // 매니저 관리 모달 열기
     openManagerModal() {
       this.showManagerModal = true;
       this.fetchUsersAndManagers();
     },
-    
+
     // 매니저 관리 모달 닫기
     closeManagerModal() {
       this.showManagerModal = false;
     },
-    
+
     // 매니저 추가
     addManager(user) {
       axios
@@ -295,7 +275,7 @@ export default {
           alert("매니저 추가 중 문제가 발생했습니다. 다시 시도해주세요.");
         });
     },
-    
+
     // 매니저 삭제
     removeManager(manager) {
       axios
@@ -311,41 +291,41 @@ export default {
           alert("매니저 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
         });
     },
-    
+
     // 페이지 변경
     onPageChange(newPage) {
       this.currentPage = newPage;
       this.fetchBoardItems();
     },
-    
+
     // 게시판 제목 설정
     setBoardTitle() {
       this.boardTitle = "Q&A";
     },
-    
+
     formatDate(date) {
       return new Date(date)
         .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
         .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
         .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
     },
-    
+
     // 새 글 작성 페이지로 이동
     createNewPost() {
       this.$router.push({ name: "CreateQuestion" });
     },
-    
+
     // 게시글 상세 페이지로 이동
     goToDetail(id) {
       this.$router.push({ name: "QnaDetail", params: { id } });
     },
-    
+
     // 검색 실행
     performSearch() {
       this.currentPage = 1;
       this.fetchBoardItems();
     },
-    
+
     // 나의 질문 목록으로 이동
     goToMyQuestions() {
       this.$router.push({ name: "UserQuestions" });
@@ -356,22 +336,17 @@ export default {
 
 <style scoped>
 .board-container {
-  background-color: #f9fafb;
   padding: 20px;
   border-radius: 12px;
 }
 
-.board-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 120px;
-  color: #000000;
-}
-
 .title-ellipsis {
-  white-space: nowrap; /* 텍스트를 한 줄로 표시 */
-  overflow: hidden;    /* 넘치는 텍스트를 숨김 */
-  text-overflow: ellipsis; /* 넘치는 부분을 '...'로 표시 */
+  white-space: nowrap;
+  /* 텍스트를 한 줄로 표시 */
+  overflow: hidden;
+  /* 넘치는 텍스트를 숨김 */
+  text-overflow: ellipsis;
+  /* 넘치는 부분을 '...'로 표시 */
 }
 
 .search-form {
@@ -438,7 +413,6 @@ export default {
   justify-content: center;
   align-items: center;
   background-color: #949494;
-  color: rgb(255, 255, 255);
   border: none;
   cursor: pointer;
   border-radius: 8px;
@@ -449,15 +423,12 @@ export default {
   margin-left: 10px;
 }
 
-.btn_write:hover {
-  background-color: #722121;
-}
 
 .btn_my_questions {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #722121;
+  background-color: #9a2f2f;
   color: rgb(255, 255, 255);
   border: none;
   cursor: pointer;
@@ -469,9 +440,6 @@ export default {
   margin-left: 10px;
 }
 
-.btn_my_questions:hover {
-  background-color: #501010;
-}
 
 .v-pagination {
   margin-top: 20px;

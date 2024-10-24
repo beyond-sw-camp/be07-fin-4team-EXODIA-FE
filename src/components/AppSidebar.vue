@@ -25,7 +25,7 @@
           전체 파일
         </v-row>
         <v-row @click="$router.push('/document/list/updated')">
-          최근 업데이트 파일
+          최근 수정 파일
         </v-row>
         <v-row @click="$router.push('/document/list/viewed')">
           최근 조회 파일

@@ -21,18 +21,17 @@
 
 
       <!-- 알림 아이콘 클릭 시 알림 목록 토글 -->
-      <div class="notification-icon" @click="toggleNotifications">
+      <div class="notification-icon" ref="notificationIcon" @click.stop="toggleNotifications">
         <!-- 읽지 않은 알림 개수 표시 -->
         <v-badge :content="unreadCount" color="red" v-if="unreadCount > 0" class="unread-badge"></v-badge>
         <v-icon class="icon">mdi-bell</v-icon>
 
-
         <!-- 알림 목록 -->
-        <div v-if="showNotifications" class="notification-dropdown">
+        <div v-if="showNotifications" class="notification-dropdown" ref="notificationDropdown">
           <ul @click.stop>
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
               <div class="notification-item" @click="handleNotificationClick(notification)">
-                <span>{{ truncatedMessage(notification.message, 20) }}</span>
+                <span>{{ truncatedMessage(notification.message, 25) }}</span>
                 <small>{{ formatDate(notification.createdAt) }}</small>
               </div>
             </li>
@@ -48,40 +47,37 @@
       </div>
 
       <!-- 마이페이지 -->
-      <div class="icons" @click="toggleMyPage" style="height:100%">
-
+      <div class="icons" @click="toggleMyPage" ref="myPageIcon" style="height:100%">
         <v-avatar class="icon">
           <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"></v-img>
         </v-avatar>
 
         <!-- 로그아웃 버튼 -->
-        <div v-if="showMyPage" class="mypage-dropdown">
+        <div v-if="showMyPage" class="mypage-dropdown" ref="myPageDropdown" @click.stop>
           <v-row justify="center">
             <v-avatar class="icon" size="80">
               <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1"
                 style="width: 100%; height: 100%;"></v-img>
             </v-avatar>
-
           </v-row>
           <v-row justify="center">
-            <div class="user-department">{{ this.userProfile.departmentName }} {{
-              this.userProfile.positionName }}</div>
+            <div class="user-department">{{ this.userProfile.departmentName }} {{ this.userProfile.positionName }}</div>
           </v-row>
-
           <v-row justify="center" class="toggle-btn">
-            <v-icon style="padding-right:5px; font-size:20px">mdi-account</v-icon>
-            <btn @click="$router.push('/mypage/vacation')">
+            <v-icon style="padding-right:5px; font-size:20px; align">mdi-account</v-icon>
+            <button @click="$router.push('/mypage/vacation')">
               마이페이지
-            </btn>
+            </button>
           </v-row>
           <v-row justify="center" class="toggle-btn">
-            <v-icon style="padding-right:5px; font-size:20px">mdi-logout</v-icon>
-            <btn @click="logout">
+            <v-icon style="padding-right=5px; font-size:20px">mdi-logout</v-icon>
+            <button @click="logout">
               로그아웃
-            </btn>
+            </button>
           </v-row>
         </div>
       </div>
+
     </div>
   </header>
 
@@ -178,10 +174,22 @@ export default {
     toggleNotifications() {
       this.showNotifications = !this.showNotifications;
     },
-    handleClickOutside(event) {
+    clickNotificationOutside(event) {
+      const notificationDropdown = this.$refs.notificationDropdown;
       const notificationIcon = this.$refs.notificationIcon;
-      if (notificationIcon && !notificationIcon.contains(event.target)) {
+
+      // 클릭한 곳이 알림 드롭다운이나 아이콘이 아니면 드롭다운을 닫음
+      if (this.showNotifications && notificationDropdown && !notificationDropdown.contains(event.target) && notificationIcon && !notificationIcon.contains(event.target)) {
         this.showNotifications = false;
+      }
+    },
+    clickOutside(event) {
+      const myPageDropdown = this.$refs.myPageDropdown;
+      const myPageIcon = this.$refs.myPageIcon;
+
+      // 클릭한 곳이 드롭다운이나 마이페이지 아이콘이 아니면 드롭다운을 닫음
+      if (this.showMyPage && myPageDropdown && !myPageDropdown.contains(event.target) && myPageIcon && !myPageIcon.contains(event.target)) {
+        this.showMyPage = false;
       }
     },
     // 읽지 않은 알림 개수 가져오기
@@ -239,7 +247,7 @@ export default {
 
     // 채팅룸 리스트 열기
     showChatRoomList() {
-      window.open("/chatRoom/list", "chatRoomList", "width=480, height=650")
+      window.open("/chatRoom/list", "chatRoomList", "width=460, height=600");
     },
 
     // 로그인 연장
@@ -325,12 +333,22 @@ export default {
       const seconds = this.timeRemaining % 60;
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
+    // 남은 시간이 10분 이하일 경우 클래스 적용
+    ,
+    timeClass() {
+      return this.timeRemaining <= 600 ? 'time-critical' : ''; // 600초 = 10분
+    }
+
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
+    document.addEventListener('click', this.clickOutside);
+    document.addEventListener('click', this.clickNotificationOutside);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
+    document.removeEventListener('click', this.clickOutside);
+    document.addEventListener('click', this.clickNotificationOutside);
     if (this.eventSource) {
       this.eventSource.close();  // 컴포넌트가 파괴될 때 SSE 연결 종료
       document.removeEventListener("click", this.handleClickOutside);
@@ -531,5 +549,10 @@ export default {
 
 .extend-session {
   cursor: pointer;
+}
+
+/* 시간이 10분 이하일 때 빨간색 텍스트 */
+.time-critical {
+  color: red;
 }
 </style>
