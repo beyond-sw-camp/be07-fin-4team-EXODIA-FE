@@ -255,12 +255,6 @@ export default {
       }
 
       const existingTag = this.tags.find(tag => tag.tag === this.newTagName.trim());
-      if (existingTag) {
-        alert('이미 존재하는 태그입니다. 다른 이름을 입력해주세요.');
-        return;
-      }
-
-      const existingTag = this.tags.find(tag => tag.tag === this.newTagName.trim());
         if (existingTag) {
           alert('이미 존재하는 태그입니다.');
           return;
