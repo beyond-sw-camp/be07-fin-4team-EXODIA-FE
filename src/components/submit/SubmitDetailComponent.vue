@@ -65,7 +65,15 @@
                                         <v-col v-for="(dto, index) in this.submitLines" :key="index">
                                             {{ submitLines.length - index }}차 결재자:
                                             {{ dto.userName }} {{ dto.positionName }}
-                                            selectedSubmit
+                                            <v-chip v-if="selectedSubmit.submitStatus === '반려'" color="red">
+                                                {{ selectedSubmit.submitStatus }}
+                                            </v-chip>
+                                            <v-chip v-else-if="selectedSubmit.submitStatus === '승인'" color="green">
+                                                {{ selectedSubmit.submitStatus }}
+                                            </v-chip>
+                                            <v-chip v-else color="gray">
+                                                {{ selectedSubmit.submitStatus }}
+                                            </v-chip>
                                         </v-col>
                                     </td>
                                 </tr>
@@ -221,7 +229,7 @@ export default {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/submit/delete/${submitId}`;
                 await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
-                alert('결재를 성공적으로 취소하였습니다.');
+                alert('결재를 취소하였습니다.');
                 this.$router.push("/submit/list/my")
             } catch (e) {
                 console.error('결재 취소 중 오류 발생:', e);
