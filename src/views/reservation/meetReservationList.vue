@@ -403,7 +403,10 @@ export default {
       try {
         const token = localStorage.getItem("token");
         const userNum = localStorage.getItem("userNum");
-
+        if (!this.selectedMeetingRoom) {
+          alert("회의실을 선택해 주세요.");
+          return;
+        }
         if (!userNum) {
           console.error("userNum가 없습니다. 로그인 후 다시 시도해 주세요.");
           alert("로그인 후 예약을 시도해 주세요.");
