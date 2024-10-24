@@ -35,15 +35,18 @@
             <span v-if="!userDetail.name && showErrors" class="error-text">이름을 입력해주세요.</span>
           </v-col>
 
-            <!-- 성별 선택 -->
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="userDetail.gender"
-                :items="genderOptions"
-                label="성별"
-                :disabled="isDetailMode"
-              />
-            </v-col>
+          <v-col cols="12" md="6">
+            <v-select
+              v-model="userDetail.gender"
+              :items="genderOptions"
+              label="성별"
+              :disabled="isDetailMode"
+              :error="!userDetail.gender && showErrors"
+              required
+            />
+            <span v-if="!userDetail.gender && showErrors" class="error-text">성별을 선택해주세요.</span>
+          </v-col>
+          
 
             <!-- 부서 선택 -->
             <v-col cols="12" md="6">
@@ -54,9 +57,13 @@
                 item-value="id"
                 label="부서"
                 :disabled="isDetailMode"
+                :error="!userDetail.departmentId && showErrors"
+                required
                 v-if="departmentOptions.length > 0"
               />
+              <span v-if="!userDetail.departmentId && showErrors" class="error-text">부서를 선택해주세요.</span>
             </v-col>
+            
 
             <!-- 직급 선택 -->
             <v-col cols="12" md="6">
@@ -67,18 +74,35 @@
                 item-value="id"
                 label="직급"
                 :disabled="isDetailMode"
+                :error="!userDetail.positionId && showErrors"
+                required
                 v-if="positionOptions.length > 0"
               />
+              <span v-if="!userDetail.positionId && showErrors" class="error-text">직급을 선택해주세요.</span>
             </v-col>
 
             <!-- 이메일 -->
             <v-col cols="12" md="6">
-              <v-text-field v-model="userDetail.email" label="이메일" :readonly="isDetailMode" />
+              <v-text-field 
+                v-model="userDetail.email" 
+                label="이메일" 
+                :readonly="isDetailMode"
+                :error="!userDetail.email && showErrors"
+                required
+              />
+              <span v-if="!userDetail.email && showErrors" class="error-text">이메일을 입력해주세요.</span>
             </v-col>
 
             <!-- 전화번호 -->
             <v-col cols="12" md="6">
-              <v-text-field v-model="userDetail.phone" label="전화번호" :readonly="isDetailMode" />
+              <v-text-field 
+                v-model="userDetail.phone" 
+                label="전화번호" 
+                :readonly="isDetailMode"
+                :error="!userDetail.phone && showErrors"
+                required
+              />
+              <span v-if="!userDetail.phone && showErrors" class="error-text">전화번호를 입력해주세요.</span>
             </v-col>
 
             <!-- 고용 유형 선택 -->
@@ -88,7 +112,10 @@
                 :items="hireTypeOptions"
                 label="고용 유형"
                 :disabled="isDetailMode"
+                :error="!userDetail.hireType && showErrors"
+                required
               />
+              <span v-if="!userDetail.hireType && showErrors" class="error-text">고용 유형을 선택해주세요.</span>
             </v-col>
 
             <!-- 잔여 휴가 -->
@@ -150,8 +177,16 @@
       <v-card-text>
         <v-row>
           <v-col cols="12" md="6">
-            <v-text-field v-model="userDetail.password" label="비밀번호" type="password" />
+            <v-text-field
+              v-model="userDetail.password"
+              label="비밀번호"
+              :error="userDetail.password && userDetail.password.length < 8 && showErrors"
+              type="password"
+              required
+            />
+            <span v-if="userDetail.password && userDetail.password.length < 8 && showErrors" class="error-text">비밀번호는 8자리 이상이어야 합니다.</span>
           </v-col>
+
           <v-col cols="12" md="6">
             <v-text-field v-model="userDetail.address" label="주소" />
           </v-col>
@@ -175,7 +210,7 @@ export default {
         userNum: '',
         name: '',
         gender: '', 
-        status: '', 
+        status: '재직', 
         departmentId: null,
         positionId: null,
         email: '',
@@ -201,6 +236,7 @@ export default {
       isAdminDialogOpen: false,
       adminCode: '',
       correctAdminCode: '12341234',
+      showErrors: true,  
     };
   },
   methods: {
