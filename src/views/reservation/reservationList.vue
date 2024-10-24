@@ -76,8 +76,8 @@
                 </v-btn>
               </v-col>
               
-                    <!-- 차량 종류 -->
-                    <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
+              <!-- 차량 종류 -->
+              <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
 
               <!-- 차량 번호 -->
               <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carNum }}</v-col>
@@ -136,11 +136,11 @@
             <v-card-text>
               <v-row align="center" justify="space-between">
                 <v-col class="d-flex align-center">
-                  <v-icon left>mdi-seat</v-icon> <!-- 사람 인승 아이콘 -->
-                  <span>{{ selectedCar.seatingCapacity }} 인승</span> <!-- 인승 바인딩 -->
+                  <v-icon left>mdi-seat</v-icon>
+                  <span>{{ selectedCar.seatingCapacity }} 인승</span>
                 </v-col>
                 <v-col class="d-flex align-center">
-                  <span>배기량: {{ selectedCar.engineDisplacement }}L</span> <!-- 배기량 바인딩 -->
+                  <span>배기량: {{ selectedCar.engineDisplacement }}L</span>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -154,8 +154,8 @@
         </v-dialog>
 
 
-          <!-- 차량 예약 모달창 -->
-          <v-dialog v-model="isLongTermReservationModalOpen" persistent max-width="500px">
+        <!-- 차량 예약 모달창 -->
+        <v-dialog v-model="isLongTermReservationModalOpen" persistent max-width="500px">
           <v-card>
             <v-card-title>
               <span>차량 예약</span>
@@ -170,28 +170,33 @@
                   required
                 ></v-select>
 
-                <!-- 시작 날짜 선택 -->
-                <el-date-picker
-                  v-model="startDate"
-                  type="date"
-                  placeholder="시작 날짜"
-                  format="yyyy-MM-dd"
-                  value-format="yyyy-MM-dd"
-                  :clearable="false"
-                  style="width: 100%; margin-top: 15px;"
-                ></el-date-picker>
+  
+                <v-menu v-model="menuStart" :close-on-content-click="false" transition="scale-transition" offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="startDate"
+                      label="시작 날짜"
+                      
+                      v-bind="attrs"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker v-model="startDate" @input="menuStart = false"></v-date-picker>
+                </v-menu>
 
-                <!-- 끝 날짜 선택 -->
-                <el-date-picker
-                  v-model="endDate"
-                  type="date"
-                  placeholder="끝 날짜"
-                  format="yyyy-MM-dd"
-                  value-format="yyyy-MM-dd"
-                  :clearable="false"
-                  style="width: 100%; margin-top: 15px;"
-                ></el-date-picker>
-
+                  <!-- 끝 날짜 선택 -->
+                <v-menu v-model="menuEnd" :close-on-content-click="false" transition="scale-transition" offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="endDate"
+                      label="끝 날짜"
+                      
+                      v-bind="attrs"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker v-model="endDate" @input="menuEnd = false"></v-date-picker>
+                </v-menu>
               </v-form>
             </v-card-text>
             <v-card-actions>
@@ -201,6 +206,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
 
       </v-tab-item>
     </v-tabs-items>
@@ -256,7 +262,7 @@ export default {
     },
 
     openCarModal(vehicle) {
-      console.log(vehicle);
+      console.log("선택된 차량:", vehicle);
       this.selectedCar = vehicle;
       this.isCarModalOpen = true;
     },
