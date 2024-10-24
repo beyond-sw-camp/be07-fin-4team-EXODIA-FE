@@ -87,8 +87,13 @@ meetReservation
 
             <!-- 시작 날짜 선택 -->
             <v-row>
-              <v-col>
-                <v-date-picker v-model="startDate" label="예약 시작 날짜" />
+              <v-col cols="12">
+                <v-text-field
+                  v-model="startDate"
+                  label="예약 시작 날짜"
+                  type="date"
+                  required
+                />
               </v-col>
             </v-row>
 
@@ -147,7 +152,14 @@ meetReservation
           <!-- 날짜와 시간만 표시하도록 변경 -->
           <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
           <v-col cols="3">{{ formatDateTime(item.endTime) }}</v-col>
-          <v-col cols="3">{{ item.status }}</v-col>
+          <v-col cols="3">
+            <span v-if="item.status === 'APPROVED'" class="status-approved">
+              예약완료
+            </span>
+            <span v-else>
+              {{ item.status }}
+            </span>
+          </v-col>
         </v-row>
       </v-col>
     </v-row>
@@ -397,16 +409,35 @@ export default {
           alert("로그인 후 예약을 시도해 주세요.");
           return;
         }
-        if (this.startHour === null || this.startMinute === null || this.endHour === null || this.endMinute === null) {
-          alert("시작 및 종료 시간을 모두 입력해 주세요.");
+
+        // 날짜 값이 문자열로 들어오므로 이를 Date 객체로 변환
+        const selectedStartDate = new Date(this.startDate);
+        const selectedEndDate = new Date(this.startDate); // 종료 날짜는 같은 날로 가정
+        selectedStartDate.setHours(this.startHour, this.startMinute);
+        selectedEndDate.setHours(this.endHour, this.endMinute);
+
+        if (isNaN(selectedStartDate) || isNaN(selectedEndDate)) {
+          alert("올바른 날짜 및 시간을 입력해 주세요.");
           return;
         }
 
-        // 사용자가 선택한 날짜와 시간을 조합
-        const startTime = moment(`${this.startDate.getFullYear()}-${String(this.startDate.getMonth() + 1).padStart(2, '0')}-${String(this.startDate.getDate()).padStart(2, '0')}T${String(this.startHour).padStart(2, '0')}:${String(this.startMinute).padStart(2, '0')}`).format('YYYY-MM-DDTHH:mm:ss');
-        const endTime = moment(`${this.startDate.getFullYear()}-${String(this.startDate.getMonth() + 1).padStart(2, '0')}-${String(this.startDate.getDate()).padStart(2, '0')}T${String(this.endHour).padStart(2, '0')}:${String(this.endMinute).padStart(2, '0')}`).format('YYYY-MM-DDTHH:mm:ss');
+        // 시간대 오프셋 적용 (KST는 UTC+9)
+        const timezoneOffset = selectedStartDate.getTimezoneOffset() * 60000; // 밀리초로 변환
+        const startTime = new Date(selectedStartDate.getTime() - timezoneOffset).toISOString();
+        const endTime = new Date(selectedEndDate.getTime() - timezoneOffset).toISOString();
 
-        if (moment(endTime).isBefore(startTime)) {
+        // 입력한 시간이 유효한지 체크
+        if (isNaN(selectedStartDate) || isNaN(selectedEndDate)) {
+          alert("올바른 날짜 및 시간을 입력해 주세요.");
+          return;
+        }
+        // 24시 넘는 경우 처리
+        if (this.endHour > 23 || this.endMinute > 59) {
+          alert("종료 시간이 24시를 넘을 수 없습니다.");
+          return;
+        }
+        // 종료 시간이 시작 시간보다 빠르면 오류
+        if (selectedEndDate < selectedStartDate) {
           alert("종료 시간이 시작 시간보다 빠를 수 없습니다.");
           return;
         }
@@ -422,6 +453,8 @@ export default {
           },
         });
 
+        // 예약이 성공적으로 완료된 후 필드를 초기화
+        this.resetFormFields(); // 필드 초기화 함수 호출
         this.dialog = false;
         this.fetchReservations();
         this.fetchUserReservations(); // 예약 생성 후 사용자 예약 목록 업데이트
@@ -433,6 +466,18 @@ export default {
         }
       }
     },
+
+    // 필드를 초기화하는 메서드 추가
+    resetFormFields() {
+      this.startDate = null; // 시작 날짜 초기화
+      this.startHour = null; // 시작 시간 초기화
+      this.startMinute = null; // 시작 분 초기화
+      this.endHour = null; // 종료 시간 초기화
+      this.endMinute = null; // 종료 분 초기화
+      this.selectedMeetingRoom = null; // 회의실 선택 초기화
+    },
+
+
   },
   mounted() {
     this.fetchMeetingRoomAvailability();
@@ -539,8 +584,14 @@ export default {
   border-radius: 50%;
 }
 
+.status-approved {
+  background-color: #E0E0E0;
+  color: #333333;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-block;
+}
 
-/* .v-card-actions {
-  justify-content: flex-end;
-} */
 </style>
