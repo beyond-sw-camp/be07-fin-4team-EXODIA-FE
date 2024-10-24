@@ -14,11 +14,26 @@
         <v-form ref="form" @submit.prevent="submitForm">
           <v-row>
             <v-col cols="12" md="6">
-              <v-text-field v-model="userDetail.userNum" label="사번" :readonly="isEditMode || isDetailMode" required />
+              <v-text-field
+                v-model="userDetail.userNum"
+                label="사번"
+                :readonly="isEditMode || isDetailMode"
+                :error="!userDetail.userNum && showErrors"
+                required
+              />
+              <span v-if="!userDetail.userNum && showErrors" class="error-text">사번을 입력해주세요.</span>
             </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="userDetail.name" label="이름" :readonly="isDetailMode" required />
-            </v-col>
+
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="userDetail.name"
+              label="이름"
+              :readonly="isDetailMode"
+              :error="!userDetail.name && showErrors"
+              required
+            />
+            <span v-if="!userDetail.name && showErrors" class="error-text">이름을 입력해주세요.</span>
+          </v-col>
 
             <!-- 성별 선택 -->
             <v-col cols="12" md="6">
@@ -189,6 +204,17 @@ export default {
     };
   },
   methods: {
+    async generateUserNum() {
+    const today = new Date();
+    const formattedDate = today.toISOString().slice(0, 10).replace(/-/g, '');
+
+    try {
+      const response = await axios.get(`/user/generateUserNum/${formattedDate}`);
+      this.userDetail.userNum = response.data.userNum;  
+    } catch (error) {
+      console.error("사번을 생성하는 중 오류가 발생했습니다:", error);
+    }
+  },
     setModeBasedOnRoute() {
       const routeName = this.$route.name;
       if (routeName === 'employee-edit') {
@@ -291,18 +317,12 @@ export default {
 
     
     async submitForm() {
-      if (!this.userDetail.password) {
-        alert("비밀번호를 입력해야 합니다.");
-        return;
-      }
-      if (!this.userDetail.address) {
-        alert("주소를 입력해야 합니다.");
-        return;
-      }
-      if (!this.userDetail.socialNum) {
-        alert("주민등록번호를 입력해야 합니다.");
-        return;
-      }
+      this.showErrors = true;
+
+    if (!this.userDetail.userNum || !this.userDetail.name || !this.userDetail.gender || !this.userDetail.departmentId || !this.userDetail.password || this.userDetail.password.length < 8) {
+      alert("모든 필드를 올바르게 입력해주세요.");
+      return;
+}
   try {
     const formData = new FormData();
     formData.append('userNum', this.userDetail.userNum);
@@ -338,6 +358,7 @@ export default {
       await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
       alert("수정 완료");
     } else {
+      await this.generateUserNum();
       await axios.post("/user/register", formData, config);
       alert("등록 완료");
     }
@@ -360,10 +381,16 @@ export default {
     this.setModeBasedOnRoute();
     await this.fetchDepartments();
     await this.fetchPositions();
+    
+    if (this.isRegisterMode) {
+      await this.generateUserNum();
+    }
+
     if (this.$route.params.userNum) {
       await this.fetchUserDetail();
     }
-  },
+}
+,
 };
 </script>
 

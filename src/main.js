@@ -13,6 +13,7 @@ import adapter from 'webrtc-adapter';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { createPinia } from 'pinia';
+import { aliases, mdi } from 'vuetify/iconsets/mdi';
 
 window.adapter = adapter;
 
@@ -25,6 +26,13 @@ if (token) {
 const vuetifyInstance = createVuetify({
   components,
   directives,
+  icons: {
+    defaultSet: 'mdi',
+    aliases,
+    sets: {
+      mdi,
+    },
+  },
 });
 
 axios.interceptors.request.use(config => {
