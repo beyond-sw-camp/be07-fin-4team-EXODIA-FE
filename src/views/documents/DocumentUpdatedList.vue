@@ -1,5 +1,5 @@
 <template>
-    <DocumentListComponent pageTitle="최근 업데이트 문서" />
+    <DocumentListComponent pageTitle="최근 수정 파일" />
 </template> 
 
 <script>

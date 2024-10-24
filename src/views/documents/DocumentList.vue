@@ -1,5 +1,5 @@
     <template>
-        <DocumentListComponent pageTitle="전체파일" />
+        <DocumentListComponent pageTitle="전체 파일" />
     </template>
 
 <script>

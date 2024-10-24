@@ -23,7 +23,7 @@
 
         <!-- 부서원 출근 정보 목록 -->
         <v-row class="container">
-          <v-col cols="6" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
+          <v-col cols="6" class="profile-item" v-for="user in departmentUsers" :key="user.userNum">
             <v-row class="profile-container">
               <v-col class="profile-item">
                 <!-- 프로필 이미지 -->
@@ -189,7 +189,7 @@ v-alert {
 /* 뱃지 스타일 */
 .badge {
   position: absolute;
-  top: 50px;
+  bottom: 25px;
   left: 50px;
   width: 15px;
   height: 15px;
@@ -227,5 +227,6 @@ v-alert {
 .profile-item {
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 </style>

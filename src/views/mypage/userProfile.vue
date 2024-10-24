@@ -16,27 +16,27 @@
                   <tbody>
                     <tr>
                       <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">이름</td>
-                      <td style="width:70%;">{{ userProfile?.name || 'N/A' }}</td>
+                      <td style="width:70%;">{{ userProfile?.name || ' ' }}</td>
                     </tr>
                     <tr>
                       <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center;">사번</td>
-                      <td style="width:70%;">{{ userProfile?.userNum || 'N/A' }}</td>
+                      <td style="width:70%;">{{ userProfile?.userNum || ' ' }}</td>
                     </tr>
                     <tr>
                       <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">부서명</td>
-                      <td style="width:70%;">{{ userProfile?.departmentName || 'N/A' }}</td>
+                      <td style="width:70%;">{{ userProfile?.departmentName || ' ' }}</td>
                     </tr>
                     <tr>
                       <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">직책</td>
-                      <td style="width:70%;">{{ userProfile?.positionName || 'N/A' }}</td>
+                      <td style="width:70%;">{{ userProfile?.positionName || ' ' }}</td>
                     </tr>
                     <tr>
                       <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">전화번호</td>
-                      <td style="width:70%;">{{ userProfile?.phone || 'N/A' }}</td>
+                      <td style="width:70%;">{{ userProfile?.phone || ' ' }}</td>
                     </tr>
                     <tr>
                       <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">입사일</td>
-                      <td style="width:70%;">{{ userProfile?.joinDate || 'N/A' }}</td>
+                      <td style="width:70%;">{{ userProfile?.joinDate || ' ' }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -53,9 +53,11 @@
 
             <v-card-text>
               <v-form ref="passwordForm" v-model="valid">
-                <v-text-field v-model="passwordData.currentPassword" label="현재 비밀번호" type="password" required></v-text-field>
+                <v-text-field v-model="passwordData.currentPassword" label="현재 비밀번호" type="password"
+                  required></v-text-field>
                 <v-text-field v-model="passwordData.newPassword" label="새 비밀번호" type="password" required></v-text-field>
-                <v-text-field v-model="passwordData.confirmNewPassword" label="새 비밀번호 확인" type="password" required></v-text-field>
+                <v-text-field v-model="passwordData.confirmNewPassword" label="새 비밀번호 확인" type="password"
+                  required></v-text-field>
 
                 <v-alert v-if="passwordError" type="error" border="top" elevation="2" dense>
                   {{ passwordError }}
@@ -77,7 +79,7 @@
 
 <script>
 import axios from 'axios';
-import MypageTemplate from './MypageTemplate.vue'; 
+import MypageTemplate from './MypageTemplate.vue';
 
 export default {
   name: "UserProfile",
