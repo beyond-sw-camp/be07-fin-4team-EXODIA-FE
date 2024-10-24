@@ -1,174 +1,149 @@
 <template>
-  <div class="container">
-    <div class="left-panel">
-      <input type="text" placeholder="조직도 검색" v-model="searchTerm" />
+  <div class="org-chart">
+    <v-text-field
+      v-model="searchQuery"
+      label="조직도 검색"
+      @input="searchHierarchy"
+      clearable
+      class="search-input"
+    ></v-text-field>
+
+    <div class="department-list">
       <ul>
-        <li v-for="node in filteredDepartments" :key="node.id">
-          <div class="tree-node">
-            <input
-              type="checkbox"
-              v-model="node.checked"
-              @change="onCheckNode(node)"
-            />
-            <span>{{ node.name }} ({{ node.totalUsersCount }})</span>
+        <li v-for="department in filteredHierarchy" :key="department.id" class="department-item">
+          <div @click="toggleExpand(department)" class="department-name">
+            {{ department.name }} ({{ department.totalUsersCount }})
           </div>
-          <ul v-if="node.children && node.children.length">
-            <li v-for="child in node.children" :key="child.id">
-              <div class="tree-node">
-                <input
-                  type="checkbox"
-                  v-model="child.checked"
-                  @change="onCheckNode(child)"
-                />
-                <span>{{ child.name }} ({{ child.totalUsersCount }})</span>
+          <!-- 하위 부서 및 직원 리스트를 클릭 시 확장 -->
+          <ul v-if="expandedDepartments.includes(department.id)" class="child-list">
+            <!-- 자식 부서 리스트 -->
+            <li v-for="child in department.children" :key="child.id" class="child-item">
+              <div @click="toggleExpand(child)" class="child-department">
+                {{ child.name }} ({{ child.totalUsersCount }})
               </div>
-              <ul v-if="child.children && child.children.length">
-                <li v-for="subChild in child.children" :key="subChild.id">
-                  <div class="tree-node">
-                    <input
-                      type="checkbox"
-                      v-model="subChild.checked"
-                      @change="onCheckNode(subChild)"
-                    />
-                    <span>{{ subChild.name }} ({{ subChild.totalUsersCount }})</span>
-                  </div>
+              <!-- 자식 부서의 소속 직원 목록 -->
+              <ul v-if="expandedDepartments.includes(child.id)" class="user-list">
+                <li v-for="user in child.users" :key="user.userNum" class="user-item">
+                  {{ user.name }} - {{ user.position }}
                 </li>
               </ul>
+            </li>
+            <!-- 상위 부서의 소속 직원 리스트 -->
+            <li v-for="user in department.users" :key="user.userNum" class="user-item">
+              {{ user.name }} - {{ user.position }}
             </li>
           </ul>
         </li>
       </ul>
     </div>
-
-    <div class="right-panel">
-      <table>
-        <thead>
-          <tr>
-            <th><input type="checkbox" v-model="selectAll" @change="onSelectAll" /></th>
-            <th>No.</th>
-            <th>이름</th>
-            <th>휴대전화번호</th>
-            <th>회사명</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(user, index) in selectedUsers" :key="user.id">
-            <td><input type="checkbox" v-model="user.checked" /></td>
-            <td>{{ index + 1 }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ user.phone }}</td>
-            <td>{{ user.company }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="total-count">
-        총 {{ selectedUsers.length }}명
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
-      departments: [],
-      searchTerm: '',
-      selectedUsers: [],
-      selectAll: false,
+      hierarchy: [], // 부서 계층 정보
+      searchQuery: '', // 검색 입력값
+      expandedDepartments: [], // 확장된 부서 목록
     };
   },
   computed: {
-    filteredDepartments() {
-      if (this.searchTerm === '') return this.departments;
-      return this.departments.filter((department) =>
-        department.name.includes(this.searchTerm)
-      );
-    },
+    filteredHierarchy() {
+      // 검색 쿼리로 부서 필터링
+      if (!this.searchQuery) {
+        return this.hierarchy.filter(dept => !dept.parentId); // 상위 부서만 필터링
+      }
+      const query = this.searchQuery.toLowerCase();
+      return this.hierarchy.filter(dept => dept.name.toLowerCase().includes(query));
+    }
   },
   methods: {
-    // eslint-disable-next-line no-unused-vars
-    onCheckNode(node) {
-      this.updateSelectedUsers();
+    async fetchHierarchy() {
+      try {
+        const response = await axios.get('/department/hierarchy');
+        this.hierarchy = this.calculateUserCounts(response.data);
+      } catch (error) {
+        console.error('부서 계층 정보를 가져오는 중 오류 발생:', error);
+      }
     },
-    updateSelectedUsers() {
-      this.selectedUsers = [];
-      this.collectSelectedUsers(this.departments);
-    },
-    collectSelectedUsers(nodes) {
-      nodes.forEach((node) => {
-        if (node.checked && node.users) {
-          this.selectedUsers.push(...node.users);
+    calculateUserCounts(departments) {
+      const recurse = async (dept) => {
+        const usersResponse = await axios.get(`/department/${dept.id}/users`);
+        dept.users = usersResponse.data || [];
+
+        let totalUsers = dept.users.length;
+        if (dept.children && dept.children.length > 0) {
+          for (const child of dept.children) {
+            totalUsers += await recurse(child); // 자식 부서의 사용자 수 합산
+          }
         }
-        if (node.children && node.children.length > 0) {
-          this.collectSelectedUsers(node.children);
-        }
+        dept.totalUsersCount = totalUsers;
+        return totalUsers;
+      };
+      departments.forEach(async dept => {
+        await recurse(dept);
       });
+      return departments;
     },
-    onSelectAll() {
-      this.selectedUsers.forEach((user) => (user.checked = this.selectAll));
-    },
-    async fetchDepartments() {
-      try {
-        const response = await this.$axios.fetch('/department/hierarchy');
-        const data = await response.json();
-        this.departments = await Promise.all(
-          data.map(async (dept) => ({
-            ...dept,
-            checked: false,
-            users: await this.getUsersByDepartment(dept.id),
-          }))
-        );
-      } catch (error) {
-        console.error("Failed to fetch departments:", error);
+    async toggleExpand(department) {
+      if (this.expandedDepartments.includes(department.id)) {
+        this.expandedDepartments = this.expandedDepartments.filter(id => id !== department.id);
+      } else {
+        if (!department.users || department.users.length === 0) {
+          const response = await axios.get(`/department/${department.id}/users`);
+          department.users = response.data;
+        }
+        this.expandedDepartments.push(department.id);
       }
     },
-    async getUsersByDepartment(departmentId) {
-      try {
-        const response = await this.$axios.fetch(`/department/${departmentId}/users`);
-        return await response.json();
-      } catch (error) {
-        console.error(`Failed to fetch users for department ${departmentId}:`, error);
-        return [];
-      }
-    },
+    searchHierarchy() {
+    }
   },
   mounted() {
-    this.fetchDepartments();
-  },
+    this.fetchHierarchy(); 
+  }
 };
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  gap: 20px;
+.org-chart {
+  padding: 10px;
 }
-.left-panel {
-  width: 300px;
-  border-right: 1px solid #ddd;
-  padding-right: 10px;
+
+.department-list {
+  padding-left: 0;
+  list-style-type: none;
 }
-.tree-node {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+
+.department-item {
+  margin: 10px 0;
+  cursor: pointer;
+}
+
+.department-name {
+  font-weight: bold;
+}
+
+.child-list {
+  list-style-type: none;
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.child-item {
   margin: 5px 0;
 }
-.right-panel {
-  flex: 1;
+
+.user-list {
+  list-style-type: none;
+  padding-left: 20px;
+  margin: 10px 0;
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-table th, table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-}
-.total-count {
-  text-align: right;
-  margin-top: 10px;
+
+.user-item {
+  font-size: 14px;
 }
 </style>
