@@ -105,11 +105,28 @@
 
 
       <!-- 사이드: 조직도 -->
-      <div class="menu-item" @click="toggleMenu('organization')"
-        :class="{ 'active': $route.path.startsWith('/organization') }" @mouseover="showSubSidebar('borganizationoard')">
+      <div class="menu-item" @click="toggleOrganizationModal">
+        <!-- :class="{ 'active': $route.path.startsWith('/organization') }" @mouseover="showSubSidebar('borganizationoard')"> -->
         <v-icon class="icon">mdi-account-group</v-icon>
         <span>조직도</span>
       </div>
+
+      <v-dialog v-model="showOrganizationModal" persistent max-width="100%">
+        <v-card>
+          <v-card-title>
+            <span>조직도</span>
+            <v-spacer></v-spacer>
+            <v-btn icon @click="toggleOrganizationModal">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-card-title>
+      
+          <v-card-text>
+            <OrganizationChart />
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+      
 
       <!-- 사이드: 직원관리 -->
       <div v-if="isHrDepartment" class="menu-item" @click="toggleMenu('employee-management')"
@@ -156,6 +173,7 @@
 
 <script>
 // import axios from 'axios';
+import OrganizationChart from '@/views/organization/OrganizationChart.vue'; 
 
 export default {
   name: 'AppSidebar',
@@ -173,10 +191,18 @@ export default {
       isHoveringSidebar: false,
       expandedMenu: null,
 
+      showOrganizationModal: false,
     };
-
+  },
+  components: {
+    OrganizationChart, 
   },
   methods: {
+    toggleOrganizationModal() {
+    this.showOrganizationModal = !this.showOrganizationModal;
+    console.log('모달 상태:', this.showOrganizationModal); // 상태 확인용 로그
+  },
+
     toggleProjectVisibility() {
       this.showProject = !this.showProject;
       if (this.showProject) {
@@ -333,5 +359,15 @@ export default {
   background-color: #7A5656;
   z-index: 100;
   cursor: pointer;
+}
+
+.v-dialog {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 300px;
+  background-color: white;
+  z-index: 2000;
 }
 </style>

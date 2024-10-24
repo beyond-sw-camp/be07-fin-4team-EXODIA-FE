@@ -12,6 +12,7 @@
       <ul>
         <li v-for="department in filteredHierarchy" :key="department.id" class="department-item">
           <div @click="toggleExpand(department)" class="department-name">
+            <v-icon large class="mr-2">{{ expandedDepartments.includes(department.id) ? 'mdi-chevron-down' : 'mdi-chevron-right' }}</v-icon>
             {{ department.name }} ({{ department.totalUsersCount }})
           </div>
           <!-- 하위 부서 및 직원 리스트를 클릭 시 확장 -->
@@ -19,18 +20,19 @@
             <!-- 자식 부서 리스트 -->
             <li v-for="child in department.children" :key="child.id" class="child-item">
               <div @click="toggleExpand(child)" class="child-department">
+                <v-icon large class="mr-2">{{ expandedDepartments.includes(child.id) ? 'mdi-chevron-down' : 'mdi-chevron-right' }}</v-icon>
                 {{ child.name }} ({{ child.totalUsersCount }})
               </div>
               <!-- 자식 부서의 소속 직원 목록 -->
               <ul v-if="expandedDepartments.includes(child.id)" class="user-list">
                 <li v-for="user in child.users" :key="user.userNum" class="user-item">
-                  {{ user.name }} - {{ user.position }}
+                  <v-icon small class="mr-1">mdi-account</v-icon>{{ user.name }} - {{ user.position }}
                 </li>
               </ul>
             </li>
             <!-- 상위 부서의 소속 직원 리스트 -->
             <li v-for="user in department.users" :key="user.userNum" class="user-item">
-              {{ user.name }} - {{ user.position }}
+              <v-icon small class="mr-1">mdi-account</v-icon>{{ user.name }} - {{ user.position }}
             </li>
           </ul>
         </li>
@@ -70,6 +72,7 @@ export default {
       }
     },
     calculateUserCounts(departments) {
+      // 부서 사용자 수 계산
       const recurse = async (dept) => {
         const usersResponse = await axios.get(`/department/${dept.id}/users`);
         dept.users = usersResponse.data || [];
@@ -89,6 +92,7 @@ export default {
       return departments;
     },
     async toggleExpand(department) {
+      // 부서 확장/축소
       if (this.expandedDepartments.includes(department.id)) {
         this.expandedDepartments = this.expandedDepartments.filter(id => id !== department.id);
       } else {
@@ -100,17 +104,22 @@ export default {
       }
     },
     searchHierarchy() {
+      // 검색 쿼리 필터링
     }
   },
   mounted() {
-    this.fetchHierarchy(); 
+    this.fetchHierarchy(); // 컴포넌트가 마운트될 때 부서 계층 정보를 가져옴
   }
 };
 </script>
 
 <style scoped>
 .org-chart {
-  padding: 10px;
+  padding: 20px;
+}
+
+.search-input {
+  margin-bottom: 20px;
 }
 
 .department-list {
@@ -119,31 +128,43 @@ export default {
 }
 
 .department-item {
-  margin: 10px 0;
+  margin: 15px 0;
   cursor: pointer;
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .department-name {
+  display: flex;
+  align-items: center;
   font-weight: bold;
+  font-size: 16px;
+  color: #333;
 }
 
 .child-list {
   list-style-type: none;
-  padding-left: 20px;
+  padding-left: 30px;
   margin: 10px 0;
 }
 
 .child-item {
   margin: 5px 0;
+  cursor: pointer;
 }
 
 .user-list {
   list-style-type: none;
-  padding-left: 20px;
+  padding-left: 40px;
   margin: 10px 0;
 }
 
 .user-item {
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  color: #666;
 }
 </style>
