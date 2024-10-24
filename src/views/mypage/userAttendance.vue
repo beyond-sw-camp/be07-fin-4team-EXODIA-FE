@@ -1,72 +1,70 @@
 <template>
-  <div class="userAttendance">
-    <v-row>
-      <v-col cols="4">
-        <h3>출·퇴근 기록</h3>
-      </v-col>
-      <v-col cols="2">
-        <!-- 출근 버튼 -->
-        <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn">
-          출근
-        </v-btn>
-      </v-col>
-      <v-col cols="2">
-        <!-- 퇴근 버튼 -->
-        <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut">
-          퇴근
-        </v-btn>
-      </v-col>
-
-      <!-- 상태 표시 -->
-      <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
-    </v-row>
-
-    <!-- 부서원 출근 정보 목록 -->
-    <v-row class="in-out">
-      <v-col cols="6" class="user-card-in-out" v-for="user in departmentUsers" :key="user.userNum">
-        <v-row class="profile-container">
-          <v-col class="profile-item">
-            <!-- 프로필 이미지 -->
-            <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
-            <!-- 출근 여부 뱃지 -->
-            <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
-            <!-- 이름, 직책, 부서명 -->
+      <div class="userAttendance">
+        <v-row>
+          <v-col cols="4">
+            <h3>출·퇴근 기록</h3>
+          </v-col>
+          <v-col cols="2">
+            <!-- 출근 버튼 -->
+            <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn">
+              출근
+            </v-btn>
+          </v-col>
+          <v-col cols="2">
+            <!-- 퇴근 버튼 -->
+            <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut">
+              퇴근
+            </v-btn>
           </v-col>
 
-          <v-col>
-            <div class="user-info">
-              <div class="user-name">{{ user.name }}</div>
-              <div class="user-position">{{ user.positionName }}</div>
-              <div class="user-department">{{ user.departmentName }}</div>
-            </div>
+          <!-- 상태 표시 -->
+          <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
+        </v-row>
+
+        <!-- 부서원 출근 정보 목록 -->
+        <v-row class="container">
+          <v-col cols="6" class="user-card" v-for="user in departmentUsers" :key="user.userNum">
+            <v-row class="profile-container">
+              <v-col class="profile-item">
+                <!-- 프로필 이미지 -->
+                <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
+                <!-- 출근 여부 뱃지 -->
+                <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
+                <!-- 이름, 직책, 부서명 -->
+              </v-col>
+
+              <v-col>
+                <div class="user-info">
+                  <div class="user-name">{{ user.name }}</div>
+                  <div class="user-position">{{ user.positionName }}</div>
+                  <div class="user-department">{{ user.departmentName }}</div>
+                </div>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
-      </v-col>
-    </v-row>
-  </div>
+      </div>
 </template>
 
 <script>
 import axios from "axios";
 
 export default {
-  name: "userAttendance",
+  name: "UserAttendance",
+
   data() {
     return {
-      isWorkIn: false,  // 출근 여부
-      isWorkOut: false, // 퇴근 여부
-      message: "",      // 알림 메시지
-      alertType: "info", // 알림 메시지 유형
-
+      isWorkIn: false,
+      isWorkOut: false,
+      message: "",
+      alertType: "info",
       loggedUser: null,
-      departmentUsers: [], // 부서원들의 출근 정보
-      defaultProfileImage: "https://via.placeholder.com/150", // 기본 프로필 이미지
-
+      departmentUsers: [],
+      defaultProfileImage: "https://via.placeholder.com/150",
       userNum: localStorage.getItem('userNum') || null,
     };
   },
   methods: {
-    // 출근 API 호출
     async workIn() {
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, {}, {
@@ -74,7 +72,7 @@ export default {
         });
         this.message = response.data.message;
         this.alertType = "success";
-        this.isWorkIn = true;  // 출근 완료
+        this.isWorkIn = true;
         location.reload();
       } catch (error) {
         this.message = "출근 기록 중 오류 발생";
@@ -82,8 +80,6 @@ export default {
         console.error(error);
       }
     },
-
-    // 퇴근 API 호출
     async workOut() {
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, {}, {
@@ -91,7 +87,7 @@ export default {
         });
         this.message = response.data.message;
         this.alertType = "success";
-        this.isWorkOut = true;  // 퇴근 완료
+        this.isWorkOut = true;
         location.reload();
       } catch (error) {
         this.message = "퇴근 기록 중 오류 발생";
@@ -99,60 +95,38 @@ export default {
         console.error(error);
       }
     },
-
-    // 부서원 출근 정보 가져오기
     async fetchDepartmentUsersAttendance() {
       try {
         const response = await axios.get(
           `${process.env.VUE_APP_API_BASE_URL}/attendance/department/status`,
-          {
-            headers: this.getAuthHeaders(),
-          }
+          { headers: this.getAuthHeaders() }
         );
-
         const presentUser = response.data["출근한 사람들"];
         const absentUser = response.data["출근하지 않은 사람들"];
-
         if (presentUser.some((user) => user.userNum === this.userNum)) {
           this.loggedUser = {
             ...presentUser.find((user) => user.userNum === this.userNum),
             isPresent: true,
           };
-        }
-        // 출근하지 않은 사람들 중 본인이 있는지 확인
-        else if (absentUser.some((user) => user.userNum === this.userNum)) {
+        } else if (absentUser.some((user) => user.userNum === this.userNum)) {
           this.loggedUser = {
             ...absentUser.find((user) => user.userNum === this.userNum),
             isPresent: false,
           };
         }
-
         this.departmentUsers = [
           this.loggedUser,
-
-          // 출근한 사람들 (본인 제외)
           ...presentUser
             .filter((user) => user.userNum !== this.userNum)
-            .map((user) => ({
-              ...user,
-              isPresent: true, // 출근한 사람
-            })),
-
-          // 출근하지 않은 사람들
+            .map((user) => ({ ...user, isPresent: true })),
           ...absentUser
             .filter((user) => user.userNum !== this.userNum)
-            .map((user) => ({
-              ...user,
-              isPresent: false, // 출근하지 않은 사람
-            })),
+            .map((user) => ({ ...user, isPresent: false })),
         ];
-      }
-      catch (error) {
+      } catch (error) {
         console.error("부서 출근 정보를 가져오는 중 오류 발생:", error);
       }
     },
-
-    // JWT 인증 헤더 설정
     getAuthHeaders() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -165,10 +139,11 @@ export default {
     },
   },
   mounted() {
-    this.fetchDepartmentUsersAttendance(); // 컴포넌트가 마운트되면 부서 출근 정보 가져오기
+    this.fetchDepartmentUsersAttendance();
   },
 };
 </script>
+
 
 <style scoped>
 h2 {
@@ -193,7 +168,7 @@ v-alert {
 }
 
 /* 유저 카드 스타일 */
-.user-card-in-out {
+.user-card {
   display: flex;
   justify-content: center;
   align-content: center;
@@ -252,9 +227,5 @@ v-alert {
 .profile-item {
   display: flex;
   justify-content: center;
-}
-
-.in-out {
-  border: none;
 }
 </style>

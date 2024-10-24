@@ -7,28 +7,12 @@
         <!-- 카테고리를 URL에 따라 표시 -->
         <v-col cols="3">
           <!-- 카테고리를 URL에서 전달받아 고정 표시 -->
-          <v-text-field
-            v-model="categoryLabel"
-            label="게시판"
-            readonly
-            solo
-            flat
-            hide-details
-            class="category-label"
-          />
+          <v-text-field v-model="categoryLabel" label="게시판" readonly solo flat hide-details class="category-label" />
         </v-col>
 
         <!-- 제목 -->
         <v-col cols="9">
-          <v-text-field
-            v-model="title"
-            placeholder="제목을 입력하세요."
-            solo
-            flat
-            hide-details
-            class="title-input"
-            dense
-          />
+          <v-text-field v-model="title" placeholder="제목을 입력하세요." solo flat hide-details class="title-input" dense />
         </v-col>
       </v-row>
 
@@ -64,16 +48,12 @@
 
       <!-- 내용 입력 필드 -->
       <div id="editor" class="content-input" contenteditable="true"></div>
-      
+
 
       <!-- 파일 첨부 -->
-      <v-file-input
-        v-model="files"
-        label="파일첨부"
+      <v-file-input v-model="files" label="파일첨부"
         accept="image/*, application/pdf, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        multiple
-        flat
-      />
+        multiple flat />
 
       <!-- 태그 선택 버튼 -->
       <v-row>
@@ -86,12 +66,8 @@
 
             <!-- 기존 태그들 -->
             <div v-for="tag in tags" :key="tag.id" class="tag-wrapper">
-              <v-btn
-                :class="{'selected-tag': selectedTags.includes(tag.id)}"
-                @click="toggleTagSelection(tag.id)"
-                outlined
-                class="tag-button rounded-button"
-              >
+              <v-btn :class="{ 'selected-tag': selectedTags.includes(tag.id) }" @click="toggleTagSelection(tag.id)"
+                outlined class="tag-button rounded-button">
                 {{ tag.tag }}
               </v-btn>
               <!-- 태그 삭제 버튼 (X 버튼) -->
@@ -105,12 +81,7 @@
 
       <!-- 고정 여부 체크박스, 취소 및 저장 버튼 -->
       <div class="btnWrap">
-        <v-checkbox
-          v-if="selectedCategory !== 'FAMILY_EVENT'"
-          v-model="isPinned"
-          label="중요"
-          class="mr-4"
-        />
+        <v-checkbox v-if="selectedCategory !== 'FAMILY_EVENT'" v-model="isPinned" label="중요" class="mr-4" />
 
         <v-btn text @click="cancel">취소</v-btn>
         <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
@@ -122,12 +93,7 @@
       <v-card>
         <v-card-title>새로운 태그 추가</v-card-title>
         <v-card-text>
-          <v-text-field
-            v-model="newTagName"
-            label="태그 이름"
-            placeholder="태그 이름을 입력하세요"
-            solo
-          ></v-text-field>
+          <v-text-field v-model="newTagName" label="태그 이름" placeholder="태그 이름을 입력하세요" solo></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -255,10 +221,11 @@ export default {
       }
 
       const existingTag = this.tags.find(tag => tag.tag === this.newTagName.trim());
-        if (existingTag) {
-          alert('이미 존재하는 태그입니다.');
-          return;
+      if (existingTag) {
+        alert('이미 존재하는 태그입니다. 다른 이름을 입력해주세요.');
+        return;
       }
+
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/tags/create`, {
           tag: this.newTagName.trim(),
