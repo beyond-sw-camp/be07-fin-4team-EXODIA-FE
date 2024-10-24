@@ -26,7 +26,7 @@
 
       <!-- Custom Table -->
       <v-row justify="center" class="mt-4">
-        <v-col cols="12">
+        <v-col cols="13">
           <v-row
             class="mb-2"
             style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;"
@@ -35,9 +35,10 @@
             <v-col cols="2">사번</v-col>
             <v-col cols="2">이름</v-col>
             <v-col cols="2">부서</v-col>
-            <v-col cols="2">직급</v-col>
+            <v-col cols="1">직급</v-col>
             <v-col cols="1">연차</v-col>
             <v-col cols="2">기본급</v-col>
+            <v-col cols="1">수정</v-col>
           </v-row>
 
           <v-row
@@ -51,9 +52,14 @@
             <v-col cols="2">{{ salary.userNum }}</v-col>
             <v-col cols="2">{{ salary.userName }}</v-col>
             <v-col cols="2">{{ salary.departmentName }}</v-col>
-            <v-col cols="2">{{ salary.positionName }}</v-col>
+            <v-col cols="1">{{ salary.positionName }}</v-col>
             <v-col cols="1">{{ salary.yearsOfService }} 년</v-col>
             <v-col cols="2">{{ salary.baseSalary.toLocaleString() }} 원</v-col>
+            <v-col cols="1">
+              <v-btn icon @click.stop="goToSalaryEditPage(salary.userNum)">
+                <v-icon>mdi-cog</v-icon>
+              </v-btn>
+            </v-col>
           </v-row>
         </v-col>
       </v-row>
@@ -182,6 +188,10 @@ export default {
         }
       }
     },
+    
+    goToSalaryEditPage(userNum) {
+      this.$router.push(`/salary/update/${userNum}`);
+    },
 
     async fetchPositions() {
       try {
@@ -218,7 +228,7 @@ export default {
       this.selectedEndDate = this.selectedStartDate;
     }
   },
-  
+
     async setSalaryDate() {
       try {
         if (!this.selectedStartDate || !this.selectedEndDate) {
