@@ -1,49 +1,53 @@
 <template>
-      <div class="userAttendance">
-        <v-row>
-          <v-col cols="4">
-            <h3>출·퇴근 기록</h3>
-          </v-col>
-          <v-col cols="2">
-            <!-- 출근 버튼 -->
-            <v-btn style="background-color:#4caf50; color:#ffffff" @click="workIn">
-              출근
-            </v-btn>
-          </v-col>
-          <v-col cols="2">
-            <!-- 퇴근 버튼 -->
-            <v-btn style="background-color:#af2626; color:#ffffff" @click="workOut">
-              퇴근
-            </v-btn>
+  <div class="userAttendance">
+
+    <v-row justify="space-between">
+      <v-col cols="8">
+        <h3>출·퇴근 기록</h3>
+      </v-col>
+
+      <v-col cols="auto" class="d-flex justify-end">
+        <!-- 출근 버튼 -->
+        <v-btn variant="outlined" style="background-color:#4caf50; color:#ffffff" @click="workIn">
+          출근
+        </v-btn>
+      </v-col>
+      <v-col cols="auto" class="d-flex justify-end">
+        <!-- 퇴근 버튼 -->
+        <v-btn variant="outlined" style="background-color:#b00020; color:#ffffff" :disabled="isWorkOut"
+          @click="workOut">
+          퇴근
+        </v-btn>
+      </v-col>
+
+      <!-- 상태 표시 -->
+      <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
+    </v-row>
+
+
+    <!-- 부서원 출근 정보 목록 -->
+    <v-row class="container">
+      <v-col cols="6" class="profile-item" v-for="user in departmentUsers" :key="user.userNum">
+        <v-row class="profile-container">
+          <v-col class="profile-item">
+            <!-- 프로필 이미지 -->
+            <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
+            <!-- 출근 여부 뱃지 -->
+            <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
+            <!-- 이름, 직책, 부서명 -->
           </v-col>
 
-          <!-- 상태 표시 -->
-          <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
+          <v-col>
+            <div class="user-info">
+              <div class="user-name">{{ user.name }}</div>
+              <div class="user-position">{{ user.positionName }}</div>
+              <div>{{ user.inTime || ' ' }}- {{ user.outTime || ' ' }}</div>
+            </div>
+          </v-col>
         </v-row>
-
-        <!-- 부서원 출근 정보 목록 -->
-        <v-row class="container">
-          <v-col cols="6" class="profile-item" v-for="user in departmentUsers" :key="user.userNum">
-            <v-row class="profile-container">
-              <v-col class="profile-item">
-                <!-- 프로필 이미지 -->
-                <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
-                <!-- 출근 여부 뱃지 -->
-                <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
-                <!-- 이름, 직책, 부서명 -->
-              </v-col>
-
-              <v-col>
-                <div class="user-info">
-                  <div class="user-name">{{ user.name }}</div>
-                  <div class="user-position">{{ user.positionName }}</div>
-                  <div class="user-department">{{ user.departmentName }}</div>
-                </div>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </div>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>
@@ -51,7 +55,6 @@ import axios from "axios";
 
 export default {
   name: "UserAttendance",
-
   data() {
     return {
       isWorkIn: false,
@@ -75,9 +78,13 @@ export default {
         this.isWorkIn = true;
         location.reload();
       } catch (error) {
-        this.message = "출근 기록 중 오류 발생";
+        this.message = "이미 출근 기록이 존재합니다.";
         this.alertType = "error";
-        console.error(error);
+
+        // 3초후 자동으로 경고창 사라짐
+        setTimeout(() => {
+          this.message = "";
+        }, 3000);
       }
     },
     async workOut() {
@@ -90,9 +97,13 @@ export default {
         this.isWorkOut = true;
         location.reload();
       } catch (error) {
-        this.message = "퇴근 기록 중 오류 발생";
+        this.message = "이미 퇴근 기록이 존재합니다.";
         this.alertType = "error";
-        console.error(error);
+
+        // 3초후 자동으로 경고창 사라짐
+        setTimeout(() => {
+          this.message = "";
+        }, 3000);
       }
     },
     async fetchDepartmentUsersAttendance() {
@@ -190,7 +201,7 @@ v-alert {
 .badge {
   position: absolute;
   bottom: 25px;
-  left: 50px;
+  left: 45px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
@@ -228,5 +239,10 @@ v-alert {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.v-btn:hover {
+  background-color: #722121;
+  color: #ffffff;
 }
 </style>
