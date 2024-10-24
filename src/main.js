@@ -12,7 +12,7 @@ import '@mdi/font/css/materialdesignicons.css';
 import adapter from 'webrtc-adapter';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
-
+// import './main.css';
 
 window.adapter = adapter;
 
@@ -77,5 +77,43 @@ app.config.globalProperties.$axios = axios;
 app.use(router);
 app.use(store);
 app.use(vuetifyInstance);
+
+// app.mixin({
+//   methods: {
+//     checkButtons() {
+//       // v-btn 클래스만 선택
+//       const buttons = document.querySelectorAll('.v-btn');
+//       buttons.forEach(button => {
+//         const text = button.innerText;
+
+//         // 버튼 기본 스타일 리셋 (다른 컴포넌트에는 영향 X)
+//         button.classList.add('reset-btn');
+
+//         // "생성", "등록", "작성"이 포함된 버튼
+//         if (text.includes('생성') || text.includes('등록') || text.includes('작성')) {
+//           button.classList.add('custom-create-register-btn');
+//           button.classList.remove('custom-write-btn', 'custom-list-btn');
+//         }
+//         // "삭제", "닫기", "취소" 버튼
+//         else if (text.includes('삭제') || text.includes('닫기') || text.includes('취소')) {
+//           button.classList.add('custom-write-btn');
+//           button.classList.remove('custom-create-register-btn', 'custom-list-btn');
+//         }
+//         // "목록" 버튼
+//         else if (text.includes('목록')) {
+//           button.classList.add('custom-list-btn');
+//           button.classList.remove('custom-create-register-btn', 'custom-write-btn');
+//         }
+//       });
+//     }
+//   },
+//   mounted() {
+//     this.checkButtons();
+//   },
+//   updated() {
+//     this.checkButtons();
+//   }
+// });
+
 
 app.mount('#app');

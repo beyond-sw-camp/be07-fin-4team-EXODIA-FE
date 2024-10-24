@@ -64,6 +64,22 @@
         </v-alert>
       </div>
 
+      <!-- 페이징 -->
+      <!-- <v-row justify="center" v-if="totalPages > 1">
+        <v-pagination v-model="currentPage" :length="totalPages" @input="fetchSalaries"></v-pagination>
+      </v-row> -->
+
+
+    <!-- 페이징 -->
+    <v-row justify="center">
+      <v-pagination
+        v-model="currentPage"
+        :length="totalPages"
+        :total-visible="5"
+        always-show
+      ></v-pagination>
+    </v-row>
+
       <!-- 급여일 설정 다이얼로그 -->
       <v-dialog v-model="salaryDateDialog" max-width="600px">
         <v-card :style="{ padding: '20px' }">
@@ -117,9 +133,18 @@ export default {
       salaryDateDialog: false,
       selectedStartDate: null, 
       selectedEndDate: null,
+      currentPage: 1,
+      itemsPerPage: 10,
+      totalPages: 0,
     };
   },
   watch: {
+    currentPage(newPage) {
+      if (isNaN(newPage)) {
+        this.currentPage = 1; 
+      }
+      this.fetchSalaries();
+    },
     selectedPosition(newPositionId) {
       if (newPositionId) {
         this.fetchSalariesByPosition(newPositionId);
@@ -129,18 +154,30 @@ export default {
   methods: {
     async fetchSalaries() {
       try {
-        const response = await axios.get('/salary');
-        this.salaries = response.data;
+        const response = await axios.get("/salary", {
+          params: {
+            page: this.currentPage - 1,
+            size: this.itemsPerPage,
+          },
+        });
+        this.salaries = response.data.salaries;
+        this.totalPages = response.data.totalPages;
       } catch (error) {
-        console.error('급여 목록을 가져오는 중 오류가 발생했습니다.', error);
+        console.error("급여 목록을 가져오는 중 오류가 발생했습니다.", error);
       }
     },
 
     async fetchSalariesByPosition(positionId) {
       if (positionId) {
         try {
-          const response = await axios.get(`/salary/byPosition/${positionId}`);
-          this.salaries = response.data;
+          const response = await axios.get(`/salary/byPosition/${positionId}`, {
+            params: {
+              page: this.currentPage - 1,
+              size: this.itemsPerPage,
+            },
+          });
+          this.salaries = response.data.salaries;
+          this.totalPages = response.data.totalPages;
           console.log("직급별 급여 조회 성공:", this.salaries);
         } catch (error) {
           console.error("직급별 급여 목록을 가져오는 중 오류가 발생했습니다.", error);
