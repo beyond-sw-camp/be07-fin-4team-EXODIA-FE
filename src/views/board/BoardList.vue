@@ -12,27 +12,14 @@
       <v-row justify="center" align="center" class="w-100">
         <!-- 검색 범위 선택 -->
         <v-col cols="12" md="3">
-          <v-select
-            v-model="searchType"
-            :items="searchOptions"
-            variant="underlined"
-            item-title="text"
-            item-value="value"
-            label="검색 범위"
-            required
-          ></v-select>
+          <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text"
+            item-value="value" label="검색 범위" required></v-select>
         </v-col>
 
         <!-- 검색어 입력 -->
         <v-col cols="12" md="6">
-          <v-text-field
-            v-model="searchQuery"
-            variant="underlined"
-            label="검색어를 입력하세요."
-            append-icon="mdi-magnify"
-            @input="performSearch"
-            required
-          ></v-text-field>
+          <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
+            @input="performSearch" required></v-text-field>
         </v-col>
 
         <!-- 작성하기 버튼 -->
@@ -47,39 +34,29 @@
     <!-- 게시글 목록 -->
     <v-row justify="center" class="mt-4">
       <v-col cols="12">
-        <v-row class="mb-2"
+        <v-row class="mb-2 text-center"
           style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px; padding:4px; color:#444444; font-weight:600;">
-          <v-col cols="1" class="text-center"><strong>번호</strong></v-col>
+          <v-col cols="1"><strong>번호</strong></v-col>
           <v-col cols="8"><strong>제목</strong></v-col>
-          <v-col cols="2" class="text-center"><strong>작성일</strong></v-col>
-          <v-col cols="1" class="text-center"><strong>조회수</strong></v-col>
+          <v-col cols="2"><strong>작성일</strong></v-col>
+          <v-col cols="1"><strong>조회수</strong></v-col>
         </v-row>
 
         <!-- 게시글 정렬 -->
-        <v-row
-          v-for="(item, index) in sortedBoardItems"
-          :key="item.id"
-          class="board"
-          @click="goToDetail(item.id)"
-          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
-        >
-          <v-col cols="1" class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
-          <v-col cols="7" class="title-ellipsis" style="max-width: 80%; display: inline-block;">
+        <v-row v-for="(item, index) in sortedBoardItems" :key="item.id" class="board text-center"
+          @click="goToDetail(item.id)" style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
+          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+          <v-col cols="8" class="title-ellipsis text-start" style="max-width: 80%; display: inline-block;">
             {{ item.title }}
           </v-col>
-          <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
-          <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
+          <v-col cols="2">{{ formatDate(item.createdAt) }}</v-col>
+          <v-col cols="1">{{ item.hits }}</v-col>
         </v-row>
       </v-col>
     </v-row>
 
     <!-- 페이지네이션 -->
-    <v-pagination
-      v-model="currentPage"
-      :length="totalPages"
-      @change="onPageChange"
-      class="my-4"
-    ></v-pagination>
+    <v-pagination v-model="currentPage" :length="totalPages" @change="onPageChange" class="my-4"></v-pagination>
   </v-container>
 </template>
 
