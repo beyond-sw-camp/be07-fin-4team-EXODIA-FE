@@ -9,13 +9,13 @@
       </v-col>
 
       <!-- 출근 버튼 -->
-      <v-col cols="10" md="4">
-        <v-btn color="primary" @click="workIn" :disabled="isWorkIn" style="height: 55px;">
+      <v-col cols="10" md="4" align-center>
+        <v-btn v-list @click="workIn" :disabled="isWorkIn" class="mr-2">
           출근
         </v-btn>
 
         <!-- 퇴근 버튼 -->
-        <v-btn color="error" @click="workOut" style="margin-left: 10px; height:55px">
+        <v-btn v-create @click="workOut">
           퇴근
         </v-btn>
         <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>

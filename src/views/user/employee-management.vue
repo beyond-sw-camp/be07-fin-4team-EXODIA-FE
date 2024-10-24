@@ -5,30 +5,19 @@
         <h1 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle || '직원 목록' }}</h1>
       </v-col>
       <v-col class="d-flex justify-end">
-        <v-btn color="primary" @click="goToCreate">직원 생성</v-btn>
+        <v-btn v-create @click="goToCreate">직원 생성</v-btn>
       </v-col>
     </v-row>
 
     <!-- 검색 옵션 -->
     <v-row justify="center" style="margin:0; text-align:center;">
       <v-col cols="3">
-        <v-select
-          v-model="searchType"
-          :items="searchOptions"
-          item-title="label"
-          item-value="value"
-          label="검색 기준 선택"
-          outlined
-        ></v-select>
+        <v-select v-model="searchType" :items="searchOptions" item-title="label" item-value="value" label="검색 기준 선택"
+          outlined></v-select>
       </v-col>
       <v-col cols="6">
-        <v-text-field
-          v-model="searchQuery"
-          placeholder="검색어를 입력하세요"
-          variant="underlined"
-          @input="performSearch"
-          style="margin-bottom: 20px;"
-        ></v-text-field>
+        <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="performSearch"
+          style="margin-bottom: 20px;"></v-text-field>
       </v-col>
       <v-col cols="4" sm="2">
         <v-btn @click="performSearch(searchQuery)">
@@ -40,10 +29,8 @@
     <!-- 직원 목록 테이블 -->
     <v-row justify="center">
       <v-col cols="12">
-        <v-row
-          class="mb-2"
-          style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;"
-        >
+        <v-row class="mb-2"
+          style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
           <v-col cols="1">번호</v-col>
           <v-col cols="2">사번</v-col>
           <v-col cols="2">부서</v-col>
@@ -53,12 +40,8 @@
           <v-col cols="2">관리</v-col>
         </v-row>
 
-        <v-row
-          v-for="(user, index) in users"
-          :key="user.userNum"
-          @click="viewUser(user)"
-          style="border-bottom: 1px solid #e7e4e4; padding:5px; font-weight:500;"
-        >
+        <v-row v-for="(user, index) in users" :key="user.userNum" @click="viewUser(user)"
+          style="border-bottom: 1px solid #e7e4e4; padding:5px; font-weight:500;">
           <v-col cols="1">{{ index + 1 }}</v-col>
           <v-col cols="2">{{ user.userNum }}</v-col>
           <v-col cols="2">{{ getDepartmentName(user.departmentId) }}</v-col>

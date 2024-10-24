@@ -112,8 +112,8 @@
                             </v-list-item>
                         </v-list>
                     </v-card>
-                    <v-row class="submitBtn">
-                        <v-btn style="background-color:#722121; color:#ffffff;" class="mt-8" @click="createSubmit">
+                    <v-row class="submit-btn">
+                        <v-btn v-create class="mt-8" @click="createSubmit">
                             결재라인 등록
                         </v-btn>
                     </v-row>
@@ -249,15 +249,9 @@ export default {
     padding: 20px;
 }
 
-.submitBtn {
+.submit-btn {
     display: flex;
     justify-content: center;
     align-content: center;
-}
-
-.board-container {
-
-    padding: 20px;
-    border-radius: 12px;
 }
 </style>

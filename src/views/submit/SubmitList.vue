@@ -19,11 +19,19 @@
             </v-col> -->
 
             <v-col cols="auto">
-                <v-btn style=" background-color:#722121; color:#ffffff;" @click="$router.push('/submit')">
+                <v-btn v-create @click="$router.push('/submit')">
                     결재 생성
                 </v-btn>
             </v-col>
         </v-row>
+
+        <!-- 문서 리스트 -->
+        <div v-if="this.submitList == null">
+            <v-row justify="center">
+                데이터가 존재하지 않습니다.
+            </v-row>
+        </div>
+
 
         <div v-if="this.submitList.length > 0">
             <v-row justify="center" style="margin:0; text-align:center; ">

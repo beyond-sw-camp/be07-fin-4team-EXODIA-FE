@@ -1,5 +1,5 @@
 <template>
-  <div id="first-calendar-container" class="calendar-container"> 
+  <div id="first-calendar-container" class="calendar-container">
     <FullCalendar :options="firstCalendarOptions">
       <template v-slot:eventContent="arg">
         <div>
@@ -27,12 +27,12 @@
                 <small style="margin-top: -10px; color: red;">* 시간을 입력해주세요 00~23</small>
                 <v-text-field v-model="formData.startHour" label="시작 시간 (00시)" type="number" :min="0" :max="23" required
                   v-if="!allDay"></v-text-field>
-                  
+
               </v-col>
               <v-col cols="6">
                 <small style="color: red;">* 분을 입력해주세요</small>
-                <v-text-field v-model="formData.startMinute" label="시작 시간 (00분)" type="number" :min="0" :max="59" required
-                  v-if="!allDay"></v-text-field>
+                <v-text-field v-model="formData.startMinute" label="시작 시간 (00분)" type="number" :min="0" :max="59"
+                  required v-if="!allDay"></v-text-field>
               </v-col>
             </v-row>
             <v-text-field v-model="formData.endDate" label="종료 날짜 (YYYY-MM-DD)" required></v-text-field>
@@ -57,8 +57,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="handleSaveEvent">Save</v-btn>
-          <v-btn color="red darken-1" text @click="isModalOpen = false">Cancel</v-btn>
+          <v-btn v-create text @click="handleSaveEvent">생성</v-btn>
+          <v-btn v-delete text @click="isModalOpen = false">취소</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -192,12 +192,12 @@ export default {
 
       const startTime = `${this.formData.startDate}T${this.formData.startHour.padStart(2, '0')}:${this.formData.startMinute.padStart(2, '0')}:00`;
       const endTime = `${this.formData.endDate}T${this.formData.endHour.padStart(2, '0')}:${this.formData.endMinute.padStart(2, '0')}:00`;
-      
+
       if (new Date(startTime) >= new Date(endTime)) {
         alert("종료 시간은 시작 시간보다 늦어야 합니다.");
         return;
       }
-          
+
 
       const payload = {
         title: this.formData.title,
@@ -274,11 +274,7 @@ export default {
 };
 </script>
 
-<style scoped>
-.v-btn {
-  margin: 0 10px;
-}
-</style>
+<style scoped></style>
 <style>
 #first-calendar-container .event-dot {
   display: inline-block;

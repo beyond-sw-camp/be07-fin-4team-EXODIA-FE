@@ -24,7 +24,7 @@
     <v-row justify="end">
       <!-- 작성하기 버튼 -->
       <v-col cols="12" class="text-right">
-        <v-btn v-if="isAdmin" @click="createNewPost">
+        <v-btn v-create v-if="isAdmin" @click="createNewPost">
           작성하기
         </v-btn>
       </v-col>

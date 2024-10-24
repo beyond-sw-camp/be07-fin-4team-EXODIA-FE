@@ -2,25 +2,11 @@
   <v-container class="mt-5 white-background" fluid>
     <v-form @submit.prevent="updateAnswer">
       <!-- 답변 내용 입력 -->
-      <v-textarea
-        label="답변 내용"
-        v-model="answer.answerText"
-        required
-        outlined
-        dense
-        class="mb-4"
-      ></v-textarea>
+      <v-textarea label="답변 내용" v-model="answer.answerText" required outlined dense class="mb-4"></v-textarea>
 
       <!-- 파일 선택 -->
-      <v-file-input
-        label="파일 선택 (선택사항)"
-        @change="onFileChange"
-        accept="*/*"
-        multiple
-        outlined
-        dense
-        class="mb-4"
-      ></v-file-input>
+      <v-file-input label="파일 선택 (선택사항)" @change="onFileChange" accept="*/*" multiple outlined dense
+        class="mb-4"></v-file-input>
 
       <!-- 기존 파일 및 새 파일 미리보기 -->
       <div v-if="previewFiles.length > 0" class="mb-4">
@@ -33,10 +19,10 @@
       <!-- 제출 및 취소 버튼 -->
       <v-row justify="end" class="mt-4">
         <v-col cols="auto">
-          <v-btn class="cancel-button" @click="goBack">취소</v-btn>
+          <v-btn v-create type="submit" class="submit-button">수정</v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn type="submit" class="submit-button">수정 완료</v-btn>
+          <v-btn class="cancel-button" @click="goBack">취소</v-btn>
         </v-col>
       </v-row>
     </v-form>
@@ -152,21 +138,9 @@ export default {
 .v-container {
   max-width: 100%;
   margin: 0 auto;
-  background-color: #ffffff; /* 전체 컨테이너 배경색 흰색으로 설정 */
+  background-color: #ffffff;
+  /* 전체 컨테이너 배경색 흰색으로 설정 */
   padding: 20px;
   border-radius: 12px;
-}
-
-/* 버튼 색상 설정 */
-.submit-button {
-  background-color: #8B4513; /* 갈색으로 설정 */
-  color: white;
-  margin-right: 10px;
-}
-
-.cancel-button {
-  background-color: white;
-  border: 1px solid #ccc;
-  color: black;
 }
 </style>

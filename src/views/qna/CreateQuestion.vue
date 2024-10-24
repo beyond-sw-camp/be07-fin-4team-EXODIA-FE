@@ -10,39 +10,20 @@
         <!-- 질문 등록 폼 -->
         <v-form ref="form" @submit.prevent="submitQuestion">
           <!-- 질문 제목 -->
-          <v-text-field 
-            v-model="questionTitle" 
-            label="제목" 
-            outlined 
-            placeholder="질문의 제목을 입력하세요"
-            dense
-            required 
-            class="mb-4"
-          />
+          <v-text-field v-model="questionTitle" label="제목" outlined placeholder="질문의 제목을 입력하세요" dense required
+            class="mb-4" />
 
           <!-- 질문 내용 -->
-          <v-textarea 
-            v-model="questionText" 
-            label="질문 내용" 
-            outlined 
-            rows="6"
-            placeholder="질문의 내용을 입력하세요"
-            dense
-            required 
-            class="mb-4"
-          />
+          <v-textarea v-model="questionText" label="질문 내용" outlined rows="6" placeholder="질문의 내용을 입력하세요" dense required
+            class="mb-4" />
 
           <!-- 부서 선택 (버튼형태) -->
           <div class="department-section mb-4">
             <h4>문의 부서 선택</h4>
             <v-row>
               <v-col cols="12" md="4" v-for="department in flattenedDepartments" :key="department.id" class="d-flex">
-                <v-btn
-                  :color="selectedDepartment && selectedDepartment.id === department.id ? 'primary' : 'grey'"
-                  @click="selectDepartment(department)"
-                  class="my-2 flex-grow-1"
-                  block
-                >
+                <v-btn :color="selectedDepartment && selectedDepartment.id === department.id ? 'primary' : 'grey'"
+                  @click="selectDepartment(department)" class="my-2 flex-grow-1" block>
                   {{ department.name }}
                 </v-btn>
               </v-col>
@@ -52,13 +33,10 @@
           <!-- 익명 여부 설정과 부서 설명 가이드라인 버튼 -->
           <v-row align="center" justify="space-between" class="mb-4">
             <v-col cols="8">
-              <v-checkbox 
-                v-model="anonymous" 
-                label="익명으로 작성" 
-              />
+              <v-checkbox v-model="anonymous" label="익명으로 작성" />
             </v-col>
             <v-col cols="4" class="text-right">
-              <v-btn color="info" @click="openDepartmentGuide">
+              <v-btn v-list @click="openDepartmentGuide">
                 부서 설명 보기
               </v-btn>
             </v-col>
@@ -70,17 +48,8 @@
           </div>
 
           <!-- 파일 업로드 -->
-          <v-file-input
-            ref="fileInput"
-            v-model="files"
-            label="첨부 파일 (선택사항)"
-            accept="*/*"
-            outlined
-            dense
-            placeholder="파일을 업로드 하세요"
-            multiple
-            class="mb-4"
-          />
+          <v-file-input ref="fileInput" v-model="files" label="첨부 파일 (선택사항)" accept="*/*" outlined dense
+            placeholder="파일을 업로드 하세요" multiple class="mb-4" />
 
           <!-- 파일 미리보기 리스트 -->
           <v-list v-if="previewFiles.length > 0" class="file-preview-list mb-4">
@@ -90,12 +59,7 @@
           </v-list>
 
           <!-- 제출 버튼 -->
-          <v-btn 
-            type="submit" 
-            color="primary" 
-            class="submit-button mt-4" 
-            block
-          >
+          <v-btn type="submit" v-create class="submit-button mt-4" block>
             질문 등록하기
           </v-btn>
         </v-form>
@@ -111,13 +75,9 @@
         <v-card-text>
           <ul>
             <li v-for="department in departmentsInfo" :key="department.id">
-              <strong>{{ department.name }}:</strong> 
+              <strong>{{ department.name }}:</strong>
               <template v-if="isAdmin">
-                <v-text-field
-                  v-model="department.description"
-                  label="부서 설명 수정"
-                  dense
-                />
+                <v-text-field v-model="department.description" label="부서 설명 수정" dense />
               </template>
               <template v-else>
                 {{ department.description }}
@@ -127,8 +87,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="closeDepartmentGuide">닫기</v-btn>
-          <v-btn v-if="isAdmin" color="success" @click="saveDepartmentInfo">저장</v-btn>
+          <v-btn v-create v-if="isAdmin" @click="saveDepartmentInfo">저장</v-btn>
+          <v-btn v-delete @click="closeDepartmentGuide">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -197,7 +157,7 @@ export default {
 
           // 각 부서의 설명을 불러옴
           const departmentDescriptions = await Promise.all(
-            this.flattenedDepartments.map(department => 
+            this.flattenedDepartments.map(department =>
               axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/description`, {
                 params: { departmentId: department.id }
               })
@@ -256,7 +216,7 @@ export default {
     closeDepartmentGuide() {
       this.showDepartmentGuide = false;
     },
-    
+
     // 파일 변경 시 처리 메서드
     onFileChange(event) {
       const files = event?.target?.files || event?.dataTransfer?.files;

@@ -467,10 +467,9 @@ export default {
   text-align: center;
   padding: 10px;
   cursor: pointer;
-  color: #007bff;
-  /* 파란색 강조 */
+  color: #722121;
+  font-weight: 800;
   border-radius: 0 0 10px 10px;
-  /* 더보기 버튼도 동글동글 */
 }
 
 .view-more:hover {

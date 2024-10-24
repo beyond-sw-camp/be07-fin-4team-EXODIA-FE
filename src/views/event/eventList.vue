@@ -3,7 +3,7 @@
     <v-row class="mt-4 mb-4">
       <h1>일정 목록</h1>
       <v-col class="text-right">
-        <v-btn color="primary" @click="showDialog = true" large>
+        <v-btn v-create @click="showDialog = true" large>
           새로운 일정 생성
         </v-btn>
       </v-col>
@@ -57,41 +57,22 @@
       <v-card :style="{ height: 'auto', padding: '20px' }">
         <v-card-title>새 일정 생성</v-card-title>
         <v-card-text>
-          <v-combobox
-            v-model="newEventType"
-            :items="eventTypes"
-            label="일정 타입 선택"
-            outlined
-            dense
-            placeholder="일정을 선택하세요"
-          ></v-combobox>
+          <v-combobox v-model="newEventType" :items="eventTypes" label="일정 타입 선택" outlined dense
+            placeholder="일정을 선택하세요"></v-combobox>
 
           <!-- 달력 등록 체크박스 -->
-          <v-checkbox
-            v-model="registerToCalendar"
-            label="달력 등록"
-          ></v-checkbox>
+          <v-checkbox v-model="registerToCalendar" label="달력 등록"></v-checkbox>
 
           <!-- 시작일과 종료일 선택 -->
           <v-row class="mt-3" justify="space-between">
             <v-col cols="12" md="6">
-              <v-date-picker
-                v-model="newStartDate"
-                label="시작일 선택"
-                full-width
-                color="brown"
-                :header-color="'brown'"
-              ></v-date-picker>
+              <v-date-picker v-model="newStartDate" label="시작일 선택" full-width color="brown"
+                :header-color="'brown'"></v-date-picker>
             </v-col>
 
             <v-col cols="12" md="6">
-              <v-date-picker
-                v-model="newEndDate"
-                label="종료일 선택"
-                full-width
-                color="brown"
-                :header-color="'brown'"
-              ></v-date-picker>
+              <v-date-picker v-model="newEndDate" label="종료일 선택" full-width color="brown"
+                :header-color="'brown'"></v-date-picker>
             </v-col>
           </v-row>
         </v-card-text>
@@ -99,10 +80,10 @@
         <!-- 생성 버튼 -->
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="createOrUpdateCalendar">
+          <v-btn v-create @click="createOrUpdateCalendar">
             저장
           </v-btn>
-          <v-btn text @click="showDialog = false">
+          <v-btn v-delete text @click="showDialog = false">
             취소
           </v-btn>
         </v-card-actions>

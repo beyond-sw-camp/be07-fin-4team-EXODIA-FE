@@ -27,7 +27,7 @@
                     {{ user.name }}
                   </v-list-item-content>
                   <v-list-item-action>
-                    <v-btn color="primary" @click="addManager(user)">추가</v-btn>
+                    <v-btn v-create @click="addManager(user)">추가</v-btn>
                   </v-list-item-action>
                 </v-list-item>
               </v-list>
@@ -45,7 +45,7 @@
                     {{ manager.name }}
                   </v-list-item-content>
                   <v-list-item-action>
-                    <v-btn color="error" @click="removeManager(manager)">삭제</v-btn>
+                    <v-btn v-delete @click="removeManager(manager)">삭제</v-btn>
                   </v-list-item-action>
                 </v-list-item>
               </v-list>
@@ -55,7 +55,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green darken-1" text @click="closeManagerModal">닫기</v-btn>
+          <v-btn v-delete text @click="closeManagerModal">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -76,10 +76,10 @@
     </v-row>
     <v-row justify="end">
       <v-col cols="12" md="3" class="d-flex justify-end">
-        <v-btn class="btn_write" @click="createNewPost">
+        <v-btn v-create class="btn_write" @click="createNewPost">
           작성하기
         </v-btn>
-        <v-btn class="btn_my_questions" @click="goToMyQuestions">
+        <v-btn v-list class="btn_my_questions" @click="goToMyQuestions">
           나의 질문 목록
         </v-btn>
       </v-col>
@@ -412,15 +412,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #949494;
   border: none;
   cursor: pointer;
-  border-radius: 8px;
-  font-size: 16px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
-  padding: 12px 16px;
-  margin-left: 10px;
 }
 
 
@@ -428,15 +421,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #9a2f2f;
-  color: rgb(255, 255, 255);
   border: none;
   cursor: pointer;
-  border-radius: 8px;
-  font-size: 16px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
-  padding: 12px 16px;
   margin-left: 10px;
 }
 
