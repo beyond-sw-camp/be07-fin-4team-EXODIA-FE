@@ -240,15 +240,15 @@ export default {
       }
     },
     onFileChange(event) {
-      const files = event.target.files || event.dataTransfer.files;
-      if (files && files.length > 0) {
-        this.userDetail.profileImage = files[0];
-        this.previewImage();
-      } else {
-        this.userDetail.profileImage = null;
-        this.previewImageSrc = null;
-      }
-    },
+    const files = event.target.files || event.dataTransfer.files;
+    if (files && files.length > 0) {
+      this.userDetail.profileImage = files[0]; 
+      this.previewImage();
+    } else {
+      this.userDetail.profileImage = null;
+      this.previewImageSrc = null;
+    }
+  },
     previewImage() {
       if (this.userDetail.profileImage) {
         const reader = new FileReader();
@@ -288,48 +288,58 @@ export default {
         console.error("관리자 세부 정보를 불러오는 중 오류가 발생했습니다:", error);
       }
     },
+
+    
     async submitForm() {
-      try {
-        const formData = new FormData();
-        formData.append('userNum', this.userDetail.userNum);
-        formData.append('name', this.userDetail.name);
-        formData.append('email', this.userDetail.email);
-        formData.append('address', this.userDetail.address);
-        formData.append('phone', this.userDetail.phone);
-        formData.append('profileImage', this.userDetail.profileImage);
-        formData.append('hireType', this.userDetail.hireType);
-        formData.append('departmentId', this.userDetail.departmentId);
-        formData.append('positionId', this.userDetail.positionId);
-        formData.append('annualLeave', this.userDetail.annualLeave);
-        formData.append('password', this.userDetail.password);
-        formData.append('socialNum', this.userDetail.socialNum);
-        formData.append('gender', this.userDetail.gender); // 성별 필드 추가
-        formData.append('status', this.userDetail.status); // 상태 필드 추가
+  try {
+    const formData = new FormData();
+    formData.append('userNum', this.userDetail.userNum);
+    formData.append('name', this.userDetail.name);
+    formData.append('email', this.userDetail.email);
+    formData.append('address', this.userDetail.address);
+    formData.append('phone', this.userDetail.phone);
+    
+    if (this.userDetail.profileImage) {
+      formData.append('profileImage', this.userDetail.profileImage); // 새로운 이미지 파일 전송
+    } else if (this.userDetail.profileImageUrl) {
+      formData.append('profileImageUrl', this.userDetail.profileImageUrl); // 기존 이미지 URL 전송
+    }
 
-        const token = localStorage.getItem("token");
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          }
-        };
+    formData.append('hireType', this.userDetail.hireType);
+    formData.append('departmentId', this.userDetail.departmentId);
+    formData.append('positionId', this.userDetail.positionId);
+    formData.append('annualLeave', this.userDetail.annualLeave);
+    formData.append('password', this.userDetail.password);
+    formData.append('socialNum', this.userDetail.socialNum);
+    formData.append('gender', this.userDetail.gender);
+    formData.append('status', this.userDetail.status);
 
-        if (this.isEditMode) {
-          await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
-          alert("수정 완료");
-        } else {
-          await axios.post("/user/register", formData, config);
-          alert("등록 완료");
-        }
-
-        this.$router.push("/employee-management");
-      } catch (error) {
-        console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
-        if (error.response) {
-          alert(error.response.data.status_message);
-        }
+    const token = localStorage.getItem("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
       }
-    },
+    };
+
+    if (this.isEditMode) {
+      await axios.put(`/user/list/${this.$route.params.userNum}`, formData, config);
+      alert("수정 완료");
+    } else {
+      await axios.post("/user/register", formData, config);
+      alert("등록 완료");
+    }
+
+    this.$router.push("/employee-management");
+  } catch (error) {
+    console.error("직원 정보를 저장하는 중 오류가 발생했습니다:", error);
+    if (error.response) {
+      alert(error.response.data.status_message);
+    }
+  }
+}
+,
+
     goBack() {
       this.$router.push("/employee-management");
     },

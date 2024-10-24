@@ -64,13 +64,15 @@
             <div class="user-department">{{ this.userProfile.departmentName }} {{ this.userProfile.positionName }}</div>
           </v-row>
           <v-row justify="center" class="toggle-btn">
+
             <v-icon style="padding-right:5px; font-size:20px; align">mdi-account</v-icon>
+
             <button @click="$router.push('/mypage/vacation')">
               마이페이지
             </button>
           </v-row>
           <v-row justify="center" class="toggle-btn">
-            <v-icon style="padding-right=5px; font-size:20px">mdi-logout</v-icon>
+            <v-icon style="padding-right:5px; font-size:20px">mdi-logout</v-icon>
             <button @click="logout">
               로그아웃
             </button>

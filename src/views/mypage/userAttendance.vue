@@ -2,20 +2,19 @@
   <div class="userAttendance">
 
     <v-row justify="space-between">
-      <v-col cols="8">
+      <v-col cols="7">
         <h3>출·퇴근 기록</h3>
       </v-col>
 
       <v-col cols="auto" class="d-flex justify-end">
         <!-- 출근 버튼 -->
-        <v-btn variant="outlined" style="background-color:#4caf50; color:#ffffff" @click="workIn">
+        <v-btn variant="outlined" v-list @click="workIn">
           출근
         </v-btn>
       </v-col>
       <v-col cols="auto" class="d-flex justify-end">
         <!-- 퇴근 버튼 -->
-        <v-btn variant="outlined" style="background-color:#b00020; color:#ffffff" :disabled="isWorkOut"
-          @click="workOut">
+        <v-btn v-create variant="outlined" :disabled="isWorkOut" @click="workOut">
           퇴근
         </v-btn>
       </v-col>
@@ -161,10 +160,6 @@ h2 {
   margin-bottom: 20px;
 }
 
-v-btn {
-  margin-right: 10px;
-}
-
 v-alert {
   margin-top: 20px;
 }
@@ -200,8 +195,8 @@ v-alert {
 /* 뱃지 스타일 */
 .badge {
   position: absolute;
-  bottom: 25px;
-  left: 45px;
+  top: 30px;
+  left: 43px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
@@ -239,10 +234,5 @@ v-alert {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.v-btn:hover {
-  background-color: #722121;
-  color: #ffffff;
 }
 </style>
