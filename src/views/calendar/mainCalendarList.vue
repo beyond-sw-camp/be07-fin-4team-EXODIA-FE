@@ -205,12 +205,12 @@ export default {
 
 
 #second-calendar-container {
-   padding: 30px;
-   background-color: #f9f9f9;
-   border-radius: 10px;
-   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-   border: 1px solid #ddd;
-   background-image: linear-gradient(135deg, #f0f4f8, #f9f9f9);
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+   /* background-image: linear-gradient(135deg, #f0f4f8, #f9f9f9); */
 }
 
 
@@ -329,7 +329,7 @@ export default {
   font-weight: 500;
   color: #444;
   padding: 0 4px;
-  background-image: linear-gradient(135deg, #f0f4f8, #f9f9f9); /* 여기가 배경색 수정 부분이니 펼요시 수정 */
+  
 }
 
 #second-calendar-container ::-webkit-scrollbar {

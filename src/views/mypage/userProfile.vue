@@ -5,7 +5,7 @@
         <v-row no-gutters>
           <v-col cols="12" md="4" class="profile-content">
             <v-row class="profile-card" style="margin-top: 40px;">
-              <v-img :src="userProfile?.profileImage || defaultProfileImage" aspect-ratio="1" class="profile-img"></v-img>
+              <img :src="userProfile?.profileImage || defaultProfileImage" class="profile-img">
             </v-row>
           </v-col>
 
@@ -209,12 +209,14 @@ export default {
 }
 
 .profile-img {
-  border-radius: 50%;
   width: 200px;
   height: 200px;
+  border-radius: 50%;
   object-fit: cover;
-  margin: 0 auto;
+  display: block;
+  margin: 0 auto; 
 }
+
 
 .profile-name {
   font-size: 24px;
