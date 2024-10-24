@@ -20,7 +20,7 @@
 
         <v-col cols="12" md="6" class="text-right">
           <v-btn color="primary" @click="fetchSalaries">전체 조회</v-btn>
-          <v-btn color="secondary" @click="openSetSalaryDateDialog">급여일 설정</v-btn>
+          <v-btn color="error" @click="openSetSalaryDateDialog">급여일 설정</v-btn>
         </v-col>
       </v-row>
 

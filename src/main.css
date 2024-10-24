@@ -1,0 +1,31 @@
+/* 버튼 스타일 초기화 */
+.v-btn {
+  all: unset !important;
+  padding: 10px 20px !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+/* "생성", "등록", "작성" 버튼 스타일 */
+.custom-create-register-btn {
+  background-color: #a52403 !important;
+  color: white !important;
+  font-size: 14px !important;
+}
+
+/* "삭제", "닫기", "취소" 버튼 스타일 */
+.custom-write-btn {
+  background-color: white !important;
+  color: black !important;
+  font-size: 14px !important;
+  border: 1px solid black !important;
+}
+
+/* "목록" 버튼 스타일 */
+.custom-list-btn {
+  background-color: #1d08bf !important;
+  color: white !important;
+  font-size: 14px !important;
+}
