@@ -1,29 +1,27 @@
 <template>
   <v-container class="board-container">
     <!-- Adjusted the title size and positioning -->
-    <v-row justify="start">
-      <v-col cols="12" md="6">
-        <h1 class="board-title">{{ boardTitle }}</h1>
-      </v-col>
+    <v-row class="mb-12" style="padding-left:30px">
+      <h1 class="board-title">{{ boardTitle }}</h1>
     </v-row>
 
     <!-- 게시판 상단 검색 폼 -->
     <v-form ref="form" class="search-form d-flex mb-4">
-      <v-row justify="center" align="center" class="w-100">
+      <v-row justify="center" align="center" class="d-flex">
         <!-- 검색 범위 선택 -->
-        <v-col cols="12" md="3">
+        <v-col cols="2">
           <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text"
             item-value="value" label="검색 범위" required></v-select>
         </v-col>
 
         <!-- 검색어 입력 -->
-        <v-col cols="12" md="6">
+        <v-col cols="8">
           <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
             @input="performSearch" required></v-text-field>
         </v-col>
 
         <!-- 작성하기 버튼 -->
-        <v-col cols="12" md="3" class="text-right">
+        <v-col cols="auto" class="text-right">
           <v-btn v-if="isAdmin" class="btn_write" @click="createNewPost">
             작성하기
           </v-btn>
@@ -78,7 +76,7 @@ export default {
       searchType: "titile + content", // 검색 타입
       searchQuery: "", // 검색어
       searchOptions: [
-        { text: "전체", value: "titile + content"},
+        { text: "전체", value: "titile + content" },
         { text: "제목", value: "title" },
         { text: "내용", value: "content" },
         { text: "태그", value: "tags" },
@@ -179,7 +177,7 @@ export default {
 
     // 핀 고정된 글 처리
     itemTitle(item) {
-      return item.pinned ? '📌 ' + item.title : item.title; 
+      return item.pinned ? '📌 ' + item.title : item.title;
     },
 
     // 새 글 작성 시 처리
@@ -216,24 +214,15 @@ export default {
 <style scoped>
 /* 전체 배경 및 컨테이너 스타일 */
 .board-container {
-  background-color: #f9fafb;
   padding: 20px;
   border-radius: 12px;
-}
-
-/* 제목 섹션 스타일 */
-.board-title {
-  margin-bottom: 120px;
-  color: #000;
 }
 
 /* 검색 바 스타일 */
 .search-form {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  margin-bottom: 40px;
+  justify-content: end;
 }
 
 .v-select,
@@ -311,10 +300,13 @@ export default {
 }
 
 .title-ellipsis {
-  white-space: nowrap; /* 텍스트를 한 줄로 표시 */
-  overflow: hidden;    /* 넘치는 텍스트를 숨김 */
-  text-overflow: ellipsis; /* 넘치는 부분을 '...'로 표시 */
-  display: inline-block; /* 텍스트를 한 줄로 보이게 설정 */
+  white-space: nowrap;
+  /* 텍스트를 한 줄로 표시 */
+  overflow: hidden;
+  /* 넘치는 텍스트를 숨김 */
+  text-overflow: ellipsis;
+  /* 넘치는 부분을 '...'로 표시 */
+  display: inline-block;
+  /* 텍스트를 한 줄로 보이게 설정 */
 }
-
 </style>
