@@ -1,17 +1,17 @@
 <template>
     <v-container class="container">
 
-        <v-row class="mb-4 mt-4" style="padding-left:30px">
+        <v-row class="mb-12 mt-4" style="padding-left:30px">
             <h1>결재 요청 문서</h1>
         </v-row>
 
-        <v-row style="margin:0; text-align:center;" class="searchButton">
-            <v-col cols="9" sm="6">
+        <v-row no-gutters class="searchButton mb-4 justify-end">
+            <!-- <v-col cols="9" sm="6">
                 <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
                     append-icon="mdi-magnify" @click:append=searchFilter(searchQuery) style=""></v-text-field>
-            </v-col>
+            </v-col> -->
 
-            <v-col cols="3" class="searchButton" style="margin-bottom:15px">
+            <v-col cols="auto">
                 <v-btn style=" background-color:#722121; color:#ffffff;" @click="$router.push('/submit')">
                     결재 생성
                 </v-btn>

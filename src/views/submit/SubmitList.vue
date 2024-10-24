@@ -1,16 +1,16 @@
 <template>
     <v-container class="container">
 
-        <v-row class="mb-4 mt-4" style="padding-left:30px">
+        <v-row class="mb-12 mt-4" style="padding-left:30px">
             <h1>결재 할 문서</h1>
         </v-row>
 
         <v-row justify="center" style="margin:0; text-align:center;">
-            <v-col cols="6" sm="6">
+            <!-- <v-col cols="6" sm="6">
                 <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
                     append-icon="mdi-magnify" @click:append=searchFilter(searchQuery)
                     style="margin-bottom: 20px;"></v-text-field>
-            </v-col>
+            </v-col> -->
         </v-row>
 
         <div v-if="this.submitList.length > 0">

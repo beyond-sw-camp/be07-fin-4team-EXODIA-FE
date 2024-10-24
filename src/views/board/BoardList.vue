@@ -2,7 +2,7 @@
   <v-container class="board-container">
     <!-- Adjusted the title size and positioning -->
     <v-row class="mb-12" style="padding-left:30px">
-      <h1 class="board-title">{{ boardTitle }}</h1>
+      <h1>{{ boardTitle }}</h1>
     </v-row>
 
     <!-- 게시판 상단 검색 폼 -->
