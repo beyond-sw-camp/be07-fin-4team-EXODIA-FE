@@ -82,4 +82,6 @@ export default {
   border-radius: 25px;
   overflow-y: auto;
 }
+
+
 </style>
