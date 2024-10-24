@@ -41,7 +41,7 @@
       @click="openEnrollModal(course)">
       <v-col cols="3">{{ course.courseName }}</v-col>
       <v-col cols="3">{{ course.content }}</v-col>
-      <v-col cols="2">{{ course.createCourse }}</v-col>
+      <v-col cols="2">{{ formatDate(course.createdAt) }}</v-col>
       <v-col cols="1">{{ course.currentParticipants }} / {{ course.maxParticipants }}</v-col>
       <v-col cols="3" v-if="isHrDepartment()">
         <v-btn icon @click.stop="openEditModal(course)">
@@ -304,6 +304,10 @@ export default {
 
     // 강의 생성
     createCourse() {
+      if (this.newCourse.maxParticipants < 1) {
+        alert("최대 참가자 수는 1명 이상이어야 합니다.");
+        return;
+      }
       axios
         .post("/course/create", this.newCourse)
         .then((response) => {
@@ -320,7 +324,14 @@ export default {
     // 강의 수정 모달 열기
     openEditModal(course) {
       this.editCourse = { ...course };
-      this.showEditModal = true;
+            // 참여자가 있는지 확인
+      axios.get(`/course/${course.id}/participants`).then((response) => {
+          this.editCourse.hasParticipants = response.data.length > 0;
+          this.showEditModal = true;
+        })
+        .catch((error) => {
+          console.error("참여자 조회 실패: ", error);
+        });
     },
 
     // 강의 수정 모달 닫기
@@ -330,6 +341,10 @@ export default {
 
     // 강의 수정
     updateCourse() {
+      if (this.editCourse.hasParticipants && this.editCourse.maxParticipants !== this.originalMaxParticipants) {
+        alert("참여자가 있으므로 수정할 수 없습니다.");
+        return;
+      }
       axios
         .put(`/course/update/${this.editCourse.id}`, this.editCourse)
         .then((response) => {
@@ -384,6 +399,10 @@ export default {
           console.error("강의 삭제 실패 : ", error);
           alert("강의 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
         });
+    },
+    formatDate(date) {
+      const options = { year: "numeric", month: "short", day: "numeric" };
+      return new Date(date).toLocaleDateString(undefined, options);
     },
   },
 
