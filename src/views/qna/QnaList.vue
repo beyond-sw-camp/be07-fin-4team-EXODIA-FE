@@ -60,32 +60,30 @@
       </v-card>
     </v-dialog>
 
-    <!-- 게시판 상단 검색 폼 -->
-    <v-form ref="form" class="search-form d-flex mb-4">
-      <v-row justify="center" align="center" class="w-100">
-        <!-- 검색 범위 선택 -->
-        <v-col cols="12" md="3">
-          <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text"
-            item-value="value" label="검색 범위" required></v-select>
-        </v-col>
+    <v-row justify="center" align="center">
+      <!-- 검색 범위 선택 -->
+      <v-col cols="12" md="2">
+        <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text" item-value="value"
+          label="검색 범위" required></v-select>
+      </v-col>
 
-        <!-- 검색어 입력 -->
-        <v-col cols="12" md="6">
-          <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
-            @click:append="performSearch" required></v-text-field>
-        </v-col>
+      <!-- 검색어 입력 -->
+      <v-col cols="12" md="8">
+        <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
+          @click:append="performSearch" required></v-text-field>
+      </v-col>
 
-        <!-- 작성하기 및 나의 질문 목록 버튼 -->
-        <v-col cols="12" md="3" class="d-flex justify-end">
-          <v-btn class="btn_write" @click="createNewPost">
-            작성하기
-          </v-btn>
-          <v-btn class="btn_my_questions" @click="goToMyQuestions">
-            나의 질문 목록
-          </v-btn>
-        </v-col>
-      </v-row>
-    </v-form>
+    </v-row>
+    <v-row justify="end">
+      <v-col cols="12" md="3" class="d-flex justify-end">
+        <v-btn class="btn_write" @click="createNewPost">
+          작성하기
+        </v-btn>
+        <v-btn class="btn_my_questions" @click="goToMyQuestions">
+          나의 질문 목록
+        </v-btn>
+      </v-col>
+    </v-row>
 
     <!-- 게시글 목록 테이블 -->
     <v-row justify="center" class="mt-4">
@@ -415,7 +413,6 @@ export default {
   justify-content: center;
   align-items: center;
   background-color: #949494;
-  color: rgb(255, 255, 255);
   border: none;
   cursor: pointer;
   border-radius: 8px;

@@ -5,12 +5,24 @@
             <h1>결재 할 문서</h1>
         </v-row>
 
-        <v-row justify="center" style="margin:0; text-align:center;">
-            <!-- <v-col cols="6" sm="6">
+        <v-row justify="center">
+            <v-col cols="8">
                 <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
                     append-icon="mdi-magnify" @click:append=searchFilter(searchQuery)
                     style="margin-bottom: 20px;"></v-text-field>
+            </v-col>
+        </v-row>
+        <v-row no-gutters class="mb-4 justify-end">
+            <!-- <v-col cols="9">
+                <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
+                    append-icon="mdi-magnify" @click:append=searchFilter(searchQuery) style=""></v-text-field>
             </v-col> -->
+
+            <v-col cols="auto">
+                <v-btn style=" background-color:#722121; color:#ffffff;" @click="$router.push('/submit')">
+                    결재 생성
+                </v-btn>
+            </v-col>
         </v-row>
 
         <div v-if="this.submitList.length > 0">

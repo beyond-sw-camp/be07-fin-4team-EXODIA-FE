@@ -5,17 +5,14 @@
         </v-row>
 
         <!-- 검색 옵션 -->
-        <v-row justify="center" :class="{ 'drawer-open': drawer }" style="margin:0; text-align:center;">
-            <v-col cols="7">
+        <v-row justify="center" :class="{ 'drawer-open': drawer }">
+            <v-col cols="8">
                 <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined"
-                    @input="filterDocuments" style="margin-bottom: 20px;" append-icon="mdi-magnify"
+                    @input="filterDocuments" append-icon="mdi-magnify"
                     @click:append=searchFilter(searchQuery)></v-text-field>
             </v-col>
         </v-row>
-
-        <v-row justify="end" style="margin-bottom:5px;">
-            <!-- 팀장만 태그 생성 가능 -->
-
+        <v-row justify="end" class="mb-4">
             <v-col cols="auto" v-if="this.positionId == 1 && this.pageTitle == '전체 파일'">
                 <v-btn variant="outlined" @click="handleCreateTag()">
                     태그 생성
@@ -77,7 +74,7 @@
                         <v-card-title>
                             <v-row class="detailFileName ellipsis-text">{{
                                 selectedDocument.fileName
-                                }}</v-row>
+                            }}</v-row>
                         </v-card-title>
                         <v-divider></v-divider>
                         <v-card-text>

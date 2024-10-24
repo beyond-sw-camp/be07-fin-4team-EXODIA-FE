@@ -5,8 +5,8 @@
             <h1>결재 요청 문서</h1>
         </v-row>
 
-        <v-row no-gutters class="searchButton mb-4 justify-end">
-            <!-- <v-col cols="9" sm="6">
+        <v-row no-gutters class="mb-4 justify-end">
+            <!-- <v-col cols="9">
                 <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
                     append-icon="mdi-magnify" @click:append=searchFilter(searchQuery) style=""></v-text-field>
             </v-col> -->

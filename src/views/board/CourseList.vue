@@ -1,12 +1,12 @@
 <template>
-  <v-row>
-    <h1 style="margin:35px 0; font-weight:700">강좌 목록</h1>
+  <v-row class="mb-12 mt-4" style="padding-left:30px">
+    <h1>강좌 목록</h1>
   </v-row>
 
   <!-- 검색 및 강좌 생성 버튼 -->
   <v-row justify="center" style="margin:0; text-align:center;">
     <v-col cols="12" sm="6">
-      <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요" style="margin-bottom: 20px;"></v-text-field>
+      <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"></v-text-field>
     </v-col>
 
     <v-col cols="6" sm="2" style="margin-left: -30px;">
@@ -35,14 +35,9 @@
   </v-row>
 
   <!-- 강좌 리스트 -->
-  <v-row
-    v-for="(course, index) in filteredCourses"
-    :key="index"
-    class="course-row"
-    outlined
+  <v-row v-for="(course, index) in filteredCourses" :key="index" class="course-row" outlined
     style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300; align-items: center"
-    @click="openEnrollModal(course)"
-  >
+    @click="openEnrollModal(course)">
     <v-col cols="3">{{ course.courseName }}</v-col>
     <v-col cols="3">{{ course.content }}</v-col>
     <v-col cols="2">{{ course.createCourse }}</v-col>
@@ -61,39 +56,39 @@
     </v-col>
   </v-row>
 
-<!-- 신청자 정보 조회 모달 -->
-<v-dialog v-model="showParticipantsModal" max-width="600">
-  <v-card elevation="5" class="rounded-lg">
-    <!-- 모달 헤더 -->
-    <v-card-title class="grey lighten-4 py-4">
-      <span class="text-h5 font-weight-bold">신청자 목록</span>
-    </v-card-title>
+  <!-- 신청자 정보 조회 모달 -->
+  <v-dialog v-model="showParticipantsModal" max-width="600">
+    <v-card elevation="5" class="rounded-lg">
+      <!-- 모달 헤더 -->
+      <v-card-title class="grey lighten-4 py-4">
+        <span class="text-h5 font-weight-bold">신청자 목록</span>
+      </v-card-title>
 
-    <!-- 모달 본문 -->
-    <v-card-text class="py-4 px-6">
-      <v-list dense>
-        <v-list-item v-for="participant in participants" :key="participant.userNum" class="mb-4">
+      <!-- 모달 본문 -->
+      <v-card-text class="py-4 px-6">
+        <v-list dense>
+          <v-list-item v-for="participant in participants" :key="participant.userNum" class="mb-4">
 
-          <v-list-item-content>
-            <v-list-item-title class="font-weight-bold">
-              {{ participant.userName }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="grey--text text--darken-1">
-              사번: {{ participant.userNum }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-card-text>
+            <v-list-item-content>
+              <v-list-item-title class="font-weight-bold">
+                {{ participant.userName }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="grey--text text--darken-1">
+                사번: {{ participant.userNum }}
+              </v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
 
-    <!-- 모달 액션 -->
-    <v-card-actions class="justify-center">
-      <v-btn color="blue darken-2" dark @click="closeParticipantsModal">
-        닫기
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
+      <!-- 모달 액션 -->
+      <v-card-actions class="justify-center">
+        <v-btn color="blue darken-2" dark @click="closeParticipantsModal">
+          닫기
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 
 
 
