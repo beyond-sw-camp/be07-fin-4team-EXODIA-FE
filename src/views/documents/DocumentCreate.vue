@@ -134,14 +134,8 @@ export default {
 </script>
 
 <style scoped>
-.login-container {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.main-container {
-    padding: 100px 150px;
+.container {
+    padding: 20px;
+    border-radius: 12px;
 }
 </style>
