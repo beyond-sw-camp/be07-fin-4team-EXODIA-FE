@@ -1,55 +1,63 @@
 <template>
-    <v-row>
-        <h1>결재 요청 문서</h1>
-    </v-row>
+    <v-container class="container">
 
-    <v-row style="margin:0; text-align:center;" class="searchButton">
-        <v-col cols="9" sm="6">
-            <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요" append-icon="mdi-magnify"
-                @click:append=searchFilter(searchQuery) style=""></v-text-field>
-        </v-col>
+        <v-row class="mb-4 mt-4" style="padding-left:30px">
+            <h1>결재 요청 문서</h1>
+        </v-row>
 
-        <v-col cols="3" class="searchButton" style="margin-bottom:15px">
-            <v-btn style=" background-color:#722121; color:#ffffff;" @click="$router.push('/submit')">
-                결재 생성
-            </v-btn>
-        </v-col>
-    </v-row>
+        <v-row style="margin:0; text-align:center;" class="searchButton">
+            <v-col cols="9" sm="6">
+                <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
+                    append-icon="mdi-magnify" @click:append=searchFilter(searchQuery) style=""></v-text-field>
+            </v-col>
 
-    <div v-if="this.submitList.length > 0">
-        <v-row justify="center" style="margin:0; text-align:center; ">
-            <v-col cols="12">
-                <v-row class="mb-2"
-                    style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
-                    <v-col cols="1"><strong>번호</strong></v-col>
-                    <v-col cols="5"><strong>결재 종류</strong></v-col>
-                    <v-col cols="4"><strong>결재 신청 일시</strong></v-col>
-                    <v-col cols="2"><strong>결재 상태</strong></v-col>
-                </v-row>
-
-                <v-row v-for="(submit, index) in submitList" :key="submit.id" oulined
-                    style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
-                    @click="showDetail(submit.id)">
-                    <v-col cols="1">{{ index + 1 }}</v-col>
-                    <v-col cols="5">{{ submit.submitType }}</v-col>
-                    <v-col cols="4">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime) }}</v-col>
-                    <v-col cols="2" class="d-flex justify-center align-center">
-                        <v-chip class="d-flex justify-center align-center" v-bind:class="{
-                            'chip-reject': submit.submitStatus === '반려',
-                            'chip-accept': submit.submitStatus === '승인'
-                        }" style="width: 80px; height: 32px;">{{ submit.submitStatus }}</v-chip>
-                    </v-col>
-                </v-row>
+            <v-col cols="3" class="searchButton" style="margin-bottom:15px">
+                <v-btn style=" background-color:#722121; color:#ffffff;" @click="$router.push('/submit')">
+                    결재 생성
+                </v-btn>
             </v-col>
         </v-row>
-    </div>
 
-    <div v-else>
-        <v-row justify="center" :class="{ 'drawer-open': drawer }">
-            데이터가 존재하지 않습니다.
-        </v-row>
-    </div>
-    <!-- 
+        <div v-if="this.submitList.length > 0">
+            <v-row justify="center" style="margin:0; text-align:center; ">
+                <v-col cols="12">
+                    <v-row class="mb-2"
+                        style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
+                        <v-col cols="1"><strong>번호</strong></v-col>
+                        <v-col cols="5"><strong>결재 종류</strong></v-col>
+                        <v-col cols="4"><strong>결재 신청 일시</strong></v-col>
+                        <v-col cols="2"><strong>결재 상태</strong></v-col>
+                    </v-row>
+
+                    <v-row v-for="(submit, index) in submitList" :key="submit.id" oulined
+                        style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
+                        @click="showDetail(submit.id)">
+                        <v-col cols="1">{{ index + 1 }}</v-col>
+                        <v-col cols="5">{{ submit.submitType }}</v-col>
+                        <v-col cols="4">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime)
+                            }}</v-col>
+                        <v-col cols="2" class="d-flex justify-center align-center">
+                            <v-chip v-if="submit.submitStatus === '반려'" color="red">
+                                {{ submit.submitStatus }}
+                            </v-chip>
+                            <v-chip v-else-if="submit.submitStatus === '승인'" color="green">
+                                {{ submit.submitStatus }}
+                            </v-chip>
+                            <v-chip v-else color="gray">
+                                {{ submit.submitStatus }}
+                            </v-chip>
+                        </v-col>
+                    </v-row>
+                </v-col>
+            </v-row>
+        </div>
+
+        <div v-else>
+            <v-row justify="center" :class="{ 'drawer-open': drawer }">
+                데이터가 존재하지 않습니다.
+            </v-row>
+        </div>
+        <!-- 
     <div class="pagination-controls">
         <button @click="goToPage(page - 1)" :disabled="page === 1">
             <v-icon>{{ 'mdi-chevron-left' }}</v-icon>
@@ -59,8 +67,8 @@
             <v-icon>{{ 'mdi-chevron-right' }}</v-icon></button>
     </div> -->
 
-    <!-- 상세 정보 -->
-
+        <!-- 상세 정보 -->
+    </v-container>
 </template>
 
 <script>
@@ -103,7 +111,10 @@ export default {
 }
 </script>
 <style scoped>
-*:not(h1) {}
+.container {
+    padding: 20px;
+    border-radius: 12px;
+}
 
 .login-container {
     height: 100vh;
@@ -140,16 +151,9 @@ v-card-title,
 }
 
 
-
 .v-btn {
     font-size: 12px;
 }
-
-
-
-.v-card-text>.v-row:first-child {}
-
-.v-card-text>.v-row:last-child {}
 
 .v-card-text {
     margin-bottom: 20px;
@@ -180,17 +184,6 @@ v-card-title,
 
 .v-divider {
     margin: 20px 0;
-}
-
-.chip-reject {
-    background-color: #b00020;
-    color: white;
-}
-
-.chip-accept {
-    background-color: #4cAf50;
-    color: white;
-    padding: auto;
 }
 
 .searchButton {

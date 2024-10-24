@@ -4,7 +4,6 @@
             <h1>결재 상세 조회 - <span style="font-size:24px">{{ selectedSubmit.submitType }}</span></h1>
         </v-row>
 
-
         <v-row>
             <v-col cols="12">
                 <v-row>
@@ -26,10 +25,15 @@
                                     <td style="width:30%; background-color:rgba(122, 86, 86, 0.2);text-align:center">상태
                                     </td>
                                     <td style="width:70%;">
-                                        <v-chip class="d-inline-flex align-center" v-bind:class="{
-                                            'chip-reject': selectedSubmit.submitStatus === '반려',
-                                            'chip-accept': selectedSubmit.submitStatus === '승인'
-                                        }">{{ selectedSubmit.submitStatus }}</v-chip>
+                                        <v-chip v-if="selectedSubmit.submitStatus === '반려'" color="red">
+                                            {{ selectedSubmit.submitStatus }}
+                                        </v-chip>
+                                        <v-chip v-else-if="selectedSubmit.submitStatus === '승인'" color="green">
+                                            {{ selectedSubmit.submitStatus }}
+                                        </v-chip>
+                                        <v-chip v-else color="gray">
+                                            {{ selectedSubmit.submitStatus }}
+                                        </v-chip>
                                     </td>
                                 </tr>
                                 <tr>
@@ -61,10 +65,7 @@
                                         <v-col v-for="(dto, index) in this.submitLines" :key="index">
                                             {{ submitLines.length - index }}차 결재자:
                                             {{ dto.userName }} {{ dto.positionName }}
-                                            <v-chip class="d-inline-flex align-center" v-bind:class="{
-                                                'chip-reject': dto.submitStatus === '반려',
-                                                'chip-accept': dto.submitStatus === '승인'
-                                            }">{{ dto.submitStatus }}</v-chip>
+                                            selectedSubmit
                                         </v-col>
                                     </td>
                                 </tr>
@@ -244,7 +245,10 @@ export default {
 }
 </script>
 <style scoped>
-*:not(h1, h2) {}
+.container {
+    padding: 20px;
+    border-radius: 12px;
+}
 
 .subtitle {
     justify-content: space-between;
@@ -255,16 +259,6 @@ export default {
     border-radius: 20px;
 }
 
-.chip-reject {
-    background-color: #b00020;
-    color: white;
-}
-
-.chip-accept {
-    background-color: #4cAf50;
-    color: white;
-    padding: auto;
-}
 
 .custom-table {
     width: 100%;
