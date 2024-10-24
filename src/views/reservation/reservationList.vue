@@ -17,7 +17,7 @@
       </v-tabs>
 
       <!-- 오른쪽 상단에 관리자 전용 아이콘 추가 (인사팀인 경우에만 표시) -->
-      <v-btn v-if="isHrDepartment" icon @click="goToAdminPage" style="margin-top: 10px;">
+      <v-btn v-if="isHrDepartment" icon @click="goToAdminPage" style="margin-top: 10px; box-shadow: none;">
         <v-icon>mdi-cog</v-icon> <!-- 톱니바퀴 아이콘 -->
       </v-btn>
     </v-row>
@@ -156,56 +156,51 @@
 
           <!-- 차량 예약 모달창 -->
           <v-dialog v-model="isLongTermReservationModalOpen" persistent max-width="500px">
-            <v-card>
-              <v-card-title>
-                <span>차량 예약</span>
-              </v-card-title>
-              <v-card-text>
-                <v-form ref="form">
-                  <!-- 차량 선택 -->
-                  <v-select
-                    v-model="selectedVehicle"
-                    :items="vehicles.map(vehicle => ({ title: vehicle.carNum, value: vehicle.carId }))"
-                    label="차량 선택"
-                    required
-                  ></v-select>
+          <v-card>
+            <v-card-title>
+              <span>차량 예약</span>
+            </v-card-title>
+            <v-card-text>
+              <v-form ref="form">
+                <!-- 차량 선택 -->
+                <v-select
+                  v-model="selectedVehicle"
+                  :items="vehicles.map(vehicle => ({ title: vehicle.carNum, value: vehicle.carId }))"
+                  label="차량 선택"
+                  required
+                ></v-select>
 
-                  <!-- 시작 날짜 선택 -->
-                  <v-menu v-model="menuStart" :close-on-content-click="false" transition="scale-transition" offset-y>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-text-field
-                        v-model="startDate"
-                        label="시작 날짜"
-                        
-                        v-bind="attrs"
-                        v-on="on"
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker v-model="startDate" @input="menuStart = false"></v-date-picker>
-                  </v-menu>
+                <!-- 시작 날짜 선택 -->
+                <el-date-picker
+                  v-model="startDate"
+                  type="date"
+                  placeholder="시작 날짜"
+                  format="yyyy-MM-dd"
+                  value-format="yyyy-MM-dd"
+                  :clearable="false"
+                  style="width: 100%; margin-top: 15px;"
+                ></el-date-picker>
 
-                  <!-- 끝 날짜 선택 -->
-                  <v-menu v-model="menuEnd" :close-on-content-click="false" transition="scale-transition" offset-y>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-text-field
-                        v-model="endDate"
-                        label="끝 날짜"
-                        
-                        v-bind="attrs"
-                        v-on="on"
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker v-model="endDate" @input="menuEnd = false"></v-date-picker>
-                  </v-menu>
-                </v-form>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="submitLongTermReservation">예약</v-btn>
-                <v-btn color="red darken-1" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+                <!-- 끝 날짜 선택 -->
+                <el-date-picker
+                  v-model="endDate"
+                  type="date"
+                  placeholder="끝 날짜"
+                  format="yyyy-MM-dd"
+                  value-format="yyyy-MM-dd"
+                  :clearable="false"
+                  style="width: 100%; margin-top: 15px;"
+                ></el-date-picker>
+
+              </v-form>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="submitLongTermReservation">예약</v-btn>
+              <v-btn color="red darken-1" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
 
       </v-tab-item>
     </v-tabs-items>
@@ -362,20 +357,20 @@ export default {
 
     // 입력하는 예약 제출
     async submitLongTermReservation() {
+      if (!this.startDate || !this.endDate || !this.selectedVehicle) {
+        alert("모든 필드를 선택해 주세요.");
+        return;
+      }
+
+      // 예약 데이터를 서버로 전송
+      const reservationData = {
+        carId: this.selectedVehicle,
+        startDate: this.startDate,
+        endDate: this.endDate,
+      };
+
       try {
         const token = localStorage.getItem("token");
-
-        if (!this.startDate || !this.endDate || !this.selectedVehicle) {
-          alert("모든 필드를 선택해 주세요.");
-          return;
-        }
-
-        const reservationData = {
-          carId: this.selectedVehicle,
-          startDate: this.startDate,
-          endDate: this.endDate,
-        };
-
         await axios.post(
           `${process.env.VUE_APP_API_BASE_URL}/reservation/car/create`,
           reservationData,
@@ -385,23 +380,11 @@ export default {
             },
           }
         );
-
-        // 예약 성공 시 알림
-        alert("장기 예약이 완료되었습니다.");
-
-        // 차량 상태 업데이트
-        this.fetchVehicleAvailability(this.selectedDate);
-
-        // 모달 닫기
+        alert("예약이 완료되었습니다.");
         this.isLongTermReservationModalOpen = false;
       } catch (error) {
-        console.error("Error during long-term reservation:", error);
-        if (error.response?.status === 401) {
-          alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
-          this.$router.push("/login");
-        } else {
-          alert("장기 예약 중 오류가 발생했습니다. 다시 시도해 주세요.");
-        }
+        console.error("Error creating reservation:", error);
+        alert("예약 중 오류가 발생했습니다.");
       }
     },
     setToday() {
