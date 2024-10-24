@@ -9,31 +9,11 @@
             </div>
             <v-card-text>
               <v-form @submit.prevent="doLogin">
-                <v-text-field
-                  v-model="userNum"
-                  label="아이디"
-                  prepend-inner-icon="mdi-account"
-                  required
-                  outlined
-                  dense
-                  class="input-field"
-                ></v-text-field>
-                <v-text-field
-                  v-model="password"
-                  label="비밀번호"
-                  type="password"
-                  prepend-inner-icon="mdi-lock"
-                  required
-                  outlined
-                  dense
-                  class="input-field"
-                ></v-text-field>
-                <v-checkbox
-                  v-model="rememberUserNum"
-                  label="사번 저장하기"
-                  dense
-                  class="remember-checkbox"
-                ></v-checkbox>
+                <v-text-field v-model="userNum" label="아이디" prepend-inner-icon="mdi-account" required outlined dense
+                  class="input-field"></v-text-field>
+                <v-text-field v-model="password" label="비밀번호" type="password" prepend-inner-icon="mdi-lock" required
+                  outlined dense class="input-field"></v-text-field>
+                <v-checkbox v-model="rememberUserNum" label="사번 저장하기" dense class="remember-checkbox"></v-checkbox>
 
                 <!-- <v-btn
                   :class="{'gradient-animation': loginSuccessful}"
@@ -44,28 +24,14 @@
                   로그인
                 </v-btn> -->
 
-                <v-btn
-                  :class="{'gradient-animation': loginSuccessful, 'is-loading': isLoading}"
-                  type="submit"
-                  block large
-                  class="mt-4 login-btn"
-                  :disabled="isLoading"
-                >
+                <v-btn :class="{ 'gradient-animation': loginSuccessful, 'is-loading': isLoading }" type="submit" block
+                  large class="mt-4 login-btn" :disabled="isLoading">
                   <template v-if="!isLoading">로그인</template>
                   <template v-else>
-                    <v-progress-circular
-                      indeterminate
-                      color="white"
-                      size="20"
-                    ></v-progress-circular>
+                    <v-progress-circular indeterminate color="white" size="20"></v-progress-circular>
                   </template>
                 </v-btn>
-                <v-progress-linear
-                  v-if="isLoading"
-                  indeterminate
-                  color="primary"
-                  class="mt-4"
-                ></v-progress-linear>
+                <v-progress-linear v-if="isLoading" indeterminate color="primary" class="mt-4"></v-progress-linear>
               </v-form>
             </v-card-text>
           </v-card>
@@ -83,7 +49,7 @@
 </template>
 
 <script>
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 export default {
@@ -94,7 +60,7 @@ export default {
       password: '',
       rememberUserNum: false,
       loginSuccessful: false,
-      isLoading: false, 
+      isLoading: false,
     };
   },
   mounted() {
@@ -121,12 +87,12 @@ export default {
         }
 
         const decodedToken = jwtDecode(token);
-        const departmentId  = decodedToken.department_id;
+        const departmentId = decodedToken.department_id;
         const positionId = decodedToken.position_id;
 
         localStorage.setItem('token', token);
         localStorage.setItem('positionId', positionId);
-        localStorage.setItem('departmentId', departmentId );
+        localStorage.setItem('departmentId', departmentId);
         localStorage.setItem('userNum', this.userNum);
 
         if (this.rememberUserNum) {
@@ -137,12 +103,12 @@ export default {
 
         this.loginSuccessful = true;
         setTimeout(() => {
-          this.isLoading = false; 
+          this.isLoading = false;
           this.$router.push('/');
         }, 1500);
 
       } catch (e) {
-        this.isLoading = false; 
+        this.isLoading = false;
         alert('로그인에 실패했습니다.');
         console.error(e);
       }
@@ -153,7 +119,9 @@ export default {
 
 
 <style scoped>
-html, body, #app {
+html,
+body,
+#app {
   height: 100%;
   margin: 0;
 }
@@ -172,7 +140,8 @@ html, body, #app {
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 35vh; /* 높이를 더 올렸습니다 */
+  height: 35vh;
+  /* 높이를 더 올렸습니다 */
   overflow: hidden;
 }
 
@@ -181,7 +150,8 @@ html, body, #app {
   border-radius: 1000% 1000% 0 0;
   position: absolute;
   width: 200%;
-  height: 15em; /* 높이를 조금 더 키움 */
+  height: 15em;
+  /* 높이를 조금 더 키움 */
   animation: wave 10s -3s linear infinite;
   transform: translate3d(0, 0, 0);
   opacity: 0.8;
@@ -205,9 +175,11 @@ html, body, #app {
   0% {
     transform: translateX(0);
   }
+
   50% {
     transform: translateX(-50%);
   }
+
   100% {
     transform: translateX(0);
   }
@@ -246,6 +218,7 @@ html, body, #app {
   background-color: #6f4833a4;
   font-weight: bold;
   font-size: 18px;
+  color: #ffffff;
 }
 
 .login-btn:hover {
@@ -260,5 +233,4 @@ html, body, #app {
 .login-btn.is-loading {
   background-color: rgba(0, 150, 136, 0.25);
 }
-
 </style>
