@@ -25,7 +25,7 @@
     "chart.js": "^4.4.5",
     "core-js": "^3.8.3",
     "date-fns": "^4.1.0",
-    "element-plus": "^2.8.5",
+    "element-plus": "^2.8.6",
     "event-source-polyfill": "^1.0.31",
     "flatpickr": "^4.6.13",
     "janus-gateway": "^1.2.4",

@@ -21,9 +21,9 @@
 
 <script>
 import axios from 'axios';
-import CardTemplate from './CardTemplate.vue';
-import VacationTemplate from './VacationTemplate.vue';
-import FamilyEventTemplate from './FamilyEventTemplate.vue';
+import CardTemplate from './template/CardTemplate.vue';
+import VacationTemplate from './template/VacationTemplate.vue';
+import FamilyEventTemplate from './template/FamilyEventTemplate.vue';
 
 export default {
     components: {

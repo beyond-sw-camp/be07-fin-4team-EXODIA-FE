@@ -135,7 +135,7 @@ export default {
         //         }
         //     };
         // },
-        
+
         async loadChatRoom() {
             try {
                 const params = {
@@ -175,14 +175,16 @@ export default {
 .chat-container {
     padding: 16px;
     /* background-color: #f0f0f0; */
-    background-color: #e9f4e4;
-    height: 800px;
+    /* background-color: #e9f4e4; */
+    /* height: auto; */
+    width: auto;
 }
 
 .top-bar {
     display: flex;
     align-items: center;
     padding-bottom: 8px;
+    width: auto;
 }
 
 .search-bar {

@@ -163,9 +163,11 @@ export default {
 .main-view {
   padding: -50px;
 }
+
 .header-tabs {
   margin-bottom: 30px;
 }
+
 .tab-item {
   font-weight: bold;
   font-size: 16px;
@@ -173,15 +175,18 @@ export default {
   min-width: 100px;
   background-color: #ffffff;
 }
+
 .v-tabs {
   border-bottom: 1px solid #e0e0e0;
 }
+
 canvas {
   transition: 2s;
   margin-top: 20px;
   width: 100%;
   background-color: #ffffff;
 }
+
 .indicator {
   width: 5px;
   height: 40px;
@@ -192,6 +197,7 @@ canvas {
   transform: translateX(-50%);
   z-index: 1;
 }
+
 .v-btn {
   margin-top: 20px;
 }

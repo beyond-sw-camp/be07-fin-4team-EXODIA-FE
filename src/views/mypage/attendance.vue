@@ -215,39 +215,39 @@ export default {
     // 선택된 주차의 데이터를 API에서 가져오는 함수
     async fetchWeeklyDetails() {
     // selectedWeek가 없을 때 오늘 기준으로 주차를 설정하고 데이터를 불러옴
-  if (!this.selectedWeek) {
-    const today = new Date();
-    this.selectedWeek = this.getISOWeekNumber(today); // 현재 주차로 설정
-    console.log('selectedWeek가 없어 현재 주차를 설정: ', this.selectedWeek);
-  }
+      // if (!this.selectedWeek) {
+      //   const today = new Date();
+      //   this.selectedWeek = this.getISOWeekNumber(today); // 현재 주차로 설정
+      //   console.log('selectedWeek가 없어 현재 주차를 설정: ', this.selectedWeek);
+      // }
 
-  try {
-    const weekNumber = this.selectedWeek; // 숫자로 전송
-    console.log('Fetching data for week: ', weekNumber);
+      try {
+        const weekNumber = this.selectedWeek; // 숫자로 전송
+        console.log('Fetching data for week: ', weekNumber);
 
-    const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/weekly`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      params: {
-        year: new Date().getFullYear(),
-        weekNumber: weekNumber, // 숫자 주차 전송
-      },
-    });
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/weekly`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          params: {
+            year: new Date().getFullYear(),
+            weekNumber: weekNumber, // 숫자 주차 전송
+          },
+        });
 
-    const weekData = response.data.find(week => week.weekNumber === weekNumber);
-    if (weekData) {
-      this.attendanceData = weekData.days;
-      console.log('attendanceData: ', this.attendanceData);
-    } else {
-      console.error('해당 주차에 대한 데이터가 없습니다.');
-      this.attendanceData = {};
-    }
-    this.emitAttendanceData();
-  } catch (error) {
-    console.error('주차별 데이터를 불러오는 중 오류 발생:', error);
-  }
-},
+        const weekData = response.data.find(week => week.weekNumber === weekNumber);
+        if (weekData) {
+          this.attendanceData = weekData.days;
+          console.log('attendanceData: ', this.attendanceData);
+        } else {
+          console.error('해당 주차에 대한 데이터가 없습니다.');
+          this.attendanceData = {};
+        }
+        this.emitAttendanceData();
+      } catch (error) {
+        console.error('주차별 데이터를 불러오는 중 오류 발생:', error);
+      }
+    },
 
 
     async fetchAttendanceData() {

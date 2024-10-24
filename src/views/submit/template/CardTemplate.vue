@@ -1,7 +1,8 @@
 <template>
-    <v-container class="board-container">
-
-        <h1 style="margin:25px 0; font-weight:800">법인 카드 사용 신청서</h1>
+    <v-container class="container">
+        <v-row class="mb-6 mt-12" style="padding-left:30px">
+            <h1>법인 카드 사용 신청서</h1>
+        </v-row>
 
         <v-row style="padding:50px">
             <v-row justify="justify-space-around">
@@ -170,7 +171,6 @@ export default {
             try {
                 const response = await axios.get(`/department/${this.departmentId}/users`);
                 this.users = response.data;
-                console.log(this.users);
             } catch (e) {
                 console.error('직원 불러오는데 오류 발생:', e);
             }
@@ -232,7 +232,10 @@ export default {
 </script>
 
 <style scoped>
-*:not(h1) {}
+.container {
+    padding: 20px;
+    border-radius: 12px;
+}
 
 .draggable-item {
     cursor: grab;
