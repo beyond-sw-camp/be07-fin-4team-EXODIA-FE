@@ -18,14 +18,15 @@
 
   <v-row justify="end" style="margin-top: 20px;">
     <v-col cols="12" style="text-align: right;">
-      <v-btn v-if="isHrDepartment()" icon @click="openCreateModal" color="rgba(122, 86, 86, 0.2)">
-        <v-icon>mdi-plus-circle</v-icon>
+      <v-btn v-if="isHrDepartment()" icon @click="openCreateModal">
+        <v-icon size="32">mdi-plus-circle</v-icon>
       </v-btn>
     </v-col>
   </v-row>
 
   <!-- 테이블 헤더 -->
-  <v-row class="mb-2" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
+  <v-row class="mb-2"
+    style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
     <v-col cols="3"><strong>강좌명</strong></v-col>
     <v-col cols="3"><strong>내용</strong></v-col>
     <v-col cols="2"><strong>생성일</strong></v-col>
