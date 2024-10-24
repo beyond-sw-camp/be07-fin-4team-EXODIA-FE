@@ -215,6 +215,9 @@ export default {
         },
         async createSubmit() {
             try {
+                this.submitCreateData.submitUserDtos.slice().sort((a, b) => b.PositionId - a.PositionId);
+                this.submitCreateData.submitUserDtos.sort((a, b) => a.position - b.position);
+
                 this.submitCreateData.contents = `{"경조종류": "${this.formData.mainEventType} ${this.formData.familyRelation}"}`;
                 this.submitCreateData.uploadBoard = this.formData.uploadBoard;
 
@@ -222,7 +225,6 @@ export default {
                     headers: { Authorization: `Bearer ${this.token}` }
                 });
 
-                console.log(this.submitCreateData);
                 alert("결재 요청이 성공적으로 처리되었습니다.");
                 this.$router.push("/submit/list/my")
             } catch (e) {

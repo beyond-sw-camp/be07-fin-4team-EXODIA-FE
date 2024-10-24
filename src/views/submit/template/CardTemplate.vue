@@ -214,7 +214,9 @@ export default {
         },
         async createSubmit() {
             try {
-                this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
+                this.submitCreateData.contents = JSON.stringify(this.formData);
+                this.submitCreateData.submitUserDtos.sort((a, b) => a.position - b.position);
+
                 await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
                 alert("결재 요청이 성공적으로 처리되었습니다.")
                 this.$router.push("/submit/list/my")

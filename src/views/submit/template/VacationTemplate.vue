@@ -170,9 +170,10 @@ export default {
     methods: {
         async fetchUsers() {
             try {
-                const response = await axios.get(`/user/department-users/${this.departmentId}`);
-                this.users = response.data;
-            } catch (e) {
+                const response = await axios.get(`/department/${this.departmentId}/users`);
+                this.users = response.data.filter(u => Number(u.positionId) <= Number(this.positionId));
+            }
+            catch (e) {
                 console.error('직원 불러오는데 오류 발생:', e);
             }
         },
@@ -212,9 +213,9 @@ export default {
         async createSubmit() {
             try {
                 this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
-                await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
+                this.submitCreateData.submitUserDtos.sort((a, b) => a.position - b.position);
 
-                console.log(this.submitCreateData)
+                await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
                 alert("결재 요청이 성공적으로 처리되었습니다.")
                 this.$router.push("/submit/list/my")
             } catch (e) {
@@ -228,12 +229,10 @@ export default {
             return new Date(date).toLocaleTimeString();
         },
         calculateDays() {
-            console.log("시작: " + this.formData.휴가시작일);
+            // console.log("시작: " + this.formData.휴가시작일);
             const startDate = new Date(this.formData.휴가시작일);
             const endDate = new Date(this.formData.휴가종료일);
             let totalDays = 0;
-
-            console.log("alsdfjkasldf")
 
             // 시작일과 종료일이 유효한 경우만 계산
             if (startDate && endDate && startDate <= endDate) {
