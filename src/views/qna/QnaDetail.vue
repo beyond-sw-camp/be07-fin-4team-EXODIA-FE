@@ -13,7 +13,7 @@
             <strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }} 
             | <strong>문의 부서:</strong> {{ questionDetail.departmentName }} 
             | <strong>작성 시간:</strong> {{ formatDate(questionDetail.createdAt) }}
-            <span v-if="new Date(questionDetail.createdAt).getTime() !== new Date(questionDetail.updatedAt).getTime()"> 
+            <span v-if="questionDetail.updatedAt"> 
               | <strong>수정 시간:</strong> {{ formatDate(questionDetail.updatedAt) }}
             </span>
           </p>
@@ -37,9 +37,10 @@
       </div>
 
       <v-divider></v-divider> <!-- 질문과 답변 구분선 -->
-      <p class="meta-info-section mt-2">
+      <p v-if="questionDetail.answeredAt" class="meta-info-section mt-2">
         <strong>답변자:</strong> {{ questionDetail.answerUserName }} | <strong>답변 시간:</strong> {{ formatDate(questionDetail.answeredAt) }}
       </p>
+      
       <!-- 답변 내용 및 수정 버튼 -->
       <div v-if="questionDetail.answerText" class="board-body" style="background-color: transparent;">
         <div class="d-flex justify-space-between align-center mb-3">
@@ -92,6 +93,8 @@
     </div>
   </v-container>
 </template>
+
+
 
 <script>
 import axios from 'axios';

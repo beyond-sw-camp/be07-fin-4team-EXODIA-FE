@@ -64,7 +64,7 @@
           style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
         >
           <v-col cols="1" class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
-          <v-col cols="7" class="title-ellipsis" style="max-width: 80%; display: inline-block;">
+          <v-col cols="8" class="title-ellipsis" style="max-width: 80%; display: inline-block;">
             {{ item.title }}
           </v-col>
           <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
