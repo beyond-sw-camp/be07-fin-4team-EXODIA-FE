@@ -10,14 +10,14 @@
             <!-- Search bar-->
             <v-col cols="9">
                 <v-text-field v-model="searchQuery" v-on:keypress.enter="searchChatRoom" @input="searchChatRoom"
-                    placeholder="채팅방명, 사원이름으로 검색" class="search-bar" solo hide-details dense></v-text-field>
+                    placeholder="채팅방명, 사원이름으로 검색" class="search-bar" solo hide-details dense variant="underlined"></v-text-field>
             </v-col>
             <v-col cols="1" location="right">
-                <v-icon @click="searchChatRoom">mdi-magnify</v-icon>
+                <v-icon class="icon search-icon" @click="searchChatRoom">mdi-magnify</v-icon>
             </v-col>
 
             <!-- Create chat room button -->
-            <v-col cols="1" location="right">
+            <v-col cols="2" location="right">
                 <v-icon class="icon create-icon" @click="openCreateChatRoom">mdi-chat-plus</v-icon>
             </v-col>
         </v-row>
@@ -33,9 +33,8 @@
 
                     <!-- Room info -->
                     <v-list-item-content @click="enterToChatRoom(index)" class="chat-room-list-content">
-                        <v-list-item-title>{{ chatroom.roomName }}</v-list-item-title>
+                        <v-list-item-title class="chat-room-list-title">{{ chatroom.roomName }}</v-list-item-title>
                         <v-list-item-subtitle>{{ chatroom.recentChat }}</v-list-item-subtitle>
-                        <!-- <span>{{ chatroom.unreadChatNum }}</span> -->
                     </v-list-item-content>
 
                     <!-- Unread message count -->
@@ -188,12 +187,17 @@ export default {
 }
 
 .search-bar {
+    margin-left: 20px;
     background-color: white;
     border-radius: 4px;
 }
 
 .icon {
     cursor: pointer;
+}
+
+.create-icon{
+    margin-left: 10px;
 }
 
 .chat-room-list {
@@ -203,6 +207,10 @@ export default {
 .chat-room-list-content {
     position: relative;
     cursor: pointer;
+}
+
+.chat-room-list-title{
+
 }
 
 .unread-badge {

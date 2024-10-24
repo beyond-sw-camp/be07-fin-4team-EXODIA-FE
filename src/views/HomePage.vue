@@ -22,9 +22,9 @@
 
           <v-row>
             <!-- 게시글 목록 -->
-            <v-row v-for=" item in boardItems" :key="item.id" class="board-item" @click="goToDetail(item.id)">
-              <v-col cols="10" class="ellipsis-text"> {{ item.title }}</v-col>
-              <v-col style="color:#808080; padding-left:10px; ">{{ formatDate(item.createdAt) }}</v-col>
+            <v-row v-for="item in boardItems" :key="item.id" class="board-item" @click="goToDetail(item.id)">
+              <v-col cols="9" class="ellipsis-text" > {{ item.title }}</v-col>
+              <v-col cols="3" style="color:#808080; padding-left:40px; ">{{ formatDate(item.createdAt) }}</v-col>
             </v-row>
           </v-row>
         </v-col>
@@ -153,7 +153,8 @@ export default {
   /* 말줄임 */
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: ellipsis !important;
+  max-width: 360px;
   width: 100%;
   font-weight: 600;
 }
@@ -167,8 +168,6 @@ export default {
   background-color: #fff;
   height: 100%;
   flex-wrap: wrap;
-
-
 }
 
 .board-item {
@@ -180,8 +179,8 @@ export default {
 }
 
 .board-item:last-child {
-  padding-bottom: 20px;
-}
+    padding-bottom: 20px;
+  }
 
 .board-item>.v-col {
   padding: 10px 0;

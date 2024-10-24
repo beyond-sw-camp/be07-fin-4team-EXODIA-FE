@@ -1,9 +1,3 @@
-<!-- 채팅방 하나의 화면 -->
-<!--채팅방 나가기, 채팅방 내 메세지 검색 , 채팅구성원 확인, 채팅유저 초대, 채팅 파일 모아보기 -->
-<!--채팅 날짜 구분해서 채팅메세지 불러오기 / 나와 구성원 구분하여 띄워주기 / 구성원 프로필사진 : 메세지-->
-<!-- 채팅입력창, 파일 보내기, 이미지 보내기-->
-
-
 <template>
     <v-container class="chat-room-container"> <!--전체 채팅방 감싸요-->
 
@@ -56,8 +50,9 @@
             :chatRoomIdProp="chatRoomId">
         </ExitChatRoomModal>
 
-        <!-- 채팅 내용 -->
-        <div class="chat-content" id="messageContainer">
+        <!-- 채팅 내용 :class="chat.senderNum === chatSenderNum ? 'my-message' : 'other-message'" -->
+        <div :class="fileList.length > 0 ? 'chat-content-with-file' : 'chat-content'" id="messageContainer">
+
             <div v-for="(chat, index) in chatMessageList" :key="chat.id">
                 <!-- 날짜 구분 -->
                 <div v-if="index === 0 || isDifferentDay(chat.createAt, chatMessageList[index - 1].createAt)">
@@ -105,7 +100,7 @@
                             <div class="my-message-text">{{ chat.message }}</div>
                         </v-col>
                         <v-col class="message" v-if="chat.messageType == 'FILE'">
-                            
+
                             <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="chat.senderNum === chatSenderNum">
                             </ChatFileBox>
                             <span class="my-message-time-test">{{ getTime(chat.createAt) }}</span>
@@ -114,27 +109,29 @@
                     </v-row>
                 </div>
             </div>
-
-            <!-- 파일전송 미리보기 나중에 모달로 : PC카톡 -->
-            <div class="image-group" v-if="fileList.length > 0">
-                <div v-for="(file, index) in fileList" :key="index" class="image-container">
-                    <v-icon color="red" class="close-icon" @click="deleteImage(index)">mdi-close-circle</v-icon>
-                    <img :src="file.fileUrl" @error="e => e.target.src = require('@/assets/file.png')"
-                        style="height: 80px; width: 80px; object-fit: cover;">
-                    <p class="custom-contents">{{ file.name }}</p>
-                </div>
-            </div>
-
         </div>
 
-        <v-row>
+
+        <!-- 파일전송 미리보기 나중에 모달로 : PC카톡 -->
+        <div class="image-group" v-if="fileList.length > 0">
+            <div v-for="(file, index) in fileList" :key="index" class="image-container">
+                <v-icon color="red" class="close-icon" @click="deleteImage(index)">mdi-close-circle</v-icon>
+                <img :src="file.fileUrl" @error="e => e.target.src = require('@/assets/file.png')"
+                    style="height: 80px; width: 80px; object-fit: cover;">
+                <p class="custom-contents">{{ file.name }}</p>
+            </div>
+        </div>
+
+
+
+        <v-row id="inputContainer">
             <v-col cols="1">
                 <v-file-input class="file-input" v-model="files" @change="fileUpdate" multiple hide-input
                     prepend-icon="mdi-paperclip">
                 </v-file-input>
             </v-col>
             <v-col>
-                <v-textarea class="chat-input" v-model="messageToSend" variant="outlined"
+                <v-textarea class="chat-input" v-model="messageToSend" solo hide-details dense variant="outlined"
                     @keydown.enter="handleSendMessage" @keydown.shift.enter.prevent="addNewLine"
                     append-inner-icon="mdi-send" @click:append-inner="sendMessage" auto-grow rows="1"></v-textarea>
             </v-col>
@@ -513,8 +510,6 @@ export default {
 }
 
 .chat-content {
-    position: relative;
-
     flex: 1;
     padding: 10px;
     /* max-height: calc(100vh - 150px); */
@@ -532,6 +527,30 @@ export default {
 }
 
 .chat-content::-webkit-scrollbar {
+    display: none;
+}
+
+.chat-content-with-file {
+    position: relative;
+    padding-bottom: 120px;
+
+    flex: 1;
+    padding: 10px;
+    /* max-height: calc(100vh - 150px); */
+    /* 화면의 상단 영역을 침범하지 않도록 높이 제한 */
+    margin-top: 15px;
+    height: 470px;
+    width: auto;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    /* flex-shrink: 0; */
+    -ms-overflow-style: none;
+    /* 인터넷 익스플로러 */
+    scrollbar-width: none;
+    /* 파이어폭스 */
+}
+
+.chat-content-with-file::-webkit-scrollbar {
     display: none;
 }
 
@@ -625,27 +644,26 @@ export default {
     max-height: 150px;
 
     position: absolute;
-    /* bottom: 10; */
-    /* z-index: 1; */
-    /* 채팅 내용 위에 덮어지도록 z-index 설정 */
+    bottom: 100px;
+    /* z-index: 9999; */
 
     background-color: rgba(233, 233, 233, 0.4);
     overflow-x: scroll;
     white-space: nowrap;
 }
 
-.image-group ::-webkit-scrollbar{
+/* .image-group ::-webkit-scrollbar {
     height: 10px;
 }
 
 .image-group ::-webkit-scrollbar-thumb {
-    background: #888; /* Color of the scrollbar */
-    border-radius: 10px; /* Rounded corners for the scrollbar */
+    background: #888;
+    border-radius: 10px;
 }
 
 .image-group ::-webkit-scrollbar-thumb:hover {
-    background: #555; /* Darker color on hover */
-}
+    background: #555;
+} */
 
 .image-container {
     padding: 10px;
@@ -662,9 +680,9 @@ export default {
 .close-icon {
     position: absolute;
     top: 3px;
-    /* 이미지 위쪽에서 5px */
+    /* 이미지 위쪽에서*/
     left: 3px;
-    /* 이미지 왼쪽에서 5px */
+    /* 이미지 왼쪽에서*/
     z-index: 1;
     /* 이미지보다 아이콘이 위에 표시되도록 z-index 설정 */
     cursor: pointer;
@@ -677,7 +695,7 @@ export default {
     overflow: hidden;
     /* 내용이 넘칠 경우 숨김 처리 */
     text-overflow: ellipsis !important;
-    /* 넘치는 텍스트에 '...' 추가 (이거 적용안됨 이후 수정필요)*/
+    /* 넘치는 텍스트에 '...' 추가*/
     white-space: nowrap;
     /* 텍스트 줄 바꿈 방지 */
     font-size: 0.8em;
@@ -685,13 +703,21 @@ export default {
     font-size: 10px;
 }
 
+#inputContainer {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
 .chat-input {
     margin-top: 5px;
-    width: auto;
+    width: auto
 }
 
 .file-input {
     padding: 0px;
     margin-top: 20px;
+    margin-right: 20px;
 }
 </style>
