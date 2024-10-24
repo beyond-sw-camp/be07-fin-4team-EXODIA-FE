@@ -47,22 +47,26 @@
           <!-- 세금 정보 섹션 -->
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title><strong>국민연금:</strong> {{ salary.nationalPension ? salary.nationalPension.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              <v-list-item-title><strong>국민연금:</strong> {{ salary.nationalPension ?
+                salary.nationalPension.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title><strong>건강보험:</strong> {{ salary.healthInsurance ? salary.healthInsurance.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              <v-list-item-title><strong>건강보험:</strong> {{ salary.healthInsurance ?
+                salary.healthInsurance.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title><strong>장기요양보험:</strong> {{ salary.longTermCare ? salary.longTermCare.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              <v-list-item-title><strong>장기요양보험:</strong> {{ salary.longTermCare ? salary.longTermCare.toLocaleString()
+                : '정보 없음' }} 원</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title><strong>고용보험:</strong> {{ salary.employmentInsurance ? salary.employmentInsurance.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              <v-list-item-title><strong>고용보험:</strong> {{ salary.employmentInsurance ?
+                salary.employmentInsurance.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
 
@@ -72,7 +76,8 @@
           <!-- 총 세금 및 최종 급여 -->
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title><strong>총 세금:</strong> {{ salary.totalTax ? salary.totalTax.toLocaleString() : '정보 없음' }} 원</v-list-item-title>
+              <v-list-item-title><strong>총 세금:</strong> {{ salary.totalTax ? salary.totalTax.toLocaleString() : '정보 없음'
+                }} 원</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
@@ -92,7 +97,7 @@
       <!-- 목록으로 돌아가기 버튼 -->
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" @click="goBackToList">목록으로 돌아가기</v-btn>
+        <v-btn v-list @click="goBackToList">목록으로 돌아가기</v-btn>
       </v-card-actions>
     </v-card>
   </v-container>

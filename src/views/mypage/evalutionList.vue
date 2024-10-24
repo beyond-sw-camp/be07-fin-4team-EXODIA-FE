@@ -46,7 +46,7 @@
       <!-- 저장 버튼 -->
       <v-row>
         <v-col cols="12" class="text-center">
-          <v-btn @click="saveEvaluations" color="success">저장</v-btn>
+          <v-btn v-create @click="saveEvaluations">저장</v-btn>
         </v-col>
       </v-row>
     </template>
@@ -171,16 +171,21 @@ export default {
 .header-tabs {
   margin-bottom: 30px;
 }
+
 .v-tabs--density-default {
   --v-tabs-height: 48px;
 }
+
 .v-tabs {
   border-bottom: 1px solid #e0e0e0;
 }
+
 .v-tab {
   font-weight: bold;
 }
-th, td {
+
+th,
+td {
   border: 1px solid #e0e0e0;
 }
 </style>

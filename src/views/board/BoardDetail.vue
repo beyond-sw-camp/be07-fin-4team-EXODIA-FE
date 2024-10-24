@@ -1,8 +1,15 @@
 <template>
   <v-container class="mt-5 board-container">
+    <div v-if="board" class="action-section d-flex justify-end mb-5">
+      <v-btn v-list class="mr-2" @click="goBack">목록으로</v-btn>
+      <v-btn v-create class="mr-2" @click="editBoard">수정</v-btn>
+      <v-btn v-delete @click="confirmDeleteBoard">삭제</v-btn>
+    </div>
+
     <!-- 게시글 상세 정보 -->
     <div v-if="board" class="board-content-section mb-5">
       <!-- 제목 섹션 -->
+
       <div class="title-section mb-3">
         <h2 class="board-title">{{ board.title }}</h2>
       </div>
@@ -12,7 +19,7 @@
         <span class="meta-info">
           <strong>카테고리:</strong> {{ board.category }} |
           <strong>작성일:</strong> {{ formatDate(board.createdAt) }} |
-          <strong>조회수:</strong> {{ board.hits }} 
+          <strong>조회수:</strong> {{ board.hits }}
         </span>
       </div>
 
@@ -27,12 +34,7 @@
       <div v-if="tags && tags.length > 0" class="tag-section">
         <h4 class="section-title">태그</h4>
         <div class="tags">
-          <v-chip
-            v-for="tag in tags"
-            :key="tag"
-            class="tag-chip"
-            outlined
-          >
+          <v-chip v-for="tag in tags" :key="tag" class="tag-chip" outlined>
             {{ tag }}
           </v-chip>
         </div>
@@ -54,7 +56,7 @@
       <!-- 댓글 작성 폼 -->
       <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
         <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
-        <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
+        <v-btn v-create class="mt-2" @click="submitComment">댓글 작성</v-btn>
       </v-form>
 
       <!-- 댓글 목록 섹션 -->
@@ -71,7 +73,7 @@
                 </small>
               </div>
               <div v-if="comment.userNum === userNum" class="action-buttons">
-                <v-btn small text @click="editComment(comment)">수정</v-btn>
+                <v-btn v-create small text @click="editComment(comment)">수정</v-btn>
                 <v-btn small text color="red" @click="deleteComment(comment.id)">삭제</v-btn>
               </div>
             </div>
@@ -81,18 +83,14 @@
     </div>
 
     <!-- 액션 버튼들 -->
-    <div v-if="board" class="action-section d-flex justify-end mb-5">
-      <v-btn class="btn_solid mr-2" @click="goBack">목록으로</v-btn>
-      <v-btn class="btn_st2 mr-2" @click="editBoard">수정</v-btn>
-      <v-btn class="btn_del" @click="confirmDeleteBoard">삭제</v-btn>
-    </div>
+
 
     <!-- 에러 및 로딩 상태 표시 -->
     <v-alert type="error" v-if="error">{{ error }}</v-alert>
     <v-progress-circular v-else-if="!board" indeterminate color="primary"></v-progress-circular>
   </v-container>
 </template>
-      
+
 <script>
 import axios from 'axios';
 
@@ -128,13 +126,13 @@ export default {
         // 게시글 ID와 사용자 번호를 가져옴
         const boardId = this.$route.params.id;
         const userNum = localStorage.getItem('userNum');
-        
+
         // 게시글 상세 정보를 가져옴
         const boardResponse = await axios.get(`/board/detail/${boardId}`, {
           params: { userNum }
         });
         this.board = boardResponse.data.result;
-        
+
         // 태그 목록 받아오기
         if (this.board.tags) {
           this.tags = this.board.tags;
@@ -261,42 +259,50 @@ export default {
   padding: 20px;
   border-radius: 12px;
 }
+
 .board-title {
   margin-bottom: 20px;
   color: #000;
 }
+
 .meta-info-section {
   font-size: 0.9rem;
   color: #777;
 }
+
 .board-body {
-  width: 100%;         
-  max-width: 800px;      
-  min-height: 400px;     
-  height: auto;           
-  padding: 20px;         
-  border-radius: 8px;     
-  overflow: hidden;       
+  width: 100%;
+  max-width: 800px;
+  min-height: 400px;
+  height: auto;
+  padding: 20px;
+  border-radius: 8px;
+  overflow: hidden;
 }
+
 .tag-section {
   margin-top: 20px;
 }
+
 .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
+
 .file-list-section {
   background-color: #fafafa;
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 15px;
 }
+
 .file-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
+
 .file-item {
   flex: 0 1 30%;
   background-color: #fff;
@@ -304,17 +310,21 @@ export default {
   padding: 10px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .file-preview {
   width: 100%;
   border-radius: 8px;
   margin-bottom: 8px;
 }
+
 .comment-section {
   background-color: #ffffff;
   border-radius: 8px;
   padding: 20px;
-  width: 100%; /* 댓글 섹션 전체 너비 */
-  max-width: 1200px; /* 최대 너비 설정 */
+  width: 100%;
+  /* 댓글 섹션 전체 너비 */
+  max-width: 1200px;
+  /* 최대 너비 설정 */
 }
 
 .comment-item {
@@ -322,47 +332,35 @@ export default {
   border-radius: 8px;
   padding: 10px;
   margin-bottom: 10px;
-  width: 100%; /* 댓글 목록 항목 너비 */
+  width: 100%;
+  /* 댓글 목록 항목 너비 */
 }
+
 .comment-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .action-buttons {
   display: flex;
   gap: 10px;
 }
+
 .comment-form {
   margin-top: 20px;
-  width: 100%; /* 댓글 작성 폼 너비 */
-  max-width: 1200px; /* 최대 너비 설정 */
+  width: 100%;
+  /* 댓글 작성 폼 너비 */
+  max-width: 1200px;
+  /* 최대 너비 설정 */
 }
-.btn_solid {
-  background-color: #3f51b5 !important;
-  color: #ffffff !important;
-  border-radius: 8px;
-}
-.btn_st2 {
-  background-color: #424242 !important;
-  color: #ffffff;
-  border-radius: 8px;
-}
-.btn_del {
-  background-color: #f27885 !important;
-  color: white;
-  border-radius: 8px;
-}
-.btn_comment_ok {
-  background-color: #5087c7 !important;
-  color: white;
-  border-radius: 8px;
-}
+
 .tbl_list {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 0px;
 }
+
 .tbl_list th,
 .tbl_list td {
   padding: 12px;
@@ -370,12 +368,15 @@ export default {
   border-bottom: 1px solid #000;
   text-align: left;
 }
+
 .tbl_list th {
   background-color: #f4f4f4;
 }
+
 .tbl_list tr:hover {
   background-color: #ababab;
 }
+
 .btn_write {
   display: flex;
   justify-content: center;
@@ -390,21 +391,26 @@ export default {
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease;
 }
+
 .btn_write:hover {
   background-color: #722121;
 }
+
 .v-pagination {
   margin-top: 20px;
 }
+
 .v-pagination .v-pagination__item {
   border: none;
   color: #722121;
 }
+
 .v-pagination .v-pagination__item--active {
   font-weight: bold;
   background-color: #c5e1a5;
   color: white;
 }
+
 .drawer-open {
   transition: margin-right 0.3s ease;
   margin-right: 200px;

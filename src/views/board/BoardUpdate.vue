@@ -8,78 +8,51 @@
       <v-card-text>
         <v-form ref="form" @submit.prevent="submitForm">
           <!-- 제목 -->
-          <v-text-field
-            label="제목"
-            v-model="title"
-            required
-            outlined
-            dense
-          />
+          <v-text-field label="제목" v-model="title" required outlined dense />
 
           <!-- 내용 -->
-          <v-textarea
-            label="내용"
-            v-model="content"
-            rows="5"
-            required
-            outlined
-            dense
-          />
+          <v-textarea label="내용" v-model="content" rows="5" required outlined dense />
 
 
           <!-- 파일 선택 -->
-          <v-file-input
-            v-model="files"
-            label="파일 첨부"
-            accept=".png, .jpg, .jpeg, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .zip"
-            multiple
-            outlined
-            dense
-          />
+          <v-file-input v-model="files" label="파일 첨부"
+            accept=".png, .jpg, .jpeg, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .zip" multiple outlined
+            dense />
 
           <!-- 태그 선택 버튼 -->
-      <v-row>
-        <v-col cols="12">
-          <div class="tag-buttons">
-            <!-- 태그 추가 버튼 -->
-            <v-btn class="tag-button rounded-button" outlined @click="openTagModal">
-              + <!-- 태그 추가 버튼 표시 -->
-            </v-btn>
+          <v-row>
+            <v-col cols="12">
+              <div class="tag-buttons">
+                <!-- 태그 추가 버튼 -->
+                <v-btn class="tag-button rounded-button" outlined @click="openTagModal">
+                  + <!-- 태그 추가 버튼 표시 -->
+                </v-btn>
 
-            <!-- 기존 태그들 -->
-            <div v-for="tag in tags" :key="tag.id" class="tag-wrapper">
-              <v-btn
-                :class="{'selected-tag': selectedTags.includes(tag.id)}"
-                @click="toggleTagSelection(tag.id)"
-                outlined
-                class="tag-button rounded-button"
-              >
-                {{ tag.tag }}
-              </v-btn>
-              <!-- 태그 삭제 버튼 (X 버튼) -->
-              <v-btn icon @click="removeTag(tag.id)" class="remove-tag-btn">
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-              
-            </div>
+                <!-- 기존 태그들 -->
+                <div v-for="tag in tags" :key="tag.id" class="tag-wrapper">
+                  <v-btn :class="{ 'selected-tag': selectedTags.includes(tag.id) }" @click="toggleTagSelection(tag.id)"
+                    outlined class="tag-button rounded-button">
+                    {{ tag.tag }}
+                  </v-btn>
+                  <!-- 태그 삭제 버튼 (X 버튼) -->
+                  <v-btn icon @click="removeTag(tag.id)" class="remove-tag-btn">
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+
+                </div>
+              </div>
+            </v-col>
+          </v-row>
+
+
+          <!-- 고정 여부 체크박스, 취소 및 저장 버튼 -->
+          <div class="btnWrap">
+            <!-- 고정 체크박스: 카테고리가 FAMILY_EVENT가 아닐 때만 표시 -->
+            <v-checkbox v-if="currentCategory !== 'FAMILY_EVENT'" v-model="isPinned" label="중요" class="mr-4" />
+
+            <v-btn v-create type="submit" class="ml-4">저장</v-btn>
+            <v-btn v-delete text @click="cancel">취소</v-btn>
           </div>
-        </v-col>
-      </v-row>
-
-
-      <!-- 고정 여부 체크박스, 취소 및 저장 버튼 -->
-<div class="btnWrap">
-  <!-- 고정 체크박스: 카테고리가 FAMILY_EVENT가 아닐 때만 표시 -->
-  <v-checkbox
-    v-if="currentCategory !== 'FAMILY_EVENT'"
-    v-model="isPinned"
-    label="중요"
-    class="mr-4"
-  />
-
-  <v-btn text @click="cancel">취소</v-btn>
-  <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
-</div>
 
         </v-form>
       </v-card-text>
@@ -90,17 +63,12 @@
       <v-card>
         <v-card-title>새로운 태그 추가</v-card-title>
         <v-card-text>
-          <v-text-field
-            v-model="newTagName"
-            label="태그 이름"
-            placeholder="태그 이름을 입력하세요"
-            solo
-          ></v-text-field>
+          <v-text-field v-model="newTagName" label="태그 이름" placeholder="태그 이름을 입력하세요" solo></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="closeTagModal">취소</v-btn>
-          <v-btn color="primary" @click="addNewTag">저장</v-btn>
+          <v-btn v-create @click="addNewTag">저장</v-btn>
+          <v-btn v-delete text @click="closeTagModal">취소</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -157,8 +125,8 @@ export default {
         const post = response.data.result;
 
         // 게시글 데이터를 Vue 컴포넌트의 상태로 설정
-        this.title = post?.title || ''; 
-        this.content = post?.content || ''; 
+        this.title = post?.title || '';
+        this.content = post?.content || '';
         this.currentCategory = post?.category || 'NOTICE';
         this.isPinned = post?.isPinned || false;
         this.existingFiles = post?.files || [];
@@ -403,13 +371,15 @@ export default {
 
 .btn-right {
   display: flex;
-  justify-content: flex-end; 
+  justify-content: flex-end;
   margin-top: 20px;
 }
 
 .btnWrap {
   display: flex;
-  justify-content: flex-end; /* 오른쪽 정렬 */
-  gap: 10px; /* 버튼 간의 간격 */
+  justify-content: flex-end;
+  /* 오른쪽 정렬 */
+  gap: 10px;
+  /* 버튼 간의 간격 */
 }
 </style>

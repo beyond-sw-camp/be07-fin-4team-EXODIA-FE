@@ -7,11 +7,12 @@
           <v-card-text>
             <div id="video-grid" class="video-grid">
               <video id="local-video" autoplay playsinline></video>
-              <video v-for="participant in participants" :key="participant.id" :id="'remote-video-' + participant.id" autoplay playsinline></video>
+              <video v-for="participant in participants" :key="participant.id" :id="'remote-video-' + participant.id"
+                autoplay playsinline></video>
             </div>
           </v-card-text>
           <v-card-actions>
-            <v-btn color="error" @click="leaveRoom">방 나가기</v-btn>
+            <v-btn v-delete @click="leaveRoom">방 나가기</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -96,14 +97,14 @@ export default {
     },
 
     joinRoom() {
-      let roomId = this.roomId; 
+      let roomId = this.roomId;
       console.log("Joining room with ID:", roomId);
 
       if (!roomId || isNaN(roomId)) {
         console.error("Invalid room ID");
         return;
-  }
-     roomId = Number(roomId); 
+      }
+      roomId = Number(roomId);
       const register = {
         request: "join",
         room: roomId,
@@ -167,6 +168,7 @@ export default {
   justify-content: center;
   gap: 10px;
 }
+
 video {
   width: 300px;
   height: 200px;

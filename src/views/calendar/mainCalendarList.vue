@@ -1,13 +1,13 @@
 <template>
-    <div id="second-calendar-container" class="calendar-container">
-      <FullCalendar :options="secondCalendarOptions">
-        <template v-slot:eventContent="arg">
-          <div>
-            <strong>{{ arg.event.title }}</strong>
-          </div>
-        </template>
-      </FullCalendar>
-    </div>
+  <div id="second-calendar-container" class="calendar-container">
+    <FullCalendar :options="secondCalendarOptions">
+      <template v-slot:eventContent="arg">
+        <div>
+          <strong>{{ arg.event.title }}</strong>
+        </div>
+      </template>
+    </FullCalendar>
+  </div>
 </template>
 
 <script>
@@ -23,14 +23,14 @@ export default {
   },
   data() {
     return {
-        secondCalendarOptions: {
+      secondCalendarOptions: {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: 'timeGridWeek',
         editable: true,  // 드래그 앤 드롭 가능하게 설정
         droppable: true,  // 외부에서 드롭 가능하게 설정
         eventResizableFromStart: true,  // 시작 시간부터 이벤트를 조정할 수 있게 설정
         locale: 'ko', // 한국어 로케일 설정
-        height: 700, 
+        height: 700,
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
@@ -67,7 +67,7 @@ export default {
       isModalOpen: false,
       isEditing: false,
       allDay: false, // 하루종일 여부
-      
+
       formData: {
         id: null,
         title: '',
@@ -138,9 +138,9 @@ export default {
     // 서버에 일정 업데이트 요청
     updateEvent(event) {
       const payload = {
-        title: event.title, 
+        title: event.title,
         content: event.extendedProps.content,
-        type: event.extendedProps.type, 
+        type: event.extendedProps.type,
         startTime: this.formatLocalDateTime(event.start),
         endTime: this.formatLocalDateTime(event.end),
       };
@@ -153,22 +153,20 @@ export default {
         });
     },
     formatLocalDateTime(date) {
-        return date.getFullYear() + '-' +
-            String(date.getMonth() + 1).padStart(2, '0') + '-' +
-            String(date.getDate()).padStart(2, '0') + 'T' +
-            String(date.getHours()).padStart(2, '0') + ':' +
-            String(date.getMinutes()).padStart(2, '0');
+      return date.getFullYear() + '-' +
+        String(date.getMonth() + 1).padStart(2, '0') + '-' +
+        String(date.getDate()).padStart(2, '0') + 'T' +
+        String(date.getHours()).padStart(2, '0') + ':' +
+        String(date.getMinutes()).padStart(2, '0');
     },
-    
+
   },
   mounted() {
     this.fetchEvents(); // 캘린더 로드 시 이벤트 데이터 가져오기
   }
 };
 </script>
-<style scoped>
-    
-</style>
+<style scoped></style>
 <style>
 #second-calendar-container .event-dot {
   display: inline-block;
@@ -177,8 +175,10 @@ export default {
   background-color: #2196f3;
   border-radius: 50%;
   margin-right: 5px;
-  height: auto; /* 높이를 자동으로 설정 */
-  min-height: 1000px; /* 최소 높이 설정 */
+  height: auto;
+  /* 높이를 자동으로 설정 */
+  min-height: 1000px;
+  /* 최소 높이 설정 */
 }
 
 #second-calendar-container .fc-event {
@@ -186,12 +186,17 @@ export default {
   font-size: 12px;
   padding: 2px;
   border-style: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);  /* 그림자 추가 */
-  transition: transform 0.2s;  /* 호버 시 부드럽게 확대 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  /* 그림자 추가 */
+  transition: transform 0.2s;
+  /* 호버 시 부드럽게 확대 */
 }
+
 #second-calendar-container .fc-event:hover {
-  transform: scale(1.03);  /* 호버 시 살짝 확대 */
+  transform: scale(1.03);
+  /* 호버 시 살짝 확대 */
 }
+
 #second-calendar-container .fc-daygrid-event {
   white-space: nowrap;
   overflow: hidden;
@@ -205,12 +210,12 @@ export default {
 
 
 #second-calendar-container {
-   padding: 30px;
-   background-color: #f9f9f9;
-   border-radius: 10px;
-   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-   border: 1px solid #ddd;
-   background-image: linear-gradient(135deg, #f0f4f8, #f9f9f9);
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  /* background-image: linear-gradient(135deg, #f0f4f8, #f9f9f9); */
 }
 
 
@@ -231,67 +236,74 @@ export default {
 
 
 #second-calendar-container .fc-toolbar-title {
-    font-size: 14px;
-    color: #665f54;
-    margin-left: 10px;
+  font-size: 14px;
+  color: #665f54;
+  margin-left: 10px;
 }
+
 #second-calendar-container .fc .fc-button {
-    background-color: #f9f9f9;
-    color: #665f54;
-    border: 1px solid #ddd;
-    border-radius: 50%; 
-    font-size: 12px;
-    padding: 5px;
-    height: 30px;
-    width: 30px; 
-    display: flex;
-    margin-right: 10px;
-    justify-content: center;
-    align-items: center;
-    outline: none;
-    transition: background-color 0.3s, color 0.3s;  /* 여기가 배경색 수정 부분이니 펼요시 수정 */
+  background-color: #f9f9f9;
+  color: #665f54;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  font-size: 12px;
+  padding: 5px;
+  height: 30px;
+  width: 30px;
+  display: flex;
+  margin-right: 10px;
+  justify-content: center;
+  align-items: center;
+  outline: none;
+  transition: background-color 0.3s, color 0.3s;
+  /* 여기가 배경색 수정 부분이니 펼요시 수정 */
 }
 
 #second-calendar-container .fc .fc-button:focus {
-    outline: none;
+  outline: none;
 }
+
 #second-calendar-container .fc .fc-button.fc-today-button {
-    padding: 5px 15px;
-    font-size: 12px;
-    border-radius: 20px;
-    height: 30px;
-    width: auto;
-    
+  padding: 5px 15px;
+  font-size: 12px;
+  border-radius: 20px;
+  height: 30px;
+  width: auto;
+
 }
+
 #second-calendar-container .fc-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+
 }
+
 #second-calendar-container .fc-toolbar .fc-button:hover {
-   background-color: #cbc2b6;
-   color: white;
-   outline: none;
+  background-color: #cbc2b6;
+  color: white;
+  outline: none;
 }
+
 #second-calendar-container .fc .fc-button.fc-today-button:hover {
-    background-color: #cbc2b6;
-    border-style: none;
-    color: white;
+  background-color: #cbc2b6;
+  border-style: none;
+  color: white;
 }
 
 #second-calendar-container .fc-toolbar-chunk {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 
 /* 오늘 날 표시 */
 #second-calendar-container .fc-timegrid-slot {
-   background-color: #fff;
-   border-bottom: 1px solid #ddd;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
 }
+
 #second-calendar-container .v-dialog {
   max-width: 500px;
   border-radius: 10px;
@@ -313,14 +325,20 @@ export default {
   border-radius: 5px;
   padding: 10px 20px;
 }
-#second-calendar-container .fc-event-dragging, .fc-event-resizing {
+
+#second-calendar-container .fc-event-dragging,
+.fc-event-resizing {
   opacity: 0.7;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
 }
+
 #second-calendar-container .fc-timegrid-axis-cushion {
-  font-size: 10px;  /* 글씨를 작게 */
-  color: #666;  /* 글씨 색을 회색으로 */
-  padding: 2px;  /* 여백을 줄여 더 간결하게 */
+  font-size: 10px;
+  /* 글씨를 작게 */
+  color: #666;
+  /* 글씨 색을 회색으로 */
+  padding: 2px;
+  /* 여백을 줄여 더 간결하게 */
 }
 
 /* 시간 라벨 추가 조정 */
@@ -329,26 +347,29 @@ export default {
   font-weight: 500;
   color: #444;
   padding: 0 4px;
-  background-image: linear-gradient(135deg, #f0f4f8, #f9f9f9); /* 여기가 배경색 수정 부분이니 펼요시 수정 */
+
 }
 
 #second-calendar-container ::-webkit-scrollbar {
   width: 12px;
 }
+
 #second-calendar-container ::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 10px;
 }
+
 #second-calendar-container ::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 10px;
   border: 2px solid #f1f1f1;
 }
+
 #second-calendar-container ::-webkit-scrollbar-thumb:hover {
-  background: #555; 
+  background: #555;
 }
+
 #second-calendar-container {
   height: 800px;
 }
-
 </style>

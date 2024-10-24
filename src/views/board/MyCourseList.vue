@@ -1,29 +1,34 @@
 <template>
-  <v-row>
-    <h1 style="margin:35px 0; font-weight:700">신청한 강좌 목록</h1>
-  </v-row>
+  <v-container class="container">
 
-  <!-- 강좌 리스트 헤더 -->
-  <v-row class="mb-2 header-row" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
-    <v-col class="header-col" cols="3"><strong>강좌명</strong></v-col>
-    <v-col class="header-col" cols="2"><strong>신청일</strong></v-col>
-    <v-col class="header-col" cols="3"><strong>URL</strong></v-col>
-    <v-col class="header-col" cols="2"><strong>전송 여부</strong></v-col>
-    <v-col class="header-col" cols="1"><strong>작업</strong></v-col>
-  </v-row>
+    <v-row class="mb-12 mt-4" style="padding-left:30px">
+      <h1>신청한 강좌 목록</h1>
+    </v-row>
 
-  <!-- 강좌 리스트 내용 -->
-  <v-row v-for="(course, index) in myRegistrations" :key="index" class="course-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
-    <v-col class="content-col text-truncate" cols="3">{{ course.courseName }}</v-col>
-    <v-col class="content-col" cols="2">{{ formatDate(course.createdAt) }}</v-col>
-    <v-col class="content-col text-truncate" cols="3">{{ course.courseUrl }}</v-col>
-    <v-col class="content-col" cols="2">{{ course.transmitted ? '전송됨' : '전송되지 않음' }}</v-col>
-    <v-col class="content-col" cols="1">
-      <v-btn icon @click.stop="deleteRegistration(course.id)" style="box-shadow: none;">
-        <v-icon>mdi-delete</v-icon> <!-- 삭제 아이콘 -->
-      </v-btn>
-    </v-col>
-  </v-row>
+    <!-- 강좌 리스트 헤더 -->
+    <v-row class="mb-2 header-row"
+      style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
+      <v-col class="header-col" cols="3"><strong>강좌명</strong></v-col>
+      <v-col class="header-col" cols="2"><strong>신청일</strong></v-col>
+      <v-col class="header-col" cols="3"><strong>URL</strong></v-col>
+      <v-col class="header-col" cols="2"><strong>전송 여부</strong></v-col>
+      <v-col class="header-col" cols="1"><strong>작업</strong></v-col>
+    </v-row>
+
+    <!-- 강좌 리스트 내용 -->
+    <v-row v-for="(course, index) in myRegistrations" :key="index" class="course-row" outlined
+      style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+      <v-col class="content-col text-truncate" cols="3">{{ course.courseName }}</v-col>
+      <v-col class="content-col" cols="2">{{ formatDate(course.createdAt) }}</v-col>
+      <v-col class="content-col text-truncate" cols="3">{{ course.courseUrl }}</v-col>
+      <v-col class="content-col" cols="2">{{ course.transmitted ? '전송됨' : '전송되지 않음' }}</v-col>
+      <v-col class="content-col" cols="1">
+        <v-btn icon @click.stop="deleteRegistration(course.id)" style="box-shadow: none;">
+          <v-icon>mdi-delete</v-icon> <!-- 삭제 아이콘 -->
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>

@@ -8,31 +8,22 @@
 
         <!-- 알림 타입 필터 버튼 -->
         <v-btn-toggle v-model="selectedType" class="mb-4 custom-btn-toggle">
-          <v-btn
-            v-for="(label, value) in notificationTypes"
-            :key="value"
-            :value="value"
-            class="custom-btn"
-            :class="{ active: selectedType === value }"
-            @click="navigateToType(value)"
-          >
+          <v-btn v-for="(label, value) in notificationTypes" :key="value" :value="value" class="custom-btn"
+            :class="{ active: selectedType === value }" @click="navigateToType(value)">
             {{ label }}
           </v-btn>
         </v-btn-toggle>
 
         <!-- 알림 리스트 -->
-        <v-list style="background-color: #ffffff;">
+        <v-list>
           <v-list-item-group>
-            <v-list-item
-              v-for="notification in filteredNotifications"
-              :key="notification.id"
-              @click="handleNotificationClick(notification)"
-              class="notification-item"
-              :class="{ read: notification.isRead }"
-            >
+            <v-list-item v-for="notification in filteredNotifications" :key="notification.id"
+              @click="handleNotificationClick(notification)" class="notification-item"
+              :class="{ read: notification.isRead }">
               <v-list-item-content>
                 <v-list-item-subtitle>
-                  <strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{ formatDate(notification.notificationTime) }}
+                  <strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{
+                    formatDate(notification.notificationTime) }}
                 </v-list-item-subtitle>
                 <br>
                 <v-list-item-title>
@@ -93,6 +84,9 @@ export default {
     },
   },
   methods: {
+    navigateToType(value) {
+      this.selectedType = value;
+    },
     // JWT 토큰을 URL의 쿼리 파라미터로 포함한 SSE 연결
     initSSE() {
       const token = localStorage.getItem("token");
@@ -213,7 +207,7 @@ export default {
         targetUrl = 'http://localhost:8082/document';
       }
 
-      window.location.href = targetUrl;  
+      window.location.href = targetUrl;
     },
   }
 };
@@ -225,6 +219,7 @@ export default {
   font-weight: bold;
   color: red;
 }
+
 .custom-btn-toggle {
   display: flex;
   gap: 10px;
@@ -239,7 +234,7 @@ export default {
 }
 
 .custom-btn.active {
-  background-color: #3f51b5;
+  background-color: #4caf50;
   color: white;
   border: none;
 }
@@ -247,6 +242,7 @@ export default {
 .custom-btn:hover {
   background-color: #ddd;
 }
+
 .notification-item {
   margin-bottom: 15px !important;
   padding: 0px 40px;

@@ -5,30 +5,19 @@
         <h1 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle || '직원 목록' }}</h1>
       </v-col>
       <v-col class="d-flex justify-end">
-        <v-btn color="primary" @click="goToCreate">직원 생성</v-btn>
+        <v-btn v-create @click="goToCreate">직원 생성</v-btn>
       </v-col>
     </v-row>
 
     <!-- 검색 옵션 -->
     <v-row justify="center" style="margin:0; text-align:center;">
       <v-col cols="3">
-        <v-select
-          v-model="searchType"
-          :items="searchOptions"
-          item-title="label"
-          item-value="value"
-          label="검색 기준 선택"
-          outlined
-        ></v-select>
+        <v-select v-model="searchType" :items="searchOptions" item-title="label" item-value="value" label="검색 기준 선택"
+          outlined></v-select>
       </v-col>
       <v-col cols="6">
-        <v-text-field
-          v-model="searchQuery"
-          placeholder="검색어를 입력하세요"
-          variant="underlined"
-          @input="performSearch"
-          style="margin-bottom: 20px;"
-        ></v-text-field>
+        <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="performSearch"
+          style="margin-bottom: 20px;"></v-text-field>
       </v-col>
       <v-col cols="4" sm="2">
         <v-btn @click="performSearch(searchQuery)">
@@ -40,10 +29,8 @@
     <!-- 직원 목록 테이블 -->
     <v-row justify="center">
       <v-col cols="12">
-        <v-row
-          class="mb-2"
-          style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;"
-        >
+        <v-row class="mb-2"
+          style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
           <v-col cols="1">번호</v-col>
           <v-col cols="2">사번</v-col>
           <v-col cols="2">부서</v-col>
@@ -52,14 +39,13 @@
           <v-col cols="2">입사일</v-col>
           <v-col cols="2">관리</v-col>
         </v-row>
-
         <v-row
           v-for="(user, index) in users"
           :key="user.userNum"
           @click="viewUser(user)"
           style="border-bottom: 1px solid #e7e4e4; padding:5px; font-weight:500;"
         >
-          <v-col cols="1">{{ index + 1 }}</v-col>
+          <v-col cols="1">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</v-col>
           <v-col cols="2">{{ user.userNum }}</v-col>
           <v-col cols="2">{{ getDepartmentName(user.departmentId) }}</v-col>
           <v-col cols="1">{{ user.name }}</v-col>
@@ -75,6 +61,21 @@
           </v-col>
         </v-row>
       </v-col>
+    </v-row>
+
+    <!-- 현재 페이지 상태 표시 -->
+    <!-- <v-row justify="center">
+      <p>현재 페이지: {{ currentPage }} / 총 {{ totalPages }} 페이지</p>
+    </v-row> -->
+
+    <!-- 페이징 -->
+    <v-row justify="center">
+      <v-pagination
+        v-model="currentPage"
+        :length="totalPages"
+        :total-visible="5"
+        always-show
+      ></v-pagination>
     </v-row>
 
     <!-- 삭제 다이얼로그 -->
@@ -102,35 +103,48 @@ export default {
   name: "EmployeeManagement",
   data() {
     return {
-      users: [],
-      departments: [],
-      positions: [],
-      searchQuery: "",
-      searchType: "all", // 기본 검색 유형
+      users: [],            // 직원 목록
+      departments: [],      // 부서 목록
+      positions: [],        // 직급 목록
+      searchQuery: "",      // 검색어
+      searchType: "all",    // 검색 기준 (기본값: 전체)
       searchOptions: [
         { label: "이름", value: "name" },
         { label: "부서", value: "department" },
         { label: "직급", value: "position" },
         { label: "전체", value: "all" },
       ],
-      deleteDialog: false,
+      deleteDialog: false,  // 삭제 다이얼로그 상태
       deleteInfo: {
         userNum: "",
         reason: "",
       },
-      adminCode: "",
+      adminCode: "",            // 관리자 코드
       correctAdminCode: "12341234",
+      currentPage: 1,           // 현재 페이지
+      itemsPerPage: 10,          // 페이지당 아이템 수
+      totalPages: 0,            // 총 페이지 수
     };
   },
   methods: {
-    async fetchUsers() {
+    async fetchUsers(page = 1) {
       try {
-        const response = await axios.get("/user/list");
-        this.users = response.data;
+        const response = await axios.get('/user/list', {
+          params: { page: page - 1, size: this.itemsPerPage },  // page는 0부터 시작하므로 -1
+        });
+        this.users = response.data.users;        // 직원 리스트
+        this.totalPages = response.data.totalPages;  // 총 페이지 수
       } catch (error) {
-        console.error("직원 목록을 불러오는 중 오류가 발생했습니다:", error);
+        console.error('직원 목록을 불러오는 중 오류가 발생했습니다:', error);
       }
     },
+
+    goToPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.fetchUsers(page);
+      }
+    },
+
     async fetchDepartments() {
       try {
         const response = await axios.get("/department");
@@ -208,9 +222,14 @@ export default {
     },
   },
   mounted() {
-    this.fetchUsers();
+    this.fetchUsers(this.currentPage);  
     this.fetchDepartments();
     this.fetchPositions();
+  },
+  watch: {
+    currentPage(newPage) {
+      this.fetchUsers(newPage);
+    },
   },
 };
 </script>
@@ -257,5 +276,9 @@ thead {
 
 .v-btn--icon {
   font-size: 20px;
+}
+
+.v-pagination {
+  margin-top: 20px;
 }
 </style>

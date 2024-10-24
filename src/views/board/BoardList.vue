@@ -1,58 +1,45 @@
 <template>
   <v-container class="board-container">
     <!-- Adjusted the title size and positioning -->
-    <v-row justify="start">
-      <v-col cols="12" md="6">
-        <h1 class="board-title">{{ boardTitle }}</h1>
-      </v-col>
+    <v-row class="mb-12" style="padding-left:30px">
+      <h1>{{ boardTitle }}</h1>
     </v-row>
 
     <!-- 게시판 상단 검색 폼 -->
-    <v-form ref="form" class="search-form d-flex mb-4">
-      <v-row justify="center" align="center" class="w-100">
-        <!-- 검색 범위 선택 -->
-        <v-col cols="12" md="3">
-          <v-select
-            v-model="searchType"
-            :items="searchOptions"
-            variant="underlined"
-            item-title="text"
-            item-value="value"
-            label="검색 범위"
-            required
-          ></v-select>
-        </v-col>
 
-        <!-- 검색어 입력 -->
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="searchQuery"
-            variant="underlined"
-            label="검색어를 입력하세요."
-            append-icon="mdi-magnify"
-            @input="performSearch"
-            required
-          ></v-text-field>
-        </v-col>
+    <v-row justify="center" align="center">
+      <!-- 검색 범위 선택 -->
+      <v-col cols="2">
+        <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text" item-value="value"
+          label="검색 범위" required></v-select>
+      </v-col>
 
-        <!-- 작성하기 버튼 -->
-        <v-col cols="12" md="3" class="text-right">
-          <v-btn v-if="isAdmin" class="btn_write" @click="createNewPost">
-            작성하기
-          </v-btn>
-        </v-col>
-      </v-row>
-    </v-form>
+      <!-- 검색어 입력 -->
+      <v-col cols="8">
+        <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
+          @input="performSearch" required></v-text-field>
+      </v-col>
+    </v-row>
+
+    <v-row justify="end">
+      <!-- 작성하기 버튼 -->
+      <v-col cols="12" class="text-right">
+        <v-btn v-create v-if="isAdmin" @click="createNewPost">
+          작성하기
+        </v-btn>
+      </v-col>
+    </v-row>
+
 
     <!-- 게시글 목록 -->
     <v-row justify="center" class="mt-4">
       <v-col cols="12">
-        <v-row class="mb-2"
+        <v-row class="mb-2 text-center"
           style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px; padding:4px; color:#444444; font-weight:600;">
-          <v-col cols="1" class="text-center"><strong>번호</strong></v-col>
+          <v-col cols="1"><strong>번호</strong></v-col>
           <v-col cols="8"><strong>제목</strong></v-col>
-          <v-col cols="2" class="text-center"><strong>작성일</strong></v-col>
-          <v-col cols="1" class="text-center"><strong>조회수</strong></v-col>
+          <v-col cols="2"><strong>작성일</strong></v-col>
+          <v-col cols="1"><strong>조회수</strong></v-col>
         </v-row>
 
         <!-- 게시글 정렬 -->
@@ -65,21 +52,20 @@
         >
           <v-col cols="1" class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
           <v-col cols="8" class="title-ellipsis" style="max-width: 80%; display: inline-block;">
+        <v-row v-for="(item, index) in sortedBoardItems" :key="item.id" class="board text-center"
+          @click="goToDetail(item.id)" style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
+          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+          <v-col cols="8" class="title-ellipsis text-start" style="max-width: 80%; display: inline-block;">
             {{ item.title }}
           </v-col>
-          <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
-          <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
+          <v-col cols="2">{{ formatDate(item.createdAt) }}</v-col>
+          <v-col cols="1">{{ item.hits }}</v-col>
         </v-row>
       </v-col>
     </v-row>
 
     <!-- 페이지네이션 -->
-    <v-pagination
-      v-model="currentPage"
-      :length="totalPages"
-      @change="onPageChange"
-      class="my-4"
-    ></v-pagination>
+    <v-pagination v-model="currentPage" :length="totalPages" @change="onPageChange" class="my-4"></v-pagination>
   </v-container>
 </template>
 
@@ -101,7 +87,7 @@ export default {
       searchType: "titile + content", // 검색 타입
       searchQuery: "", // 검색어
       searchOptions: [
-        { text: "전체", value: "titile + content"},
+        { text: "전체", value: "titile + content" },
         { text: "제목", value: "title" },
         { text: "내용", value: "content" },
         { text: "태그", value: "tags" },
@@ -202,7 +188,7 @@ export default {
 
     // 핀 고정된 글 처리
     itemTitle(item) {
-      return item.pinned ? '📌 ' + item.title : item.title; 
+      return item.pinned ? '📌 ' + item.title : item.title;
     },
 
     // 새 글 작성 시 처리
@@ -239,24 +225,14 @@ export default {
 <style scoped>
 /* 전체 배경 및 컨테이너 스타일 */
 .board-container {
-  background-color: #f9fafb;
   padding: 20px;
   border-radius: 12px;
-}
-
-/* 제목 섹션 스타일 */
-.board-title {
-  margin-bottom: 120px;
-  color: #000;
 }
 
 /* 검색 바 스타일 */
 .search-form {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  margin-bottom: 40px;
 }
 
 .v-select,
@@ -294,25 +270,6 @@ export default {
   background-color: #ababab;
 }
 
-.btn_write {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 16px;
-  background-color: #949494;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
-  font-size: 12px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
-}
-
-.btn_write:hover {
-  background-color: #722121;
-}
-
 .v-pagination {
   margin-top: 20px;
 }
@@ -334,10 +291,13 @@ export default {
 }
 
 .title-ellipsis {
-  white-space: nowrap; /* 텍스트를 한 줄로 표시 */
-  overflow: hidden;    /* 넘치는 텍스트를 숨김 */
-  text-overflow: ellipsis; /* 넘치는 부분을 '...'로 표시 */
-  display: inline-block; /* 텍스트를 한 줄로 보이게 설정 */
+  white-space: nowrap;
+  /* 텍스트를 한 줄로 표시 */
+  overflow: hidden;
+  /* 넘치는 텍스트를 숨김 */
+  text-overflow: ellipsis;
+  /* 넘치는 부분을 '...'로 표시 */
+  display: inline-block;
+  /* 텍스트를 한 줄로 보이게 설정 */
 }
-
 </style>

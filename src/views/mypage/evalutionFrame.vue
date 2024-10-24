@@ -43,8 +43,7 @@
           </v-simple-table>
 
           <v-row justify="end" style="margin-top: 20px;">
-            <v-btn @click="saveAllSubEvalutions" :disabled="isSaveDisabled"
-              style="background-color: #4CAF50; color: white;">
+            <v-btn v-create @click="saveAllSubEvalutions" :disabled="isSaveDisabled">
               전체 저장
             </v-btn>
           </v-row>
@@ -175,16 +174,21 @@ export default {
 .header-tabs {
   margin-bottom: 30px;
 }
+
 .v-tabs--density-default {
   --v-tabs-height: 48px;
 }
+
 .v-tabs {
   border-bottom: 1px solid #e0e0e0;
 }
+
 .v-tab {
   font-weight: bold;
 }
-th, td {
+
+th,
+td {
   border: 1px solid #e0e0e0;
 }
 </style>

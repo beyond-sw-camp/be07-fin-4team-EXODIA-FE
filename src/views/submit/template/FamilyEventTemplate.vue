@@ -1,101 +1,107 @@
 <template>
-    <h1 style="margin:25px 0; font-weight:800">경조사 신청서</h1>
-    <v-row style="padding:50px">
-        <v-row justify="justify-space-around">
-            <v-col cols="8">
-                <v-row>
-                    <v-col cols="2">
-                        <v-list-subheader>신청인</v-list-subheader>
-                    </v-col>
-                    <v-col cols="4">
-                        <v-text-field disabled>{{ this.userName }}</v-text-field>
-                    </v-col>
-                    <v-col cols="2">
-                        <v-list-subheader>부서</v-list-subheader>
-                    </v-col>
-                    <v-col cols="4">
-                        <v-text-field disabled>{{ this.departmentName }}</v-text-field>
-                    </v-col>
-                </v-row>
-
-                <!-- 경조사 종류 선택 -->
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>경조 종류</v-list-subheader>
-                    </v-col>
-                    <v-col cols="9">
-                        <v-select label="경조사 종류" v-model="formData.mainEventType" :items="mainEventOptions"
-                            outlined></v-select>
-                    </v-col>
-                </v-row>
-
-                <!-- 가족 관계 선택 (동적으로 변경) -->
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>가족 관계</v-list-subheader>
-                    </v-col>
-                    <v-col cols="9">
-                        <v-select label="가족 관계" v-model="formData.familyRelation" :items="filteredFamilyRelationOptions"
-                            outlined></v-select>
-                    </v-col>
-                </v-row>
-
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>신청일</v-list-subheader>
-                    </v-col>
-                    <v-col cols="9">
-                        <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
-                            :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
-                            :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
-                    </v-col>
-                </v-row>
-
-                <!-- 휴가 일수 -->
-                <v-row>
-                    <v-col cols="3">
-                        <v-list-subheader>휴가일수</v-list-subheader>
-                    </v-col>
-                    <v-col cols="9">
-                        <v-text-field label="휴가 일수" v-model="formData.휴가일수" disabled></v-text-field>
-                    </v-col>
-                </v-row>
-
-                <!-- 게시판 등록 여부 -->
-                <!-- 게시판 등록 여부 -->
-                <v-row v-if="showUploadCheckbox">
-                    <v-checkbox v-model="formData.uploadBoard" label="게시판에 등록하시겠습니까?"></v-checkbox>
-                </v-row>
-            </v-col>
-
-            <!-- 결재 라인 -->
-            <v-col cols="4">
-                <v-card style="background-color: rgba(123, 86, 86, 0.3);">
-                    <v-card-title>결재 라인</v-card-title>
-                    <v-list style="background-color: rgba(123, 86, 86, 0.3);">
-                        <v-list-item v-for="user in users.filter(u => u.positionId <= this.positionId)" :key="user.id"
-                            draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
-                            <v-list-item-content>{{ user.name }}</v-list-item-content>
-                        </v-list-item>
-                    </v-list>
-                </v-card>
-                <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
-                    <v-card-text v-if="droppedUsers.length == 0">결재자를 선택하시오.</v-card-text>
-                    <v-list>
-                        <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
-                            <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
-                            <v-icon style="border:none" @click="removeUser(index)">mdi-close</v-icon>
-                        </v-list-item>
-                    </v-list>
-                </v-card>
-                <v-row class="submitBtn">
-                    <v-btn style="background-color:#722121; color:#ffffff;" class="mt-8" @click="createSubmit">
-                        결재라인 등록
-                    </v-btn>
-                </v-row>
-            </v-col>
+    <v-container class="container">
+        <v-row class="mb-6 mt-12" style="padding-left:30px">
+            <h1>경조사 신청서</h1>
         </v-row>
-    </v-row>
+
+        <v-row style="padding:50px">
+            <v-row justify="justify-space-around">
+                <v-col cols="8">
+                    <v-row>
+                        <v-col cols="2">
+                            <v-list-subheader>신청인</v-list-subheader>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-text-field disabled>{{ this.userName }}</v-text-field>
+                        </v-col>
+                        <v-col cols="2">
+                            <v-list-subheader>부서</v-list-subheader>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-text-field disabled>{{ this.departmentName }}</v-text-field>
+                        </v-col>
+                    </v-row>
+
+                    <!-- 경조사 종류 선택 -->
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>경조 종류</v-list-subheader>
+                        </v-col>
+                        <v-col cols="9">
+                            <v-select label="경조사 종류" v-model="formData.mainEventType" :items="mainEventOptions"
+                                outlined></v-select>
+                        </v-col>
+                    </v-row>
+
+                    <!-- 가족 관계 선택 (동적으로 변경) -->
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>가족 관계</v-list-subheader>
+                        </v-col>
+                        <v-col cols="9">
+                            <v-select label="가족 관계" v-model="formData.familyRelation"
+                                :items="filteredFamilyRelationOptions" outlined></v-select>
+                        </v-col>
+                    </v-row>
+
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>신청일</v-list-subheader>
+                        </v-col>
+                        <v-col cols="9">
+                            <VueDatePicker locale="ko" v-model="formData.신청일" :type="'date'" format="yyyy-MM-dd"
+                                :min-date="new Date(new Date().setDate(new Date().getDate() + 1))"
+                                :enable-time-picker="false" @select="onDateSelect"></VueDatePicker>
+                        </v-col>
+                    </v-row>
+
+                    <!-- 휴가 일수 -->
+                    <v-row>
+                        <v-col cols="3">
+                            <v-list-subheader>휴가일수</v-list-subheader>
+                        </v-col>
+                        <v-col cols="9">
+                            <v-text-field label="휴가 일수" v-model="formData.휴가일수" disabled></v-text-field>
+                        </v-col>
+                    </v-row>
+
+                    <!-- 게시판 등록 여부 -->
+                    <!-- 게시판 등록 여부 -->
+                    <v-row v-if="showUploadCheckbox">
+                        <v-checkbox v-model="formData.uploadBoard" label="게시판에 등록하시겠습니까?"></v-checkbox>
+                    </v-row>
+                </v-col>
+
+                <!-- 결재 라인 -->
+                <v-col cols="4">
+                    <v-card style="background-color: rgba(123, 86, 86, 0.3);">
+                        <v-card-title>결재 라인</v-card-title>
+                        <v-list style="background-color: rgba(123, 86, 86, 0.3);">
+                            <v-list-item v-for="user in users.filter(u => u.positionId <= this.positionId)"
+                                :key="user.id" draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
+                                <v-list-item-content>{{ user.name }}</v-list-item-content>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                    <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
+                        <v-card-text v-if="droppedUsers.length == 0">결재자를 선택하시오.</v-card-text>
+                        <v-list>
+                            <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
+                                <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
+                                <v-icon style="border:none" @click="removeUser(index)">mdi-close</v-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                    <v-row class="submit-btn">
+                        <v-btn v-create class="mt-8" @click="createSubmit">
+                            결재라인 등록
+                        </v-btn>
+                    </v-row>
+                </v-col>
+            </v-row>
+        </v-row>
+    </v-container>
+
 </template>
 
 <script>
@@ -235,6 +241,12 @@ export default {
 </script>
 
 <style scoped>
+.container {
+    padding: 20px;
+    border-radius: 12px;
+}
+
+
 .draggable-item {
     cursor: grab;
     margin: 5px;
@@ -247,7 +259,7 @@ export default {
     padding: 20px;
 }
 
-.submitBtn {
+.submit-btn {
     display: flex;
     justify-content: center;
     align-content: center;
