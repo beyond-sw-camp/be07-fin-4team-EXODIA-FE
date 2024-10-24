@@ -80,42 +80,40 @@
       ></v-pagination>
     </v-row>
 
-      <!-- 급여일 설정 다이얼로그 -->
-      <v-dialog v-model="salaryDateDialog" max-width="600px">
-        <v-card :style="{ padding: '20px' }">
-          <v-card-title>급여일 설정</v-card-title>
-          <v-card-text>
-            <v-row class="mt-3">
-              <v-col cols="12" md="6">
-                <v-date-picker
-                  v-model="selectedStartDate"
-                  label="시작일 선택"
-                  full-width
-                  color="brown"
-                  :header-color="'brown'"
-                ></v-date-picker>
-              </v-col>
+     <!-- 급여일 설정 다이얼로그 -->
+<v-dialog v-model="salaryDateDialog" max-width="600px">
+  <v-card :style="{ padding: '20px' }">
+    <v-card-title>급여일 설정</v-card-title>
+    <v-card-text>
+      <v-row class="mt-3">
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="selectedStartDate"
+            label="시작일 선택"
+            type="date"
+            @change="syncEndDate"
+            required
+          />
+        </v-col>
 
-              <v-col cols="12" md="6">
-                <v-date-picker
-                  v-model="selectedEndDate"
-                  label="종료일 선택"
-                  full-width
-                  color="brown"
-                  :header-color="'brown'"
-                ></v-date-picker>
-              </v-col>
-            </v-row>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="primary" @click="setSalaryDate">
-              저장
-            </v-btn>
-            <v-btn text @click="salaryDateDialog = false">취소</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="selectedEndDate"
+            label="종료일 선택"
+            type="date"
+            required
+          />
+        </v-col>
+      </v-row>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="primary" @click="setSalaryDate">저장</v-btn>
+      <v-btn text @click="salaryDateDialog = false">취소</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
     </v-card-text>
   </v-container>
 </template>
@@ -215,6 +213,12 @@ export default {
       return [year, month, day].join('-');
     },
 
+    syncEndDate() {
+    if (!this.selectedEndDate || new Date(this.selectedEndDate) < new Date(this.selectedStartDate)) {
+      this.selectedEndDate = this.selectedStartDate;
+    }
+  },
+  
     async setSalaryDate() {
       try {
         if (!this.selectedStartDate || !this.selectedEndDate) {
