@@ -291,6 +291,18 @@ export default {
 
     
     async submitForm() {
+      if (!this.userDetail.password) {
+        alert("비밀번호를 입력해야 합니다.");
+        return;
+      }
+      if (!this.userDetail.address) {
+        alert("주소를 입력해야 합니다.");
+        return;
+      }
+      if (!this.userDetail.socialNum) {
+        alert("주민등록번호를 입력해야 합니다.");
+        return;
+      }
   try {
     const formData = new FormData();
     formData.append('userNum', this.userDetail.userNum);

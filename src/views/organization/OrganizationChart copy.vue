@@ -140,11 +140,9 @@ export default {
           }));
           node.totalUsersCount = node.users.length;
         } else {
-          node.users = [];
           console.error("Invalid user data:", response.data);
         }
       } catch (error) {
-        node.users = []; // 에러 발생 시 빈 배열로 초기화
         console.error(`Failed to fetch users for department ${departmentId}:`, error);
       }
     },
@@ -163,13 +161,13 @@ export default {
 
     // 하위 부서와 사용자의 체크 상태 동기화
     toggleChildDepartmentCheck(department, isChecked) {
-      if (department.children && department.children.length > 0) {
+      if (department.children) {
         department.children.forEach(child => {
           child.checked = isChecked;
           this.toggleChildDepartmentCheck(child, isChecked);
         });
       }
-      if (department.users && department.users.length > 0) {
+      if (department.users) {
         department.users.forEach(user => {
           user.checked = isChecked;
           if (isChecked) {
@@ -183,62 +181,51 @@ export default {
 
     // 개별 사용자 선택
     onSelectUser(user) {
-      if (!user.checked) {
+      user.checked = !user.checked;
+      if (user.checked) {
         this.addSelectedUser(user);
       } else {
         this.removeSelectedUser(user);
       }
-      user.checked = !user.checked;  // 선택 상태를 반전시킴
     },
 
     // 선택된 사용자를 추가
     addSelectedUser(user) {
-      console.log("Adding user:", user);
       if (!this.selectedUsers.some(u => u.id === user.id)) {
         this.selectedUsers.push(user);
-        console.log("User added:", this.selectedUsers);
       }
     },
 
     // 선택된 사용자를 제거
     removeSelectedUser(user) {
-      console.log("Removing user:", user);
       this.selectedUsers = this.selectedUsers.filter(u => u.id !== user.id);
-      console.log("User removed:", this.selectedUsers);
     },
 
     // 부서에서 모든 사용자 추가
     addUsersFromDepartment(department) {
-      if (department.users && department.users.length > 0) {
-        department.users.forEach(user => {
-          user.checked = true;
-          this.addSelectedUser(user);
-        });
-      }
-      if (department.children && department.children.length > 0) {
-        department.children.forEach(child => {
-          this.addUsersFromDepartment(child);
-        });
-      }
+      department.users.forEach(user => {
+        user.checked = true;
+        this.addSelectedUser(user);
+      });
+      department.children.forEach(child => {
+        this.addUsersFromDepartment(child);
+      });
     },
 
     // 부서에서 모든 사용자 제거
     removeUsersFromDepartment(department) {
-      if (department.users && department.users.length > 0) {
-        department.users.forEach(user => {
-          user.checked = false;
-          this.removeSelectedUser(user);
-        });
-      }
-      if (department.children && department.children.length > 0) {
-        department.children.forEach(child => {
-          this.removeUsersFromDepartment(child);
-        });
-      }
+      department.users.forEach(user => {
+        user.checked = false;
+        this.removeSelectedUser(user);
+      });
+      department.children.forEach(child => {
+        this.removeUsersFromDepartment(child);
+      });
     },
   }
 };
 </script>
+
 
 <style scoped>
 body {
