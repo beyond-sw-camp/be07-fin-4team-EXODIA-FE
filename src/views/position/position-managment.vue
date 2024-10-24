@@ -7,7 +7,7 @@
         <v-row>
           <v-col>직급 관리</v-col>
           <v-col class="text-right">
-            <v-btn color="primary" @click="openAddPositionDialog">직급 추가</v-btn>
+            <v-btn v-create @click="openAddPositionDialog">직급 추가</v-btn>
           </v-col>
         </v-row>
       </v-card-title>

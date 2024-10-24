@@ -6,9 +6,11 @@
       <v-icon class="icon" style="padding-right:8px;">mdi-clock-time-three-outline</v-icon>
       <span v-if="timeRemaining > 0" style="font-size:14px;">남은 시간:
       </span>
-      <span class="remain-time"> {{ formattedTimeRemaining }}</span>
+      <span class="remain-time"> {{ formattedTimeRemaining }} </span>
+      <span style="font-size:14px"> | </span>
+
       <span @click="extendSession" style="font-size:14px" class="extend-session">
-        | 연장
+        연장
       </span>
     </div>
 
@@ -467,10 +469,9 @@ export default {
   text-align: center;
   padding: 10px;
   cursor: pointer;
-  color: #007bff;
-  /* 파란색 강조 */
+  color: #722121;
+  font-weight: 800;
   border-radius: 0 0 10px 10px;
-  /* 더보기 버튼도 동글동글 */
 }
 
 .view-more:hover {
@@ -551,6 +552,12 @@ export default {
 
 .extend-session {
   cursor: pointer;
+}
+
+.extend-session:hover {
+  cursor: pointer;
+  color: #9a2f2f;
+  font-weight: 800;
 }
 
 /* 시간이 10분 이하일 때 빨간색 텍스트 */

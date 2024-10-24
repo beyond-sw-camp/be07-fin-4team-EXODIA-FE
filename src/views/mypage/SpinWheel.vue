@@ -20,13 +20,13 @@
           </v-sheet>
 
           <!-- Spin Button -->
-          <v-btn color="yellow darken-2" @click="rotate" large class="mt-4">돌려돌려 돌림판</v-btn>
+          <v-btn v-list @click="rotate" large class="mt-4 mr-2">시작</v-btn>
+          <v-btn v-create @click="addMenu" large>메뉴 추가</v-btn>
 
           <!-- Add Menu Section -->
           <v-row justify="center" class="mt-4">
             <v-col cols="12">
               <v-text-field v-model="newMenu" label="메뉴 추가" solo></v-text-field>
-              <v-btn color="primary" @click="addMenu" large>메뉴 추가</v-btn>
             </v-col>
           </v-row>
         </v-col>

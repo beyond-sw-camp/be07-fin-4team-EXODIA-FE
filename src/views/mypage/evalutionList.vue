@@ -46,7 +46,7 @@
       <!-- 저장 버튼 -->
       <v-row>
         <v-col cols="12" class="text-center">
-          <v-btn @click="saveEvaluations" color="success">저장</v-btn>
+          <v-btn v-create @click="saveEvaluations">저장</v-btn>
         </v-col>
       </v-row>
     </template>

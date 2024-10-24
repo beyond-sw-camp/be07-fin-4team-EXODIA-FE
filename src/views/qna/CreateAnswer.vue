@@ -10,11 +10,7 @@
         <v-row>
           <v-col cols="6">
             <!-- 질문자가 익명일 경우 '익명'으로 표시 -->
-            <v-text-field 
-              label="질문자" 
-              v-model="questionerName" 
-              readonly 
-            />
+            <v-text-field label="질문자" v-model="questionerName" readonly />
           </v-col>
           <v-col cols="6">
             <!-- 부서명을 departmentName에서 직접 가져와서 표시 -->
@@ -31,7 +27,8 @@
 
         <!-- 질문 첨부 파일 -->
         <v-card-actions>
-          <v-btn v-if="questionDetail.qFiles && questionDetail.qFiles.length > 0" @click="downloadFile(questionDetail.qFiles[0].filePath)" color="primary">
+          <v-btn v-if="questionDetail.qFiles && questionDetail.qFiles.length > 0"
+            @click="downloadFile(questionDetail.qFiles[0].filePath)" color="primary">
             첨부 파일 다운로드
           </v-btn>
         </v-card-actions>
@@ -39,8 +36,9 @@
         <!-- 답변 작성 폼 -->
         <v-form v-if="canAnswer" @submit.prevent="submitAnswer">
           <v-textarea v-model="newAnswerText" label="답변 내용" rows="5" required></v-textarea>
-          <v-file-input v-model="answerFiles" multiple label="답변 파일 첨부" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" show-size></v-file-input>
-          <v-btn color="success" type="submit" class="mt-3">답변 등록</v-btn>
+          <v-file-input v-model="answerFiles" multiple label="답변 파일 첨부" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+            show-size></v-file-input>
+          <v-btn v-create type="submit" class="mt-3">답변 등록</v-btn>
         </v-form>
         <v-alert v-else type="error" class="mt-3">
           답변 권한이 없습니다. 동일 부서 또는 상위 부서에서만 답변이 가능합니다.

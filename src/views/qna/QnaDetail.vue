@@ -10,21 +10,21 @@
       <div class="pa-3 meta-info-inline d-flex justify-space-between align-center mb-3">
         <div>
           <p>
-            <strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }} 
-            | <strong>문의 부서:</strong> {{ questionDetail.departmentName }} 
+            <strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }}
+            | <strong>문의 부서:</strong> {{ questionDetail.departmentName }}
             | <strong>작성 시간:</strong> {{ formatDate(questionDetail.createdAt) }}
-            <span v-if="new Date(questionDetail.createdAt).getTime() !== new Date(questionDetail.updatedAt).getTime()"> 
+            <span v-if="new Date(questionDetail.createdAt).getTime() !== new Date(questionDetail.updatedAt).getTime()">
               | <strong>수정 시간:</strong> {{ formatDate(questionDetail.updatedAt) }}
             </span>
           </p>
         </div>
         <div>
           <!-- 수정 및 답변하기 버튼 -->
-          <v-btn v-if="isQuestionAuthor" class="mr-2 btn_solid" @click="goToEditQuestion" small>
-            <v-icon left>mdi-pencil</v-icon> 수정
+          <v-btn v-update class="mr-2" v-if="isQuestionAuthor" @click="goToEditQuestion" small>
+            수정
           </v-btn>
-          <v-btn v-if="!questionDetail.answerText" @click="goToAnswerPage" class="btn_comment_ok" small>
-            <v-icon left>mdi-comment-plus</v-icon> 답변하기
+          <v-btn v-create v-if="!questionDetail.answerText" @click="goToAnswerPage" small>
+            답변하기
           </v-btn>
         </div>
       </div>
@@ -38,7 +38,8 @@
 
       <v-divider></v-divider> <!-- 질문과 답변 구분선 -->
       <p class="meta-info-section mt-2">
-        <strong>답변자:</strong> {{ questionDetail.answerUserName }} | <strong>답변 시간:</strong> {{ formatDate(questionDetail.answeredAt) }}
+        <strong>답변자:</strong> {{ questionDetail.answerUserName }} | <strong>답변 시간:</strong> {{
+          formatDate(questionDetail.answeredAt) }}
       </p>
       <!-- 답변 내용 및 수정 버튼 -->
       <div v-if="questionDetail.answerText" class="board-body" style="background-color: transparent;">
@@ -49,17 +50,12 @@
             <!-- 답변자 정보 및 답변 시간 -->
           </div>
           <!-- 답변 작성자와 현재 로그인된 유저가 동일할 경우 수정 버튼 표시 -->
-          <v-btn
-            v-if="isAnswerAuthor"
-            class="btn_solid"
-            @click="goToEditAnswer"
-            small
-          >
-            <v-icon left>mdi-pencil</v-icon> 수정
+          <v-btn v-if="isAnswerAuthor" class="btn_solid" @click="goToEditAnswer" small>
+            수정
           </v-btn>
         </div>
       </div>
-      
+
     </div>
 
     <v-divider></v-divider> <!-- 답변과 댓글 작성 구분선 -->
@@ -67,7 +63,7 @@
     <!-- 댓글 작성 폼 -->
     <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
       <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
-      <v-btn class="btn_comment_ok mt-2" @click="submitComment">댓글 작성</v-btn>
+      <v-btn v-create class="mt-2" @click="submitComment">댓글 작성</v-btn>
     </v-form>
 
     <!-- 댓글 섹션 -->
@@ -99,11 +95,11 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      questionDetail: null, 
-      newCommentContent: '', 
-      comments: [], 
-      isLoggedIn: false, 
-      error: null, 
+      questionDetail: null,
+      newCommentContent: '',
+      comments: [],
+      isLoggedIn: false,
+      error: null,
       userNum: localStorage.getItem('userNum'), // 현재 로그인한 유저의 ID
     };
   },
@@ -185,19 +181,19 @@ export default {
         axios.put(`${process.env.VUE_APP_API_BASE_URL}/comment/update/${comment.id}`, {
           content: updatedContent,
           userNum: this.userNum,
-          isEdited: true,  
+          isEdited: true,
         })
-        .then(() => {
-          const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
-          if (updatedCommentIndex !== -1) {
-            this.comments[updatedCommentIndex].content = updatedContent;
-            this.comments[updatedCommentIndex].isEdited = true; 
-          }
-          alert('댓글이 성공적으로 수정되었습니다.');
-        })
-        .catch(() => {
-          alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
-        });
+          .then(() => {
+            const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
+            if (updatedCommentIndex !== -1) {
+              this.comments[updatedCommentIndex].content = updatedContent;
+              this.comments[updatedCommentIndex].isEdited = true;
+            }
+            alert('댓글이 성공적으로 수정되었습니다.');
+          })
+          .catch(() => {
+            alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
+          });
       }
     },
     formatDate(date) {
@@ -263,20 +259,9 @@ export default {
   padding: 20px;
 }
 
-.btn_solid {
-  background-color: #3f51b5 !important;
-  color: #ffffff !important;
-  border-radius: 8px;
-}
-
-.btn_comment_ok {
-  background-color: #5087c7 !important;
-  color: white;
-  border-radius: 8px;
-}
-
 .align-right {
-  margin-left: auto; /* 수정 버튼을 오른쪽 끝으로 정렬 */
+  margin-left: auto;
+  /* 수정 버튼을 오른쪽 끝으로 정렬 */
   display: flex;
   justify-content: flex-end;
 }

@@ -50,8 +50,8 @@
                     </v-row>
                     <v-row justify="end">
                         <v-card-actions>
-                            <v-btn style="background-color:#4CAF50; color:#ffffff" @click="submitForm">등록</v-btn>
-                            <v-btn style="background-color:#AF2626; color:#ffffff" @click="closeForm">닫기</v-btn>
+                            <v-btn v-create @click="submitForm">등록</v-btn>
+                            <v-btn v-delete @click="closeForm">닫기</v-btn>
                         </v-card-actions>
                     </v-row>
                 </v-form>

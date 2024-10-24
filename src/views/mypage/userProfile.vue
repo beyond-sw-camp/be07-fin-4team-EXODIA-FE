@@ -45,7 +45,7 @@
           </v-col>
         </v-row>
 
-        <v-btn @click="openPasswordChangeModal">비밀번호 변경</v-btn>
+        <v-btn v-create @click="openPasswordChangeModal">비밀번호 변경</v-btn>
 
         <v-dialog v-model="passwordChangeDialog" persistent max-width="500px">
           <v-card>
@@ -67,8 +67,8 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" @click="changePassword">변경</v-btn>
-              <v-btn color="grey" @click="closePasswordChangeModal">취소</v-btn>
+              <v-btn v-create @click="changePassword">저장</v-btn>
+              <v-btn v-delete @click="closePasswordChangeModal">취소</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>

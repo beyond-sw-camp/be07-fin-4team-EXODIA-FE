@@ -3,24 +3,19 @@
     <!-- Week Selection -->
     <v-row>
       <v-col cols="10" md="6">
-        <v-select v-model="selectedWeek"
-          :items="weeks"
-          label="주차 선택"
-          item-title="text"
-          item-value="weekNumber"
-          outlined
+        <v-select v-model="selectedWeek" :items="weeks" label="주차 선택" item-title="text" item-value="weekNumber" outlined
           style="margin-left: 30px;">
         </v-select>
       </v-col>
 
       <!-- 출근 버튼 -->
-      <v-col cols="10" md="4">
-        <v-btn color="primary" @click="workIn" :disabled="isWorkIn" style="height: 55px;">
+      <v-col cols="10" md="4" align-center>
+        <v-btn v-list @click="workIn" :disabled="isWorkIn" class="mr-2">
           출근
         </v-btn>
 
         <!-- 퇴근 버튼 -->
-        <v-btn color="error" @click="workOut" style="margin-left: 10px; height:55px">
+        <v-btn v-create @click="workOut">
           퇴근
         </v-btn>
         <v-alert v-if="message" :type="alertType" dismissible>{{ message }}</v-alert>
@@ -88,7 +83,7 @@ export default {
   },
   watch: {
     selectedWeek(newVal) {
-    console.log('selectedWeek 변경됨: ', newVal);
+      console.log('selectedWeek 변경됨: ', newVal);
       this.fetchWeeklyDetails(); // 주차가 변경될 때마다 데이터 불러오기
     },
   },
@@ -106,11 +101,11 @@ export default {
   methods: {
     async initializeCurrentWeek() {
       const today = new Date();
-      const currentWeek = this.getISOWeekNumber(today); 
+      const currentWeek = this.getISOWeekNumber(today);
 
-      await this.fetchWeeklyAttendance(); 
-      this.selectedWeek = this.weeks.find(week => week.weekNumber === currentWeek); 
-      this.fetchWeeklyDetails(); 
+      await this.fetchWeeklyAttendance();
+      this.selectedWeek = this.weeks.find(week => week.weekNumber === currentWeek);
+      this.fetchWeeklyDetails();
     },
 
     async fetchWeeklyAttendance() {
@@ -136,7 +131,7 @@ export default {
           await this.fetchWeeklyDetails(); // 주차에 맞는 데이터 로드
         }
       } catch (error) {
-        console.error('주차 정보를 불러오는 중 오류 발생:', error);
+        // console.error('주차 정보를 불러오는 중 오류 발생:', error);
       }
     },
 
@@ -154,7 +149,7 @@ export default {
       } catch (error) {
         this.message = "출근 기록 중 오류 발생";
         this.alertType = "error";
-        console.error(error);
+        // console.error(error);
       }
     },
 
@@ -171,7 +166,7 @@ export default {
       } catch (error) {
         this.message = "퇴근 기록 중 오류 발생";
         this.alertType = "error";
-        console.error(error);
+        // console.error(error);
       }
     },
 
@@ -214,16 +209,16 @@ export default {
     },
     // 선택된 주차의 데이터를 API에서 가져오는 함수
     async fetchWeeklyDetails() {
-    // selectedWeek가 없을 때 오늘 기준으로 주차를 설정하고 데이터를 불러옴
-      // if (!this.selectedWeek) {
-      //   const today = new Date();
-      //   this.selectedWeek = this.getISOWeekNumber(today); // 현재 주차로 설정
-      //   console.log('selectedWeek가 없어 현재 주차를 설정: ', this.selectedWeek);
-      // }
+      // selectedWeek가 없을 때 오늘 기준으로 주차를 설정하고 데이터를 불러옴
+      if (!this.selectedWeek) {
+        const today = new Date();
+        this.selectedWeek = this.getISOWeekNumber(today); // 현재 주차로 설정
+        // console.log('selectedWeek가 없어 현재 주차를 설정: ', this.selectedWeek);
+      }
 
       try {
         const weekNumber = this.selectedWeek; // 숫자로 전송
-        console.log('Fetching data for week: ', weekNumber);
+        // console.log('Fetching data for week: ', weekNumber);
 
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/weekly`, {
           headers: {
@@ -238,7 +233,7 @@ export default {
         const weekData = response.data.find(week => week.weekNumber === weekNumber);
         if (weekData) {
           this.attendanceData = weekData.days;
-          console.log('attendanceData: ', this.attendanceData);
+          // console.log('attendanceData: ', this.attendanceData);
         } else {
           console.error('해당 주차에 대한 데이터가 없습니다.');
           this.attendanceData = {};
@@ -265,17 +260,17 @@ export default {
 
         const attendanceData = response.data;
         // Log the entire response to check the structure
-        console.log('Fetched today\'s attendance data:', attendanceData);
+        // console.log('Fetched today\'s attendance data:', attendanceData);
 
         // Log today's clock-in and clock-out times
         if (attendanceData.todayClockInTime) {
-          console.log('Today\'s Clock-in Time:', attendanceData.todayClockInTime);
+          // console.log('Today\'s Clock-in Time:', attendanceData.todayClockInTime);
         } else {
           console.log('No clock-in record found for today');
         }
 
         if (attendanceData.todayClockOutTime) {
-          console.log('Today\'s Clock-out Time:', attendanceData.todayClockOutTime);
+          // console.log('Today\'s Clock-out Time:', attendanceData.todayClockOutTime);
         } else {
           console.log('No clock-out record found for today');
         }
@@ -294,7 +289,7 @@ export default {
     // 근무 시간이 있는지 확인하는 함수
     isWorkHour(day, hour) {
       const dayData = this.attendanceData[day];
-      console.log(day, dayData); // dayData 확인용 로그
+      // console.log(day, dayData); // dayData 확인용 로그
       if (!dayData || !dayData.inTime || !dayData.outTime) {
         return false;
       }
@@ -328,6 +323,7 @@ export default {
 <style scoped>
 .timeline-container {
   margin-left: -30px;
+
   /* background-color: white; */
   /* padding: 20px; */
   /* border: solid 1px; */

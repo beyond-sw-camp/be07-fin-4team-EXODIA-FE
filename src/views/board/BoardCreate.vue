@@ -82,9 +82,9 @@
       <!-- 고정 여부 체크박스, 취소 및 저장 버튼 -->
       <div class="btnWrap">
         <v-checkbox v-if="selectedCategory !== 'FAMILY_EVENT'" v-model="isPinned" label="중요" class="mr-4" />
+        <v-btn v-create type="submit" class="ml-4">등록</v-btn>
+        <v-btn v-delete @click="cancel">취소</v-btn>
 
-        <v-btn text @click="cancel">취소</v-btn>
-        <v-btn color="primary" type="submit" class="ml-4">저장</v-btn>
       </div>
     </v-form>
 
@@ -97,8 +97,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="closeTagModal">취소</v-btn>
-          <v-btn color="primary" @click="addNewTag">저장</v-btn>
+          <v-btn v-create @click="addNewTag">저장</v-btn>
+          <v-btn v-delete text @click="closeTagModal">취소</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

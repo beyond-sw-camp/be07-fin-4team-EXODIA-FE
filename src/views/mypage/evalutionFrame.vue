@@ -43,8 +43,7 @@
           </v-simple-table>
 
           <v-row justify="end" style="margin-top: 20px;">
-            <v-btn @click="saveAllSubEvalutions" :disabled="isSaveDisabled"
-              style="background-color: #4CAF50; color: white;">
+            <v-btn v-create @click="saveAllSubEvalutions" :disabled="isSaveDisabled">
               전체 저장
             </v-btn>
           </v-row>

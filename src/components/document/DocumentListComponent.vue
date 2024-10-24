@@ -14,12 +14,12 @@
         </v-row>
         <v-row justify="end" class="mb-4">
             <v-col cols="auto" v-if="this.positionId == 1 && this.pageTitle == '전체 파일'">
-                <v-btn variant="outlined" @click="handleCreateTag()">
+                <v-btn v-create variant="outlined" @click="handleCreateTag()">
                     태그 생성
                 </v-btn>
             </v-col>
             <v-col cols="auto" v-if="this.pageTitle === '전체 파일'">
-                <v-btn variant="outlined" @click="$router.push('/document/create')">
+                <v-btn v-create variant="outlined" @click="$router.push('/document/create')">
                     파일 등록
                 </v-btn>
             </v-col>
@@ -111,13 +111,13 @@
 
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn variant="outlined" @click="$router.push({
+                            <v-btn v-create @click="$router.push({
                                 name: 'DocumentUpdate', state: {
                                     id: selectedDocument.id,
                                 }
                             })">
                                 업데이트</v-btn>
-                            <v-btn variant="outlined" @click="closeDrawer()">닫기</v-btn>
+                            <v-btn v-delete @click="closeDrawer()">닫기</v-btn>
                         </v-card-actions>
                     </v-tabs-window-item>
 
@@ -177,8 +177,7 @@
                                         v-model="comment"></v-text-field>
                                 </v-col>
                                 <v-col cols="3">
-                                    <v-btn variant="outlined"
-                                        @click="submitComments(this.selectedDocument.id)">저장</v-btn>
+                                    <v-btn v-create @click="submitComments(this.selectedDocument.id)">저장</v-btn>
                                 </v-col>
                             </v-row>
                         </v-card-title>
@@ -212,16 +211,15 @@
                             </v-row>
                         </div>
 
-
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn variant="outlined" @click="$router.push({
+                            <v-btn v-create @click="$router.push({
                                 name: 'DocumentUpdate', state: {
                                     id: selectedDocument.id,
                                 }
                             })">
                                 업데이트</v-btn>
-                            <v-btn variant="outlined" @click="closeDrawer()">닫기</v-btn>
+                            <v-btn v-delete @click="closeDrawer()">닫기</v-btn>
                         </v-card-actions>
 
                     </v-tabs-window-item>
@@ -239,8 +237,8 @@
                     <v-text-field label="태그 이름" v-model="tagName" required></v-text-field>
                 </v-card-text>
                 <v-card-actions>
-                    <v-btn variant="outlined" text @click="isTagDialogVisible = false">취소</v-btn>
-                    <v-btn variant="outlined" text @click="submitCreateTag">확인</v-btn>
+                    <v-btn v-create text @click="submitCreateTag">생성</v-btn>
+                    <v-btn v-delete text @click="isTagDialogVisible = false">취소</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -556,7 +554,6 @@ v-card-title,
     align-content: center;
 }
 
-
 .user-info {
     display: flex;
     justify-content: center;
@@ -567,10 +564,5 @@ v-card-title,
     display: inline-block;
     max-width: 700px;
     width: 100%;
-}
-
-.v-btn:hover {
-    background-color: #722121;
-    color: #ffffff;
 }
 </style>
