@@ -77,8 +77,8 @@
                     <v-card style="background-color: rgba(123, 86, 86, 0.3);">
                         <v-card-title>결재 라인</v-card-title>
                         <v-list style="background-color: rgba(123, 86, 86, 0.3);">
-                            <v-list-item v-for="user in users.filter(u => u.positionId <= this.positionId)"
-                                :key="user.id" draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
+                            <v-list-item v-for="user in users" :key="user.id" draggable="true"
+                                @dragstart="onDragStart(user)" class="draggable-item">
                                 <v-list-item-content>{{ user.name }}</v-list-item-content>
                             </v-list-item>
                         </v-list>
@@ -173,9 +173,10 @@ export default {
     methods: {
         async fetchUsers() {
             try {
-                const response = await axios.get(`/user/department-users/${this.departmentId}`);
-                this.users = response.data;
-            } catch (e) {
+                const response = await axios.get(`/department/${this.departmentId}/users`);
+                this.users = response.data.filter(u => Number(u.positionId) <= Number(this.positionId));
+            }
+            catch (e) {
                 console.error('직원 불러오는데 오류 발생:', e);
             }
         },

@@ -82,8 +82,8 @@
                     <v-card style="background-color: rgba(123, 86, 86, 0.3);">
                         <v-card-title>결재 라인</v-card-title>
                         <v-list style="background-color: rgba(123, 86, 86, 0.3);">
-                            <v-list-item v-for="user in users.filter(u => u.positionId <= this.positionId)"
-                                :key="user.id" draggable="true" @dragstart="onDragStart(user)" class="draggable-item">
+                            <v-list-item v-for="user in users" :key="user.id" draggable="true"
+                                @dragstart="onDragStart(user)" class="draggable-item">
                                 <v-list-item-content>{{ user.name
                                     }}</v-list-item-content>
                                 <v-list-item-content>{{ user.positionName
