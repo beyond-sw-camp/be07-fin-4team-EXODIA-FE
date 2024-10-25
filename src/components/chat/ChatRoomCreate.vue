@@ -1,4 +1,3 @@
-<!-- 채팅방 이름, 작성. 유저 검색(이름, 사번) 추가, 삭제 -->
 <template>
     <v-container>
         <!-- 채팅 상대 선택 화면 -->
@@ -22,11 +21,6 @@
 
             <!-- 검색된 유저 리스트-->
             <v-row v-for="(userInfos, index) in userList" :key="index" class="user-row">
-                <!-- <v-col cols="2">
-                    <v-avatar>
-                        <img :src="user.profileImage" alt="user avatar">
-                    </v-avatar>
-                </v-col> -->
                 <v-col cols="8">
                     <span>{{ userInfos.name }}</span>
                 </v-col>
@@ -43,11 +37,6 @@
 
             <!-- 선택된 유저 리스트 -->
             <v-row v-for="(userInfo, index) in selectUser" :key="index" class="selected-user-row">
-                <!-- <v-col cols="2">
-                    <v-avatar>
-                        <img :src="user.profileImage" alt="user avatar">
-                    </v-avatar>
-                </v-col> -->
                 <v-col cols="8">
                     <span>{{ userInfo.name }}</span>
                 </v-col>
@@ -110,7 +99,6 @@ export default {
             userList: [], // 사원 
 
             selectUser: [], // 채팅 선택된 사원
-
         }
     },
     created() {
@@ -155,7 +143,7 @@ export default {
                 alert("유저를 고르세요.");
                 return;
             }
-            this.chatroomData.roomName = this.selectUser.map(user=>user.name).join();
+            this.chatroomData.roomName = this.selectUser.map(user=>user.name).join(", ");
             this.showChatUser = false;
             this.showChatRoomName = true;
         },
@@ -173,13 +161,15 @@ export default {
                     alert("이미 존재하는 채팅방입니다.");
                     this.$emit('update:dialog', false);
                     this.$emit('update:check', true);
-                    window.location.href = '/chatRoom/list';
+                    this.$emit('update');
+                    // window.location.href = '/chatRoom/list';
                     // window.location.reload('/chatRoom/list');
                 } else {
                     alert("채팅방이 생성 성공");
                     this.$emit('update:dialog', false);
                     this.$emit('update:check', true);
-                    window.location.href = '/chatRoom/list';
+                    this.$emit('update');
+                    // window.location.href = '/chatRoom/list';
                 }
             } catch (e) {
                 console.error("채팅방 생성 실패", e);

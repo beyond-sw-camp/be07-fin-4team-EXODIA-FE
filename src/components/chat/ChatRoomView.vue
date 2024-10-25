@@ -395,7 +395,8 @@ export default {
             }
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/exit`);
             console.log(response);
-            window.location.href = '/chatRoom/list';
+            // window.location.href = '/chatRoom/list';
+            this.$emit('update');
             this.$emit('update:dialog', false);
             this.$emit('update:check', true);
             // window.location.reload('/chatRoom/list');
@@ -420,6 +421,7 @@ export default {
             if (usersResponse.data) {
                 this.chatUserList = usersResponse.data.result;
             }
+            window.location.href = '/chatRoom/list';
         },
 
         showexitChatRoomModal() {
@@ -493,12 +495,12 @@ export default {
     cursor: pointer;
     margin-left: 15px;
     color: rgba(233, 233, 233, 0.6);
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .chat-user-num {
     color: rgba(233, 233, 233, 0.6);
-    font-size: 11px;
+    font-size: 14px;
 }
 
 .header-icons {
@@ -640,11 +642,11 @@ export default {
 .image-group {
     display: flex;
     flex-direction: row;
-    width: 400px;
+    width: 420px;
     max-height: 150px;
 
     position: absolute;
-    bottom: 100px;
+    bottom: 75px;
     /* z-index: 9999; */
 
     background-color: rgba(233, 233, 233, 0.4);
