@@ -113,6 +113,14 @@ export default {
       const newStartTime = event.start;
       const newEndTime = event.end;
 
+      // 시작일과 종료일 화~긴 -> 
+      const isMultiDayEvent = newStartTime.getDate() !== newEndTime.getDate();
+
+      if (isMultiDayEvent) {
+        alert('하루 이상인 이벤트는 수정할 수 없습니다.');
+        info.revert(); // 이벤트를 원래 위치로 되돌립니다.
+        return;
+      }
       // 새로운 시간 정보를 처리 (서버로 전송 또는 로컬 업데이트)
       console.log("새로운 시작 시간:", newStartTime);
       console.log("새로운 종료 시간:", newEndTime);
@@ -126,7 +134,14 @@ export default {
       const event = info.event;
       const newStartTime = event.start;
       const newEndTime = event.end;
+      // 하루 이상의 이벤트인지 확인
+      const isMultiDayEvent = newStartTime.getDate() !== newEndTime.getDate();
 
+      if (isMultiDayEvent) {
+        alert('하루 이상인 이벤트는 수정할 수 없습니다.');
+        info.revert(); // 크기 조정을 취소하고 원래 상태로 되돌립니다.
+        return;
+      }
       // 크기 조정된 일정 시간을 서버 또는 로컬에서 처리
       console.log("크기 조정된 시작 시간:", newStartTime);
       console.log("크기 조정된 종료 시간:", newEndTime);
