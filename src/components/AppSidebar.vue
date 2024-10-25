@@ -104,12 +104,47 @@
       </div>
 
 
-      <!-- 사이드: 조직도 -->
-      <div class="menu-item" @click="toggleMenu('organization')"
-        :class="{ 'active': $route.path.startsWith('/organization') }" @mouseover="showSubSidebar('borganizationoard')">
-        <v-icon class="icon">mdi-account-group</v-icon>
-        <span>조직도</span>
-      </div>
+ <!-- 사이드: 조직도 -->
+ <div class="menu-item" @click="toggleOrganizationPanel">
+  <v-icon class="icon">mdi-account-group</v-icon>
+  <span>조직도</span>
+</div>
+
+<!-- 조직도 및 유저 정보 패널을 각각 독립적으로 위치 -->
+<div class="organization-container-wrapper">
+  <!-- 조직도 패널 -->
+  <v-card flat v-if="showOrganizationPanel" class="organization-panel">
+    <v-card-title>
+      <span>조직도</span>
+      <v-spacer></v-spacer>
+      <v-btn icon @click="toggleOrganizationPanel" class="close-btn">
+        <v-icon small class="close-icon">mdi-close</v-icon>
+      </v-btn>
+    </v-card-title>
+    <v-divider></v-divider>
+    <v-card-text>
+      <OrganizationChart @user-selected="selectUser" />
+    </v-card-text>
+  </v-card>
+
+  <!-- 유저 정보 패널이 조직도 옆에 독립적으로 나타남 -->
+  <v-card v-if="selectedUser" flat class="user-profile-panel">
+    <v-card-title>
+      <span>{{ selectedUser.name }}</span>
+      <v-spacer></v-spacer>
+      <v-btn icon @click="clearSelectedUser" class="close-btn">
+        <v-icon small class="close-icon">mdi-close</v-icon>
+      </v-btn>
+    </v-card-title>
+    <v-card-text>
+      <v-img :src="selectedUser.profileImage" class="profile-image"></v-img>
+      <p>사번: {{ selectedUser.userNum }}</p>
+      <p>부서: {{ selectedUser.departmentName }}</p>
+      <p>직급: {{ selectedUser.positionName }}</p>
+      <p>핸드폰 번호: {{ selectedUser.phone }}</p>
+    </v-card-text>
+  </v-card>
+  </div>
 
       <!-- 사이드: 직원관리 -->
       <div v-if="isHrDepartment" class="menu-item" @click="toggleMenu('employee-management')"
@@ -156,6 +191,7 @@
 
 <script>
 // import axios from 'axios';
+import OrganizationChart from '@/views/organization/OrganizationChart.vue'; 
 
 export default {
   name: 'AppSidebar',
@@ -173,10 +209,26 @@ export default {
       isHoveringSidebar: false,
       expandedMenu: null,
 
+      showOrganizationPanel: false,
+      selectedUser: null, 
     };
-
+  },
+  components: {
+    OrganizationChart, 
   },
   methods: {
+    toggleOrganizationPanel() {
+      this.showOrganizationPanel = !this.showOrganizationPanel; 
+    },
+    selectUser(user) {
+      this.selectedUser = user;
+      console.log(user);
+      console.log(this.selectedUser);
+
+    },
+    clearSelectedUser() {
+      this.selectedUser = null;
+    },
     toggleProjectVisibility() {
       this.showProject = !this.showProject;
       if (this.showProject) {
@@ -234,9 +286,10 @@ export default {
   --header-height: 60px;
 }
 
-*:not(.menu-itm) {
+*:not(.menu-itm):not(.organization-panel):not(.organization-panel *):not(.user-profile-panel):not(.user-profile-panel *) {
   background-color: #7A5656;
 }
+
 
 .v-row {
   cursor: pointer;
@@ -334,4 +387,113 @@ export default {
   z-index: 100;
   cursor: pointer;
 }
+
+.v-dialog {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 350px;
+  background-color: white;
+  z-index: 2000;
+}
+
+.organization-container-wrapper {
+  display: flex; 
+  justify-content: flex-start;
+  gap: 20px; 
+}
+
+.organization-panel {
+  position: fixed;
+  top: calc(100vh - 50vh);
+  left: calc(var(--sidebar-width) + 10px);
+  width: 300px;
+  height: 40vh;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1100;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.organization-panel-wide {
+  position: fixed;
+  top: calc(100vh - 50vh);
+  left: calc(var(--sidebar-width) + 10px);
+  width: 500px;
+  height: 40vh;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1100;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.user-profile-panel {
+  position: fixed;
+  top: calc(100vh - 50vh);
+  left: calc(var(--sidebar-width) + 10px);
+  width: 300px;
+  height: 40vh;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1100;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.profile-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+
+.v-btn.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 10px; 
+  margin: 0;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  size: 5px;
+  min-width: 0;
+  width: 20px;  
+  height: 20px; 
+  box-shadow: none;
+}
+
+.v-btn.close-btn v-icon {
+  font-size: 10px; 
+  color: #333;
+}
+
+.close-icon {
+  font-size: 20px; 
+}
+
+.v-card-title {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
+.v-card-text {
+  padding: 10px;
+  flex-grow: 1; /* 스크롤 가능 영역을 확장 */
+  overflow-y: auto
+}
+
+.v-card {
+  background-color: white; 
+}
+
 </style>

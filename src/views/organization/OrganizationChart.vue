@@ -1,317 +1,211 @@
 <template>
-  <div>
-    <!-- 왼쪽 조직도 트리 구조 -->
-    <div class="organization-tree">
-      <input type="text" placeholder="조직도 검색" class="search-box" />
-      <ul>
-        <li v-for="node in departmentTree" :key="node.id" class="department-node">
-          <div class="department-item">
-            <input
-              type="checkbox"
-              v-model="node.checked"
-              @change="onSelectDepartment(node)"
-              class="styled-checkbox"
-            />
-            <label @click="toggleNode(node)" class="department-label">
-              {{ node.name }} ({{ node.totalUsersCount }})
-            </label>
-          </div>
-          <ul v-show="node.isOpen" class="child-department">
-            <li v-for="child in node.children" :key="child.id">
-              <div class="department-item">
-                <input
-                  type="checkbox"
-                  v-model="child.checked"
-                  @change="onSelectDepartment(child)"
-                  class="styled-checkbox"
-                />
-                <label @click="toggleNode(child)" class="department-label">
-                  {{ child.name }} ({{ child.totalUsersCount }})
-                </label>
-              </div>
-              <ul v-show="child.isOpen" class="child-department">
-                <li v-for="user in child.users" :key="user.id" class="user-item">
-                  <input
-                    type="checkbox"
-                    v-model="user.checked"
-                    @change="onSelectUser(user)"
-                    class="styled-checkbox"
-                  />
-                  <label>{{ user.name }} 사원</label>
-                </li>
-              </ul>
-            </li>
-            <li v-for="user in node.users" :key="user.id" class="user-item">
-              <input
-                type="checkbox"
-                v-model="user.checked"
-                @change="onSelectUser(user)"
-                class="styled-checkbox"
-              />
-              <label>{{ user.name }} 사원</label>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
+  <div class="org-chart-container">
+    <div class="org-chart">
+      <!-- 조직도 검색 -->
+      <input v-model="searchQuery" placeholder="조직도 검색" class="search-input" />
 
-    <!-- 우측 선택된 사용자 목록 -->
-    <div class="selected-user-list">
-      <h3>선택된 사용자 목록</h3>
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>이름</th>
-            <th>휴대전화번호</th>
-            <th>직급</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(user, index) in selectedUsers" :key="user.id">
-            <td>{{ index + 1 }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ user.phone }}</td>
-            <td>{{ user.positionName }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="summary">총 {{ selectedUsers.length }}명</div>
+      <!-- 부서 및 사용자 리스트 -->
+      <div class="department-list">
+        <ul class="scrollable-list">
+          <li v-for="department in filteredHierarchy" :key="department.id" class="department-item">
+            <div @click="toggleExpand(department)" class="department-name">
+              <v-icon small class="expand-icon">
+                {{ expandedDepartments.includes(department.id) ? 'mdi-minus-box-outline' : 'mdi-plus-box-outline' }}
+              </v-icon>
+              {{ department.name }} ({{ department.totalUsersCount }})
+            </div>
+
+            <!-- 부서 내부의 유저 표시 -->
+            <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
+              <li
+                v-for="user in department.users"
+                :key="user.userNum"
+                class="user-item"
+                @click="$emit('user-selected', user)"
+              >
+                {{ user.name }}
+              </li>
+
+              <!-- 하위 부서를 재귀적으로 렌더링 -->
+              <RecursiveDepartment
+              v-for="child in department.children"
+              :key="child.id"
+              :department="child"
+              :expandedDepartments="expandedDepartments"
+              @toggle="toggleExpand"
+              @user-selected="$emit('user-selected', $event)"
+            />
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
+import RecursiveDepartment from './RecursiveDepartment.vue';
 
 export default {
-  data() {
-    return {
-      departmentTree: [], // 부서 계층 트리
-      selectedUsers: [],  // 선택된 사용자 목록
-    };
+  name: 'OrganizationChart',
+  components: {
+    RecursiveDepartment,
   },
-  mounted() {
-    this.fetchDepartments(); // 부서 트리 가져오기
-  },
-  methods: {
-    // 부서 계층 및 사용자 정보 가져오기
-    async fetchDepartments() {
+  emits: ['user-selected'],
+  setup(_, { emit }) {
+    const hierarchy = ref([]);
+    const searchQuery = ref('');
+    const expandedDepartments = ref([]);
+
+    const filteredHierarchy = computed(() => {
+      if (!searchQuery.value) {
+        return hierarchy.value.filter(dept => !dept.parentId);
+      }
+      const query = searchQuery.value.toLowerCase();
+      return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
+    });
+
+    const fetchHierarchy = async () => {
       try {
         const response = await axios.get('/department/hierarchy');
-        if (response.data && Array.isArray(response.data)) {
-          this.departmentTree = response.data.map(dept => this.calculateTotalUsers(dept));
-        } else {
-          console.error("Invalid department hierarchy data:", response.data);
-        }
+        hierarchy.value = await calculateUserCounts(response.data);
       } catch (error) {
-        console.error("Failed to fetch departments:", error);
+        console.error('부서 계층 정보를 가져오는 중 오류 발생:', error);
       }
-    },
+    };
 
-    // 부서와 하위 부서의 사용자 수 계산
-    calculateTotalUsers(department) {
-      let totalUsers = department.users ? department.users.length : 0;
-      if (department.children && department.children.length > 0) {
-        department.children.forEach(child => {
-          totalUsers += this.calculateTotalUsers(child).totalUsersCount;
-        });
-      }
-      department.totalUsersCount = totalUsers; // 총 사용자 수 저장
-      return department;
-    },
+    const selectUser = (user) => {
+      emit('user-selected', user); // 'user-selected' 이벤트 발생
+    };
 
-    // 노드 토글 (부서 열고 닫기)
-    toggleNode(node) {
-      node.isOpen = !node.isOpen;
-      if (node.isOpen) {
-        this.fetchUsers(node.id, node); // 부서 사용자 목록 가져오기
-      }
-    },
+    const calculateUserCounts = async (departments) => {
+      const recurse = async (dept) => {
+        const usersResponse = await axios.get(`/department/${dept.id}/users`);
+        dept.users = usersResponse.data || [];
 
-    // 부서 사용자 가져오기
-    async fetchUsers(departmentId, node) {
-      try {
-        const response = await axios.get(`/department/${departmentId}/users`);
-        if (response.data && Array.isArray(response.data)) {
-          node.users = response.data.map(user => ({
-            ...user,
-            checked: false,
-          }));
-          node.totalUsersCount = node.users.length;
-        } else {
-          console.error("Invalid user data:", response.data);
-        }
-      } catch (error) {
-        console.error(`Failed to fetch users for department ${departmentId}:`, error);
-      }
-    },
-
-    // 부서 선택 시 하위 부서와 사용자 처리
-    onSelectDepartment(department) {
-      const isChecked = department.checked;
-      this.toggleChildDepartmentCheck(department, isChecked);
-
-      if (isChecked) {
-        this.addUsersFromDepartment(department);
-      } else {
-        this.removeUsersFromDepartment(department);
-      }
-    },
-
-    // 하위 부서와 사용자의 체크 상태 동기화
-    toggleChildDepartmentCheck(department, isChecked) {
-      if (department.children) {
-        department.children.forEach(child => {
-          child.checked = isChecked;
-          this.toggleChildDepartmentCheck(child, isChecked);
-        });
-      }
-      if (department.users) {
-        department.users.forEach(user => {
-          user.checked = isChecked;
-          if (isChecked) {
-            this.addSelectedUser(user);
-          } else {
-            this.removeSelectedUser(user);
+        let totalUsers = dept.users.length;
+        if (dept.children && dept.children.length > 0) {
+          for (const child of dept.children) {
+            totalUsers += await recurse(child);
           }
-        });
-      }
-    },
+        }
+        dept.totalUsersCount = totalUsers;
+        return totalUsers;
+      };
 
-    // 개별 사용자 선택
-    onSelectUser(user) {
-      user.checked = !user.checked;
-      if (user.checked) {
-        this.addSelectedUser(user);
+      for (const dept of departments) {
+        await recurse(dept);
+      }
+      return departments;
+    };
+
+    const toggleExpand = (department) => {
+      if (expandedDepartments.value.includes(department.id)) {
+        expandedDepartments.value = expandedDepartments.value.filter(id => id !== department.id);
       } else {
-        this.removeSelectedUser(user);
+        expandedDepartments.value.push(department.id);
       }
-    },
+    };
 
-    // 선택된 사용자를 추가
-    addSelectedUser(user) {
-      if (!this.selectedUsers.some(u => u.id === user.id)) {
-        this.selectedUsers.push(user);
-      }
-    },
+    onMounted(() => {
+      fetchHierarchy();
+    });
 
-    // 선택된 사용자를 제거
-    removeSelectedUser(user) {
-      this.selectedUsers = this.selectedUsers.filter(u => u.id !== user.id);
-    },
-
-    // 부서에서 모든 사용자 추가
-    addUsersFromDepartment(department) {
-      department.users.forEach(user => {
-        user.checked = true;
-        this.addSelectedUser(user);
-      });
-      department.children.forEach(child => {
-        this.addUsersFromDepartment(child);
-      });
-    },
-
-    // 부서에서 모든 사용자 제거
-    removeUsersFromDepartment(department) {
-      department.users.forEach(user => {
-        user.checked = false;
-        this.removeSelectedUser(user);
-      });
-      department.children.forEach(child => {
-        this.removeUsersFromDepartment(child);
-      });
-    },
-  }
+    return {
+      hierarchy,
+      searchQuery,
+      expandedDepartments,
+      filteredHierarchy,
+      toggleExpand,
+      selectUser,
+    };
+  },
 };
 </script>
 
-
+  
 <style scoped>
-body {
-  font-family: Arial, sans-serif;
+.org-chart-container {
+  display: flex;
+  gap: 20px; /* 조직도 창과 유저 패널 사이의 간격 */
 }
 
-.organization-tree {
-  float: left;
-  width: 35%;
-  padding-right: 20px;
+.org-chart {
+  width: 50%; /* 조직도 창 크기 */
   background-color: #f9f9f9;
-  border-right: 1px solid #ddd;
-  height: 600px;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
   overflow-y: auto;
 }
 
-.selected-user-list {
-  float: right;
-  width: 60%;
-  padding-left: 20px;
-}
-
-.search-box {
+.search-input {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.department-node,
-.user-item {
   padding: 5px;
-  cursor: pointer;
-  display: block;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
 }
 
-.child-department {
-  padding-left: 20px;
+.scrollable-list {
+  padding: 0;
   list-style-type: none;
 }
 
-.styled-checkbox {
-  appearance: none;
+.department-item {
+  margin: 10px 0;
+  cursor: pointer;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+}
+
+.department-name {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+
+.user-list {
+  padding-left: 20px;
+}
+
+.user-item {
+  font-size: 11px;
+  color: #666;
+  padding: 2px 0;
+}
+
+.expand-icon {
+  margin-right: 5px;
+}
+
+.user-profile-panel {
+  width: 45%; /* 유저 패널 크기 */
+  padding: 20px;
   background-color: #fff;
-  border: 1px solid #ddd;
-  padding: 8px;
-  border-radius: 4px;
-  display: inline-block;
-  position: relative;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-.styled-checkbox:checked {
-  background-color: #7A5656;
-}
-
-.department-label {
-  font-weight: bold;
-  color: #7A5656;
-}
-
-.custom-table {
+.user-profile-card {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
 }
 
-.custom-table th,
-.custom-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.profile-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 15px;
 }
 
-.custom-table th {
-  background-color: #7A5656;
-  color: white;
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
-.custom-table td {
-  text-align: center;
-}
-
-.summary {
-  text-align: right;
-  font-weight: bold;
-  margin-top: 10px;
-  color: #7A5656;
-}
 </style>

@@ -299,11 +299,14 @@ export default {
   padding: 20px;
 }
 
+
 .button-group {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+  justify-content: flex-end; 
 }
+
 
 .primary-btn, .success-btn, .error-btn {
   padding: 10px 15px;
