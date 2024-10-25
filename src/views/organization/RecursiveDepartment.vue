@@ -1,25 +1,30 @@
 <template>
-    <li v-for="child in department.children" :key="child.id" class="child-item">
-      <div @click.stop="toggleExpand(child)" class="child-department">
+    <li>
+      <div @click.stop="toggleExpand(department)" class="child-department">
         <v-icon small class="expand-icon">
-          {{ expandedDepartments.includes(child.id) ? 'mdi-minus-box-outline' : 'mdi-plus-box-outline' }}
+          {{ expandedDepartments.includes(department.id) ? 'mdi-minus-box-outline' : 'mdi-plus-box-outline' }}
         </v-icon>
-        {{ child.name }} ({{ child.totalUsersCount }})
+        {{ department.name }} ({{ department.totalUsersCount }})
       </div>
-  
-      <!-- 하위 부서의 유저들 표시 -->
-      <ul v-if="expandedDepartments.includes(child.id)" class="user-list">
-        <li v-for="user in child.users" :key="user.userNum" class="user-item">
+      <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
+        <!-- 하위 부서의 유저들 출력 -->
+        <li 
+          v-for="user in department.users" 
+          :key="user.userNum" 
+          class="user-item"
+          @click.stop="$emit('user-selected', user)"
+        >
           {{ user.name }}
         </li>
-  
+        
         <!-- 재귀적으로 하위 부서 렌더링 -->
         <RecursiveDepartment
-          v-for="grandChild in child.children"
-          :key="grandChild.id"
-          :department="grandChild"
+          v-for="child in department.children"
+          :key="child.id"
+          :department="child"
           :expandedDepartments="expandedDepartments"
           @toggle="toggleExpand"
+          @user-selected="$emit('user-selected', $event)"
         />
       </ul>
     </li>
@@ -28,20 +33,16 @@
   <script>
   export default {
     props: ['department', 'expandedDepartments'],
-    emits: ['toggle'], // toggle 이벤트를 선언
+    emits: ['toggle', 'user-selected'], // 'user-selected' 이벤트 추가
     methods: {
       toggleExpand(department) {
-        this.$emit('toggle', department); // 부모 컴포넌트로 이벤트 전송
-      },
-    },
+        this.$emit('toggle', department);
+      }
+    }
   };
   </script>
   
   <style scoped>
-  .child-item {
-    margin-left: 15px;
-  }
-  
   .child-department {
     cursor: pointer;
     padding: 5px;
