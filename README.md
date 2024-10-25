@@ -219,7 +219,7 @@
 
 ### 인사 평가
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/인사평가.gif"/>
 
 </details>
 
