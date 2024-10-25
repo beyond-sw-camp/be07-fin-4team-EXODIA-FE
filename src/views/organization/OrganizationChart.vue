@@ -12,26 +12,24 @@
       <ul class="scrollable-list">
         <li v-for="department in filteredHierarchy" :key="department.id" class="department-item">
           <div @click="toggleExpand(department)" class="department-name">
-            <span class="expand-icon">{{ expandedDepartments.includes(department.id) ? '-' : '+' }}</span>
+            <v-icon small class="expand-icon">
+              {{ expandedDepartments.includes(department.id) ? 'mdi-minus-box-outline' : 'mdi-plus-box-outline' }}
+            </v-icon>
             {{ department.name }} ({{ department.totalUsersCount }})
           </div>
-          <ul v-if="expandedDepartments.includes(department.id)" class="child-list">
-            <!-- 하위 부서 및 사용자 -->
-            <li v-for="child in department.children" :key="child.id" class="child-item">
-              <div @click="toggleExpand(child)" class="child-department">
-                <span class="expand-icon">{{ expandedDepartments.includes(child.id) ? '-' : '+' }}</span>
-                {{ child.name }} ({{ child.totalUsersCount }})
-              </div>
-              <ul v-if="expandedDepartments.includes(child.id)" class="user-list">
-                <li v-for="user in child.users" :key="user.userNum" class="user-item">
-                  {{ user.name }}
-                </li>
-              </ul>
-            </li>
-            <!-- 상위 부서의 사용자 -->
+
+          <!-- 부서 내부의 유저 표시 -->
+          <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
             <li v-for="user in department.users" :key="user.userNum" class="user-item">
               {{ user.name }}
             </li>
+
+            <!-- 하위 부서를 재귀적으로 렌더링 -->
+            <RecursiveDepartment
+              :department="department"
+              :expandedDepartments="expandedDepartments"
+              @toggle="toggleExpand"
+            />
           </ul>
         </li>
       </ul>
@@ -40,35 +38,38 @@
 </template>
 
 <script>
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
+import RecursiveDepartment from './RecursiveDepartment.vue'; // 재귀적 부서 컴포넌트
 
 export default {
-  data() {
-    return {
-      hierarchy: [], // 부서 계층 정보
-      searchQuery: '', // 검색 입력값
-      expandedDepartments: [], // 확장된 부서 목록
-    };
+  name: 'OrganizationChart',
+  components: {
+    RecursiveDepartment,
   },
-  computed: {
-    filteredHierarchy() {
-      if (!this.searchQuery) {
-        return this.hierarchy.filter(dept => !dept.parentId); // 상위 부서만 필터링
+  setup() {
+    const hierarchy = ref([]);
+    const searchQuery = ref('');
+    const expandedDepartments = ref([]);
+
+    const filteredHierarchy = computed(() => {
+      if (!searchQuery.value) {
+        return hierarchy.value.filter(dept => !dept.parentId); // 상위 부서만 필터링
       }
-      const query = this.searchQuery.toLowerCase();
-      return this.hierarchy.filter(dept => dept.name.toLowerCase().includes(query));
-    }
-  },
-  methods: {
-    async fetchHierarchy() {
+      const query = searchQuery.value.toLowerCase();
+      return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
+    });
+
+    const fetchHierarchy = async () => {
       try {
         const response = await axios.get('/department/hierarchy');
-        this.hierarchy = await this.calculateUserCounts(response.data);
+        hierarchy.value = await calculateUserCounts(response.data);
       } catch (error) {
         console.error('부서 계층 정보를 가져오는 중 오류 발생:', error);
       }
-    },
-    async calculateUserCounts(departments) {
+    };
+
+    const calculateUserCounts = async (departments) => {
       const recurse = async (dept) => {
         const usersResponse = await axios.get(`/department/${dept.id}/users`);
         dept.users = usersResponse.data || [];
@@ -82,23 +83,33 @@ export default {
         dept.totalUsersCount = totalUsers;
         return totalUsers;
       };
-      
+
       for (const dept of departments) {
         await recurse(dept);
       }
       return departments;
-    },
-    async toggleExpand(department) {
-      if (this.expandedDepartments.includes(department.id)) {
-        this.expandedDepartments = this.expandedDepartments.filter(id => id !== department.id);
+    };
+
+    const toggleExpand = (department) => {
+      if (expandedDepartments.value.includes(department.id)) {
+        expandedDepartments.value = expandedDepartments.value.filter(id => id !== department.id);
       } else {
-        this.expandedDepartments.push(department.id);
+        expandedDepartments.value.push(department.id);
       }
-    },
+    };
+
+    onMounted(() => {
+      fetchHierarchy();
+    });
+
+    return {
+      hierarchy,
+      searchQuery,
+      expandedDepartments,
+      filteredHierarchy,
+      toggleExpand,
+    };
   },
-  mounted() {
-    this.fetchHierarchy();
-  }
 };
 </script>
 
@@ -108,7 +119,7 @@ export default {
   height: 100%;
   width: 250px;
   font-size: 12px;
-  overflow-y: auto; /* 전체 창 스크롤 가능하게 */
+  overflow-y: auto;
 }
 
 .search-input {
@@ -117,10 +128,6 @@ export default {
   padding: 5px;
   border-radius: 5px;
   border: 1px solid #ddd;
-}
-
-.department-list {
-  /* 내부 스크롤 제거 */
 }
 
 .scrollable-list {
