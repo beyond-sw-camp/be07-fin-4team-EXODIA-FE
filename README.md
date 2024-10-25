@@ -215,7 +215,7 @@
 
 ### 근태 관리
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/근태관리.gif"/>
 
 ### 인사 평가
 
@@ -269,7 +269,7 @@
 
 ### 법인 차량 예약
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/법인차량예약.gif"/>
 
 </details>
 
@@ -279,7 +279,7 @@
 
 ### 공지사항
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/공지사항.gif"/>
 
 ### 질의 응답(Q&A)
 
@@ -287,7 +287,7 @@
 
 ### 강의 리스트
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/강좌생성.gif"/>
 
 </details>
 
@@ -381,6 +381,6 @@
 
 ### 권한 별 일정 등록
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/달력등록.gif"/>
 
 </details>
