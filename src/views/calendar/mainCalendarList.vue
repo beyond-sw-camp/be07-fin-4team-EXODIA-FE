@@ -181,7 +181,7 @@ export default {
   }
 };
 </script>
-<style scoped></style>
+
 <style>
 #second-calendar-container .event-dot {
   display: inline-block;

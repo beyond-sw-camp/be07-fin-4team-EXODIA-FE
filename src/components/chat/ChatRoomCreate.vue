@@ -192,9 +192,9 @@ export default {
 </script>
 
 <style scoped>
-.create-container {
+/* .create-container {
     background-color: #f0f0f0;
-}
+} */
 
 .select-line {
     border: 0px;
