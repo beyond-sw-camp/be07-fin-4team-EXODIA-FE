@@ -49,8 +49,9 @@
                         <v-col cols="1">{{ submit.userName }} </v-col>
                         <v-col cols="3">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime)
                             }}</v-col>
-                        <v-col cols="3">{{ formatDate(submit.updatedTime) }} {{ formatLocalTime(submit.updatedTime)
-                            }}</v-col>
+                        <v-col cols="3">{{ formatDate(submit.updatedTime) || ' ' }} {{
+                            formatLocalTime(submit.updatedTime) || ' '
+                        }}</v-col>
                         <v-col cols="2" class="d-flex justify-center align-center">
                             <v-chip v-if="submit.submitStatus === '반려'" color="red">
                                 {{ submit.submitStatus }}
@@ -111,15 +112,15 @@ export default {
             }
 
             const query = this.searchQuery.toLowerCase();
-            console.log("query: " + this.searchQuery)
-            return this.submitList.filter(submit => {
-                return (
-                    submit.submitType.toLowerCase().includes(query) ||
-                    `${submit.department} ${submit.userName}`.toLowerCase().includes(query) ||
-                    this.formatDate(submit.submitTime).toLowerCase().includes(query) ||
-                    submit.submitStatus.toLowerCase().includes(query)
-                );
-            });
+            return this.submitList
+                .filter(submit => {
+                    return (
+                        submit.submitType.toLowerCase().includes(query) ||
+                        `${submit.department} ${submit.userName}`.toLowerCase().includes(query) ||
+                        this.formatDate(submit.submitTime).toLowerCase().includes(query) ||
+                        submit.submitStatus.toLowerCase().includes(query)
+                    );
+                });
         },
     },
     methods: {
@@ -134,9 +135,11 @@ export default {
             }
         },
         formatDate(date) {
+            if (!date) return '';
             return new Date(date).toLocaleDateString();
         },
         formatLocalTime(date) {
+            if (!date) return '';
             return new Date(date).toLocaleTimeString();
         },
         showDetail(submitId) {
