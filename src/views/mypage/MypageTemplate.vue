@@ -47,3 +47,9 @@ export default {
   }
 };
 </script>
+
+<style coped>
+.header-tabs {
+  border-bottom: 1px solid #b7b7b7;
+}
+</style>
