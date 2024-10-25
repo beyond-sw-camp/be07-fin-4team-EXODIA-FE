@@ -18,11 +18,6 @@
                     append-icon="mdi-magnify" @click:append=searchFilter(searchQuery) style=""></v-text-field>
             </v-col> -->
 
-            <v-col cols="auto">
-                <v-btn v-create @click="$router.push('/submit')">
-                    결재 생성
-                </v-btn>
-            </v-col>
         </v-row>
 
         <!-- 문서 리스트 -->
