@@ -1,38 +1,36 @@
 <template>
   <div class="org-chart">
-    <v-text-field
+    <!-- 조직도 검색 -->
+    <input
       v-model="searchQuery"
-      label="조직도 검색"
-      @input="searchHierarchy"
-      clearable
+      placeholder="조직도 검색"
       class="search-input"
-    ></v-text-field>
+    />
 
+    <!-- 부서 및 사용자 리스트 -->
     <div class="department-list">
-      <ul>
+      <ul class="scrollable-list">
         <li v-for="department in filteredHierarchy" :key="department.id" class="department-item">
           <div @click="toggleExpand(department)" class="department-name">
-            <v-icon large class="mr-2">{{ expandedDepartments.includes(department.id) ? 'mdi-chevron-down' : 'mdi-chevron-right' }}</v-icon>
+            <span class="expand-icon">{{ expandedDepartments.includes(department.id) ? '-' : '+' }}</span>
             {{ department.name }} ({{ department.totalUsersCount }})
           </div>
-          <!-- 하위 부서 및 직원 리스트를 클릭 시 확장 -->
           <ul v-if="expandedDepartments.includes(department.id)" class="child-list">
-            <!-- 자식 부서 리스트 -->
+            <!-- 하위 부서 및 사용자 -->
             <li v-for="child in department.children" :key="child.id" class="child-item">
               <div @click="toggleExpand(child)" class="child-department">
-                <v-icon large class="mr-2">{{ expandedDepartments.includes(child.id) ? 'mdi-chevron-down' : 'mdi-chevron-right' }}</v-icon>
+                <span class="expand-icon">{{ expandedDepartments.includes(child.id) ? '-' : '+' }}</span>
                 {{ child.name }} ({{ child.totalUsersCount }})
               </div>
-              <!-- 자식 부서의 소속 직원 목록 -->
               <ul v-if="expandedDepartments.includes(child.id)" class="user-list">
                 <li v-for="user in child.users" :key="user.userNum" class="user-item">
-                  <v-icon small class="mr-1">mdi-account</v-icon>{{ user.name }} - {{ user.position }}
+                  {{ user.name }}
                 </li>
               </ul>
             </li>
-            <!-- 상위 부서의 소속 직원 리스트 -->
+            <!-- 상위 부서의 사용자 -->
             <li v-for="user in department.users" :key="user.userNum" class="user-item">
-              <v-icon small class="mr-1">mdi-account</v-icon>{{ user.name }} - {{ user.position }}
+              {{ user.name }}
             </li>
           </ul>
         </li>
@@ -54,7 +52,6 @@ export default {
   },
   computed: {
     filteredHierarchy() {
-      // 검색 쿼리로 부서 필터링
       if (!this.searchQuery) {
         return this.hierarchy.filter(dept => !dept.parentId); // 상위 부서만 필터링
       }
@@ -72,7 +69,6 @@ export default {
       }
     },
     calculateUserCounts(departments) {
-      // 부서 사용자 수 계산
       const recurse = async (dept) => {
         const usersResponse = await axios.get(`/department/${dept.id}/users`);
         dept.users = usersResponse.data || [];
@@ -92,7 +88,6 @@ export default {
       return departments;
     },
     async toggleExpand(department) {
-      // 부서 확장/축소
       if (this.expandedDepartments.includes(department.id)) {
         this.expandedDepartments = this.expandedDepartments.filter(id => id !== department.id);
       } else {
@@ -103,68 +98,72 @@ export default {
         this.expandedDepartments.push(department.id);
       }
     },
-    searchHierarchy() {
-      // 검색 쿼리 필터링
-    }
   },
   mounted() {
-    this.fetchHierarchy(); // 컴포넌트가 마운트될 때 부서 계층 정보를 가져옴
+    this.fetchHierarchy();
   }
 };
 </script>
 
 <style scoped>
 .org-chart {
-  padding: 20px;
+  padding: 10px;
+  height: 100%;
+  width: 250px;
+  font-size: 12px;
 }
 
 .search-input {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  width: 100%;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
 }
 
 .department-list {
-  padding-left: 0;
+  height: calc(40vh - 50px); /* 창 크기를 조정 */
+  overflow-y: auto; /* 스크롤 가능하게 설정 */
+}
+
+.scrollable-list {
+  padding: 0;
+  margin: 0;
   list-style-type: none;
 }
 
 .department-item {
-  margin: 15px 0;
+  margin: 10px 0;
   cursor: pointer;
-  padding: 10px 15px;
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 8px 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
 }
 
 .department-name {
   display: flex;
   align-items: center;
   font-weight: bold;
-  font-size: 16px;
-  color: #333;
 }
 
 .child-list {
   list-style-type: none;
-  padding-left: 30px;
-  margin: 10px 0;
-}
-
-.child-item {
-  margin: 5px 0;
-  cursor: pointer;
+  padding-left: 15px;
 }
 
 .user-list {
   list-style-type: none;
-  padding-left: 40px;
-  margin: 10px 0;
+  padding-left: 20px;
 }
 
 .user-item {
-  font-size: 14px;
-  display: flex;
-  align-items: center;
+  font-size: 11px;
+  padding: 2px 0;
   color: #666;
+}
+
+.expand-icon {
+  margin-right: 5px;
+  font-weight: bold;
 }
 </style>

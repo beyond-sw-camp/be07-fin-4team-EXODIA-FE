@@ -105,28 +105,28 @@
 
 
       <!-- 사이드: 조직도 -->
-      <div class="menu-item" @click="toggleOrganizationModal">
-        <!-- :class="{ 'active': $route.path.startsWith('/organization') }" @mouseover="showSubSidebar('borganizationoard')"> -->
+      <div class="menu-item" @click="toggleOrganizationPanel">
         <v-icon class="icon">mdi-account-group</v-icon>
         <span>조직도</span>
       </div>
+  
 
-      <v-dialog v-model="showOrganizationModal" persistent max-width="100%">
-        <v-card>
+  <!-- 조직도 작은 패널 (사이드바 바로 옆 하단에 위치) -->
+      <div v-if="showOrganizationPanel" class="organization-panel" v-draggable>
+        <v-card flat>
           <v-card-title>
             <span>조직도</span>
             <v-spacer></v-spacer>
-            <v-btn icon @click="toggleOrganizationModal">
-              <v-icon>mdi-close</v-icon>
+            <v-btn icon @click="toggleOrganizationPanel" class="close-btn">
+              <v-icon small>mdi-close</v-icon> <!-- 작은 아이콘으로 설정 -->
             </v-btn>
           </v-card-title>
-      
+          <v-divider></v-divider>
           <v-card-text>
-            <OrganizationChart />
+            <OrganizationChart /> <!-- 조직도 컴포넌트 불러오기 -->
           </v-card-text>
         </v-card>
-      </v-dialog>
-      
+      </div>
 
       <!-- 사이드: 직원관리 -->
       <div v-if="isHrDepartment" class="menu-item" @click="toggleMenu('employee-management')"
@@ -191,17 +191,16 @@ export default {
       isHoveringSidebar: false,
       expandedMenu: null,
 
-      showOrganizationModal: false,
+      showOrganizationPanel: false,
     };
   },
   components: {
     OrganizationChart, 
   },
   methods: {
-    toggleOrganizationModal() {
-    this.showOrganizationModal = !this.showOrganizationModal;
-    console.log('모달 상태:', this.showOrganizationModal); // 상태 확인용 로그
-  },
+    toggleOrganizationPanel() {
+      this.showOrganizationPanel = !this.showOrganizationPanel; 
+    },
 
     toggleProjectVisibility() {
       this.showProject = !this.showProject;
@@ -260,9 +259,10 @@ export default {
   --header-height: 60px;
 }
 
-*:not(.menu-itm) {
+*:not(.menu-itm):not(.organization-panel):not(.organization-panel *) {
   background-color: #7A5656;
 }
+
 
 .v-row {
   cursor: pointer;
@@ -370,4 +370,45 @@ export default {
   background-color: white;
   z-index: 2000;
 }
+
+.organization-panel {
+  position: fixed;
+  top: calc(100vh - 50vh);
+  left: calc(var(--sidebar-width) + 10px);
+  width: 300px;
+  height: 40vh;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1100;
+  border-radius: 8px;
+  overflow: auto;
+  cursor: move; 
+}
+
+.v-btn.close-btn {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.v-btn.close-btn v-icon {
+  font-size: 16px; 
+}
+
+.v-card-title {
+  position: relative;
+  padding: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.v-card-text {
+  padding: 10px;
+}
+
+.v-card {
+  background-color: white; 
+}
+
 </style>
