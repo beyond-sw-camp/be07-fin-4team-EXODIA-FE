@@ -349,11 +349,11 @@
 
 ### 부서 추가
 
-<img src="./img/ui테스트/.gif"/>
+<img src="./img/ui테스트/부서추가.gif"/>
 
 ### 부서 이동
 
-<img src="./img/ui테스트/.gif"/>
+<img src="./img/ui테스트/부서이동.gif"/>
 
 </details>
 
