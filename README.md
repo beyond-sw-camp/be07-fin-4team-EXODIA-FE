@@ -360,7 +360,6 @@
 <summary>채팅</summary>
 
 ### 채팅방 생성
-
 <img src="./img/ui테스트/채팅방생성.gif"/>
 
 ### 실시간 채팅
