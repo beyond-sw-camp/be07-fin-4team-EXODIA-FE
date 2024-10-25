@@ -368,7 +368,7 @@
 
 ### 참여자 초대/나가기
 
-<img src="./img/ui테스트/.gif"/>
+<img src="./img/ui테스트/채팅방초대.gif"/>
 
 </details>
 
