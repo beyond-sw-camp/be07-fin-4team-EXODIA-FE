@@ -217,9 +217,11 @@ export default {
           axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/list`),
         ]);
 
-        const allUsers = userResponse.data;
-        const managers = managerResponse.data;
+        // 유저 목록이 배열인지 확인하고, 그렇지 않으면 빈 배열로 초기화
+        const allUsers = Array.isArray(userResponse.data) ? userResponse.data : [];
+        const managers = Array.isArray(managerResponse.data) ? managerResponse.data : [];
 
+        // 매니저로 등록되지 않은 유저들만 필터링
         this.users = allUsers.filter(user => !managers.some(manager => manager.userNum === user.userNum));
         this.filteredUsers = [...this.users]; // 초기 상태에서 전체 유저 목록이 보이도록 설정
         this.managers = managers;
@@ -228,6 +230,7 @@ export default {
         alert("유저 및 매니저 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.");
       }
     },
+
 
     // 유저 검색
     async searchUsers() {
