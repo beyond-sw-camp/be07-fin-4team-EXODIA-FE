@@ -205,7 +205,7 @@
 
 ### 로그인
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/로그인.gif"/>
 
 </details>
 
