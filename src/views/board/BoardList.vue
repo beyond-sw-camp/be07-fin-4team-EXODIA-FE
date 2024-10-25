@@ -6,7 +6,6 @@
     </v-row>
 
     <!-- 게시판 상단 검색 폼 -->
-
     <v-row justify="center" align="center">
       <!-- 검색 범위 선택 -->
       <v-col cols="2">
@@ -30,7 +29,6 @@
       </v-col>
     </v-row>
 
-
     <!-- 게시글 목록 -->
     <v-row justify="center" class="mt-4">
       <v-col cols="12">
@@ -43,11 +41,16 @@
         </v-row>
 
         <!-- 게시글 정렬 -->
-        <v-row v-for="(item, index) in sortedBoardItems" :key="item.id" class="board text-center"
-          @click="goToDetail(item.id)" style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
-          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+        <v-row
+          v-for="(item, index) in sortedBoardItems"
+          :key="item.id"
+          class="board"
+          @click="goToDetail(item.id)"
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
+        >
+          <v-col cols="1" class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
           <v-col cols="8" class="title-ellipsis text-start" style="max-width: 80%; display: inline-block;">
-            {{ item.title }}
+            {{ itemTitle(item) }}
           </v-col>
           <v-col cols="2">{{ formatDate(item.createdAt) }}</v-col>
           <v-col cols="1">{{ item.hits }}</v-col>
@@ -75,10 +78,10 @@ export default {
       userNum: null, // 현재 로그인된 사용자의 ID
       currentCategory: "", // URL에서 카테고리 가져오기
       boardTitle: "",
-      searchType: "titile + content", // 검색 타입
+      searchType: "title + content", // 검색 타입을 기본값으로 설정
       searchQuery: "", // 검색어
       searchOptions: [
-        { text: "전체", value: "titile + content" },
+        { text: "전체", value: "title + content" },
         { text: "제목", value: "title" },
         { text: "내용", value: "content" },
         { text: "태그", value: "tags" },
@@ -119,6 +122,9 @@ export default {
     this.setBoardTitle();
     this.fetchBoardItems();
     this.userNum = localStorage.getItem("userNum");
+
+    // 새로고침 시 자동으로 검색 실행
+    this.performSearch();
   },
   methods: {
     checkUserRole() {
@@ -209,7 +215,6 @@ export default {
   },
 };
 </script>
-
 
 
 
