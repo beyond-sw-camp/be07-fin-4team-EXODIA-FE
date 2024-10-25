@@ -116,6 +116,7 @@ export default {
     this.calculateTokenTimeRemaining();  // 토큰 유효 시간 계산
     this.initSSE();
     this.fetchUserProfile();
+    this.fetchChatAlarmNum();
   },
   methods: {
     // SSE 연결 설정
@@ -136,11 +137,8 @@ export default {
           console.log(newNotification);
           return;
         } else if (newNotification.type == '채팅입장') {
-          this.unreadChatNum = newNotification.alarmNum;
-          console.log(newNotification);
           return;
         } else if (newNotification.type == '채팅목록') {
-          console.log(newNotification);
           return;
         }
         console.log(newNotification);
@@ -159,6 +157,16 @@ export default {
           }, 3000); // 3초 후에 재연결 시도
         }
       };
+    },
+
+    async fetchChatAlarmNum(){
+      try{
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/alarm`);
+        this.unreadChatNum = response.data.result;
+        console.log(response);
+      }catch(error){
+        console.error("오류발생");
+      }
     },
 
     // 알림 목록 가져오기 (최신 4개)
@@ -251,7 +259,8 @@ export default {
 
     // 채팅룸 리스트 열기
     showChatRoomList() {
-      window.open("/chatRoom/list", "chatRoomList", "width=460, height=600");
+      var status = "toolbar=no,scrollbars=no,resizable=no,status=no,menubar=no,width=460, height=600, top=100,left=1000"
+      window.open("/chatRoom/list", "chatRoomList", status);
     },
 
     // 로그인 연장
@@ -345,6 +354,7 @@ export default {
 
   },
   mounted() {
+    window.parentVueInstance = this;
     document.addEventListener("click", this.handleClickOutside);
     document.addEventListener('click', this.clickOutside);
     document.addEventListener('click', this.clickNotificationOutside);

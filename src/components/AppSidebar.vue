@@ -8,66 +8,72 @@
       </div>
 
       <!-- 사이드: 파일 관리 -->
-      <div class="menu-item" @click="toggleMenu('document')" :class="{ 'active': $route.path.startsWith('/document') }"
-        @mouseover="showSubSidebar('document')">
-        <v-icon class="icon">mdi-folder-file-outline</v-icon>
-        <span>파일 관리</span>
-      </div>
-      <!-- <div class="menu-item" @click="toggleMenu('document')" :class="{ 'active': $route.path.startsWith('/document') }"
+      <div @mouseleave="closeSubSideBar()">
+        <div class="menu-item" @click="toggleMenu('document')"
+          :class="{ 'active': $route.path.startsWith('/document') }" @mouseover="showSubSidebar('document')">
+          <v-icon class="icon">mdi-folder-file-outline</v-icon>
+          <span>파일 관리</span>
+        </div>
+        <!-- <div class="menu-item" @click="toggleMenu('document')" :class="{ 'active': $route.path.startsWith('/document') }"
         @mouseover="showSubSidebar('document')">
         <v-icon class="icon">mdi-folder-file-outline</v-icon>
         <span>파일 관리</span>
       </div> -->
 
-      <!-- 서브사이드: 파일 관리 -->
-      <div v-show="expandedMenu === 'document' || hoveredMenu === 'document'" class="sub-side-menu">
-        <v-row @click="$router.push('/document')">
-          전체 파일
-        </v-row>
-        <v-row @click="$router.push('/document/list/updated')">
-          최근 수정 파일
-        </v-row>
-        <v-row @click="$router.push('/document/list/viewed')">
-          최근 조회 파일
-        </v-row>
+        <!-- 서브사이드: 파일 관리 -->
+        <div v-show="expandedMenu === 'document' || hoveredMenu === 'document'" class="sub-side-menu">
+          <v-row @click="$router.push('/document')">
+            전체 파일
+          </v-row>
+          <v-row @click="$router.push('/document/list/updated')">
+            최근 수정 파일
+          </v-row>
+          <v-row @click="$router.push('/document/list/viewed')">
+            최근 조회 파일
+          </v-row>
+        </div>
       </div>
 
       <!-- 사이드: 결재 -->
-      <div class="menu-item" @click="toggleMenu('submit')" :class="{ 'active': $route.path.startsWith('/submit') }"
-        @mouseover="showSubSidebar('submit')">
-        <v-icon class="icon">mdi-pencil-box</v-icon>
-        <span>전자 결재</span>
-      </div>
+      <div @mouseleave="closeSubSideBar()">
+        <div class="menu-item" @click="toggleMenu('submit')" :class="{ 'active': $route.path.startsWith('/submit') }"
+          @mouseover="showSubSidebar('submit')">
+          <v-icon class="icon">mdi-pencil-box</v-icon>
+          <span>전자 결재</span>
+        </div>
 
-      <!-- 서브사이드: 결재 -->
-      <div v-show="expandedMenu === 'submit' || hoveredMenu === 'submit'" class="sub-side-menu">
-        <v-row @click="$router.push('/submit/list')">
-          결재 할 문서
-        </v-row>
-        <v-row @click="$router.push('/submit/list/my')">
-          결재 요청 문서
-        </v-row>
+        <!-- 서브사이드: 결재 -->
+        <div v-show="expandedMenu === 'submit' || hoveredMenu === 'submit'" class="sub-side-menu">
+          <v-row @click="$router.push('/submit/list')">
+            결재 할 문서
+          </v-row>
+          <v-row @click="$router.push('/submit/list/my')">
+            결재 요청 문서
+          </v-row>
+        </div>
       </div>
 
       <!-- 사이드: 예약 -->
-      <div class="menu-item" @click="toggleMenu('reservation')"
-        :class="{ 'active': $route.path.startsWith('/reservation/reservationList') }"
-        @mouseover="showSubSidebar('reservation')">
-        <v-icon class="icon">mdi-timer-sand</v-icon>
-        <span>예약</span>
+      <div @mouseleave="closeSubSideBar()">
+        <div class="menu-item" @click="toggleMenu('reservation')"
+          :class="{ 'active': $route.path.startsWith('/reservation/reservationList') }"
+          @mouseover="showSubSidebar('reservation')">
+          <v-icon class="icon">mdi-timer-sand</v-icon>
+          <span>예약</span>
+        </div>
+
+        <!-- 서브사이드: 예약 -->
+        <div v-show="expandedMenu === 'reservation' || hoveredMenu === 'reservation'" class="sub-side-menu">
+          <v-row @click="$router.push('/reservation/meetReservationList')">
+            회의실 예약
+          </v-row>
+          <v-row @click="$router.push('/reservation/reservationList')">
+            법인 차량 예약 </v-row>
+        </div>
       </div>
 
-      <!-- 서브사이드: 예약 -->
-      <div v-show="expandedMenu === 'reservation' || hoveredMenu === 'reservation'" class="sub-side-menu">
-        <v-row @click="$router.push('/reservation/meetReservationList')">
-          회의실 예약
-        </v-row>
-        <v-row @click="$router.push('/reservation/reservationList')">
-          법인 차량 예약 </v-row>
-      </div>
-
-      <div v-on:mouseleave="hideSubsidebar()">
-        <!-- 사이드: 게시판 -->
+      <!-- 사이드: 게시판 -->
+      <div @mouseleave="closeSubSideBar()">
         <div class="menu-item" @click="toggleMenu('board')" :class="{ 'active': $route.path.startsWith('/board') }"
           @mouseover="showSubSidebar('board')">
           <v-icon class="icon">mdi-format-list-bulleted</v-icon>
@@ -84,23 +90,24 @@
       </div>
 
 
-
       <!-- 사이드: 화상 회의 -->
-      <div class="menu-item" @click="toggleMenu('video')" :class="{ 'active': $route.path.startsWith('/video') }"
-        @mouseover="showSubSidebar('video')">
-        <v-icon class="icon">mdi-video</v-icon>
-        <span>화상회의</span>
-      </div>
+      <div @mouseleave="closeSubSideBar()">
+        <div class="menu-item" @click="toggleMenu('video')" :class="{ 'active': $route.path.startsWith('/video') }"
+          @mouseover="showSubSidebar('video')">
+          <v-icon class="icon">mdi-video</v-icon>
+          <span>화상회의</span>
+        </div>
 
-      <!-- 서브사이드: 화상 회의 -->
-      <div v-show="expandedMenu === 'video' || hoveredMenu === 'video'" class="sub-side-menu">
-        <!-- 디자인 때문에 임의로 v-btn 제거 -->
-        <v-row @click="$router.push('/video/create')">
-          화상 회의 생성
-        </v-row>
-        <v-row @click="$router.push('/video/rooms')">
-          화상 회의 목록
-        </v-row>
+        <!-- 서브사이드: 화상 회의 -->
+        <div v-show="expandedMenu === 'video' || hoveredMenu === 'video'" class="sub-side-menu">
+          <!-- 디자인 때문에 임의로 v-btn 제거 -->
+          <v-row @click="$router.push('/video/create')">
+            화상 회의 생성
+          </v-row>
+          <v-row @click="$router.push('/video/rooms')">
+            화상 회의 목록
+          </v-row>
+        </div>
       </div>
 
 
@@ -147,22 +154,23 @@
   </div>
 
       <!-- 사이드: 직원관리 -->
-      <div v-if="isHrDepartment" class="menu-item" @click="toggleMenu('employee-management')"
-        :class="{ 'active': $route.path.startsWith('/employee-management') }"
-        @mouseover="showSubSidebar('employee-management')">
-        <v-icon class="icon">mdi-account-cog</v-icon>
-        <span>직원 관리</span>
-      </div>
-      <!-- 서브사이드: 직원관리 -->
-      <div
-        v-show="expandedMenu === 'employee-management' || hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management' || hoveredMenu === 'eventList'"
-        class="sub-side-menu">
+      <div @mouseleave="closeSubSideBar()">
+        <div v-if="isHrDepartment" class="menu-item" @click="toggleMenu('employee-management')"
+          :class="{ 'active': $route.path.startsWith('/employee-management') }"
+          @mouseover="showSubSidebar('employee-management')">
+          <v-icon class="icon">mdi-account-cog</v-icon>
+          <span>직원 관리</span>
+        </div>
+        <!-- 서브사이드: 직원관리 -->
+        <div
+          v-show="expandedMenu === 'employee-management' || hoveredMenu === 'employee-management' || hoveredMenu === 'salary-management' || hoveredMenu === 'department-management' || hoveredMenu === 'eventList'"
+          class="sub-side-menu">
 
-        <v-row @click="$router.push('/employee-management')">직원 목록</v-row>
-        <v-row @click="$router.push('/salary-management')">급여 관리</v-row>
-        <v-row @click="$router.push('/eventList')">일정 관리</v-row>
-        <v-row @click="$router.push('/department-management')">부서 관리</v-row>
-        <!-- <v-row style="font-weight:700; font-size:16px;">
+          <v-row @click="$router.push('/employee-management')">직원 목록</v-row>
+          <v-row @click="$router.push('/salary-management')">급여 관리</v-row>
+          <v-row @click="$router.push('/eventList')">일정 관리</v-row>
+          <v-row @click="$router.push('/department-management')">부서 관리</v-row>
+          <!-- <v-row style="font-weight:700; font-size:16px;">
           직원 관리
         </v-row>
         <v-row>
@@ -182,6 +190,7 @@
         <v-row style="font-weight:700; font-size:16px;" @click="$router.push('/department-management')">
           부서 관리
         </v-row> -->
+        </div>
       </div>
     </div>
   </aside>
@@ -252,8 +261,10 @@ export default {
       this.isSubSidebarVisible = true;
       this.isHoveringSidebar = true;
     },
-    hideSubsidebar() {
-      this.expandedMenu = null;
+    closeSubSideBar() {
+      this.hoveredMenu = null;
+      this.isSubSidebarVisible = false;
+      this.isHoveringSidebar = false;
     },
     toggleMenu(menu) {
       this.expandedMenu = this.expandedMenu === menu ? null : menu;
