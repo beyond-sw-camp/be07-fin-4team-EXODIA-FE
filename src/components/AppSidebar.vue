@@ -118,7 +118,7 @@
             <span>조직도</span>
             <v-spacer></v-spacer>
             <v-btn icon @click="toggleOrganizationPanel" class="close-btn">
-              <v-icon small>mdi-close</v-icon> <!-- 작은 아이콘으로 설정 -->
+              <v-icon small class="close-icon">mdi-close</v-icon> <!-- 작은 아이콘으로 설정 -->
             </v-btn>
           </v-card-title>
           <v-divider></v-divider>
@@ -382,22 +382,35 @@ export default {
   z-index: 1100;
   border-radius: 8px;
   overflow: auto;
-  cursor: move; 
 }
 
 .v-btn.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 10px; 
   margin: 0;
   padding: 0;
   border: none;
+  background-color: transparent;
+  size: 5px;
+  min-width: 0;
+  width: 20px;  
+  height: 20px; 
+  box-shadow: none;
 }
 
 .v-btn.close-btn v-icon {
-  font-size: 16px; 
+  font-size: 10px; 
+  color: #333;
+}
+
+.close-icon {
+  font-size: 20px; 
 }
 
 .v-card-title {
   position: relative;
-  padding: 5px;
+  padding: 10px;
   font-size: 16px;
   font-weight: bold;
   color: #333;

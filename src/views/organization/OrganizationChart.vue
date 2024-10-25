@@ -63,12 +63,12 @@ export default {
     async fetchHierarchy() {
       try {
         const response = await axios.get('/department/hierarchy');
-        this.hierarchy = this.calculateUserCounts(response.data);
+        this.hierarchy = await this.calculateUserCounts(response.data);
       } catch (error) {
         console.error('부서 계층 정보를 가져오는 중 오류 발생:', error);
       }
     },
-    calculateUserCounts(departments) {
+    async calculateUserCounts(departments) {
       const recurse = async (dept) => {
         const usersResponse = await axios.get(`/department/${dept.id}/users`);
         dept.users = usersResponse.data || [];
@@ -82,19 +82,16 @@ export default {
         dept.totalUsersCount = totalUsers;
         return totalUsers;
       };
-      departments.forEach(async dept => {
+      
+      for (const dept of departments) {
         await recurse(dept);
-      });
+      }
       return departments;
     },
     async toggleExpand(department) {
       if (this.expandedDepartments.includes(department.id)) {
         this.expandedDepartments = this.expandedDepartments.filter(id => id !== department.id);
       } else {
-        if (!department.users || department.users.length === 0) {
-          const response = await axios.get(`/department/${department.id}/users`);
-          department.users = response.data;
-        }
         this.expandedDepartments.push(department.id);
       }
     },
@@ -111,6 +108,7 @@ export default {
   height: 100%;
   width: 250px;
   font-size: 12px;
+  overflow-y: auto; /* 전체 창 스크롤 가능하게 */
 }
 
 .search-input {
@@ -122,8 +120,7 @@ export default {
 }
 
 .department-list {
-  height: calc(40vh - 50px); /* 창 크기를 조정 */
-  overflow-y: auto; /* 스크롤 가능하게 설정 */
+  /* 내부 스크롤 제거 */
 }
 
 .scrollable-list {
