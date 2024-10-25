@@ -47,6 +47,35 @@
       <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
     </v-row>
 
+    <v-row justify="space-between" style="margin-left: 1200px">
+      <v-btn icon @click="openFilterModal" style="margin-top: 10px; box-shadow: none">
+        <v-icon>mdi-filter</v-icon> <!-- 필터 아이콘 -->
+      </v-btn>
+    </v-row>
+
+    <!-- 필터 모달창 (당일 예약된 차량만 표시) -->
+    <v-dialog v-model="isFilterModalOpen" max-width="500px">
+      <v-card>
+        <v-card-title>당일 예약된 차량</v-card-title>
+        <v-card-text>
+          <!-- reservedVehicles가 비어 있지 않은지 확인 -->
+          <v-list v-if="reservedVehicles.length">
+            <v-list-item v-for="vehicle in reservedVehicles" :key="vehicle.carId">
+              <v-list-item-content>
+                <v-list-item-title>{{ vehicle.carType }} - {{ vehicle.carNum }}</v-list-item-title>
+                <v-list-item-subtitle>{{ vehicle.userName }}님 예약 중</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+          <div v-else>당일 예약된 차량이 없습니다.</div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="isFilterModalOpen = false">닫기</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
 
     <!-- 현재 탭에 대한 내용 -->
     <v-tabs-items v-model="selectedTab">
@@ -70,14 +99,16 @@
 
             <!-- 차량 리스트 -->
             <v-row v-for="vehicle in vehicles" :key="vehicle.carId" class="vehicle-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+              
               <v-col cols="1">
                 <v-btn @click="openCarModal(vehicle)" icon color="none" style="box-shadow: none;">
-                  <v-icon>mdi-car</v-icon> <!-- 차량 아이콘 -->
+                  <v-icon>mdi-car</v-icon>
                 </v-btn>
               </v-col>
+ 
               
-                    <!-- 차량 종류 -->
-                    <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
+              <!-- 차량 종류 -->
+              <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
 
               <!-- 차량 번호 -->
               <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carNum }}</v-col>
@@ -126,6 +157,7 @@
               height="200px"
               max-height="200px"
               contain
+              style="margin-top: 10px;"
               class="d-flex align-center justify-center"
             ></v-img>
 
@@ -136,11 +168,11 @@
             <v-card-text>
               <v-row align="center" justify="space-between">
                 <v-col class="d-flex align-center">
-                  <v-icon left>mdi-seat</v-icon> <!-- 사람 인승 아이콘 -->
-                  <span>{{ selectedCar.seatingCapacity }} 인승</span> <!-- 인승 바인딩 -->
+                  <v-icon left>mdi-seat</v-icon>
+                  <span>{{ selectedCar.carSeat }} 인승</span>
                 </v-col>
                 <v-col class="d-flex align-center">
-                  <span>배기량: {{ selectedCar.engineDisplacement }}L</span> <!-- 배기량 바인딩 -->
+                  <span>배기량: {{ selectedCar.carEngine }}L</span>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -154,8 +186,8 @@
         </v-dialog>
 
 
-          <!-- 차량 예약 모달창 -->
-          <v-dialog v-model="isLongTermReservationModalOpen" persistent max-width="500px">
+        <!-- 차량 예약 모달창 -->
+        <v-dialog v-model="isLongTermReservationModalOpen" persistent max-width="500px">
           <v-card>
             <v-card-title>
               <span>차량 예약</span>
@@ -165,33 +197,39 @@
                 <!-- 차량 선택 -->
                 <v-select
                   v-model="selectedVehicle"
-                  :items="vehicles.map(vehicle => ({ title: vehicle.carNum, value: vehicle.carId }))"
+                  
+                  :items="vehicles.map(vehicle => ({ title: `${vehicle.carType} (${vehicle.carNum})`, value: vehicle.carId }))"
                   label="차량 선택"
                   required
                 ></v-select>
 
-                <!-- 시작 날짜 선택 -->
-                <el-date-picker
-                  v-model="startDate"
-                  type="date"
-                  placeholder="시작 날짜"
-                  format="yyyy-MM-dd"
-                  value-format="yyyy-MM-dd"
-                  :clearable="false"
-                  style="width: 100%; margin-top: 15px;"
-                ></el-date-picker>
+  
+                <v-menu v-model="menuStart" :close-on-content-click="false" transition="scale-transition" offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="startDate"
+                      label="시작 날짜"
+                      type="date" 
+                      v-bind="attrs"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker v-model="startDate" @input="menuStart = false"></v-date-picker>
+                </v-menu>
 
-                <!-- 끝 날짜 선택 -->
-                <el-date-picker
-                  v-model="endDate"
-                  type="date"
-                  placeholder="끝 날짜"
-                  format="yyyy-MM-dd"
-                  value-format="yyyy-MM-dd"
-                  :clearable="false"
-                  style="width: 100%; margin-top: 15px;"
-                ></el-date-picker>
-
+                  <!-- 끝 날짜 선택 -->
+                <v-menu v-model="menuEnd" :close-on-content-click="false" transition="scale-transition" offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      v-model="endDate"
+                      label="끝 날짜"
+                      type="date"
+                      v-bind="attrs"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker v-model="endDate" @input="menuEnd = false"></v-date-picker>
+                </v-menu>
               </v-form>
             </v-card-text>
             <v-card-actions>
@@ -201,6 +239,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
 
       </v-tab-item>
     </v-tabs-items>
@@ -227,14 +266,23 @@ export default {
       selectedVehicle: null, // 선택된 차량
       menuStart: false,
       menuEnd: false,
+      isFilterModalOpen: false, // 필터 모달 상태
     };
   },
   computed: {
     ...mapGetters({
       departmentName: "getDepartmentName",
     }),
+    reservedVehicles() {
+      return this.vehicles.filter(vehicle => vehicle.status === 'RESERVED');
+    },
   },
   methods: {
+    openFilterModal() {
+      console.log("reservedVehicles:", this.reservedVehicles); // reservedVehicles 데이터 출력
+      this.isFilterModalOpen = true;
+    },
+
     ...mapActions(["setUserAllInfoActions"]), // 사용자 정보를 Vuex에 저장하는 액션 호출
     
     formattedDate(date) {
@@ -256,7 +304,7 @@ export default {
     },
 
     openCarModal(vehicle) {
-      console.log(vehicle);
+      console.log("선택된 차량:", vehicle);
       this.selectedCar = vehicle;
       this.isCarModalOpen = true;
     },

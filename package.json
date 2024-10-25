@@ -42,6 +42,7 @@
     "vue": "^3.5.12",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^4.4.5",
+    "vue3-datepicker": "^0.4.0",
     "vuedraggable": "^4.1.0",
     "vuetify": "^3.7.3",
     "vuex": "^4.1.0",
