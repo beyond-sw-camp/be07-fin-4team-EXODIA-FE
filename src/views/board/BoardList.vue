@@ -52,8 +52,8 @@
           <v-col cols="8" class="title-ellipsis text-start" style="max-width: 80%; display: inline-block;">
             {{ itemTitle(item) }}
           </v-col>
-          <v-col cols="2">{{ formatDate(item.createdAt) }}</v-col>
-          <v-col cols="1">{{ item.hits }}</v-col>
+          <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col> <!-- 작성일 중앙 정렬 -->
+          <v-col cols="1" class="text-center">{{ item.hits }}</v-col> <!-- 조회수 중앙 정렬 -->
         </v-row>
       </v-col>
     </v-row>
@@ -62,6 +62,7 @@
     <v-pagination v-model="currentPage" :length="totalPages" @change="onPageChange" class="my-4"></v-pagination>
   </v-container>
 </template>
+
 
 
 <script>

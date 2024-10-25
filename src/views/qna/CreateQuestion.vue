@@ -237,6 +237,12 @@ export default {
         return;
       }
 
+      // **내용이 비었는지 검증**
+      if (this.questionText.trim() === '') {
+        alert('질문의 내용을 입력하세요.');
+        return;
+      }
+
       // 내용 길이 검증
       if (this.questionText.length > this.contentMaxLength) {
         alert(`내용은 최대 ${this.contentMaxLength}자까지 작성할 수 있습니다. 현재 ${this.questionText.length}자를 입력하셨습니다.`);
