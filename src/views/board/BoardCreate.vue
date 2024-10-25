@@ -49,7 +49,6 @@
       <!-- 내용 입력 필드 -->
       <div id="editor" class="content-input" contenteditable="true"></div>
 
-
       <!-- 파일 첨부 -->
       <v-file-input v-model="files" label="파일첨부"
         accept="image/*, application/pdf, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -151,6 +150,39 @@ export default {
         alert('카테고리 설정 중 문제가 발생했습니다. 다시 시도해주세요.');
       }
     },
+    
+    async removeTag(tagId) {
+      console.log("태그 삭제 요청: ", tagId);
+      try {
+        const response = await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/tags/delete/${tagId}`);
+        console.log("태그 삭제 응답: ", response.data);
+
+        if (response.status === 200) {
+          // 태그 목록과 선택된 태그 배열에서 삭제
+          this.tags = this.tags.filter(tag => tag.id !== tagId);
+          this.selectedTags = this.selectedTags.filter(id => id !== tagId);
+          console.log("현재 선택된 태그: ", this.selectedTags); // 배열 업데이트 후 로그 확인
+        } else {
+          alert("태그 삭제에 실패했습니다.");
+        }
+      } catch (error) {
+        console.error("태그 삭제 중 오류 발생: ", error);
+        alert("태그 삭제에 실패했습니다.");
+      }
+    },
+
+
+    toggleTagSelection(tagId) {
+      const index = this.selectedTags.indexOf(tagId);
+      if (index === -1) {
+        // 배열이 업데이트되는 과정을 명확하게 보여줌
+        this.selectedTags = [...this.selectedTags, tagId];
+      } else {
+        this.selectedTags = this.selectedTags.filter(id => id !== tagId);
+      }
+      console.log("태그 선택 후 현재 선택된 태그: ", this.selectedTags);
+    },
+
 
     // 유저가 관리자 권한을 갖고 있는지 확인
     checkUserRole() {
@@ -335,7 +367,6 @@ export default {
     },
   },
 };
-
 </script>
 
 

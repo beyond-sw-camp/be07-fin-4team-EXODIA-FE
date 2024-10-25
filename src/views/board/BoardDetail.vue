@@ -9,7 +9,6 @@
     <!-- 게시글 상세 정보 -->
     <div v-if="board" class="board-content-section mb-5">
       <!-- 제목 섹션 -->
-
       <div class="title-section mb-3">
         <h2 class="board-title">{{ board.title }}</h2>
       </div>
@@ -17,7 +16,7 @@
       <!-- 메타 정보 섹션 -->
       <div class="meta-info-section mb-3">
         <span class="meta-info">
-          <strong>카테고리:</strong> {{ board.category }} |
+          <strong>카테고리:</strong> {{ formatCategory(board.category) }} |
           <strong>작성일:</strong> {{ formatDate(board.createdAt) }} |
           <strong>조회수:</strong> {{ board.hits }}
         </span>
@@ -31,11 +30,11 @@
 
       <!-- 태그 목록 섹션 -->
       <v-divider class="mb-4"></v-divider>
-      <div v-if="tags && tags.length > 0" class="tag-section">
+      <div v-if="tags.length > 0" class="tag-section">
         <h4 class="section-title">태그</h4>
         <div class="tags">
-          <v-chip v-for="tag in tags" :key="tag" class="tag-chip" outlined>
-            {{ tag }}
+          <v-chip v-for="(tag, index) in tags" :key="index" class="tag-chip" outlined>
+            {{ tag.tag || tag }} <!-- 태그명 출력 -->
           </v-chip>
         </div>
       </div>
@@ -60,10 +59,10 @@
       </v-form>
 
       <!-- 댓글 목록 섹션 -->
-      <div v-if="isFamilyEventCategory" class="comment-section">
+      <div class="comment-section">
         <h3 class="section-title">댓글</h3>
-        <v-list two-line v-if="comments && comments.length > 0">
-          <v-list-item v-for="comment in comments" :key="comment.id" class="comment-item">
+        <v-list>
+          <v-list-item v-for="(comment, index) in comments" :key="comment.id || index" class="comment-item">
             <div class="comment-content">
               <div class="comment-meta">
                 <p class="comment-text">{{ comment.content }}</p>
@@ -81,9 +80,6 @@
         </v-list>
       </div>
     </div>
-
-    <!-- 액션 버튼들 -->
-
 
     <!-- 에러 및 로딩 상태 표시 -->
     <v-alert type="error" v-if="error">{{ error }}</v-alert>
@@ -107,11 +103,6 @@ export default {
       tags: [] // 태그 목록을 담을 배열
     };
   },
-  computed: {
-    isFamilyEventCategory() {
-      return this.board?.category === 'FAMILY_EVENT';
-    }
-  },
   created() {
     this.checkLoginStatus();
     this.fetchBoardDetail();
@@ -120,10 +111,10 @@ export default {
     checkLoginStatus() {
       const token = localStorage.getItem('token');
       this.isLoggedIn = !!token;
+      console.log("로그인 상태:", this.isLoggedIn); // 로그인 상태 확인
     },
     async fetchBoardDetail() {
       try {
-        // 게시글 ID와 사용자 번호를 가져옴
         const boardId = this.$route.params.id;
         const userNum = localStorage.getItem('userNum');
 
@@ -131,28 +122,45 @@ export default {
         const boardResponse = await axios.get(`/board/detail/${boardId}`, {
           params: { userNum }
         });
+
         this.board = boardResponse.data.result;
 
-        // 태그 목록 받아오기
+        // 댓글 데이터 확인
+        if (this.board.comments) {
+          this.comments = this.board.comments.filter(comment => !comment.delYn); 
+        } else {
+          this.comments = [];
+        }
+
+        // 태그 데이터 확인
         if (this.board.tags) {
-          this.tags = this.board.tags;
+          if (!Array.isArray(this.board.tags)) {
+            this.tags = [this.board.tags];
+          } else {
+            this.tags = [...this.board.tags]; 
+          }
         } else {
           this.tags = [];
         }
 
-        // 댓글 데이터를 제대로 받아오는지 확인
-        if (this.board.comments) {
-          this.comments = this.board.comments;
-          console.log('댓글 목록:', this.comments);
-        } else {
-          this.comments = [];
-        }
+        console.log('게시글 데이터:', this.board);
+        console.log('태그 데이터:', this.tags);
+
       } catch (error) {
         console.error('게시글을 불러오는 데 실패했습니다:', error);
-        alert('게시글을 불러오는 데 실패했습니다.');
         this.error = '게시글을 불러오는 데 실패했습니다.';
       }
     },
+
+    formatCategory(category) {
+      // 카테고리 명을 변환하여 출력
+      const categoryMapping = {
+        'NOTICE': '공지사항',
+        'FAMILY_EVENT': '경조사'
+      };
+      return categoryMapping[category] || category;  // 기본적으로는 원본 카테고리명을 사용
+    },
+
     async submitComment() {
       if (!this.newCommentContent.trim()) {
         alert('댓글 내용을 입력하세요.');
@@ -165,30 +173,38 @@ export default {
         userNum: this.userNum,
       };
       try {
-        await axios.post(`/comment/create`, newComment);
+        const response = await axios.post(`/comment/create`, newComment);
+        console.log('댓글 작성 응답:', response.data);
         this.newCommentContent = '';
-        this.fetchBoardDetail();
+        this.fetchBoardDetail(); 
       } catch (error) {
         console.error('댓글 작성에 실패했습니다:', error);
         alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
       }
     },
+
     formatDate(date) {
       return new Date(date)
         .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-        .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
-        .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
+        .replace(/\.\s/g, '.') 
+        .replace(/\.$/, '');
     },
+
     goBack() {
+      console.log('이전 페이지로 이동');
       this.$router.go(-1);
     },
+
     editBoard() {
+      console.log('게시글 수정 페이지로 이동:', this.board.id);
       this.$router.push({ name: 'BoardUpdate', params: { id: this.board.id } });
     },
+
     async confirmDeleteBoard() {
       if (confirm("정말로 이 게시물을 삭제하시겠습니까?")) {
         try {
           const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/delete/${this.board.id}`;
+          console.log('게시물 삭제 요청:', apiUrl);
           await axios.get(apiUrl);
           alert('게시물이 성공적으로 삭제되었습니다.');
           this.$router.push({ name: 'BoardList', params: { category: this.board.category } });
@@ -198,6 +214,7 @@ export default {
         }
       }
     },
+
     editComment(comment) {
       const updatedContent = prompt("댓글을 수정하세요:", comment.content);
       if (updatedContent && updatedContent !== comment.content) {
@@ -206,10 +223,8 @@ export default {
           .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum, isEdited: true })
           .then((response) => {
             console.log('댓글 수정 응답:', response.data);
-            // 수정된 댓글을 comments 배열에서 직접 업데이트
             const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
             if (updatedCommentIndex !== -1) {
-              // 배열 요소를 직접 수정
               this.comments[updatedCommentIndex].content = updatedContent;
               this.comments[updatedCommentIndex].isEdited = true;
             }
@@ -220,22 +235,34 @@ export default {
           });
       }
     },
+
     async deleteComment(commentId) {
       if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
         const userNum = localStorage.getItem("userNum");
         try {
-          await axios.get(`/comment/delete/${commentId}`, { params: { userNum } });
-          alert("댓글이 성공적으로 삭제되었습니다.");
-          this.fetchBoardDetail();
+          const response = await axios.get(`/comment/delete/${commentId}`, { 
+            params: { userNum } 
+          });
+          console.log('댓글 삭제 응답 데이터:', response.data);
+
+          if (response.data.includes('성공적으로 삭제되었습니다')) {
+            this.comments = this.comments.filter(comment => comment.id !== commentId);
+            alert("댓글이 성공적으로 삭제되었습니다.");
+          } else {
+            alert(`댓글 삭제에 실패했습니다. 서버에서 오류가 발생했습니다.`);
+          }
+          
         } catch (error) {
           console.error("댓글 삭제에 실패했습니다:", error);
-          alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
+          alert(`댓글 삭제에 실패했습니다. 오류 메시지: ${error.message}`);
         }
       }
     },
+
     isImage(fileType) {
       return fileType.includes('image/');
     },
+
     downloadFile(fileUrl, fileName) {
       try {
         const link = document.createElement('a');
@@ -252,6 +279,8 @@ export default {
   }
 };
 </script>
+
+
 
 <style scoped>
 .board-container {
