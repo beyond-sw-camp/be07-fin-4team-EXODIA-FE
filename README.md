@@ -361,7 +361,7 @@
 
 ### 채팅방 생성
 
-<img src="./img/ui테스트/.gif"/>
+<img src="./img/ui테스트/채팅방생성.gif"/>
 
 ### 실시간 채팅
 <img src="./img/ui테스트/실시간채팅.gif"/>
@@ -369,6 +369,7 @@
 ### 참여자 초대/나가기
 
 <img src="./img/ui테스트/채팅방초대.gif"/>
+<img src="./img/ui테스트/채팅방나가기.gif"/>
 
 </details>
 
