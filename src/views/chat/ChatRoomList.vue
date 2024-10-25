@@ -10,7 +10,8 @@
             <!-- Search bar-->
             <v-col cols="9">
                 <v-text-field v-model="searchQuery" v-on:keypress.enter="searchChatRoom" @input="searchChatRoom"
-                    placeholder="채팅방명, 사원이름으로 검색" class="search-bar" solo hide-details dense variant="underlined"></v-text-field>
+                    placeholder="채팅방명, 사원이름으로 검색" class="search-bar" solo hide-details dense
+                    variant="underlined"></v-text-field>
             </v-col>
             <v-col cols="1" location="right">
                 <v-icon class="icon search-icon" @click="searchChatRoom">mdi-magnify</v-icon>
@@ -25,23 +26,25 @@
         <!-- Chat room list -->
         <v-list class="chat-room-list" v-if="chatRoomList.length !== 0">
             <v-list-item-group v-for="(chatroom, index) in chatRoomList" :key="chatroom.roomId">
-                <v-list-item>
+                <v-list-item class="chat-list-item" @click="enterToChatRoom(index)">
                     <!-- ⭐ Profile image -->
                     <!-- <v-list-item-avatar>
             <img :src="chatroom.profileImage" alt="Profile" />
           </v-list-item-avatar> -->
 
                     <!-- Room info -->
-                    <v-list-item-content @click="enterToChatRoom(index)" class="chat-room-list-content">
+                    <v-list-item-content class="chat-room-list-content">
                         <v-list-item-title class="chat-room-list-title">{{ chatroom.roomName }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ chatroom.recentChat }}</v-list-item-subtitle>
+                        <v-list-item-subtitle class="chat-room-list-chat">{{ chatroom.recentChat }}</v-list-item-subtitle>
                     </v-list-item-content>
 
                     <!-- Unread message count -->
                     <v-badge :content="chatroom.unreadChatNum" color="red" v-if="chatroom.unreadChatNum > 0"
                         class="unread-badge"></v-badge>
+                    <span class="message-time">{{ getRecentChatTime(chatroom.recentChatTime) }}</span>
+                    <v-divider></v-divider>
                 </v-list-item>
-                <v-divider></v-divider>
+
             </v-list-item-group>
         </v-list>
         <v-card-text v-else>채팅방이 없습니다.</v-card-text>
@@ -153,6 +156,41 @@ export default {
             this.loadChatRoom();
         },
 
+        // 시간 추출
+        getTime(createdAt) {
+            const createdTime = new Date(createdAt);
+            let hour = createdTime.getHours();
+            let minute = createdTime.getMinutes();
+            let ampm = hour < 12 ? '오전' : '오후';
+
+            hour = hour % 12 || 12; // 12시간 형식으로 변환
+            minute = minute < 10 ? '0' + minute : minute;
+
+            return `${ampm} ${hour}:${minute}`;
+        },
+
+        // 날짜 감별
+        isDifferentDay(d) {
+            const day = new Date(d);
+            const today = new Date();
+
+            return day.getFullYear() !== today.getFullYear() ||
+                day.getMonth() !== today.getMonth() ||
+                day.getDate() !== today.getDate();
+        },
+
+        // 날짜 감별 후 표시
+        getRecentChatTime(createdAt) {
+            if(createdAt == ""){
+                return;
+            }
+            if(this.isDifferentDay(createdAt)){
+                const createdTime = new Date(createdAt);
+                return `${createdTime.getFullYear()}년 ${createdTime.getMonth() + 1}월 ${createdTime.getDate()}일`;
+            }
+            return this.getTime(createdAt);
+        },
+
         enterToChatRoom(id) { // 채팅방 입장
             this.chatRoomCheck = true;
             this.chatRoomListCheck = false;
@@ -196,7 +234,7 @@ export default {
     cursor: pointer;
 }
 
-.create-icon{
+.create-icon {
     margin-left: 10px;
 }
 
@@ -204,13 +242,24 @@ export default {
     margin-top: 8px;
 }
 
+.chat-list-item {
+    height: 60px;
+}
+
 .chat-room-list-content {
     position: relative;
     cursor: pointer;
+    height: 60px;
 }
 
-.chat-room-list-title{
+.chat-room-list-title {
+    height: 20px;
+    margin-bottom: 10px;
+}
 
+.chat-room-list-chat{
+    height: 20px;
+    margin-bottom: 5px;
 }
 
 .unread-badge {
@@ -219,5 +268,13 @@ export default {
     right: 5px;
     z-index: 1;
     margin-right: 16px;
+}
+
+.message-time{
+    color: gray;
+    font-size: 11px;
+    position: absolute;
+    right: 25px;
+    bottom: 10px;
 }
 </style>

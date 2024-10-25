@@ -155,7 +155,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis !important;
   max-width: 360px;
-  width: 100%;
+  width: 360px;
   font-weight: 600;
 }
 

@@ -407,10 +407,10 @@ export default {
 
         async inviteUserMessage(inviteUserData) {
             const messageReq = {
-                senderNum: inviteUserData,
+                senderNum: inviteUserData.senderNum,
                 roomId: this.chatRoomId,
                 messageType: "ENTER",
-                message: "",
+                message: `${inviteUserData.senderName}님이 입장했습니다.`,
                 files: null,
             };
             if (this.stompClient && this.stompClient.connected) {
@@ -429,10 +429,10 @@ export default {
         exitUserMesssage(exitUserData) {
             // ⭐ 나갔을 때 채팅방 변화
             const messageReq = {
-                senderNum: exitUserData,
+                senderNum: exitUserData.senderNum,
                 roomId: this.chatRoomId,
                 messageType: "QUIT",
-                message: "",
+                message: `${exitUserData.senderName}님이 퇴장했습니다.`,
                 files: null,
             };
             if (this.stompClient && this.stompClient.connected) {
