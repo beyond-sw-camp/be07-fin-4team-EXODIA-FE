@@ -1,15 +1,15 @@
 <template>
   <v-container fluid class="timeline-container">
     <!-- Week Selection -->
-    <v-row>
-      <v-col cols="10" md="6">
-        <v-select v-model="selectedWeek" :items="weeks" label="주차 선택" item-title="text" item-value="weekNumber" outlined
-          style="margin-left: 30px;">
+    <v-row justify="center">
+      <v-col cols="6">
+        <v-select density="compact" v-model="selectedWeek" :items="weeks" label="주차 선택" item-title="text"
+          item-value="weekNumber" outlined style="margin-left: 30px;">
         </v-select>
       </v-col>
 
       <!-- 출근 버튼 -->
-      <v-col cols="10" md="4" align-center>
+      <v-col cols="2" align-center>
         <v-btn v-list @click="workIn" :disabled="isWorkIn" class="mr-2">
           출근
         </v-btn>
