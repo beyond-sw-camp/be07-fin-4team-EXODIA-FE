@@ -114,7 +114,7 @@
                     </v-card>
                     <v-row class="submit-btn">
                         <v-btn v-create class="mt-8" @click="createSubmit">
-                            결재라인 등록
+                            결재 등록
                         </v-btn>
                     </v-row>
 
@@ -205,7 +205,12 @@ export default {
                     position: this.draggedUser.positionId,
                 });
                 this.droppedUsers.push(this.draggedUser);
+                this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
+
                 this.draggedUser = null;
+            } else {
+                alert("이미 결재라인에 등록되었습니다.");
+                return;
             }
         },
         removeUser(index) {
@@ -215,7 +220,7 @@ export default {
         async createSubmit() {
             try {
                 this.submitCreateData.contents = JSON.stringify(this.formData);
-                this.submitCreateData.submitUserDtos.sort((a, b) => a.position - b.position);
+                this.submitCreateData.submitUserDtos.sort((a, b) => a.position + b.position);
 
                 await axios.post('/submit/create', this.submitCreateData, { headers: { Authorization: `Bearer ${this.token}` } });
                 alert("결재 요청이 성공적으로 처리되었습니다.")

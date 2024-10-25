@@ -122,7 +122,8 @@ app.directive('create', {
   mounted(el) {
     if (el.textContent.includes('작성') || el.textContent.includes('생성') || el.textContent.includes('수정') ||
       el.textContent.includes('등록') || el.textContent.includes('저장') || el.textContent.includes('답변') ||
-      el.textContent.includes('업데이트') || el.textContent.includes('퇴근') || el.textContent.includes('변경') || el.textContent.includes('추가')) {
+      el.textContent.includes('업데이트') || el.textContent.includes('퇴근') || el.textContent.includes('변경') ||
+      el.textContent.includes('추가') || el.textContent.includes('승인') || el.textContent.includes('확인')) {
       el.style.backgroundColor = '#9a2f2f'; // 배경색 - 붉은색
       el.style.color = 'white';
       el.style.fontWeight = 'bold';
@@ -148,7 +149,7 @@ app.directive('update', {
 app.directive('delete', {
   mounted(el) {
     // 텍스트가 "생성"을 포함하는지 확인
-    if (el.textContent.includes('닫기') || el.textContent.includes('취소') || el.textContent.includes('삭제')) {
+    if (el.textContent.includes('닫기') || el.textContent.includes('취소') || el.textContent.includes('삭제') || el.textContent.includes('반려')) {
       el.style.backgroundColor = '#949494'; // 배경색 - 회색
       el.style.fontWeight = 'bold';
       el.style.fontSize = '14px';

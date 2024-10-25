@@ -198,7 +198,7 @@ export default {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/submit/list/submitLine/${submitId}`;
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
-                this.submitLines = response.data.result;
+                this.submitLines = response.data.result.reverse();
             } catch (e) {
                 console.error('결재 라인 정보를 가져오는 중 오류 발생:', e);
             }

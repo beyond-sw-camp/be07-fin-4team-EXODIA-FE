@@ -216,7 +216,7 @@ export default {
         async createSubmit() {
             try {
                 this.submitCreateData.submitUserDtos.slice().sort((a, b) => b.PositionId - a.PositionId);
-                this.submitCreateData.submitUserDtos.sort((a, b) => a.position - b.position);
+                this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
 
                 this.submitCreateData.contents = `{"경조종류": "${this.formData.mainEventType} ${this.formData.familyRelation}"}`;
                 this.submitCreateData.uploadBoard = this.formData.uploadBoard;
