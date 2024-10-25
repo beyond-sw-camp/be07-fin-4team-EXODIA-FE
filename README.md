@@ -199,6 +199,69 @@
 
 ## 🖥️ UI/UX 단위 테스트 결과서
 
+<details>
+  
+<summary>로그인</summary>
+
+### 로그인
+
+<img src="./img/ui테스트/"/>
+
+</details>
+
+<details>
+  
+<summary>마이페이지</summary>
+
+### 근태 관리
+
+<img src="./img/ui테스트/"/>
+
+### 인사 평가
+
+<img src="./img/ui테스트/"/>
+
+</details>
+
+<details>
+  
+<summary>파일 관리</summary>
+
+### 파일 등록
+
+<img src="./img/ui테스트/"/>
+
+### 댓글 작성
+
+<img src="./img/ui테스트/"/>
+
+### 파일 버전 관리
+
+<img src="./img/ui테스트/"/>
+
+</details>
+
+<details>
+  
+<summary>전자 결재</summary>
+
+### 결재 요청
+
+<img src="./img/ui테스트/"/>
+
+### 결재(경조사) 승인 시 게시물 자동 등록
+
+<img src="./img/ui테스트/"/>
+
+### 결재(휴가) 승인 시 연차 감소 
+
+<img src="./img/ui테스트/"/>
+
+</details>
+
+<details>
+  
+<summary>예약</summary>
 
 ### 회의실 예약
 
@@ -211,6 +274,7 @@
 </details>
 
 <details>
+  
 <summary>게시판</summary>
 
 ### 공지사항
@@ -228,8 +292,9 @@
 </details>
 
 <details>
+  
 <summary>화상 회의</summary>
-
+  
 ### TDB
 
 <img src="./img/ui테스트/"/>
@@ -237,6 +302,7 @@
 </details>
 
 <details>
+  
 <summary>직원 관리</summary>
 
 ### 직원 생성
@@ -250,6 +316,7 @@
 </details>
 
 <details>
+  
 <summary>급여 관리</summary>
   
 ### 급여 명세서 조회(세금)
@@ -263,6 +330,7 @@
 </details>
 
 <details>
+  
 <summary>일정 관리</summary>
 
 ### 일정 생성
@@ -272,6 +340,7 @@
 </details>
 
 <details>
+  
 <summary>부서 관리</summary>
 
 ### 부서 계층 조회
@@ -289,6 +358,7 @@
 </details>
 
 <details>
+  
 <summary>채팅</summary>
 
 ### 채팅방 생성
@@ -300,60 +370,6 @@
 <img src="./img/ui테스트/"/>
 
 ### 참여자 초대/나가기
-
-<img src="./img/ui테스트/"/>
-
-</details>
-
-<details>
-<summary></summary>
-
-### 
-
-<img src="./img/ui테스트/"/>
-
-</details>
-
-<details>
-<summary></summary>
-
-### 
-
-<img src="./img/ui테스트/"/>
-
-</details>
-
-<details>
-<summary></summary>
-
-### 
-
-<img src="./img/ui테스트/"/>
-
-</details>
-
-<details>
-<summary></summary>
-
-### 
-
-<img src="./img/ui테스트/"/>
-
-</details>
-
-<details>
-<summary></summary>
-
-### 
-
-<img src="./img/ui테스트/"/>
-
-</details>
-
-<details>
-<summary></summary>
-
-### 
 
 <img src="./img/ui테스트/"/>
 
