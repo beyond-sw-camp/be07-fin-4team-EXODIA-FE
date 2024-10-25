@@ -16,7 +16,7 @@
       <!-- 메타 정보 섹션 -->
       <div class="meta-info-section mb-3">
         <span class="meta-info">
-          <strong>카테고리:</strong> {{ board.category }} |
+          <strong>카테고리:</strong> {{ formatCategory(board.category) }} |
           <strong>작성일:</strong> {{ formatDate(board.createdAt) }} |
           <strong>조회수:</strong> {{ board.hits }}
         </span>
@@ -28,16 +28,16 @@
       <!-- 본문 내용 섹션 -->
       <div v-html="board.content" class="board-body mb-4"></div>
 
-    <!-- 태그 목록 섹션 -->
-    <v-divider class="mb-4"></v-divider>
-    <div v-if="board.tags && board.tags.length > 0" class="tag-section">
-      <h4 class="section-title">태그</h4>
-      <div class="tags">
-        <v-chip v-for="tag in board.tags" :key="tag.id" class="tag-chip" outlined>
-          {{ tag.tag }} <!-- 태그명 출력 -->
-        </v-chip>
+      <!-- 태그 목록 섹션 -->
+      <v-divider class="mb-4"></v-divider>
+      <div v-if="tags.length > 0" class="tag-section">
+        <h4 class="section-title">태그</h4>
+        <div class="tags">
+          <v-chip v-for="(tag, index) in tags" :key="index" class="tag-chip" outlined>
+            {{ tag.tag || tag }} <!-- 태그명 출력 -->
+          </v-chip>
+        </div>
       </div>
-    </div>
 
       <!-- 파일 목록 섹션 -->
       <div v-if="board.files && board.files.length > 0" class="file-list-section mb-5">
@@ -122,11 +122,11 @@ export default {
         const boardResponse = await axios.get(`/board/detail/${boardId}`, {
           params: { userNum }
         });
+
         this.board = boardResponse.data.result;
 
         // 댓글 데이터 확인
         if (this.board.comments) {
-          // 논리 삭제된(delYn이 true인) 댓글은 제외
           this.comments = this.board.comments.filter(comment => !comment.delYn); 
         } else {
           this.comments = [];
@@ -134,17 +134,31 @@ export default {
 
         // 태그 데이터 확인
         if (this.board.tags) {
-          this.tags = [...this.board.tags]; // 태그 데이터가 있으면 태그를 복사하여 사용
+          if (!Array.isArray(this.board.tags)) {
+            this.tags = [this.board.tags];
+          } else {
+            this.tags = [...this.board.tags]; 
+          }
         } else {
           this.tags = [];
         }
 
-        console.log('게시글 데이터:', this.board); // 게시글 데이터 전체를 확인
+        console.log('게시글 데이터:', this.board);
+        console.log('태그 데이터:', this.tags);
 
       } catch (error) {
         console.error('게시글을 불러오는 데 실패했습니다:', error);
         this.error = '게시글을 불러오는 데 실패했습니다.';
       }
+    },
+
+    formatCategory(category) {
+      // 카테고리 명을 변환하여 출력
+      const categoryMapping = {
+        'NOTICE': '공지사항',
+        'FAMILY_EVENT': '경조사'
+      };
+      return categoryMapping[category] || category;  // 기본적으로는 원본 카테고리명을 사용
     },
 
     async submitComment() {
@@ -160,9 +174,9 @@ export default {
       };
       try {
         const response = await axios.post(`/comment/create`, newComment);
-        console.log('댓글 작성 응답:', response.data); // 댓글 작성 응답 확인
+        console.log('댓글 작성 응답:', response.data);
         this.newCommentContent = '';
-        this.fetchBoardDetail(); // 새 댓글 반영을 위해 게시글 정보를 다시 불러옴
+        this.fetchBoardDetail(); 
       } catch (error) {
         console.error('댓글 작성에 실패했습니다:', error);
         alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
@@ -172,8 +186,8 @@ export default {
     formatDate(date) {
       return new Date(date)
         .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-        .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
-        .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
+        .replace(/\.\s/g, '.') 
+        .replace(/\.$/, '');
     },
 
     goBack() {
@@ -208,12 +222,11 @@ export default {
         axios
           .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum, isEdited: true })
           .then((response) => {
-            console.log('댓글 수정 응답:', response.data); // 댓글 수정 응답 확인
+            console.log('댓글 수정 응답:', response.data);
             const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
             if (updatedCommentIndex !== -1) {
               this.comments[updatedCommentIndex].content = updatedContent;
               this.comments[updatedCommentIndex].isEdited = true;
-              console.log('댓글 수정 완료:', this.comments[updatedCommentIndex]);
             }
           })
           .catch((error) => {
@@ -225,42 +238,33 @@ export default {
 
     async deleteComment(commentId) {
       if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
-        const userNum = localStorage.getItem("userNum"); // userNum 가져오기
+        const userNum = localStorage.getItem("userNum");
         try {
-          console.log('댓글 삭제 요청:', commentId);
-          
-          // userNum을 쿼리 파라미터로 전송
           const response = await axios.get(`/comment/delete/${commentId}`, { 
             params: { userNum } 
           });
-
           console.log('댓글 삭제 응답 데이터:', response.data);
 
           if (response.data.includes('성공적으로 삭제되었습니다')) {
             this.comments = this.comments.filter(comment => comment.id !== commentId);
             alert("댓글이 성공적으로 삭제되었습니다.");
           } else {
-            alert(`댓글 삭제에 실패했습니다. 서버에서 오류가 발생했습니다. 응답: ${JSON.stringify(response.data)}`);
+            alert(`댓글 삭제에 실패했습니다. 서버에서 오류가 발생했습니다.`);
           }
           
         } catch (error) {
           console.error("댓글 삭제에 실패했습니다:", error);
-          alert(`댓글 삭제에 실패했습니다. 오류 메시지: ${error.response ? error.response.data.message : error.message}`);
+          alert(`댓글 삭제에 실패했습니다. 오류 메시지: ${error.message}`);
         }
       }
     },
 
-
-
     isImage(fileType) {
-      const isImg = fileType.includes('image/');
-      console.log('파일 타입 확인:', fileType, '이미지 여부:', isImg);
-      return isImg;
+      return fileType.includes('image/');
     },
 
     downloadFile(fileUrl, fileName) {
       try {
-        console.log('파일 다운로드 요청:', fileUrl, fileName);
         const link = document.createElement('a');
         link.href = fileUrl;
         link.setAttribute('download', fileName);
