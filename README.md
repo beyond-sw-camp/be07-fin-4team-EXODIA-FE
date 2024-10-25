@@ -307,11 +307,11 @@
 
 ### 직원 생성
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/직원생성.gif"/>
 
 ### 직원 정보 수정
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/직원수정.gif"/>
 
 </details>
 
@@ -321,11 +321,11 @@
   
 ### 급여 명세서 조회(세금)
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/급여명세서조회.gif"/>
 
 ### 급여일 설정
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/급여일관리.gif"/>
 
 </details>
 
@@ -335,7 +335,7 @@
 
 ### 일정 생성
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/일정생성.gif"/>
 
 </details>
 
@@ -345,15 +345,15 @@
 
 ### 부서 계층 조회
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/부서조회.gif"/>
 
 ### 부서 추가
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/.gif"/>
 
 ### 부서 이동
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/.gif"/>
 
 </details>
 
@@ -363,15 +363,15 @@
 
 ### 채팅방 생성
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/.gif"/>
 
 ### 실시간 채팅
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/.gif"/>
 
 ### 참여자 초대/나가기
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/.gif"/>
 
 </details>
 
