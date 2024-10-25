@@ -1,18 +1,18 @@
 <template>
   <div class="userAttendance">
 
-    <v-row justify="">
+    <v-row class="attendance-bar">
       <v-col cols="8">
         <h3>출·퇴근 기록</h3>
       </v-col>
 
-      <v-col>
+      <v-col cols="2">
         <!-- 출근 버튼 -->
         <v-btn variant="outlined" v-list @click="workIn">
           출근
         </v-btn>
       </v-col>
-      <v-col>
+      <v-col cols="2">
         <!-- 퇴근 버튼 -->
         <v-btn v-create variant="outlined" :disabled="isWorkOut" @click="workOut">
           퇴근
@@ -171,6 +171,11 @@ v-alert {
   position: relative;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   background-color: #fff;
+}
+
+.attendance-bar{
+  display: flex;
+  align-items: center;
 }
 
 /* 유저 카드 스타일 */

@@ -51,12 +51,12 @@
                 </v-col>
             </v-row>
         </v-container>
-
     </v-dialog>
 </template>
 
 <script>
 import axios from 'axios';
+// import OrganizationChart from '@/views/organization/OrganizationChart.vue'; 
 
 export default {
     props: ['chatRoomIdProp', 'existChatUsersProp', 'invite'],
@@ -128,7 +128,7 @@ export default {
 
 <style scoped>
 .invite-container {
-    background-color: #f0f0f0;
+    background-color: white;
 }
 
 .select-line {

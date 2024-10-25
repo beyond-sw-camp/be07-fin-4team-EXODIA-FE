@@ -3,9 +3,9 @@
   <v-row>
     <v-col cols="6">
       <MainCalendarList style="font-size:12px; background-color:#ffffff;" />
-
     </v-col>
-    <v-col cols="6">
+    
+    <v-col cols="6" class="right-dashboard">
       <v-row justify="space-between">
         <!-- 공지사항 -->
         <v-col cols="12" class="board">
@@ -18,7 +18,6 @@
                 @click="$router.push('/board/notice/list')">더보기</span>
             </v-col>
           </v-row>
-
 
           <v-row>
             <!-- 게시글 목록 -->
@@ -125,6 +124,10 @@ export default {
 </script>
 
 <style scoped>
+.right-dashboard{
+  margin-top: 12px;
+}
+
 .profile-content {
   display: flex;
   flex-direction: column;
