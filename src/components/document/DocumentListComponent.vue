@@ -47,7 +47,8 @@
                         class="document" oulined @click="openDrawer(document.id)"
                         style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
                         <v-col cols="1">{{ index + 1 }}</v-col>
-                        <v-col cols="6" class="ellipsis-text" style="text-align:start;">{{ document.fileName }}</v-col>
+                        <v-col cols="6" class="ellipsis-text-list" style="text-align:start;">{{ document.fileName
+                            }}</v-col>
                         <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
                         <v-col cols="2">{{ document.userName }}</v-col>
                     </v-row>
@@ -72,26 +73,27 @@
                     <!-- 상세 정보 -->
                     <v-tabs-window-item value="1">
                         <v-card-title>
-                            <v-row class="detailFileName ellipsis-text">{{
-                                selectedDocument.fileName
-                            }}</v-row>
+                            <v-row class="detail-file-name ellipsis-text">
+                                {{ selectedDocument.fileName }}
+                                <v-icon @click="fileDownload(selectedDocument.id)">mdi-file-download-outline</v-icon>
+                            </v-row>
                         </v-card-title>
                         <v-divider></v-divider>
                         <v-card-text>
-                            <v-row>생성 날짜</v-row>
-                            <v-row>{{ formatDate(selectedDocument.createAt) }}</v-row>
+                            <v-row style="font-size:16px; font-weight: 600">생성 날짜</v-row>
+                            <v-row style="font-size:14px">{{ formatDate(selectedDocument.createAt) }}</v-row>
                         </v-card-text>
                         <v-card-text>
-                            <v-row>생성 시간</v-row>
-                            <v-row>{{ formatLocalTime(selectedDocument.createAt) }}</v-row>
+                            <v-row style="font-size:16px; font-weight: 600">생성 시간</v-row>
+                            <v-row style="font-size:14px">{{ formatLocalTime(selectedDocument.createAt) }}</v-row>
                         </v-card-text>
                         <v-card-text>
-                            <v-row>파일 등록자</v-row>
-                            <v-row>{{ selectedDocument.userName }}</v-row>
+                            <v-row style="font-size:16px; font-weight: 600">파일 등록자</v-row>
+                            <v-row style="font-size:14px">{{ selectedDocument.userName }}</v-row>
                         </v-card-text>
                         <v-card-text>
-                            <v-row>태그</v-row>
-                            <v-row>
+                            <v-row style="font-size:16px; font-weight: 600">태그</v-row>
+                            <v-row style="font-size:14px">
                                 <span v-for="(tag, index) in selectedDocument.tags" :key="index"
                                     style="padding-right:5px">
                                     <v-chip>{{ tag }}</v-chip>
@@ -99,13 +101,7 @@
                             </v-row>
                         </v-card-text>
                         <v-card-text>
-                            <v-row>파일 다운로드</v-row>
-                            <v-row>
-                                <v-btn variant="outlined" @click="fileDownload(selectedDocument.id)">다운로드</v-btn>
-                            </v-row>
-                        </v-card-text>
-                        <v-card-text>
-                            <v-row>설명</v-row>
+                            <v-row style="font-size:16px; font-weight: 600">설명</v-row>
                             <v-row>{{ selectedDocument.description }}</v-row>
                         </v-card-text>
 
@@ -134,7 +130,7 @@
                         <v-timeline dense v-if="showHistory" style="margin:10px" width="500px">
                             <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
 
-                                <v-card width="250px" style="padding:20px">
+                                <v-col class="history-item" width="250px" style="padding:20px">
                                     <v-row justify="space-between">
                                         <v-col cols="1">
                                             <v-icon left>mdi-file-document-outline</v-icon>
@@ -155,7 +151,7 @@
                                         </v-avatar>
                                         <v-col style="padding:20px; font-size:14px">{{ history.userName }}</v-col>
                                     </v-row>
-                                </v-card>
+                                </v-col>
 
                                 <template v-slot:opposite>
                                     <div>{{ formatDate(history.updatedAt) }}</div>
@@ -173,11 +169,11 @@
                                 'mdi-chevron-down' }}</v-icon>
                             <v-row class="mt-4">
                                 <v-col cols="9">
-                                    <v-text-field label="댓글을 입력하세요." variant="outlined"
+                                    <v-text-field density="compact" label="댓글을 입력하세요." variant="outlined"
                                         v-model="comment"></v-text-field>
                                 </v-col>
                                 <v-col cols="3">
-                                    <v-btn v-create @click="submitComments(this.selectedDocument.id)">저장</v-btn>
+                                    <v-btn v-create @click="submitComments(this.selectedDocument.id)">등록</v-btn>
                                 </v-col>
                             </v-row>
                         </v-card-title>
@@ -197,7 +193,7 @@
                                     <v-row cols="12" style="padding-left:50px" class="comment-content">
                                         {{ comment.contents }}
                                     </v-row>
-                                    <v-row style="font-size:12px; padding:20px" class="justify-end">
+                                    <v-row style="font-size:14px; padding-right:13px;" class="justify-end">
                                         {{ formatDate(comment.createdAt) }} {{
                                             formatLocalTime(comment.createdAt) }}
                                     </v-row>
@@ -378,13 +374,15 @@ export default {
                 // 다운로드를 위한 a태그 임시 추가
                 const link = document.createElement('a');
                 link.href = window.URL.createObjectURL(blob);
+
                 link.setAttribute('download', this.selectedDocument.fileName);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                alert(response.data.status_message);
+                alert("파일 다운로드를 완료하였습니다.");
+
             } catch (e) {
-                alert(e.response.data.status_message);
+                alert("파일이 존재하지 않습니다.");
             }
         },
         async fetchHistory(id) {
@@ -498,9 +496,15 @@ v-card-title,
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 100%;
 }
 
+.ellipsis-text-list {
+    /* 말줄임 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
 
 .ellipsis-text-detail {
     /* 말줄임 */
@@ -528,8 +532,9 @@ v-card-title,
     margin-bottom: 20px;
 }
 
-.detailFileName {
+.detail-file-name {
     margin: 20px 0 0;
+    font-weight: 800;
 }
 
 .fileName {
@@ -564,5 +569,13 @@ v-card-title,
     display: inline-block;
     max-width: 700px;
     width: 100%;
+    font-size: 16px;
+}
+
+.history-item {
+    background-color: rgba(122, 86, 86, 0.2);
+    border-radius: 8px;
+
+    border: 2px solid #722121;
 }
 </style>

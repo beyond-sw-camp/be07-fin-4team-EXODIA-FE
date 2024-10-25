@@ -1,18 +1,18 @@
 <template>
   <div class="userAttendance">
 
-    <v-row justify="space-between">
-      <v-col cols="7">
+    <v-row justify="">
+      <v-col cols="8">
         <h3>출·퇴근 기록</h3>
       </v-col>
 
-      <v-col cols="auto" class="d-flex justify-end">
+      <v-col>
         <!-- 출근 버튼 -->
         <v-btn variant="outlined" v-list @click="workIn">
           출근
         </v-btn>
       </v-col>
-      <v-col cols="auto" class="d-flex justify-end">
+      <v-col>
         <!-- 퇴근 버튼 -->
         <v-btn v-create variant="outlined" :disabled="isWorkOut" @click="workOut">
           퇴근

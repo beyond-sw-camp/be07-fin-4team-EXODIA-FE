@@ -8,7 +8,7 @@
                 <v-form>
                     <v-row>
                         <v-col cols=4>
-                            첨부파일
+                            <strong>첨부파일</strong>
                         </v-col>
                         <v-col cols="8">
                             <v-file-input v-model="selectedFile" label="파일 선택" @change="fileUpdate()">
@@ -17,7 +17,7 @@
                     </v-row>
                     <v-row>
                         <v-col cols=4>
-                            작성자
+                            <strong>작성자</strong>
                         </v-col>
                         <v-col cols="8">
                             <v-text-field disabled>
@@ -27,7 +27,7 @@
                     </v-row>
                     <v-row>
                         <v-col cols=4>
-                            문서 태그
+                            <strong>문서 태그</strong>
                         </v-col>
                         <v-col>
                             <v-select v-model="tagNames" :items="tagOptions" label="태그를 선택하세요" multiple
@@ -42,7 +42,7 @@
                     </v-row>
                     <v-row>
                         <v-col cols=4>
-                            설명
+                            <strong>설명</strong>
                         </v-col>
                         <v-col cols="8">
                             <v-textarea v-model="description" label="설명" rows="3" class="custom-textarea"></v-textarea>
@@ -103,24 +103,26 @@ export default {
                     tags: this.tagNames,
                     description: this.description,
                 };
-                console.log("tags: " + this.tagNames);
+
                 const submitData = new FormData();
                 submitData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
+                submitData.append("file", this.selectedFile);
 
                 if (this.selectedFile == null) {
                     alert("파일을 선택해주세요.");
                     return;
                 }
-
-                submitData.append("file", this.selectedFile);
                 const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/document/uploadFile`, submitData,
                     { headers: { Authorization: `Bearer ${this.token}` } }
                 );
                 alert(response.data.status_message);
                 this.$router.push('/document');
-
             } catch (e) {
-                alert(e.response.data.status_message);
+                if (e.response && e.response.data && e.response.data.status_message) {
+                    alert(e.response.data.status_message);
+                } else {
+                    alert("파일을 선택해주세요.");
+                }
             }
         },
         fileUpdate() {
