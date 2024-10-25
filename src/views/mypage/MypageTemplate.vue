@@ -1,11 +1,11 @@
 <template>
   <v-container fluid>
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-      <v-tab :to="'/mypage/vacation'">전사 근태 통계</v-tab>
+      <v-tab :to="'/mypage/vacation'">전사/근태 통계</v-tab>
       <v-tab :to="'/mypage/userProfile'">프로필</v-tab>
-      <v-tab :to="'/mypage/evalutionList'">평가리스트</v-tab>
+      <v-tab :to="'/mypage/evalutionList'">인사평가</v-tab>
       <v-tab :to="'/mypage/spinWheel'">오늘의 점심</v-tab>
-      <v-tab :to="'/mypage/evalutionFrame'">인사평가</v-tab>
+      <v-tab :to="'/mypage/evalutionFrame'">평가리스트</v-tab>
       <v-tab :to="'/board/myCourseList'">나의강좌</v-tab>
     </v-tabs>
 
