@@ -229,15 +229,17 @@
 
 ### 파일 등록
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/파일등록.gif"/>
 
 ### 댓글 작성
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/파일댓글작성.gif"/>
 
 ### 파일 버전 관리
 
-<img src="./img/ui테스트/"/>
+<img src="./img/ui테스트/파일업데이트.gif"/>
+
+<img src="./img/ui테스트/파일롤백.gif"/>
 
 </details>
 
