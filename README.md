@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/536d99ae-ab11-48d5-a82a-62ec4ae2042a)# EXODIA
+# EXODIA
 
 ## 📢 프로젝트 개요
 사원들이 보다 효율적으로 업무를 수행할 수 있도록 회사 내 자체 웹 기반 HR 솔루션을 개발하는 것을 목표로 합니다.
