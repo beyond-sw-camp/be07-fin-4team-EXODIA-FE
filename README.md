@@ -375,6 +375,8 @@
 
 </details>
 
+<details>
+
 <summary>달력</summary>
 
 ### 권한 별 일정 등록
