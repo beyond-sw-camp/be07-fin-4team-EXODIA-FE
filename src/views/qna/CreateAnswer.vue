@@ -1,50 +1,53 @@
 <template>
-  <v-container class="mt-5">
-    <v-card>
-      <v-card-title>
-        <h3>답변</h3>
-      </v-card-title>
+  <v-container class="mt-5" style="background-color: #ffffff; padding: 20px; border-radius: 8px; max-width: 800px;">
+    <h3 class="mb-4">답변</h3>
 
-      <v-card-text>
-        <!-- 질문자 정보 -->
-        <v-row>
-          <v-col cols="6">
-            <!-- 질문자가 익명일 경우 '익명'으로 표시 -->
-            <v-text-field label="질문자" v-model="questionerName" readonly />
-          </v-col>
-          <v-col cols="6">
-            <!-- 부서명을 departmentName에서 직접 가져와서 표시 -->
-            <v-text-field label="문의 부서" v-model="questionDetail.departmentName" readonly />
-          </v-col>
-          <v-col cols="12">
-            <v-text-field label="질문 날짜" v-model="formattedQuestionDate" readonly />
-          </v-col>
-        </v-row>
+    <!-- 질문자 정보 -->
+    <v-row>
+      <v-col cols="6">
+        <!-- 질문자가 익명일 경우 '익명'으로 표시 -->
+        <v-text-field label="질문자" v-model="questionerName" readonly outlined />
+      </v-col>
+      <v-col cols="6">
+        <!-- 부서명을 departmentName에서 직접 가져와서 표시 -->
+        <v-text-field label="문의 부서" v-model="questionDetail.departmentName" readonly outlined />
+      </v-col>
+      <v-col cols="12">
+        <v-text-field label="질문 날짜" v-model="formattedQuestionDate" readonly outlined />
+      </v-col>
+    </v-row>
 
-        <!-- 질문 내용 -->
-        <v-text-field label="제목" v-model="questionDetail.title" readonly />
-        <v-textarea label="질문 내용" v-model="questionDetail.questionText" rows="5" readonly />
+    <!-- 질문 내용 -->
+    <v-text-field label="제목" v-model="questionDetail.title" readonly outlined />
+    <v-textarea label="질문 내용" v-model="questionDetail.questionText" rows="5" readonly outlined />
 
-        <!-- 질문 첨부 파일 -->
-        <v-card-actions>
-          <v-btn v-if="questionDetail.qFiles && questionDetail.qFiles.length > 0"
-            @click="downloadFile(questionDetail.qFiles[0].filePath)" color="primary">
-            첨부 파일 다운로드
-          </v-btn>
-        </v-card-actions>
+    <!-- 질문 첨부 파일 -->
+    <v-row class="my-3">
+      <v-btn
+        v-if="questionDetail.qFiles && questionDetail.qFiles.length > 0"
+        @click="downloadFile(questionDetail.qFiles[0].filePath)"
+        color="primary"
+      >
+        첨부 파일 다운로드
+      </v-btn>
+    </v-row>
 
-        <!-- 답변 작성 폼 -->
-        <v-form v-if="canAnswer" @submit.prevent="submitAnswer">
-          <v-textarea v-model="newAnswerText" label="답변 내용" rows="5" required></v-textarea>
-          <v-file-input v-model="answerFiles" multiple label="답변 파일 첨부" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-            show-size></v-file-input>
-          <v-btn v-create type="submit" class="mt-3">답변 등록</v-btn>
-        </v-form>
-        <v-alert v-else type="error" class="mt-3">
-          답변 권한이 없습니다. 동일 부서 또는 상위 부서에서만 답변이 가능합니다.
-        </v-alert>
-      </v-card-text>
-    </v-card>
+    <!-- 답변 작성 폼 -->
+    <v-form v-if="canAnswer" @submit.prevent="submitAnswer">
+      <v-textarea v-model="newAnswerText" label="답변 내용" rows="5" outlined required></v-textarea>
+      <v-file-input
+        v-model="answerFiles"
+        multiple
+        label="답변 파일 첨부"
+        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+        show-size
+        outlined
+      ></v-file-input>
+      <v-btn v-create type="submit" class="mt-3">답변 등록</v-btn>
+    </v-form>
+    <v-alert v-else type="error" class="mt-3">
+      답변 권한이 없습니다. 동일 부서 또는 상위 부서에서만 답변이 가능합니다.
+    </v-alert>
   </v-container>
 </template>
 

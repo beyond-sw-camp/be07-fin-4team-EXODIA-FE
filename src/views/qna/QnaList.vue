@@ -211,25 +211,39 @@ export default {
 
     // 유저 및 매니저 목록 가져오기
     async fetchUsersAndManagers() {
-      try {
-        const [userResponse, managerResponse] = await Promise.all([
-          axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`),
-          axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/list`),
-        ]);
+  const token = localStorage.getItem("token");
+  try {
+    const [userResponse, managerResponse] = await Promise.all([
+      axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/list`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+    ]);
 
-        // 유저 목록이 배열인지 확인하고, 그렇지 않으면 빈 배열로 초기화
-        const allUsers = Array.isArray(userResponse.data) ? userResponse.data : [];
-        const managers = Array.isArray(managerResponse.data) ? managerResponse.data : [];
+    // 유저 목록은 userResponse.data.users에 있음
+    const allUsers = Array.isArray(userResponse.data.users) ? userResponse.data.users : [];
+    const managers = Array.isArray(managerResponse.data) ? managerResponse.data : [];
 
-        // 매니저로 등록되지 않은 유저들만 필터링
-        this.users = allUsers.filter(user => !managers.some(manager => manager.userNum === user.userNum));
-        this.filteredUsers = [...this.users]; // 초기 상태에서 전체 유저 목록이 보이도록 설정
-        this.managers = managers;
-      } catch (error) {
-        console.error("유저 및 매니저 목록을 불러오는 중 오류가 발생했습니다:", error);
-        alert("유저 및 매니저 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.");
-      }
-    },
+    // 매니저로 등록되지 않은 유저들만 필터링
+    this.users = allUsers.filter(user => !managers.some(manager => manager.userNum === user.userNum));
+    this.filteredUsers = [...this.users];
+    this.managers = managers;
+
+    // 배열 데이터 확인용 로그 추가
+    console.log("전체 유저 목록:", this.users);
+    console.log("매니저 목록:", this.managers);
+    console.log("필터링된 유저 목록 (filteredUsers):", this.filteredUsers);
+
+  } catch (error) {
+    console.error("유저 및 매니저 목록을 불러오는 중 오류가 발생했습니다:", error);
+    alert("유저 및 매니저 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.");
+  }
+},
+
+
+
 
 
     // 유저 검색
@@ -237,7 +251,7 @@ export default {
       try {
         const params = {
           search: this.userSearchQuery,
-          searchType: "name",
+          searchType: "all",
         };
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
 
@@ -251,11 +265,14 @@ export default {
       }
     },
 
+
     // 매니저 관리 모달 열기
-    openManagerModal() {
+    async openManagerModal() {
       this.showManagerModal = true;
-      this.fetchUsersAndManagers();
+      await this.fetchUsersAndManagers();
+      this.filteredUsers = [...this.users]; // 전체 유저 목록을 초기 상태로 설정
     },
+
 
     // 매니저 관리 모달 닫기
     closeManagerModal() {
