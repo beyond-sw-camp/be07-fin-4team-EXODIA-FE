@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="timeline-container">
+  <v-container fluid max-width="1040px" class="timeline-container" >
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
     <v-row justify="space-between">
       <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 42px;">
@@ -473,8 +473,7 @@ export default {
 .timeline-container {
   background-color: white;
   /* border: solid 1px; */
-  /* 외부 선  */
-  border: 1px solid #D8EACA; 
+
 }
 .v-btn {
   margin: 0 10px;

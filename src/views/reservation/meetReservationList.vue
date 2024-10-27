@@ -692,7 +692,7 @@ export default {
   background-color: white;
   /* border: solid 1px; */
   /* 외부 선  */
-  border: 1px solid #D8EACA;
+  /* border: 1px solid #D8EACA; */
 }
 
 .hours-row {
