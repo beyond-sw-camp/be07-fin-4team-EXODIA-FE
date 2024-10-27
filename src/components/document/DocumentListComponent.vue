@@ -7,9 +7,8 @@
         <!-- 검색 옵션 -->
         <v-row justify="center" :class="{ 'drawer-open': drawer }">
             <v-col cols="8">
-                <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined"
-                    @input="filterDocuments" append-icon="mdi-magnify"
-                    @click:append=searchFilter(searchQuery)></v-text-field>
+                <v-text-field v-model="keyword" placeholder="검색어를 입력하세요" variant="underlined" @input="filterDocuments"
+                    append-icon="mdi-magnify" @click:append=esSearch(keyword)></v-text-field>
             </v-col>
         </v-row>
         <v-row justify="end" class="mb-4">
@@ -445,6 +444,15 @@ export default {
                 this.isTagDialogVisible = false;
                 alert(response.data.status_message);
                 location.reload();
+            } catch (e) {
+                alert(e.response.data.status_message);
+                location.reload();
+            }
+        },
+        async esSearch(keyword) {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/es/document/search?keyword=${keyword}`;
+                this.documents = (await axios.get(url)).data.result;
             } catch (e) {
                 alert(e.response.data.status_message);
                 location.reload();
