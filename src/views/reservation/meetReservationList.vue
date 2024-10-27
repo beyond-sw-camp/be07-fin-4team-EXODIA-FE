@@ -147,7 +147,8 @@ meetReservation
 
         <!-- 예약 내역 리스트 -->
         <v-row v-for="(item, index) in userReservations" :key="index" class="meetReservation-row" outlined
-          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;"
+          @click="openInviteDialog(item)">
           <v-col cols="3">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
           <!-- 날짜와 시간만 표시하도록 변경 -->
           <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
@@ -214,7 +215,53 @@ meetReservation
       </v-card>
     </v-dialog>
 
+    <!-- 유저 검색 모달 -->
+    <v-dialog v-model="inviteDialog" max-width="600px">
+      <v-card>
+        <v-card-title>유저 초대</v-card-title>
+        <v-card-text>
+          <!-- 검색 입력 필드 -->
+          <v-text-field
+            v-model="searchQuery"
+            label="유저 검색"
+            @input="searchUsers"
+            placeholder="이름, 부서, 직위 등으로 검색하세요"
+          ></v-text-field>
 
+          <!-- 유저 리스트 -->
+          <v-list>
+            <v-list-item v-for="user in filteredUsers" :key="user.userNum">
+              <v-list-item-content>
+                <v-list-item-title>{{ user.name }} - {{ user.departmentId.name }} - {{ user.positionName }}</v-list-item-title>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-btn icon @click="addUserToInviteList(user.userNum)" style="box-shadow: none;">
+                  <v-icon cols="2">mdi-plus</v-icon>
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list>
+
+          <!-- 선택된 유저 목록 -->
+          <v-divider class="my-2"></v-divider>
+          <h3>선택된 유저:</h3>
+          <v-chip
+            v-for="userNum in selectedUsers"
+            :key="userNum"
+            class="ma-1"
+            @click="removeUserFromInviteList(userNum)"
+          >
+            {{ getUserNameById(userNum) }}
+            <v-icon small right>mdi-close</v-icon>
+          </v-chip>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="inviteUsers">초대</v-btn>
+          <v-btn color="secondary" @click="inviteDialog = false">취소</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
   </v-container>
 </template>
@@ -242,9 +289,75 @@ export default {
       endHour: null,
       endMinute: null,
       valid: true,
+
+      inviteDialog: false,
+      userList: [],
+      selectedUsers: [],
+      searchQuery: "", // 검색어
+      filteredUsers: [] // 필터링된 유저 목록
     };
   },
   methods: {
+
+    async openInviteDialog(reservation) {
+      this.selectedReservation = reservation;
+      await this.fetchUserList();
+      this.inviteDialog = true;
+    },
+    async fetchUserList() {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        this.userList = response.data;
+        this.filteredUsers = this.userList; // 초기 상태에서는 전체 유저 표시
+      } catch (error) {
+        console.error("유저 목록 불러오기 오류:", error);
+      }
+    },
+    searchUsers() {
+      const query = this.searchQuery.toLowerCase();
+      this.filteredUsers = this.userList.filter(user => {
+        const name = user.name || ""; // name이 없을 경우 빈 문자열
+        const department = user.department || ""; // department가 없을 경우 빈 문자열
+        const position = user.position || ""; // position이 없을 경우 빈 문자열
+
+        return (
+          name.toLowerCase().includes(query) ||
+          department.toLowerCase().includes(query) ||
+          position.toLowerCase().includes(query)
+        );
+      });
+    },
+    addUserToInviteList(userNum) {
+      if (!this.selectedUsers.includes(userNum)) {
+        this.selectedUsers.push(userNum);
+      }
+    },
+    removeUserFromInviteList(userNum) {
+      this.selectedUsers = this.selectedUsers.filter(id => id !== userNum);
+    },
+    getUserNameById(userNum) {
+      const user = this.userList.find(user => user.userNum === userNum);
+      return user ? user.name : '';
+    },
+    async inviteUsers() {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/reservation/meet/${this.selectedReservation.id}/invite`,
+          this.selectedUsers,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        this.inviteDialog = false;
+        this.selectedUsers = [];
+        alert("유저가 성공적으로 초대되었습니다.");
+      } catch (error) {
+        console.error("유저 초대 오류:", error);
+      }
+    },
+
     getMeetingRoomName(meetingRoomId) {
       const room = this.meetingRooms.find(room => room.id === meetingRoomId);
       return room ? room.name : '회의실 정보 없음';
