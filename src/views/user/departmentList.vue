@@ -307,7 +307,6 @@ export default {
   justify-content: flex-end; 
 }
 
-
 .primary-btn, .success-btn, .error-btn {
   padding: 10px 15px;
   border-radius: 5px;
