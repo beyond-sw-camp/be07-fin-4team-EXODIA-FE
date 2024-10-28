@@ -34,7 +34,7 @@ export const videoRouter = [
   // }
   {
     path: '/video/list',
-    name: 'VideoRoom',
+    name: 'RoomList',
     component: VideoList,
   },
   {
@@ -47,5 +47,6 @@ export const videoRouter = [
     name: 'VideoRoom',
     component: VideoRoom,
     props: true
-  },
+  }
+
 ]

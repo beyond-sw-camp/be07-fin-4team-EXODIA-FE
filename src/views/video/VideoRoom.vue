@@ -1,191 +1,168 @@
 <template>
-    <div class="video-room">
-      <h2>회의실: {{ roomName }}</h2>
-      <div class="controls">
-        <button @click="toggleCamera">{{ isCameraOn ? '카메라 끄기' : '카메라 켜기' }}</button>
-        <button @click="toggleMicrophone">{{ isMicrophoneOn ? '마이크 끄기' : '마이크 켜기' }}</button>
-        <button @click="toggleScreenShare">{{ isScreenSharing ? '화면 공유 중지' : '화면 공유 시작' }}</button>
-        <button @click="leaveRoom">방 나가기</button>
+    <div>
+      <h1>{{ roomName }} 화상 회의</h1>
+      <div id="main-screen">
+        <video ref="mainVideo" autoplay playsinline></video>
       </div>
-      <div id="video-grid" class="video-grid">
-        <video v-if="isScreenSharing" id="screen-video" autoplay playsinline></video>
-        <video v-else id="local-video" autoplay playsinline></video>
-        <div v-for="participant in participants" :key="participant.id" class="participant-video">
-          <video v-if="participant.videoOn" :id="'remote-video-' + participant.id" autoplay playsinline></video>
-          <div v-else class="no-video">{{ participant.userId }}</div>
-        </div>
+      <div id="participants">
+        <video
+          v-for="(user, index) in users"
+          :key="index"
+          :ref="`subscriberVideo${index}`"
+          autoplay
+          playsinline
+          @click="setMainScreen(user)"
+        ></video>
       </div>
+      <v-btn @click="toggleMute">음소거</v-btn>
+      <v-btn @click="toggleVideo">비디오</v-btn>
+      <v-btn @click="shareScreen">화면 공유</v-btn>
     </div>
-</template>
-
-<script>
-import { OpenVidu } from 'openvidu-browser';
-
-export default {
-  name: 'VideoRoom',
-  props: ['roomName', 'sessionId'],
-  data() {
-    return {
-      openVidu: null,
-      session: null,
-      token: '',
-      localSessionId: this.sessionId,
-      isCameraOn: true,
-      isMicrophoneOn: true,
-      isScreenSharing: false,
-      localStream: null,
-      participants: [],
-    };
-  },
-  async created() {
-    console.log("Room Name:", this.roomName);
-    console.log("Session ID:", this.localSessionId);
-
-    if (!this.localSessionId) {
-      this.localSessionId = await this.createSession();
-    }
-    if (this.localSessionId) {
-      await this.connectToOpenVidu();
-    } else {
-      console.error("Session ID가 생성되지 않았습니다.");
-    }
-  },
-  methods: {
-    async createSession() {
-      try {
-        const response = await fetch(`${process.env.VUE_APP_API_BASE_URL}/openvidu/sessions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ customSessionId: this.roomName })
-        });
-        if (!response.ok) throw new Error("Session 생성 실패");
-        const sessionId = await response.text();
-        return sessionId;
-      } catch (error) {
-        console.error("Session 생성 중 오류:", error);
-        return null;
-      }
+  </template>
+  
+  <script>
+  import { OpenVidu } from 'openvidu-browser';
+  import axios from 'axios';
+  
+  export default {
+    data() {
+      return {
+        roomName: '',
+        users: [],
+        session: null,
+        publisher: null,
+        isAudioEnabled: true,
+        isVideoEnabled: true,
+        isScreenSharing: false,
+      };
     },
-
-    async connectToOpenVidu() {
-      this.openVidu = new OpenVidu();
-
-      try {
-        const tokenResponse = await fetch(`${process.env.VUE_APP_API_BASE_URL}/openvidu/sessions/${this.localSessionId}/connections`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (!tokenResponse.ok) throw new Error("토큰 생성 중 오류");
-        this.token = await tokenResponse.text();
-
-        this.session = this.openVidu.initSession();
-        this.session.on('streamCreated', event => {
+    async created() {
+      this.roomName = this.$route.params.roomName;
+      await this.initializeSession();
+    },
+    methods: {
+      async initializeSession() {
+        const OV = new OpenVidu();
+        this.OV = OV;
+        this.session = OV.initSession();
+  
+        // 새로운 스트림이 생성될 때마다 구독자 추가
+        this.session.on('streamCreated', (event) => {
           const subscriber = this.session.subscribe(event.stream, undefined);
-          console.log("Subscribed to stream:", subscriber);
-          this.participants.push({ id: event.stream.connection.connectionId, videoOn: true, userId: event.stream.connection.data });
+          this.users.push(subscriber);
+  
+          subscriber.once('streamPlaying', () => {
+            const videoRef = this.$refs[`subscriberVideo${this.users.indexOf(subscriber)}`][0];
+            videoRef.srcObject = subscriber.stream.getMediaStream();
+          });
         });
-        await this.session.connect(this.token, { clientData: 'User' });
-        this.publishLocalStream();
-      } catch (error) {
-        console.error("Error connecting to OpenVidu:", error);
-      }
-    },
-
-    async publishLocalStream() {
-      this.localStream = this.openVidu.initPublisher('local-video', {
-        videoSource: undefined,
-        audioSource: undefined,
-      });
-      await this.session.publish(this.localStream);
-    },
-
-    toggleCamera() {
-      this.isCameraOn = !this.isCameraOn;
-      this.localStream.publishVideo(this.isCameraOn);
-    },
-
-    toggleMicrophone() {
-      this.isMicrophoneOn = !this.isMicrophoneOn;
-      this.localStream.publishAudio(this.isMicrophoneOn);
-    },
-
-    async toggleScreenShare() {
-      if (this.isScreenSharing) {
-        this.isScreenSharing = false;
-        await this.publishLocalStream();
-      } else {
+  
+        this.session.on('streamDestroyed', (event) => {
+          this.users = this.users.filter((user) => user !== event.stream.streamManager);
+        });
+  
         try {
-          const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-          const screenTrack = screenStream.getTracks()[0];
-          this.localStream.replaceTrack(screenTrack);
-          this.isScreenSharing = true;
-
-          screenTrack.onended = () => {
-            this.isScreenSharing = false;
-            this.publishLocalStream();
-          };
-        } catch (err) {
-          console.error('Screen sharing error:', err);
-          this.isScreenSharing = false;
+          const token = await this.getToken(this.roomName);
+          if (!token) throw new Error("Token retrieval failed");
+  
+          await this.session.connect(token, { clientData: '사용자 사번' });
+          this.publisher = this.OV.initPublisher(undefined, {
+            audioSource: undefined,
+            videoSource: undefined,
+            publishAudio: this.isAudioEnabled,
+            publishVideo: true,
+            resolution: "640x480",
+            frameRate: 30,
+          });
+  
+          this.publisher.once('streamPlaying', () => {
+            this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+          });
+  
+          this.session.publish(this.publisher);
+        } catch (error) {
+          console.error('세션 연결 실패:', error);
         }
-      }
+      },
+  
+      async getToken(sessionId) {
+        try {
+          const response = await axios.post(`http://localhost:8087/api/sessions/get-token`, { sessionId });
+          return response.data.token; // getToken 수정: token에 바로 접근
+        } catch (error) {
+          console.error('Error while getting token:', error);
+          throw error;
+        }
+      },
+  
+      toggleMute() {
+        if (this.publisher) {
+          this.isAudioEnabled = !this.isAudioEnabled;
+          this.publisher.publishAudio(this.isAudioEnabled);
+        } else {
+          console.warn("Publisher is not initialized.");
+        }
+      },
+  
+      toggleVideo() {
+        if (this.publisher) {
+          this.isVideoEnabled = !this.isVideoEnabled;
+          this.publisher.publishVideo(this.isVideoEnabled);
+        } else {
+          console.warn("Publisher is not initialized.");
+        }
+      },
+  
+      shareScreen() {
+        if (this.isScreenSharing) {
+          this.stopScreenShare();
+        } else {
+          this.publisher = this.OV.initPublisher(undefined, {
+            videoSource: 'screen',
+            publishAudio: this.isAudioEnabled,
+            publishVideo: true,
+          });
+  
+          this.session.unpublish(this.publisher);
+          this.session.publish(this.publisher);
+          this.isScreenSharing = true;
+  
+          this.publisher.once('streamDestroyed', () => {
+            this.stopScreenShare();
+          });
+        }
+      },
+  
+      stopScreenShare() {
+        this.publisher = this.OV.initPublisher(undefined, {
+          audioSource: true,
+          videoSource: true,
+          publishAudio: this.isAudioEnabled,
+          publishVideo: this.isVideoEnabled,
+        });
+  
+        this.session.unpublish(this.publisher);
+        this.session.publish(this.publisher);
+        this.isScreenSharing = false;
+  
+        this.publisher.once('streamPlaying', () => {
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        });
+      },
+  
+      setMainScreen(user) {
+        const mainVideo = this.$refs.mainVideo;
+        mainVideo.srcObject = user.stream.getMediaStream();
+      },
     },
-
-    async leaveRoom() {
-      if (this.session) {
-        await this.session.disconnect();
-        this.$router.push('/video/list');
-      }
-    }
+  };
+  </script>
+  
+  <style scoped>
+  video {
+    width: 100%;
+    height: auto;
+    background: black;
   }
-};
-</script>
-
-<style scoped>
-.video-room {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
-
-.controls {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.video-grid {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-video {
-  width: 100%;
-  max-width: 600px;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  background-color: black;
-}
-
-.participant-video {
-  display: inline-block;
-  width: 150px;
-  height: 100px;
-  position: relative;
-  background-color: #333;
-  color: white;
-  border: 2px solid #666;
-  border-radius: 8px;
-}
-
-.no-video {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  font-size: 16px;
-}
-</style>
+  </style>
+  
