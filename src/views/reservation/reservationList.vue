@@ -47,7 +47,7 @@
       <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
     </v-row>
 
-    <v-row justify="space-between" style="margin-left: 1200px">
+    <v-row justify="space-between" style="margin-left: 95%">
       <v-btn icon @click="openFilterModal" style="margin-top: 10px; box-shadow: none">
         <v-icon>mdi-filter</v-icon> <!-- 필터 아이콘 -->
       </v-btn>
