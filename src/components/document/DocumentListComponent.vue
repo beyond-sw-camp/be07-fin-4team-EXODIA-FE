@@ -7,9 +7,8 @@
         <!-- 검색 옵션 -->
         <v-row justify="center" :class="{ 'drawer-open': drawer }">
             <v-col cols="8">
-                <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined"
-                    @input="filterDocuments" append-icon="mdi-magnify"
-                    @click:append=searchFilter(searchQuery)></v-text-field>
+                <v-text-field v-model="keyword" placeholder="검색어를 입력하세요" variant="underlined" @input="filterDocuments"
+                    append-icon="mdi-magnify" @click:append=esSearch(keyword)></v-text-field>
             </v-col>
         </v-row>
         <v-row justify="end" class="mb-4">
@@ -146,8 +145,9 @@
 
                                     <v-row class="user-info">
                                         <v-avatar class="icon">
-                                            <img src="@/assets/user.png" alt="User Avatar" class="user-avatar"
-                                                style="width: 100%; height: 100%; object-fit: cover;" />
+                                            <v-img :src="history?.userProfileImage || defaultProfileImage"
+                                                aspect-ratio="1"
+                                                style="width: 100%; height: 100%; object-fit: cover;"></v-img>
                                         </v-avatar>
                                         <v-col style="padding:20px; font-size:14px">{{ history.userName }}</v-col>
                                     </v-row>
@@ -183,9 +183,11 @@
                                 <v-col cols="12" v-for="(comment, index) in this.comments" :key="index">
                                     <v-row class="comments-item">
                                         <v-col cols=1>
-                                            <v-avatar class="icon" size="24">
-                                                <img src="@/assets/user.png"
-                                                    style="width: 100%; height: 100%; object-fit: cover;" />
+                                            <v-avatar class="icon">
+                                                <v-img :src="comment.userProfileIamge || defaultProfileImage"
+                                                    aspect-ratio="1"
+                                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                                </v-img>
                                             </v-avatar>
                                         </v-col>
                                         <v-col cols="5">{{ comment.userName }}</v-col>
@@ -253,6 +255,8 @@ export default {
             userNum: localStorage.getItem('userNum') || null,
             positionId: localStorage.getItem('positionId') || null,
             departmentId: localStorage.getItem('departmentId') || null,
+
+            defaultProfileImage: 'https://via.placeholder.com/150',
 
             title: '',
             drawer: false,
@@ -445,6 +449,15 @@ export default {
                 this.isTagDialogVisible = false;
                 alert(response.data.status_message);
                 location.reload();
+            } catch (e) {
+                alert(e.response.data.status_message);
+                location.reload();
+            }
+        },
+        async esSearch(keyword) {
+            try {
+                const url = `${process.env.VUE_APP_API_BASE_URL}/es/document/search?keyword=${keyword}`;
+                this.documents = (await axios.get(url)).data.result;
             } catch (e) {
                 alert(e.response.data.status_message);
                 location.reload();
