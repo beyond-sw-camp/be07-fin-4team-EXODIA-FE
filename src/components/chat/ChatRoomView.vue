@@ -43,7 +43,7 @@
         </v-row>
 
         <InviteChatUserModal v-model="inviteUserModal" @update:dialog="inviteUserModal = $event"
-            @invite="inviteUserMessage" :chatRoomIdProp="chatRoomId" :existChatUsersProp="chatRoomUserNumsProp">
+            @invite="inviteUserMessage" :chatRoomIdProp="chatRoomId" :existChatUsersProp="chatUserNums">
         </InviteChatUserModal>
 
         <ExitChatRoomModal v-model="exitAlertModal" @update:dialog="exitAlertModal = $event" @exit="exitUserMesssage"
@@ -152,7 +152,7 @@ export default {
     props: [
         'chatRoomIdProp',
         'chatRoomNameProp',
-        'chatRoomUserNumsProp',
+        'chatRoomUsersProp',
     ], // 채팅방리스트에서 받아오는 값.
     components: {
         ChatFileBox, InviteChatUserModal, ExitChatRoomModal
@@ -165,6 +165,7 @@ export default {
 
             // chatUserListCheck: false, // 채팅유저리스트 제어
             chatUserList: [], // 채팅유저리스트
+            chatUserNums: [], // invite 에 넘길 userNumList
 
             inviteUserModal: false, // 채팅유저초대 모달 제어
             exitAlertModal: false, // 채팅방나가기 모달 제어
@@ -190,7 +191,9 @@ export default {
         const usersResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/chatUsers/${this.chatRoomId}`);
         if (usersResponse.data) {
             this.chatUserList = usersResponse.data.result;
+            this.chatUserNums = this.chatUserList.stream(chatUser=>chatUser.chatUserNum);
         }
+        
         this.scrollToBottom();
     },
     mounted() {

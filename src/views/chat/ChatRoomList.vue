@@ -26,9 +26,10 @@
                     <!-- Room info -->
                     <v-list-item-content class="chat-room-list-content">
                         <div class="chat-room-info">
-                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.userNums.length>2">{{ chatroom.roomName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.users.length>2">{{ chatroom.roomName }}</v-list-item-title>
                             <!-- ⭐⭐⭐ 1:1 일 경우 상대 이름이 나와야함. -->
-                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.userNums.length<=2">{{ chatroom.roomName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.users.length=2">{{ getChatuserName(chatroom.users) }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.users.length<2">{{ chatroom.users[0].chatUserName }}</v-list-item-title>
                             <v-icon class="user-mini-icon">mdi-account</v-icon>
                             <span class="chat-user-num">{{ chatroom.userNums.length }}</span>
                         </div>
@@ -51,7 +52,7 @@
 
     <ChatRoomView v-if="chatRoomCheck" @update:dialog="chatRoomCheck = $event"
         @update:check="chatRoomListCheck = $event" :chatRoomIdProp="chatRoomId" :chatRoomNameProp="chatRoomName"
-        @update="loadChatRoom" :chatRoomUserNumsProp="chatRoomUserNums">
+        @update="loadChatRoom" :chatRoomUsersProp="chatRoomUsers">
     </ChatRoomView>
 
     <ChatRoomCreate v-if="createChatRoom" @update:dialog="createChatRoom = $event"
@@ -86,7 +87,7 @@ export default {
             // 채팅리스트에서 채팅방으로 넘겨주는 값.
             chatRoomId: null,
             chatRoomName: "",
-            chatRoomUserNums: []
+            chatRoomUsers: []
         }
     },
     created() {
@@ -212,13 +213,18 @@ export default {
             this.chatRoomListCheck = false;
             this.chatRoomId = this.chatRoomList[id].roomId;
             this.chatRoomName = this.chatRoomList[id].roomName;
-            this.chatRoomUserNums = this.chatRoomList[id].userNums;
+            this.chatRoomUsers = this.chatRoomList[id].users;
         },
 
         openCreateChatRoom() { // 채팅방 생성창 열기
             this.createChatRoom = true;
             this.chatRoomListCheck = false;
         },
+
+        getChatuserName(users){
+            const chatUser = users.filter(u=>u.chatUserNum!=this.userNum)
+            return chatUser[0].chatUserName;
+        }
 
     }
 }
