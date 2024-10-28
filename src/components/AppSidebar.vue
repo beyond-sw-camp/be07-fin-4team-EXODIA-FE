@@ -426,6 +426,14 @@ export default {
   z-index: 1100;
   border-radius: 8px;
   overflow: auto;
+  -ms-overflow-style: none;
+    /* 인터넷 익스플로러 */
+    scrollbar-width: none;
+    /* 파이어폭스 */
+}
+/* scroll 숨김 */
+.organization-panel::-webkit-scrollbar {
+    display: none;
 }
 
 .organization-panel-wide {
