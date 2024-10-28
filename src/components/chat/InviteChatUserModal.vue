@@ -7,43 +7,28 @@
                 </v-col>
             </v-row>
 
-            <!-- 검색창 및 돋보기 아이콘 -->
-            <v-row>
-                <v-col cols="10">
-                    <v-text-field v-model="searchQuery" @input="searchUser"
-                        placeholder="부서, 직급, 이름으로 검색"></v-text-field>
-                </v-col>
-                <v-col cols="2">
-                    <v-icon @click="searchUser">mdi-magnify</v-icon>
-                </v-col>
-            </v-row>
-
-            <!-- 검색된 유저 리스트 -->
-            <v-row v-for="(userInfos, index) in userList" :key="index">
-                <v-col cols="8">
-                    <span>{{ userInfos.name }}</span>
-                </v-col>
-                <v-col cols="2">
-                    <v-icon @click="addUser(userInfos)">mdi-plus</v-icon>
-                </v-col>
-            </v-row>
-
-            <div v-if="selectUser !== null">
-                <br>
-                <hr class="select-line" />
-                <br>
+            <div class="chat-user-list">
+                <OrganizationChart @user-selected="addUser" />
             </div>
 
-            <v-row v-if="selectUser !== null">
-                <v-col cols="8">
-                    <span>{{ selectUser.name }}</span>
-                </v-col>
-                <v-col cols="2">
-                    <v-icon @click="removeUser()">mdi-minus</v-icon>
-                </v-col>
-            </v-row>
+            <div class="select-divider">
+                <div v-if="selectUser !== null">
+                    <br>
+                    <hr class="select-line" />
+                    <br>
+                </div>
+            </div>
 
-            <!-- 다음 버튼 -->
+            <!-- 선택된 유저-->
+            <div class="selected-user-row" v-if="selectUser !== null">
+                <v-row>
+                    <v-col class="select-user-list" cols="3">
+                        <v-icon color="grey" class="close-icon" @click="removeUser()">mdi-close-circle</v-icon>
+                        <div class="select-user">{{ selectUser.name }}</div>
+                    </v-col>
+                </v-row>
+            </div>
+
             <v-row>
                 <v-col cols="12">
                     <v-btn @click="inviteChatUser">초대</v-btn>
@@ -56,16 +41,17 @@
 
 <script>
 import axios from 'axios';
-// import OrganizationChart from '@/views/organization/OrganizationChart.vue'; 
+import OrganizationChart from '@/views/organization/OrganizationChart.vue'; 
 
 export default {
     props: ['chatRoomIdProp', 'existChatUsersProp', 'invite'],
+    components: {
+        OrganizationChart,
+    },
     data() {
         return {
             chatRoomId: null,
-            searchQuery: "", // 유저 선택 검색어
 
-            userList: [], // 사원 목록
             selectUser: null, // 선택한 사원
 
             inviteChatUserData: {
@@ -77,38 +63,26 @@ export default {
 
     async created() {
         this.chatRoomId = this.chatRoomIdProp;
-        this.loadUserList();
     },
 
     methods: {
-        async loadUserList() {
-            try {
-                const params = {
-                    search: this.searchQuery,
-                    searchType: "all",
-                };
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
-                this.userList = response.data;
-                //⭐ 애초에 쿼리문에서 거르는게 좋을 거 같다.
-                this.userList = this.userList.filter((user) => !this.existChatUsersProp.includes(user.userNum));
-            } catch (error) {
-                console.error("유저 검색 중 오류 발생:", error);
-            }
-        },
-
-        searchUser() {
-            this.loadUserList();
-        },
-
         removeUser() {
             this.selectUser = null;
         },
         addUser(userInfos) {
+            if(this.existChatUsersProp.indexOf(userInfos.userNum) != -1){
+                alert("이미 채팅방에 존재하는 유저입니다.");
+                return;
+            }
             this.selectUser = userInfos;
         },
 
         async inviteChatUser() {
             // ⭐ 중복인원이 있는 채팅방을 초대로 만들 수 있다...
+            if(this.selectUser.userNum!= null){
+                alert("유저를 고르세요.");
+                return;
+            }
             this.inviteChatUserData.roomId = this.chatRoomId;
             this.inviteChatUserData.inviteUserNum = this.selectUser.userNum;
             const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/invite`, this.inviteChatUserData);
@@ -131,8 +105,58 @@ export default {
     background-color: white;
 }
 
+.chat-user-list {
+    padding-top: 15px;
+    flex: 1;
+    height: 250px;
+    width: auto;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    /* flex-shrink: 0; */
+    -ms-overflow-style: none;
+    /* 인터넷 익스플로러 */
+    scrollbar-width: none;
+    /* 파이어폭스 */
+}
+
+.select-divider {
+    height: 50px;
+}
+
 .select-line {
     border: 0px;
-    border-top: 2px solid #000000;
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
+
+.selected-user-row {
+    height: 90px;
+    width: auto;
+    margin-bottom: 10px;
+}
+
+.select-user-list {
+    position: relative;
+}
+
+.close-icon {
+    position: absolute;
+    top: 8px;
+    left: 64px;
+    z-index: 1;
+    /* 이미지보다 아이콘이 위에 표시되도록 z-index 설정 */
+    cursor: pointer;
+    /* 클릭 가능하게 설정 */
+    font-size: small;
+}
+
+.select-user {
+    text-align: center;
+    width: max-content;
+    background-color: rgba(233, 233, 233, 0.4);
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+
 </style>

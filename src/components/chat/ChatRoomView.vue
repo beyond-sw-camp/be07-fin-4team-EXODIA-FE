@@ -421,7 +421,6 @@ export default {
             if (usersResponse.data) {
                 this.chatUserList = usersResponse.data.result;
             }
-            window.location.href = '/chatRoom/list';
         },
 
         showexitChatRoomModal() {

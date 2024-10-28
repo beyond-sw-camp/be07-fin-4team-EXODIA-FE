@@ -17,24 +17,15 @@
 
             <!-- 부서 내부의 유저 표시 -->
             <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
-              <li
-                v-for="user in department.users"
-                :key="user.userNum"
-                class="user-item"
-                @click="$emit('user-selected', user)"
-              >
+              <li v-for="user in department.users" :key="user.userNum" class="user-item"
+                @click="$emit('user-selected', user)">
                 {{ user.name }}
               </li>
 
               <!-- 하위 부서를 재귀적으로 렌더링 -->
-              <RecursiveDepartment
-              v-for="child in department.children"
-              :key="child.id"
-              :department="child"
-              :expandedDepartments="expandedDepartments"
-              @toggle="toggleExpand"
-              @user-selected="$emit('user-selected', $event)"
-            />
+              <RecursiveDepartment v-for="child in department.children" :key="child.id" :department="child"
+                :expandedDepartments="expandedDepartments" @toggle="toggleExpand"
+                @user-selected="$emit('user-selected', $event)" />
             </ul>
           </li>
         </ul>
@@ -125,19 +116,23 @@ export default {
 };
 </script>
 
-  
+
 <style scoped>
 .org-chart-container {
+  width: 100%;
   display: flex;
-  gap: 20px; /* 조직도 창과 유저 패널 사이의 간격 */
+  gap: 20px;
+  /* 조직도 창과 유저 패널 사이의 간격 */
 }
 
 .org-chart {
-  width: 50%; /* 조직도 창 크기 */
-  background-color: #f9f9f9;
+  width: 100%;
+  /* width: fit-content; */
+  /* 조직도 창 크기 */
+  /* background-color: #f9f9f9; */
   padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  /* border-radius: 8px; */
+  /* box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); */
   font-size: 12px;
   overflow-y: auto;
 }
@@ -156,6 +151,7 @@ export default {
 }
 
 .department-item {
+  width: max-content;
   margin: 10px 0;
   cursor: pointer;
   padding: 8px;
@@ -184,7 +180,8 @@ export default {
 }
 
 .user-profile-panel {
-  width: 45%; /* 유저 패널 크기 */
+  width: 45%;
+  /* 유저 패널 크기 */
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
@@ -207,5 +204,4 @@ export default {
   top: 10px;
   right: 10px;
 }
-
 </style>

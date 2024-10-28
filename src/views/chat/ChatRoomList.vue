@@ -19,14 +19,16 @@
             </v-col>
         </v-row>
 
-        <!-- Chat room list -->
+        <!-- Chat room list ⭐⭐⭐ 1:1 일 경우 상대 이름이 나와야함. response 부터 고쳐야할판...? userInfo 가져오는 api 쓰자. -->
         <v-list class="chat-room-list" v-if="chatRoomList.length !== 0">
             <v-list-item-group class="chat-list" v-for="(chatroom, index) in chatRoomList" :key="chatroom.roomId">
                 <v-list-item class="chat-list-item" @click="enterToChatRoom(index)">
                     <!-- Room info -->
                     <v-list-item-content class="chat-room-list-content">
                         <div class="chat-room-info">
-                            <v-list-item-title class="chat-room-list-title">{{ chatroom.roomName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.userNums.length>2">{{ chatroom.roomName }}</v-list-item-title>
+                            <!-- ⭐⭐⭐ 1:1 일 경우 상대 이름이 나와야함. -->
+                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.userNums.length<=2">{{ chatroom.roomName }}</v-list-item-title>
                             <v-icon class="user-mini-icon">mdi-account</v-icon>
                             <span class="chat-user-num">{{ chatroom.userNums.length }}</span>
                         </div>
@@ -159,6 +161,7 @@ export default {
                 };
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/search`, { params });
                 this.chatRoomList = response.data.result || [];
+                console.log(this.chatRoomList);
             } catch (e) {
                 console.error('채팅방 목록 조회 실패', e);
             }
@@ -264,7 +267,6 @@ export default {
     position: relative;
     cursor: pointer;
     height: 70px;
-
 }
 
 .chat-room-info {
@@ -281,6 +283,7 @@ export default {
     display: flex;
     cursor: pointer;
     margin-left: 15px;
+    margin-bottom: 5px;
     color: gray;
     font-size: 14px;
 }
@@ -288,6 +291,7 @@ export default {
 .chat-user-num {
     color: gray;
     font-size: 12px;
+    margin-bottom: 5px;
 }
 
 .chat-room-list-chat {
