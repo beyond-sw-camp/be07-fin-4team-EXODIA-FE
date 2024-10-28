@@ -205,15 +205,27 @@ export default {
         try {
           const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/delete/${this.board.id}`;
           console.log('게시물 삭제 요청:', apiUrl);
-          await axios.get(apiUrl);
-          alert('게시물이 성공적으로 삭제되었습니다.');
-          this.$router.push({ name: 'BoardList', params: { category: this.board.category } });
+
+          const response = await axios.get(apiUrl); // GET 요청으로 삭제 처리
+          console.log('응답 상태:', response.status); // 응답 상태를 로그에 출력
+          console.log('응답 데이터:', response.data); // 응답 메시지 출력
+
+          // 응답 메시지 확인 후 알림 표시
+          if (response.data && response.data.status_message === "게시물이 성공적으로 삭제되었습니다.") {
+            alert(response.data.status_message);
+            this.$router.push({ name: 'BoardList', params: { category: this.board.category } });
+          } else {
+            alert('게시물 삭제 중 문제가 발생했습니다.');
+          }
+
         } catch (error) {
           console.error('게시물 삭제에 실패했습니다:', error);
           alert('게시물 삭제에 실패했습니다. 다시 시도해주세요.');
         }
       }
     },
+
+
 
     editComment(comment) {
       const updatedContent = prompt("댓글을 수정하세요:", comment.content);

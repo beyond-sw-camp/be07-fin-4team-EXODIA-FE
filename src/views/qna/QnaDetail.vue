@@ -47,7 +47,6 @@
           <div>
             <!-- 답변 내용 -->
             <p class="text-body-1">{{ questionDetail.answerText }}</p>
-            <!-- 답변자 정보 및 답변 시간 -->
           </div>
           <!-- 답변 작성자와 현재 로그인된 유저가 동일할 경우 수정 버튼 표시 -->
           <v-btn v-if="isAnswerAuthor" class="btn_solid" @click="goToEditAnswer" small>
@@ -55,10 +54,7 @@
           </v-btn>
         </div>
       </div>
-
     </div>
-
-    <v-divider></v-divider> <!-- 답변과 댓글 작성 구분선 -->
 
     <!-- 댓글 작성 폼 -->
     <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
@@ -89,8 +85,6 @@
   </v-container>
 </template>
 
-
-
 <script>
 import axios from 'axios';
 
@@ -103,6 +97,8 @@ export default {
       isLoggedIn: false,
       error: null,
       userNum: localStorage.getItem('userNum'), // 현재 로그인한 유저의 ID
+      departmentTree: [], // 전체 부서 트리
+      userDepartmentId: localStorage.getItem('departmentId'), // 현재 로그인한 유저의 부서 ID
     };
   },
   computed: {
@@ -133,12 +129,62 @@ export default {
         alert(this.error);
       }
     },
+    async fetchDepartmentTree() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/hierarchy`);
+        this.departmentTree = response.data;
+      } catch (error) {
+        console.error('부서 트리를 가져오는 중 오류가 발생했습니다:', error);
+        alert('부서 정보를 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
+    },
+    async goToAnswerPage() {
+      const departmentId = this.questionDetail.departmentId;
+      try {
+        const managerResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/is-manager/${this.userNum}`);
+        
+        if (managerResponse.data) {
+          const isDepartmentValid = this.checkDepartmentPermission(departmentId, Number(this.userDepartmentId));
+          if (isDepartmentValid) {
+            const questionId = this.$route.params.id;
+            this.$router.push(`/qna/answer/${questionId}`);
+          } else {
+            alert('해당 문의 부서 또는 상위 부서의 매니저만 답변할 수 있습니다.');
+          }
+        } else {
+          alert('매니저 권한이 필요합니다.');
+        }
+      } catch (error) {
+        console.error('매니저 확인 중 오류가 발생했습니다:', error);
+        alert('매니저 권한을 확인하는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
+    },
+    // 부서 트리에서 상위 부서인지 확인하는 함수
+    checkDepartmentPermission(targetDeptId, userDeptId) {
+      if (targetDeptId === userDeptId) return true;
+
+      const departmentMap = {};
+      const mapDepartments = (departments) => {
+        departments.forEach(department => {
+          departmentMap[department.id] = department.parentId || null;
+          if (department.children && department.children.length) {
+            mapDepartments(department.children);
+          }
+        });
+      };
+      mapDepartments(this.departmentTree);
+
+      let currentParent = departmentMap[targetDeptId];
+      while (currentParent) {
+        if (currentParent === userDeptId) {
+          return true;
+        }
+        currentParent = departmentMap[currentParent];
+      }
+      return false;
+    },
     goToEditQuestion() {
       this.$router.push(`/qna/update/question/${this.$route.params.id}`);
-    },
-    goToAnswerPage() {
-      const questionId = this.$route.params.id;
-      this.$router.push(`/qna/answer/${questionId}`);
     },
     goToEditAnswer() {
       const questionId = this.$route.params.id;
@@ -205,9 +251,10 @@ export default {
         .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
     },
   },
-  created() {
+  async created() {
     this.decodeToken();
     this.fetchQuestionDetail();
+    await this.fetchDepartmentTree();
   },
 };
 </script>
