@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="timeline-container">
+  <v-container fluid max-width="1040px" class="timeline-container" >
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
     <v-row justify="space-between">
       <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 42px;">
@@ -47,7 +47,7 @@
       <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
     </v-row>
 
-    <v-row justify="space-between" style="margin-left: 1200px">
+    <v-row justify="space-between" style="margin-left: 95%">
       <v-btn icon @click="openFilterModal" style="margin-top: 10px; box-shadow: none">
         <v-icon>mdi-filter</v-icon> <!-- 필터 아이콘 -->
       </v-btn>
@@ -473,8 +473,7 @@ export default {
 .timeline-container {
   background-color: white;
   /* border: solid 1px; */
-  /* 외부 선  */
-  border: 1px solid #D8EACA; 
+
 }
 .v-btn {
   margin: 0 10px;
