@@ -14,6 +14,8 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { createPinia } from 'pinia';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
+import Stomp from 'webstomp-client';
+import SockJS from 'sockjs-client';
 
 window.adapter = adapter;
 
@@ -76,9 +78,19 @@ axios.interceptors.response.use(
   }
 );
 
+// WebSocket Clients
+const openviduSocket = new SockJS(`${process.env.VUE_APP_OPENVIDU_BASE_URL}/ws`);
+const openviduClient = Stomp.over(openviduSocket);
+
+
+
 const app = createApp(App);
 const pinia = createPinia();
 app.component('VueDatePicker', VueDatePicker);
+
+app.config.globalProperties.$axios = axios;
+app.config.globalProperties.$openviduClient = openviduClient;
+
 
 app.config.globalProperties.$axios = axios;
 app.use(pinia);+
@@ -88,6 +100,7 @@ app.use(vuetifyInstance);
 
 
 app.mount('#app');
+
 
 app.directive('create', {
   mounted(el) {

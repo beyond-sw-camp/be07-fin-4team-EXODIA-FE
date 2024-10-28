@@ -1,178 +1,168 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title class="headline">회의실: {{ roomName }}</v-card-title>
-          <v-card-text>
-            <div id="video-grid" class="video-grid">
-              <video id="local-video" autoplay playsinline></video>
-              <video v-for="participant in participants" :key="participant.id" :id="'remote-video-' + participant.id"
-                autoplay playsinline></video>
-            </div>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn v-delete @click="leaveRoom">방 나가기</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
-</template>
-
-<script>
-import Janus from 'janus-gateway';
-
-export default {
-  name: 'VideoRoom',
-  props: ['roomName', 'roomId'], // roomId를 명확하게 받음
-  data() {
-    return {
-      localStream: null,
-      participants: [],
-      janus: null,
-      videoRoomPlugin: null,
-      opaqueId: "videoroomtest-" + Janus.randomString(12),
-    };
-  },
-  mounted() {
-    console.log("roomId:", this.roomId);  // URL에서 받은 roomId 출력
-    console.log("roomName:", this.roomName);  // 쿼리에서 받은 roomName 출력
-    this.initWebRTC();
-    this.connectToJanus();
-  },
-  methods: {
-    async initWebRTC() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true
-        });
-        this.localStream = stream;
-        document.getElementById('local-video').srcObject = stream;
-      } catch (err) {
-        console.error('WebRTC 초기화 중 오류 발생:', err);
-        alert('카메라와 마이크 권한이 필요합니다.');
-      }
+    <div>
+      <h1>{{ roomName }} 화상 회의</h1>
+      <div id="main-screen">
+        <video ref="mainVideo" autoplay playsinline></video>
+      </div>
+      <div id="participants">
+        <video
+          v-for="(user, index) in users"
+          :key="index"
+          :ref="`subscriberVideo${index}`"
+          autoplay
+          playsinline
+          @click="setMainScreen(user)"
+        ></video>
+      </div>
+      <v-btn @click="toggleMute">음소거</v-btn>
+      <v-btn @click="toggleVideo">비디오</v-btn>
+      <v-btn @click="shareScreen">화면 공유</v-btn>
+    </div>
+  </template>
+  
+  <script>
+  import { OpenVidu } from 'openvidu-browser';
+  import axios from 'axios';
+  
+  export default {
+    data() {
+      return {
+        roomName: '',
+        users: [],
+        session: null,
+        publisher: null,
+        isAudioEnabled: true,
+        isVideoEnabled: true,
+        isScreenSharing: false,
+      };
     },
-
-    connectToJanus() {
-      Janus.init({
-        debug: "all",
-        callback: () => {
-          this.janus = new Janus({
-            server: "http://43.201.35.213:8088/janus",
-            apisecret: "mySuperSuperSecretKey",
-            success: this.attachToVideoRoomPlugin,
-            error: (error) => {
-              console.error("Janus 연결 실패:", error);
-              alert("Janus 서버에 연결할 수 없습니다.");
-            },
-            destroyed: () => {
-              console.log("Janus 세션 종료");
-            }
+    async created() {
+      this.roomName = this.$route.params.roomName;
+      await this.initializeSession();
+    },
+    methods: {
+      async initializeSession() {
+        const OV = new OpenVidu();
+        this.OV = OV;
+        this.session = OV.initSession();
+  
+        // 새로운 스트림이 생성될 때마다 구독자 추가
+        this.session.on('streamCreated', (event) => {
+          const subscriber = this.session.subscribe(event.stream, undefined);
+          this.users.push(subscriber);
+  
+          subscriber.once('streamPlaying', () => {
+            const videoRef = this.$refs[`subscriberVideo${this.users.indexOf(subscriber)}`][0];
+            videoRef.srcObject = subscriber.stream.getMediaStream();
+          });
+        });
+  
+        this.session.on('streamDestroyed', (event) => {
+          this.users = this.users.filter((user) => user !== event.stream.streamManager);
+        });
+  
+        try {
+          const token = await this.getToken(this.roomName);
+          if (!token) throw new Error("Token retrieval failed");
+  
+          await this.session.connect(token, { clientData: '사용자 사번' });
+          this.publisher = this.OV.initPublisher(undefined, {
+            audioSource: undefined,
+            videoSource: undefined,
+            publishAudio: this.isAudioEnabled,
+            publishVideo: true,
+            resolution: "640x480",
+            frameRate: 30,
+          });
+  
+          this.publisher.once('streamPlaying', () => {
+            this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+          });
+  
+          this.session.publish(this.publisher);
+        } catch (error) {
+          console.error('세션 연결 실패:', error);
+        }
+      },
+  
+      async getToken(sessionId) {
+        try {
+          const response = await axios.post(`http://localhost:8087/api/sessions/get-token`, { sessionId });
+          return response.data.token; // getToken 수정: token에 바로 접근
+        } catch (error) {
+          console.error('Error while getting token:', error);
+          throw error;
+        }
+      },
+  
+      toggleMute() {
+        if (this.publisher) {
+          this.isAudioEnabled = !this.isAudioEnabled;
+          this.publisher.publishAudio(this.isAudioEnabled);
+        } else {
+          console.warn("Publisher is not initialized.");
+        }
+      },
+  
+      toggleVideo() {
+        if (this.publisher) {
+          this.isVideoEnabled = !this.isVideoEnabled;
+          this.publisher.publishVideo(this.isVideoEnabled);
+        } else {
+          console.warn("Publisher is not initialized.");
+        }
+      },
+  
+      shareScreen() {
+        if (this.isScreenSharing) {
+          this.stopScreenShare();
+        } else {
+          this.publisher = this.OV.initPublisher(undefined, {
+            videoSource: 'screen',
+            publishAudio: this.isAudioEnabled,
+            publishVideo: true,
+          });
+  
+          this.session.unpublish(this.publisher);
+          this.session.publish(this.publisher);
+          this.isScreenSharing = true;
+  
+          this.publisher.once('streamDestroyed', () => {
+            this.stopScreenShare();
           });
         }
-      });
+      },
+  
+      stopScreenShare() {
+        this.publisher = this.OV.initPublisher(undefined, {
+          audioSource: true,
+          videoSource: true,
+          publishAudio: this.isAudioEnabled,
+          publishVideo: this.isVideoEnabled,
+        });
+  
+        this.session.unpublish(this.publisher);
+        this.session.publish(this.publisher);
+        this.isScreenSharing = false;
+  
+        this.publisher.once('streamPlaying', () => {
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        });
+      },
+  
+      setMainScreen(user) {
+        const mainVideo = this.$refs.mainVideo;
+        mainVideo.srcObject = user.stream.getMediaStream();
+      },
     },
-
-    attachToVideoRoomPlugin() {
-      this.janus.attach({
-        plugin: "janus.plugin.videoroom",
-        opaqueId: this.opaqueId,
-        success: (pluginHandle) => {
-          this.videoRoomPlugin = pluginHandle;
-          console.log("플러그인에 연결됨: ", pluginHandle);
-          this.joinRoom();
-        },
-        error: (error) => {
-          console.error("플러그인 연결 실패:", error);
-        },
-        onmessage: this.onMessage,
-        onlocalstream: (stream) => {
-          document.getElementById('local-video').srcObject = stream;
-        },
-        onremotestream: this.onRemoteStream,
-      });
-    },
-
-    joinRoom() {
-      let roomId = this.roomId;
-      console.log("Joining room with ID:", roomId);
-
-      if (!roomId || isNaN(roomId)) {
-        console.error("Invalid room ID");
-        return;
-      }
-      roomId = Number(roomId);
-      const register = {
-        request: "join",
-        room: roomId,
-        ptype: "publisher",
-        display: this.roomName,
-        apisecret: "mySuperSuperSecretKey"
-      };
-      this.videoRoomPlugin.send({ message: register });
-    },
-
-    onMessage(msg, jsep) {
-      const event = msg["videoroom"];
-      if (event) {
-        if (event === "joined") {
-          console.log("방 참가 완료:", msg);
-          this.publishOwnFeed(true);
-        }
-      }
-
-      if (jsep) {
-        this.videoRoomPlugin.handleRemoteJsep({ jsep: jsep });
-      }
-    },
-
-    publishOwnFeed(useVideo) {
-      this.videoRoomPlugin.createOffer({
-        media: { video: useVideo, audio: true },
-        success: (jsep) => {
-          const publish = { request: "publish", audio: true, video: true, apisecret: "mySuperSuperSecretKey" };
-          this.videoRoomPlugin.send({ message: publish, jsep: jsep });
-        },
-        error: (error) => {
-          console.error("Offer 생성 실패:", error);
-        }
-      });
-    },
-
-    onRemoteStream(stream) {
-      const videoElement = document.createElement("video");
-      videoElement.srcObject = stream;
-      videoElement.autoplay = true;
-      videoElement.playsInline = true;
-      document.getElementById("video-grid").appendChild(videoElement);
-    },
-
-    leaveRoom() {
-      if (this.videoRoomPlugin) {
-        this.videoRoomPlugin.send({ message: { request: "leave", apisecret: "mySuperSuperSecretKey" } });
-        this.videoRoomPlugin.detach();
-      }
-      this.$router.push('/video/rooms');
-    }
+  };
+  </script>
+  
+  <style scoped>
+  video {
+    width: 100%;
+    height: auto;
+    background: black;
   }
-};
-</script>
-
-<style scoped>
-.video-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-}
-
-video {
-  width: 300px;
-  height: 200px;
-  background-color: #000;
-  border: 1px solid #ccc;
-}
-</style>
+  </style>
+  
