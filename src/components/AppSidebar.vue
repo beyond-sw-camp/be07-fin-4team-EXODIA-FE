@@ -104,7 +104,7 @@
           <v-row @click="$router.push('/video/create')">
             화상 회의 생성
           </v-row>
-          <v-row @click="$router.push('/video/rooms')">
+          <v-row @click="$router.push('/video/list')">
             화상 회의 목록
           </v-row>
         </div>
