@@ -14,9 +14,20 @@
           @click="setMainScreen(user)"
         ></video>
       </div>
-      <v-btn @click="toggleMute">음소거</v-btn>
-      <v-btn @click="toggleVideo">비디오</v-btn>
-      <v-btn @click="shareScreen">화면 공유</v-btn>
+      <div class="controls">
+        <v-btn icon @click="toggleMute">
+          <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
+        </v-btn>
+        <v-btn icon @click="toggleVideo">
+          <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
+        </v-btn>
+        <v-btn icon @click="shareScreen">
+          <v-icon>{{ isScreenSharing ? 'mdi-monitor' : 'mdi-monitor-share' }}</v-icon>
+        </v-btn>
+        <v-btn icon color="red" @click="leaveRoom">
+          <v-icon>mdi-exit-to-app</v-icon>
+        </v-btn>
+      </div>
     </div>
   </template>
   
@@ -50,33 +61,28 @@
         this.session.on('streamCreated', (event) => {
           const subscriber = this.session.subscribe(event.stream, undefined);
           this.users.push(subscriber);
-  
-          subscriber.once('streamPlaying', () => {
-            const videoRef = this.$refs[`subscriberVideo${this.users.indexOf(subscriber)}`][0];
-            videoRef.srcObject = subscriber.stream.getMediaStream();
-          });
         });
   
         this.session.on('streamDestroyed', (event) => {
           this.users = this.users.filter((user) => user !== event.stream.streamManager);
+          if (this.users.length === 0) {
+            this.deleteRoom(this.roomName);
+          }
         });
   
         try {
           const token = await this.getToken(this.roomName);
-          if (!token) throw new Error("Token retrieval failed");
-  
-          await this.session.connect(token, { clientData: '사용자 사번' });
+          await this.session.connect(token, { clientData: '방 생성자' });
           this.publisher = this.OV.initPublisher(undefined, {
             audioSource: undefined,
             videoSource: undefined,
             publishAudio: this.isAudioEnabled,
             publishVideo: true,
-            resolution: "640x480",
-            frameRate: 30,
           });
   
           this.publisher.once('streamPlaying', () => {
             this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+            this.users.push(this.publisher);
           });
   
           this.session.publish(this.publisher);
@@ -85,10 +91,19 @@
         }
       },
   
+      async deleteRoom(roomName) {
+        try {
+          await axios.delete(`http://localhost:8087/api/rooms/${roomName}`);
+          console.log(`${roomName} 방이 삭제되었습니다.`);
+        } catch (error) {
+          console.error('방 삭제 오류:', error);
+        }
+      },
+  
       async getToken(sessionId) {
         try {
           const response = await axios.post(`http://localhost:8087/api/sessions/get-token`, { sessionId });
-          return response.data.token; // getToken 수정: token에 바로 접근
+          return response.data;
         } catch (error) {
           console.error('Error while getting token:', error);
           throw error;
@@ -117,15 +132,20 @@
         if (this.isScreenSharing) {
           this.stopScreenShare();
         } else {
+          if (this.publisher) {
+            this.session.unpublish(this.publisher);
+          }
+          
           this.publisher = this.OV.initPublisher(undefined, {
             videoSource: 'screen',
             publishAudio: this.isAudioEnabled,
             publishVideo: true,
           });
   
-          this.session.unpublish(this.publisher);
-          this.session.publish(this.publisher);
-          this.isScreenSharing = true;
+          this.publisher.once('accessAllowed', () => {
+            this.session.publish(this.publisher);
+            this.isScreenSharing = true;
+          });
   
           this.publisher.once('streamDestroyed', () => {
             this.stopScreenShare();
@@ -134,25 +154,34 @@
       },
   
       stopScreenShare() {
+        if (this.publisher) {
+          this.session.unpublish(this.publisher);
+        }
+  
         this.publisher = this.OV.initPublisher(undefined, {
           audioSource: true,
-          videoSource: true,
+          videoSource: undefined,
           publishAudio: this.isAudioEnabled,
           publishVideo: this.isVideoEnabled,
         });
   
-        this.session.unpublish(this.publisher);
-        this.session.publish(this.publisher);
-        this.isScreenSharing = false;
-  
         this.publisher.once('streamPlaying', () => {
           this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+          this.session.publish(this.publisher);
         });
+  
+        this.isScreenSharing = false;
+      },
+  
+      leaveRoom() {
+        if (this.session) {
+          this.session.disconnect();
+          this.$router.push({ name: 'RoomList' });
+        }
       },
   
       setMainScreen(user) {
-        const mainVideo = this.$refs.mainVideo;
-        mainVideo.srcObject = user.stream.getMediaStream();
+        this.$refs.mainVideo.srcObject = user.stream.getMediaStream();
       },
     },
   };
@@ -163,6 +192,11 @@
     width: 100%;
     height: auto;
     background: black;
+  }
+  .controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
   }
   </style>
   
