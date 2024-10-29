@@ -278,8 +278,8 @@ v-alert {
 /* 뱃지 스타일 */
 .badge {
   position: absolute;
-  top: 30px;
-  left: 43px;
+  top: 20px;
+  left: 40px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
