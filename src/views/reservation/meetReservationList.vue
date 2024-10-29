@@ -35,11 +35,15 @@ meetReservation
 
       <!-- 예약 추가 버튼 -->
       <v-col cols="3" class="text-right">
-        <v-btn color="rgba(122, 86, 86, 0.2)" @click="openReservationDialog"
-          style="box-shadow: none; margin-right: 14% ">
-          <v-icon right>mdi-calendar-plus</v-icon>
+        <v-btn color="rgb(154, 47, 47)" @click="openReservationDialog"
+          style="box-shadow: none; margin-right: 14%;font-weight: bold; border-radius: 10px">
+          예약하기
         </v-btn>
       </v-col>
+
+      <v-btn v-create v-if="isAdmin" @click="createNewPost">
+          작성하기
+        </v-btn>
     </v-row>
 
 
