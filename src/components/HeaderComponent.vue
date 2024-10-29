@@ -330,7 +330,6 @@ export default {
           }
         });
 
-        console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
       } catch (error) {
         console.error('유저 정보 가져오기 실패:', error);
