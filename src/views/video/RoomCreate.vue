@@ -37,27 +37,18 @@
       closeModal() {
         this.isModalOpen = false;
       },
-      
-      async createRoom() {
-  try {
-    const response = await axios.post('http://localhost:8087/api/rooms/create', {
-      roomName: this.roomName,
-      password: this.isPasswordEnabled ? this.password : null,
-    });
-
-    const sessionId = response.data.sessionId;
-
-    if (!sessionId) {
-      throw new Error("sessionId가 반환되지 않았습니다.");
-    }
-
-    this.closeModal();
-    this.$router.push({ name: 'VideoRoom', params: { sessionId } });
-  } catch (error) {
-    console.error('방 생성 오류:', error.message);
-  }
-}
-
+    async createRoom() {
+      try {
+        await axios.post('/api/rooms/create', {
+          roomName: this.roomName,
+          password: this.isPasswordEnabled ? this.password : null,
+        });
+        this.closeModal();
+        this.$router.push({ name: 'RoomList' });
+      } catch (error) {
+        console.error(error);
+      }
+    },
     },
   };
   </script>
