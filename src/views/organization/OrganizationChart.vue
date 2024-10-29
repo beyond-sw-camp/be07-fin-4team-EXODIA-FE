@@ -17,15 +17,25 @@
 
             <!-- 부서 내부의 유저 표시 -->
             <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
-              <li v-for="user in department.users" :key="user.userNum" class="user-item"
-                @click="$emit('user-selected', user)">
+              <li 
+                v-for="user in department.users" 
+                :key="user.userNum" 
+                class="user-item"
+                @click="$emit('user-selected', user)"
+              >
                 {{ user.name }}
+                <span v-if="user.isManager" class="manager-label">(매니저)</span> <!-- 매니저 표시 -->
               </li>
 
               <!-- 하위 부서를 재귀적으로 렌더링 -->
-              <RecursiveDepartment v-for="child in department.children" :key="child.id" :department="child"
-                :expandedDepartments="expandedDepartments" @toggle="toggleExpand"
-                @user-selected="$emit('user-selected', $event)" />
+              <RecursiveDepartment 
+                v-for="child in department.children" 
+                :key="child.id" 
+                :department="child"
+                :expandedDepartments="expandedDepartments" 
+                @toggle="toggleExpand"
+                @user-selected="$emit('user-selected', $event)"
+              />
             </ul>
           </li>
         </ul>
@@ -44,12 +54,19 @@ export default {
   components: {
     RecursiveDepartment,
   },
+  props: {
+    managers: {
+      type: Array,
+      default: () => []
+    }
+  },
   emits: ['user-selected'],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
     const hierarchy = ref([]);
     const searchQuery = ref('');
     const expandedDepartments = ref([]);
 
+    // 필터링된 조직도 데이터
     const filteredHierarchy = computed(() => {
       if (!searchQuery.value) {
         return hierarchy.value.filter(dept => !dept.parentId);
@@ -58,6 +75,7 @@ export default {
       return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
     });
 
+    // 계층 구조 및 유저 정보 가져오기
     const fetchHierarchy = async () => {
       try {
         const response = await axios.get('/department/hierarchy');
@@ -67,14 +85,21 @@ export default {
       }
     };
 
+    // 선택한 유저를 상위 컴포넌트로 전달
     const selectUser = (user) => {
-      emit('user-selected', user); // 'user-selected' 이벤트 발생
+      emit('user-selected', user);
     };
 
+    // 각 부서의 유저 수를 계산하고 매니저 여부 설정
+    // Vue 컴포넌트 내부에 있는 calculateUserCounts 함수 수정
     const calculateUserCounts = async (departments) => {
       const recurse = async (dept) => {
         const usersResponse = await axios.get(`/department/${dept.id}/users`);
-        dept.users = usersResponse.data || [];
+        dept.users = usersResponse.data.map(user => ({
+          ...user,
+          // 매니저 목록에 포함된 유저인지 확인하고 isManager 속성 추가
+          isManager: props.managers.some(manager => manager.userNum === user.userNum) 
+        }));
 
         let totalUsers = dept.users.length;
         if (dept.children && dept.children.length > 0) {
@@ -92,6 +117,8 @@ export default {
       return departments;
     };
 
+
+    // 부서 확장/축소
     const toggleExpand = (department) => {
       if (expandedDepartments.value.includes(department.id)) {
         expandedDepartments.value = expandedDepartments.value.filter(id => id !== department.id);
@@ -100,6 +127,7 @@ export default {
       }
     };
 
+    // 컴포넌트가 마운트되면 조직도 데이터를 가져옴
     onMounted(() => {
       fetchHierarchy();
     });
@@ -116,23 +144,16 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .org-chart-container {
   width: 100%;
   display: flex;
   gap: 20px;
-  /* 조직도 창과 유저 패널 사이의 간격 */
 }
 
 .org-chart {
   width: 100%;
-  /* width: fit-content; */
-  /* 조직도 창 크기 */
-  /* background-color: #f9f9f9; */
   padding: 10px;
-  /* border-radius: 8px; */
-  /* box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); */
   font-size: 12px;
   overflow-y: auto;
 }
@@ -175,13 +196,18 @@ export default {
   padding: 2px 0;
 }
 
+.manager-label {
+  font-size: 10px;
+  color: blue;
+  margin-left: 5px;
+}
+
 .expand-icon {
   margin-right: 5px;
 }
 
 .user-profile-panel {
   width: 45%;
-  /* 유저 패널 크기 */
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;

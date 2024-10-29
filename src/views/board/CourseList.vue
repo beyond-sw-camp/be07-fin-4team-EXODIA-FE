@@ -249,7 +249,7 @@ export default {
         });
         const user = response.data;
         console.log("User Info:", user);
-        localStorage.setItem("departmentName", user.departmentName);
+        // localStorage.setItem("departmentName", user.departmentName);
 
       } catch (error) {
         console.error("사용자 정보를 불러오는 데 실패했습니다:", error);
