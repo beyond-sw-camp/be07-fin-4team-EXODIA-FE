@@ -98,13 +98,38 @@
                         <v-list style="background-color: rgba(123, 86, 86, 0.3);">
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
                                 @dragstart="onDragStart(user)" class="draggable-item">
-                                <v-list-item-content>{{ user.name
-                                    }}</v-list-item-content>
+                                <v-list-item-content>
+                                    {{ user.name }}
+                                </v-list-item-content>
+                                <v-list-item-content>
+                                    ( {{ user.positionName }} )
+                                </v-list-item-content>
                             </v-list-item>
                         </v-list>
                     </v-card>
                     <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
-                        <v-card-text v-if="droppedUsers.length == 0">결재자를 선택하시오.</v-card-text>
+                        <v-card-title>3차 결재자</v-card-title>
+                        <v-card-text v-if="droppedUsers.length == 0">팀장 직급에서 선택하시오.</v-card-text>
+                        <v-list>
+                            <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
+                                <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
+                                <v-icon @click="removeUser(index)" style="border:none">mdi-close</v-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                    <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
+                        <v-card-title>2차 결재자</v-card-title>
+                        <v-card-text v-if="droppedUsers.length == 0">과장 직급에서 선택하시오.</v-card-text>
+                        <v-list>
+                            <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
+                                <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
+                                <v-icon @click="removeUser(index)" style="border:none">mdi-close</v-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                    <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
+                        <v-card-title>1차 결재자</v-card-title>
+                        <v-card-text v-if="droppedUsers.length == 0">대리 직급에서 선택하시오.</v-card-text>
                         <v-list>
                             <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
                                 <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
@@ -171,6 +196,8 @@ export default {
             try {
                 const response = await axios.get(`/department/${this.departmentId}/users`);
                 this.users = response.data.filter(u => Number(u.positionId) <= Number(this.positionId));
+
+                console.log("users: " + this.users)
             }
             catch (e) {
                 console.error('직원 불러오는데 오류 발생:', e);
@@ -230,7 +257,10 @@ export default {
             }
         },
         formatDate(date) {
-            return new Date(date).toLocaleDateString();
+            return new Date(date)
+                .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+                .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
         },
         formatLocalTime(date) {
             return new Date(date).toLocaleTimeString();
@@ -252,7 +282,8 @@ export default {
 }
 
 .drop-zone {
-    min-height: 200px;
+    margin: 20px 0;
+    min-height: 80px;
     border: 2px dashed #7A5656;
     padding: 20px;
 }
