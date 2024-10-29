@@ -37,7 +37,7 @@
                     <v-row class="mb-2" :class="{ 'drawer-open': drawer }"
                         style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
                         <v-col cols="1"><strong>번호</strong></v-col>
-                        <v-col cols="6"><strong>제목</strong></v-col>
+                        <v-col cols="6"><strong>파일 이름</strong></v-col>
                         <v-col cols="3"><strong>등록일</strong></v-col>
                         <v-col cols="2"><strong>작성자</strong></v-col>
                     </v-row>
@@ -129,27 +129,29 @@
                         <v-timeline dense v-if="showHistory" style="margin:10px" width="500px">
                             <v-timeline-item v-for="(history, index) in historyDocument" :key="index" size="x-small">
 
-                                <v-col class="history-item" width="250px" style="padding:20px">
+                                <v-col class="history-item" style="padding:20px; width:250px">
                                     <v-row justify="space-between">
-                                        <v-col cols="1">
-                                            <v-icon left>mdi-file-document-outline</v-icon>
+                                        <v-col cols="2">
+                                            <v-icon size="18" left>mdi-file-document-outline</v-icon>
                                         </v-col>
-                                        <v-col cols="10">
+                                        <v-col cols="10" style="padding-left:0">
                                             <span class="ellipsis-text-detail">{{ history.fileName }}</span>
                                         </v-col>
                                     </v-row>
                                     <v-row
-                                        style="margin-bottom:0; padding-bottom:0; padding-top:0; padding-left:10px; padding-right:10px">
-                                        <span style="font-size:12px">설명: {{ history.description }}</span>
+                                        style="margin-bottom:3px; margin-top:0; padding-bottom:0; padding-top:0; padding-left:10px; padding-right:10px">
+                                        <span style="padding-left:6px; font-size:12px">설명: {{ history.description
+                                            }}</span>
                                     </v-row>
 
-                                    <v-row class="user-info">
-                                        <v-avatar class="icon">
-                                            <v-img :src="history?.userProfileImage || defaultProfileImage"
-                                                aspect-ratio="1"
-                                                style="width: 100%; height: 100%; object-fit: cover;"></v-img>
-                                        </v-avatar>
-                                        <v-col style="padding:20px; font-size:14px">{{ history.userName }}</v-col>
+                                    <v-row class="user-info" style="margin-top:0">
+                                        <v-col cols="2" style="padding-top:0;">
+                                            <v-avatar class="icon" size="30">
+                                                <v-img :src="history?.userProfileImage || defaultProfileImage"
+                                                    aspect-ratio="1"></v-img>
+                                            </v-avatar>
+                                        </v-col>
+                                        <v-col style="font-size:14px; padding-top:0">{{ history.userName }}</v-col>
                                     </v-row>
                                 </v-col>
 
@@ -183,11 +185,9 @@
                                 <v-col cols="12" v-for="(comment, index) in this.comments" :key="index">
                                     <v-row class="comments-item">
                                         <v-col cols=1>
-                                            <v-avatar class="icon">
-                                                <v-img :src="comment.userProfileIamge || defaultProfileImage"
-                                                    aspect-ratio="1"
-                                                    style="width: 100%; height: 100%; object-fit: cover;">
-                                                </v-img>
+                                            <v-avatar class="icon" size="28">
+                                                <v-img :src="comment?.userProfileImage || defaultProfileImage"
+                                                    aspect-ratio="1"></v-img>
                                             </v-avatar>
                                         </v-col>
                                         <v-col cols="5">{{ comment.userName }}</v-col>
@@ -195,13 +195,14 @@
                                     <v-row cols="12" style="padding-left:50px" class="comment-content">
                                         {{ comment.contents }}
                                     </v-row>
-                                    <v-row style="font-size:14px; padding-right:13px;" class="justify-end">
+                                    <v-row style="font-size:14px; padding-right:13px; color:gray" class="justify-end">
                                         {{ formatDate(comment.createdAt) }} {{
                                             formatLocalTime(comment.createdAt) }}
                                     </v-row>
-                                    <v-divider v-if="!showHistory"></v-divider>
+                                    <v-divider></v-divider>
                                 </v-col>
                             </v-row>
+
                             <v-row v-else>
                                 <v-col cols=" 12">
                                     <p>댓글이 없습니다.</p>
@@ -464,7 +465,10 @@ export default {
             }
         },
         formatDate(date) {
-            return new Date(date).toLocaleDateString();
+            return new Date(date)
+                .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+                .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
         },
         formatLocalTime(date) {
             return new Date(date).toLocaleTimeString();
@@ -527,6 +531,7 @@ v-card-title,
     display: inline-block;
     max-width: 200px;
     width: 100%;
+    font-weight: 800;
 }
 
 .v-tab:hover {
@@ -569,13 +574,15 @@ v-card-title,
 .comments-item {
     display: flex;
     justify-content: start;
-    align-content: center;
+    align-items: center;
+    
 }
 
 .user-info {
     display: flex;
-    justify-content: center;
-    align-content: center;
+    justify-content: start;
+    align-items: center;
+    font-size: 14px;
 }
 
 .comment-content {
@@ -586,9 +593,8 @@ v-card-title,
 }
 
 .history-item {
-    background-color: rgba(122, 86, 86, 0.2);
     border-radius: 8px;
-
-    border: 2px solid #722121;
+    height: max-content;
+    border: 2px solid #b9b9b9;
 }
 </style>

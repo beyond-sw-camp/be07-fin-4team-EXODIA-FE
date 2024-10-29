@@ -78,11 +78,10 @@ export default {
           }
         });
 
-        console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
 
-        console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
-        console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
+        // console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
+        // console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
       } catch (error) {
         console.error('유저 정보 가져오기 실패:', error);
       }
