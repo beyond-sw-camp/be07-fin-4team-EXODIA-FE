@@ -27,14 +27,22 @@ meetReservation
         </v-btn>
         <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;">Today</v-btn>
       </v-col>
+      
+
+      <!-- 날짜 선택 아이콘 -->
+      <v-col cols="1" class="" style="margin-left:-3%;">
+        <v-btn icon @click="openDatePicker" style="margin-right: 14%;  box-shadow: none">
+          <v-icon>mdi-calendar</v-icon>
+        </v-btn>
+      </v-col>
 
       <!-- 가운데 날짜 -->
-      <v-col cols="6" class="text-center">
+      <v-col cols="5" class="text-center" style="margin-left:-3%;">
         <h2 style="font-size: 30px;">{{ formattedDate(selectedDate) }}</h2>
       </v-col>
 
       <!-- 예약 추가 버튼 -->
-      <v-col cols="3" class="text-right">
+      <v-col cols="3" class="text-right" style="margin-left:6%;">
         <v-btn color="rgb(154, 47, 47)" @click="openReservationDialog"
           style="box-shadow: none; margin-right: 14%;font-weight: bold; border-radius: 10px">
           예약하기
@@ -77,6 +85,8 @@ meetReservation
       </v-col>
     </v-row>
 
+    
+
     <!-- 예약 모달 -->
     <v-dialog v-model="dialog" persistent max-width="600px">
       <v-card>
@@ -104,8 +114,16 @@ meetReservation
             <!-- 시작 시간 선택 -->
             <v-row>
               <v-col>
-                <v-text-field v-model="startHour" label="시작 시간 (시)" type="number" :min="0" :max="23"
-                  required></v-text-field>
+                <v-text-field 
+                  v-model="startHour" 
+                  label="시작 시간 (시)" 
+                  type="number" 
+                  :min="0" 
+                  :max="23" 
+                  hint="0시에서 23시 사이의 시간을 입력하세요." 
+                  persistent-hint 
+                  required
+                ></v-text-field>
               </v-col>
               <v-col>
                 <v-select v-model="startMinute" :items="[0, 30]" label="시작 시간 (분)" required></v-select>
@@ -115,8 +133,15 @@ meetReservation
             <!-- 종료 시간 선택 -->
             <v-row>
               <v-col>
-                <v-text-field v-model="endHour" label="종료 시간 (시)" type="number" :min="0" :max="23"
-                  required></v-text-field>
+                <v-text-field v-model="startHour" 
+                  label="종료 시간 (시)" 
+                  type="number" 
+                  :min="0" 
+                  :max="23" 
+                  hint="0시에서 23시 사이의 시간을 입력하세요." 
+                  persistent-hint 
+                  required>
+                </v-text-field>
               </v-col>
               <v-col>
                 <v-select v-model="endMinute" :items="[0, 30]" label="종료 시간 (분)" required></v-select>
@@ -213,7 +238,7 @@ meetReservation
 
         <v-card-actions style="padding: 15px;">
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
+          <v-btn class="custom-write-btn" @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -802,5 +827,17 @@ export default {
 }
 .selected-chip {
   background-color: #e3f2fd;
+}
+.custom-write-btn {
+  text-align: center !important;
+  cursor: pointer !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  /* padding: 10px 20px !important; */
+  box-shadow: none !important;
+  background-color: rgb(148, 148, 148) !important;
+  color: black !important;
+  font-size: 14px !important;
+  font-weight: bold;
 }
 </style>
