@@ -35,9 +35,10 @@
                                 채팅 상대 초대
                             </v-list-item-title>
                         </v-list-item>
-                        <v-divider></v-divider>
-                        <v-list-item v-on:click="showchatRoomNameChangeModal">
-                            <v-list-item-title>
+                        <!-- 1:1 일 때는 채팅방명 변경 불가능 -->
+                        <v-divider v-if="chatRoomUsersProp.length!=2" ></v-divider>
+                        <v-list-item v-if="chatRoomUsersProp.length!=2" v-on:click="showchatRoomNameChangeModal">
+                            <v-list-item-title >
                                 <v-icon>mdi-pencil</v-icon>
                                 채팅방명 변경
                             </v-list-item-title>
@@ -213,7 +214,7 @@ export default {
             this.chatUserList = usersResponse.data.result;
             this.chatUserNums = this.chatUserList.map(chatuser => chatuser.chatUserNum);
         }
-        this.chatRoomName = this.getChatuserName(this.chatRoomUsersProp);
+        this.chatRoomName = this.getChatRoomName(this.chatRoomUsersProp);
 
         this.scrollToBottom();
     },
@@ -474,7 +475,7 @@ export default {
             }
         },
 
-        getChatuserName(users) {
+        getChatRoomName(users) {
             if (this.chatUserList.length >= 3) {
                 return this.chatRoomNameProp;
             } else if (this.chatUserList.length <= 1) {

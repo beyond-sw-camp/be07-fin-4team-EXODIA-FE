@@ -8,6 +8,7 @@
             </v-row>
             <v-row>
                 <v-col cols="12">
+                    <!-- ⭐기존의 이름이 안들어간다 -->
                     <v-text-field v-model="chatRoomNameInput" label="채팅방명을 다시 작성해주세요."></v-text-field>
                 </v-col>
             </v-row>
@@ -38,12 +39,14 @@ export default {
             }
         }
     },
-
     created() {
         this.chatRoomId = this.chatRoomIdProp;
         this.chatRoomNameInput = this.chatRoomNamePropProp;
+        console.log(this.chatRoomNamePropProp);
     },
-
+    mounted(){
+        this.chatRoomNameInput = this.chatRoomNamePropProp;
+    },
     methods: {
         async changeChatRoomName() {
             try {
