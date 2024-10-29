@@ -21,6 +21,7 @@ export default {
         },
 
         async exitChatRoom() {
+            // ⭐ 혼자 있는 채팅방을 만들 수 있다... create할때 나 자신 막으면 뭐해 ㅎ..
             const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/hardExit/${this.chatRoomIdProp}`);
             console.log(response);
             this.$emit("exit",response.data.result);
