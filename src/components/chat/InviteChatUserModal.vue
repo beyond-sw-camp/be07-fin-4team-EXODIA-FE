@@ -1,61 +1,91 @@
 <template>
     <v-dialog v-model="dialog" max-width="400px">
         <v-container class="invite-container">
-            <v-row>
-                <v-col>
-                    <h3>채팅 상대 선택</h3>
-                </v-col>
-            </v-row>
-
-            <div class="chat-user-list">
-                <OrganizationChart @user-selected="addUser" />
-            </div>
-
-            <div class="select-divider">
-                <div v-if="selectUser !== null">
-                    <br>
-                    <hr class="select-line" />
-                    <br>
-                </div>
-            </div>
-
-            <!-- 선택된 유저-->
-            <div class="selected-user-row" v-if="selectUser !== null">
+            <div v-if="chatUserSelect">
                 <v-row>
-                    <v-col class="select-user-list" cols="3">
-                        <v-icon color="grey" class="close-icon" @click="removeUser()">mdi-close-circle</v-icon>
-                        <div class="select-user">{{ selectUser.name }}</div>
+                    <v-col>
+                        <h3>채팅 상대 선택</h3>
+                    </v-col>
+                </v-row>
+
+                <div class="chat-user-list">
+                    <OrganizationChart @user-selected="addUser" />
+                </div>
+
+                <div class="select-divider">
+                    <div v-if="selectUser !== null">
+                        <br>
+                        <hr class="select-line" />
+                        <br>
+                    </div>
+                </div>
+
+                <!-- 선택된 유저-->
+                <div class="selected-user-row" v-if="selectUser !== null">
+                    <v-row>
+                        <v-col class="select-user-list" cols="3">
+                            <v-icon color="grey" class="close-icon" @click="removeUser()">mdi-close-circle</v-icon>
+                            <div class="select-user">{{ selectUser.name }}</div>
+                        </v-col>
+                    </v-row>
+                </div>
+
+                <v-row>
+                    <v-col cols="12" class="text-right">
+                        <v-btn color="success" @click="showChatRoomNameChange">다음</v-btn>
+                        <v-btn color="error" @click="closeModal">취소</v-btn>
                     </v-col>
                 </v-row>
             </div>
 
-            <v-row>
-                <v-col cols="12">
-                    <v-btn @click="inviteChatUser">초대</v-btn>
-                    <v-btn color="error" @click="closeModal">취소</v-btn>
-                </v-col>
-            </v-row>
+
+            <div v-if="chatRoomNameChange">
+                <v-row>
+                    <v-col cols="12">
+                        <h3>채팅방 이름</h3>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols="12">
+                        <v-text-field v-model="chatRoomName" label="채팅방명을 다시 작성해주세요."></v-text-field>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols="12">
+                        <v-btn @click="inviteChatUser">초대</v-btn>
+                        <v-btn color="error" @click="closeModal">취소</v-btn>
+                    </v-col>
+                </v-row>
+            </div>
         </v-container>
     </v-dialog>
 </template>
 
 <script>
 import axios from 'axios';
-import OrganizationChart from '@/views/organization/OrganizationChart.vue'; 
+import OrganizationChart from '@/views/organization/OrganizationChart.vue';
 
 export default {
-    props: ['chatRoomIdProp', 'existChatUsersProp', 'invite'],
+    props: ['chatRoomIdProp', 'chatRoomNamePropProp', 'existChatUsersProp', 'invite'],
     components: {
         OrganizationChart,
     },
     data() {
         return {
             chatRoomId: null,
+            chatRoomName: null,
+
+            chatUserSelect: true, // 초대 사원 선택 제어
+            chatRoomNameChange: false, // 채팅방 이름 변경 제어
 
             selectUser: null, // 선택한 사원
 
             inviteChatUserData: {
                 inviteUserNum: null,
+                roomId: null
+            },
+            changeChatRoomNameData: {
+                chatRoomName: null,
                 roomId: null
             }
         }
@@ -70,25 +100,49 @@ export default {
             this.selectUser = null;
         },
         addUser(userInfos) {
-            if(this.existChatUsersProp.indexOf(userInfos.userNum) != -1){
+            if (this.existChatUsersProp.indexOf(userInfos.userNum) != -1) {
                 alert("이미 채팅방에 존재하는 유저입니다.");
                 return;
             }
             this.selectUser = userInfos;
+            console.log(this.selectUser);
         },
 
-        async inviteChatUser() {
+        showChatRoomNameChange() {
             // ⭐ 중복인원이 있는 채팅방을 초대로 만들 수 있다...
-            if(this.selectUser.userNum!= null){
+            if (this.selectUser == null) {
                 alert("유저를 고르세요.");
                 return;
             }
-            this.inviteChatUserData.roomId = this.chatRoomId;
-            this.inviteChatUserData.inviteUserNum = this.selectUser.userNum;
-            const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/invite`, this.inviteChatUserData);
-            this.$emit("invite", response.data.result);
-            this.selectUser = null;
-            this.$emit('update:dialog', false);
+            this.chatUserSelect = false;
+            this.chatRoomNameChange = true;
+            this.chatRoomName = this.chatRoomNamePropProp + ', ' + this.selectUser.name;
+        },
+
+        async inviteChatUser() {
+            try {
+                this.inviteChatUserData.roomId = this.chatRoomId;
+                this.inviteChatUserData.inviteUserNum = this.selectUser.userNum;
+
+                const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/invite`, this.inviteChatUserData);
+
+                this.changeChatRoomNameData.chatRoomName = this.chatRoomName;
+                this.changeChatRoomNameData.roomId = this.chatRoomId;
+                const response_ = await axios.put(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/updateName`, this.changeChatRoomNameData);
+                console.log(response_);
+
+                const changeChatRoom = {
+                    senderNum: response.data.result.senderNum,
+                    senderName: response.data.result.senderName,
+                    chatRoomNameChange: this.chatRoomName
+                }
+                this.$emit("invite", changeChatRoom);
+                this.selectUser = null;
+                this.$emit('update:dialog', false);
+
+            } catch (e) {
+                console.error('유저 초대를 실패했습니다.', e);
+            }
         },
 
         closeModal() {
@@ -157,6 +211,4 @@ export default {
     border-radius: 10px;
     font-size: 13px;
 }
-
-
 </style>

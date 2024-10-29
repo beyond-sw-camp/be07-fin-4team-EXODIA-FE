@@ -19,19 +19,21 @@
             </v-col>
         </v-row>
 
-        <!-- Chat room list ⭐⭐⭐ 1:1 일 경우 상대 이름이 나와야함. response 부터 고쳐야할판...? userInfo 가져오는 api 쓰자. -->
+        <!-- Chat room list -->
         <v-list class="chat-room-list" v-if="chatRoomList.length !== 0">
             <v-list-item-group class="chat-list" v-for="(chatroom, index) in chatRoomList" :key="chatroom.roomId">
                 <v-list-item class="chat-list-item" @click="enterToChatRoom(index)">
                     <!-- Room info -->
                     <v-list-item-content class="chat-room-list-content">
                         <div class="chat-room-info">
-                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.users.length>2">{{ chatroom.roomName }}</v-list-item-title>
-                            <!-- ⭐⭐⭐ 1:1 일 경우 상대 이름이 나와야함. -->
-                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.users.length=2">{{ getChatuserName(chatroom.users) }}</v-list-item-title>
-                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.users.length<2">{{ chatroom.users[0].chatUserName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.users.length > 2">{{
+                                chatroom.roomName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-else-if="chatroom.users.length < 2">{{
+                                chatroom.users[0].chatUserName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-else-if="chatroom.users.length = 2">{{
+                                getChatuserName(chatroom.users) }}</v-list-item-title>
                             <v-icon class="user-mini-icon">mdi-account</v-icon>
-                            <span class="chat-user-num">{{ chatroom.userNums.length }}</span>
+                            <span class="chat-user-num">{{ chatroom.users.length }}</span>
                         </div>
                         <v-list-item-subtitle class="chat-room-list-chat">{{ chatroom.recentChat
                             }}</v-list-item-subtitle>
@@ -95,20 +97,7 @@ export default {
         this.loadChatRoom();
         this.initSSE();
     },
-    // mounted() {
-    //     window.addEventListener('beforeunload', this.leave)
-    // },
-    // beforeUnmount() {
-    //     window.removeEventListener('beforeunload', this.leave)
-    // },
     methods: {
-        // leave(){
-        //     if (window.opener && window.opener.parentVueInstance) {
-        //     window.opener.parentVueInstance.initSSE();
-        //     window.opener.parentVueInstance.reload();
-        //     }
-        // },
-        // SSE 연결 설정
         initSSE() {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -131,7 +120,6 @@ export default {
                     if (window.opener && window.opener.parentVueInstance) {
                         window.opener.parentVueInstance.unreadChatNum = newNotification.alarmNum;
                     }
-                    // window.opener.document.getElementById("hAlarmNum").content = newNotification.alarmNum;
                     console.log(newNotification);
                     return;
                 } else if (newNotification.type == '채팅목록') {
@@ -162,7 +150,14 @@ export default {
                 };
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/search`, { params });
                 this.chatRoomList = response.data.result || [];
+                console.log("목록조회")
+                console.log(response);
                 console.log(this.chatRoomList);
+
+                // const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/list/${this.userNum}`);
+                // this.chatRoomList = response.data.result || [];
+                // console.log("목록조회")
+                // console.log(response);
             } catch (e) {
                 console.error('채팅방 목록 조회 실패', e);
             }
@@ -172,6 +167,18 @@ export default {
         searchChatRoom() {
             this.loadChatRoom();
         },
+
+        // async searchChatRoom() {
+        //     const params = {
+        //         userNum: this.userNum,
+        //         searchValue: this.searchQuery
+        //     };
+        //     const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/search`, { params });
+        //     this.chatRoomList = response.data.result || [];
+        //     console.log("목록조회")
+        //     console.log(response);
+        // },
+
 
         // 시간 추출
         getTime(createdAt) {
@@ -221,8 +228,8 @@ export default {
             this.chatRoomListCheck = false;
         },
 
-        getChatuserName(users){
-            const chatUser = users.filter(u=>u.chatUserNum!=this.userNum)
+        getChatuserName(users) {
+            const chatUser = users.filter(u => u.chatUserNum != this.userNum)
             return chatUser[0].chatUserName;
         }
 

@@ -33,7 +33,7 @@
 
             <!-- 다음 버튼 -->
             <v-row>
-                <v-col cols="12" class="text-right">
+                <v-col cols="12">
                     <v-btn color="success" @click="showChatRoomNameCreate">다음</v-btn>
                     <v-btn color="error" @click="closeCreate">취소</v-btn>
                 </v-col>
