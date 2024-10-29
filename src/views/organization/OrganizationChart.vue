@@ -17,22 +17,23 @@
 
             <!-- 부서 내부의 유저 표시 -->
             <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
-              <li 
-                v-for="user in department.users" 
-                :key="user.userNum" 
+              <li
+                v-for="user in department.users"
+                :key="user.userNum"
                 class="user-item"
                 @click="$emit('user-selected', user)"
               >
                 {{ user.name }}
-                <span v-if="user.isManager" class="manager-label">(매니저)</span> <!-- 매니저 표시 -->
+                <span v-if="user.isManager" class="manager-label">(매니저)</span>
               </li>
 
               <!-- 하위 부서를 재귀적으로 렌더링 -->
-              <RecursiveDepartment 
-                v-for="child in department.children" 
-                :key="child.id" 
+              <RecursiveDepartment
+                v-for="child in department.children"
+                :key="child.id"
                 :department="child"
-                :expandedDepartments="expandedDepartments" 
+                :expandedDepartments="expandedDepartments"
+                :managers="managers" 
                 @toggle="toggleExpand"
                 @user-selected="$emit('user-selected', $event)"
               />
@@ -45,7 +46,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import RecursiveDepartment from './RecursiveDepartment.vue';
 
@@ -66,7 +67,7 @@ export default {
     const searchQuery = ref('');
     const expandedDepartments = ref([]);
 
-    // 필터링된 조직도 데이터
+    // 조직도 데이터 필터링
     const filteredHierarchy = computed(() => {
       if (!searchQuery.value) {
         return hierarchy.value.filter(dept => !dept.parentId);
@@ -75,7 +76,7 @@ export default {
       return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
     });
 
-    // 계층 구조 및 유저 정보 가져오기
+    // 조직도 데이터 및 사용자 정보 가져오기
     const fetchHierarchy = async () => {
       try {
         const response = await axios.get('/department/hierarchy');
@@ -85,20 +86,18 @@ export default {
       }
     };
 
-    // 선택한 유저를 상위 컴포넌트로 전달
+    // 사용자를 선택하면 이벤트 전송
     const selectUser = (user) => {
       emit('user-selected', user);
     };
 
-    // 각 부서의 유저 수를 계산하고 매니저 여부 설정
-    // Vue 컴포넌트 내부에 있는 calculateUserCounts 함수 수정
+    // 부서 계층 구조의 유저 수 및 매니저 표시 여부 설정
     const calculateUserCounts = async (departments) => {
       const recurse = async (dept) => {
         const usersResponse = await axios.get(`/department/${dept.id}/users`);
         dept.users = usersResponse.data.map(user => ({
           ...user,
-          // 매니저 목록에 포함된 유저인지 확인하고 isManager 속성 추가
-          isManager: props.managers.some(manager => manager.userNum === user.userNum) 
+          isManager: props.managers.some(manager => manager.userNum === user.userNum)
         }));
 
         let totalUsers = dept.users.length;
@@ -117,8 +116,7 @@ export default {
       return departments;
     };
 
-
-    // 부서 확장/축소
+    // 부서를 확장/축소하는 함수
     const toggleExpand = (department) => {
       if (expandedDepartments.value.includes(department.id)) {
         expandedDepartments.value = expandedDepartments.value.filter(id => id !== department.id);
@@ -127,7 +125,17 @@ export default {
       }
     };
 
-    // 컴포넌트가 마운트되면 조직도 데이터를 가져옴
+    // `managers` 속성의 변경 사항을 감지하여 hierarchy 재계산
+    watch(
+      () => props.managers,
+      async () => {
+        // `hierarchy`를 다시 계산하여 매니저 상태를 반영
+        hierarchy.value = await calculateUserCounts(hierarchy.value);
+      },
+      { deep: true }
+    );
+
+    // 컴포넌트가 마운트되면 fetchHierarchy 호출
     onMounted(() => {
       fetchHierarchy();
     });
@@ -143,6 +151,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .org-chart-container {

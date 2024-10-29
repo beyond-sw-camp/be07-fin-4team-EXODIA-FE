@@ -64,21 +64,30 @@
         <v-list>
           <v-list-item v-for="(comment, index) in comments" :key="comment.id || index" class="comment-item">
             <div class="comment-content">
+              <!-- 사용자 프로필 이미지와 이름 표시 -->
               <div class="comment-meta">
-                <p class="comment-text">{{ comment.content }}</p>
-                <small>
-                  사번: {{ comment.userNum }} - {{ formatDate(comment.createdAt) }}
-                  <span v-if="comment.isEdited">(수정됨)</span>
-                </small>
+                <v-avatar class="icon">
+                  <v-img :src="comment.profileImage || defaultProfileImage" aspect-ratio="1"
+                        style="width: 40px; height: 40px; object-fit: cover;">
+                  </v-img>
+                </v-avatar>
+                <span class="user-name">{{ comment.name }}</span>
               </div>
-              <div v-if="comment.userNum === userNum" class="action-buttons">
-                <v-btn v-create small text @click="editComment(comment)">수정</v-btn>
-                <v-btn small text color="red" @click="deleteComment(comment.id)">삭제</v-btn>
+              <!-- 댓글 내용 -->
+              <p class="comment-text">{{ comment.content }}</p>
+              <!-- 수정/삭제 버튼과 작성일 -->
+              <div class="action-section">
+                <div v-if="comment.userNum === userProfile.userNum" class="action-links">
+                  <span @click="editComment(comment)" class="action-link">수정</span>
+                  <span @click="deleteComment(comment.id)" class="action-link delete">삭제</span>
+                </div>
+                <small class="comment-date">{{ formatDate(comment.createdAt) }}</small>
               </div>
             </div>
           </v-list-item>
         </v-list>
       </div>
+
     </div>
 
     <!-- 에러 및 로딩 상태 표시 -->
@@ -98,7 +107,12 @@ export default {
       newCommentContent: '',
       isLoggedIn: false,
       error: null,
-      userNum: localStorage.getItem('userNum'),
+      defaultProfileImage: 'https://via.placeholder.com/150',
+      userProfile: {
+        userNum: localStorage.getItem('userNum') || '',
+        name: '',
+        profileImage: ''
+      },
       boardTitle: '게시글 상세보기',
       tags: [] // 태그 목록을 담을 배열
     };
@@ -111,54 +125,47 @@ export default {
     checkLoginStatus() {
       const token = localStorage.getItem('token');
       this.isLoggedIn = !!token;
-      console.log("로그인 상태:", this.isLoggedIn); // 로그인 상태 확인
+      if (this.isLoggedIn) {
+        // 로그인된 경우 사용자 정보 로드
+        this.userProfile.userNum = localStorage.getItem('userNum');
+        this.userProfile.name = localStorage.getItem('name') || 'Unknown User';
+        this.userProfile.profileImage = localStorage.getItem('profileImage') || 'https://example.com/default-profile.png';
+      }
+      console.log("로그인 상태:", this.isLoggedIn);
+      console.log("사용자 정보:", this.userProfile);
     },
+
     async fetchBoardDetail() {
       try {
         const boardId = this.$route.params.id;
-        const userNum = localStorage.getItem('userNum');
+        const userNum = this.userProfile.userNum;
 
-        // 게시글 상세 정보를 가져옴
         const boardResponse = await axios.get(`/board/detail/${boardId}`, {
           params: { userNum }
         });
-
         this.board = boardResponse.data.result;
 
-        // 댓글 데이터 확인
         if (this.board.comments) {
-          this.comments = this.board.comments.filter(comment => !comment.delYn); 
+          this.comments = this.board.comments.filter(comment => !comment.delYn);
         } else {
           this.comments = [];
         }
 
-        // 태그 데이터 확인
-        if (this.board.tags) {
-          if (!Array.isArray(this.board.tags)) {
-            this.tags = [this.board.tags];
-          } else {
-            this.tags = [...this.board.tags]; 
-          }
-        } else {
-          this.tags = [];
-        }
-
-        console.log('게시글 데이터:', this.board);
-        console.log('태그 데이터:', this.tags);
-
+        console.log("댓글 데이터:", JSON.stringify(this.comments));
       } catch (error) {
         console.error('게시글을 불러오는 데 실패했습니다:', error);
         this.error = '게시글을 불러오는 데 실패했습니다.';
       }
     },
 
+
+
     formatCategory(category) {
-      // 카테고리 명을 변환하여 출력
       const categoryMapping = {
         'NOTICE': '공지사항',
         'FAMILY_EVENT': '경조사'
       };
-      return categoryMapping[category] || category;  // 기본적으로는 원본 카테고리명을 사용
+      return categoryMapping[category] || category;
     },
 
     async submitComment() {
@@ -166,17 +173,21 @@ export default {
         alert('댓글 내용을 입력하세요.');
         return;
       }
+
       const boardId = this.$route.params.id;
       const newComment = {
         content: this.newCommentContent,
         board_id: boardId,
-        userNum: this.userNum,
+        userNum: this.userProfile.userNum,
+        userName: this.userProfile.name,
+        userProfileImage: this.userProfile.profileImage
       };
+
       try {
         const response = await axios.post(`/comment/create`, newComment);
         console.log('댓글 작성 응답:', response.data);
         this.newCommentContent = '';
-        this.fetchBoardDetail(); 
+        this.fetchBoardDetail();
       } catch (error) {
         console.error('댓글 작성에 실패했습니다:', error);
         alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
@@ -186,7 +197,7 @@ export default {
     formatDate(date) {
       return new Date(date)
         .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-        .replace(/\.\s/g, '.') 
+        .replace(/\.\s/g, '.')
         .replace(/\.$/, '');
     },
 
@@ -204,20 +215,14 @@ export default {
       if (confirm("정말로 이 게시물을 삭제하시겠습니까?")) {
         try {
           const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/delete/${this.board.id}`;
-          console.log('게시물 삭제 요청:', apiUrl);
+          const response = await axios.get(apiUrl);
 
-          const response = await axios.get(apiUrl); // GET 요청으로 삭제 처리
-          console.log('응답 상태:', response.status); // 응답 상태를 로그에 출력
-          console.log('응답 데이터:', response.data); // 응답 메시지 출력
-
-          // 응답 메시지 확인 후 알림 표시
           if (response.data && response.data.status_message === "게시물이 성공적으로 삭제되었습니다.") {
             alert(response.data.status_message);
             this.$router.push({ name: 'BoardList', params: { category: this.board.category } });
           } else {
             alert('게시물 삭제 중 문제가 발생했습니다.');
           }
-
         } catch (error) {
           console.error('게시물 삭제에 실패했습니다:', error);
           alert('게시물 삭제에 실패했습니다. 다시 시도해주세요.');
@@ -225,14 +230,11 @@ export default {
       }
     },
 
-
-
     editComment(comment) {
       const updatedContent = prompt("댓글을 수정하세요:", comment.content);
       if (updatedContent && updatedContent !== comment.content) {
-        const userNum = localStorage.getItem("userNum");
-        axios
-          .put(`/comment/update/${comment.id}`, { content: updatedContent, userNum, isEdited: true })
+        const userNum = this.userProfile.userNum;
+        axios.put(`/comment/update/${comment.id}`, { content: updatedContent, userNum, isEdited: true })
           .then((response) => {
             console.log('댓글 수정 응답:', response.data);
             const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
@@ -250,12 +252,11 @@ export default {
 
     async deleteComment(commentId) {
       if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
-        const userNum = localStorage.getItem("userNum");
+        const userNum = this.userProfile.userNum;
         try {
-          const response = await axios.get(`/comment/delete/${commentId}`, { 
-            params: { userNum } 
+          const response = await axios.get(`/comment/delete/${commentId}`, {
+            params: { userNum }
           });
-          console.log('댓글 삭제 응답 데이터:', response.data);
 
           if (response.data.includes('성공적으로 삭제되었습니다')) {
             this.comments = this.comments.filter(comment => comment.id !== commentId);
@@ -263,7 +264,6 @@ export default {
           } else {
             alert(`댓글 삭제에 실패했습니다. 서버에서 오류가 발생했습니다.`);
           }
-          
         } catch (error) {
           console.error("댓글 삭제에 실패했습니다:", error);
           alert(`댓글 삭제에 실패했습니다. 오류 메시지: ${error.message}`);
@@ -291,7 +291,6 @@ export default {
   }
 };
 </script>
-
 
 
 <style scoped>
@@ -363,9 +362,7 @@ export default {
   border-radius: 8px;
   padding: 20px;
   width: 100%;
-  /* 댓글 섹션 전체 너비 */
   max-width: 1200px;
-  /* 최대 너비 설정 */
 }
 
 .comment-item {
@@ -374,26 +371,66 @@ export default {
   padding: 10px;
   margin-bottom: 10px;
   width: 100%;
-  /* 댓글 목록 항목 너비 */
+  position: relative; /* 부모 요소에 상대 위치 */
 }
 
 .comment-content {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.action-buttons {
+/* 사번을 댓글 내용 위쪽 왼쪽 정렬 */
+.comment-meta .user-num {
+  font-size: 0.7rem;
+  color: #555;
+}
+
+/* 댓글 내용 스타일 */
+.comment-text {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* 수정/삭제를 댓글 범위에서 맨 오른쪽 위에 정렬 */
+.action-links {
+  position: absolute;
+  top: 5px;
+  right: 10px;
   display: flex;
   gap: 10px;
 }
 
+.action-link {
+  cursor: pointer;
+  font-size: 0.7rem;
+  color: #555;
+  text-decoration: underline;
+}
+
+.action-link.delete {
+  color: red;
+}
+
+.action-link:hover {
+  color: #333;
+}
+
+/* 작성일을 댓글 범위에서 맨 오른쪽 아래에 정렬 */
+.comment-date {
+  position: absolute;
+  bottom: 3px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: #777;
+}
+
+/* 댓글 작성 폼 */
 .comment-form {
   margin-top: 20px;
   width: 100%;
-  /* 댓글 작성 폼 너비 */
   max-width: 1200px;
-  /* 최대 너비 설정 */
 }
 
 .tbl_list {
@@ -455,5 +492,24 @@ export default {
 .drawer-open {
   transition: margin-right 0.3s ease;
   margin-right: 200px;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.user-name {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #333;
 }
 </style>

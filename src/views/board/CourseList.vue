@@ -19,7 +19,7 @@
 
     <v-row justify="end" style="margin-top: 20px;">
       <v-col cols="12" style="text-align: right;">
-        <v-btn v-if="isHrDepartment()" icon @click="openCreateModal">
+        <v-btn v-if="isHrAdmin()" icon @click="openCreateModal">
           <v-icon size="32">mdi-plus-circle</v-icon>
         </v-btn>
       </v-col>
@@ -32,7 +32,7 @@
       <v-col cols="3"><strong>내용</strong></v-col>
       <v-col cols="2"><strong>생성일</strong></v-col>
       <v-col cols="1"><strong>참여자</strong></v-col>
-      <v-col cols="3" v-if="isHrDepartment()"><strong></strong></v-col>
+      <v-col cols="3" v-if="isHrAdmin()"><strong></strong></v-col>
     </v-row>
 
     <!-- 강좌 리스트 -->
@@ -43,7 +43,7 @@
       <v-col cols="3">{{ course.content }}</v-col>
       <v-col cols="2">{{ formatDate(course.createdAt) }}</v-col>
       <v-col cols="1">{{ course.currentParticipants }} / {{ course.maxParticipants }}</v-col>
-      <v-col cols="3" v-if="isHrDepartment()">
+      <v-col cols="3" v-if="isHrAdmin()">
         <v-btn icon @click.stop="openEditModal(course)">
           <v-icon>mdi-pencil</v-icon> <!-- 강좌 수정 아이콘 -->
         </v-btn>
@@ -249,7 +249,7 @@ export default {
         });
         const user = response.data;
         console.log("User Info:", user);
-        // localStorage.setItem("departmentName", user.departmentName);
+
 
       } catch (error) {
         console.error("사용자 정보를 불러오는 데 실패했습니다:", error);
@@ -258,9 +258,9 @@ export default {
     },
 
     // 인사팀 여부 확인
-    isHrDepartment() {
-      const departmentName = localStorage.getItem("departmentName");
-      return departmentName === "인사팀";
+    isHrAdmin() {
+      const departmentId = localStorage.getItem('departmentId');
+      return departmentId === "4";
     },
 
     // 강의 목록 불러오기
