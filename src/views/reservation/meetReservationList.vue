@@ -133,7 +133,7 @@ meetReservation
             <!-- 종료 시간 선택 -->
             <v-row>
               <v-col>
-                <v-text-field v-model="startHour" 
+                <v-text-field v-model="endHour" 
                   label="종료 시간 (시)" 
                   type="number" 
                   :min="0" 
