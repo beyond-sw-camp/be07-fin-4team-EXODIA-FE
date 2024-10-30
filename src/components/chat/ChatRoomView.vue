@@ -7,7 +7,12 @@
                 <v-icon class="icon" @click="goBack">mdi-chevron-left</v-icon> <!-- 뒤로가기 -->
             </v-col>
             <v-col cols="10" class="chat-room-title">
-                <span class="chat-room-name">{{ chatRoomNameProp }}</span>
+                <!-- <span class="chat-room-name" v-if="chatUserList.length >= 3">{{ chatRoomNameProp }}</span>
+                <span class="chat-room-name" v-else-if="chatUserList.length <= 1">{{ chatRoomUsersProp[0].chatUserName
+                    }}</span>
+                <span class="chat-room-name" v-else-if="chatUserList.length = 2">{{ getChatuserName(chatRoomUsersProp)
+                    }}</span> -->
+                <span class="chat-room-name">{{ chatRoomName }}</span>
                 <v-icon id="user-activator" class="user-mini-icon">mdi-account</v-icon>
                 <span class="chat-user-num">{{ chatUserList.length }}</span>
                 <v-menu activator="#user-activator">
@@ -30,6 +35,14 @@
                                 채팅 상대 초대
                             </v-list-item-title>
                         </v-list-item>
+                        <!-- 1:1 일 때는 채팅방명 변경 불가능 -->
+                        <v-divider v-if="chatRoomUsersProp.length!=2" ></v-divider>
+                        <v-list-item v-if="chatRoomUsersProp.length!=2" v-on:click="showchatRoomNameChangeModal">
+                            <v-list-item-title >
+                                <v-icon>mdi-pencil</v-icon>
+                                채팅방명 변경
+                            </v-list-item-title>
+                        </v-list-item>
                         <v-divider></v-divider>
                         <v-list-item v-on:click="showexitChatRoomModal">
                             <v-list-item-title>
@@ -43,8 +56,13 @@
         </v-row>
 
         <InviteChatUserModal v-model="inviteUserModal" @update:dialog="inviteUserModal = $event"
-            @invite="inviteUserMessage" :chatRoomIdProp="chatRoomId" :existChatUsersProp="chatRoomUserNumsProp">
+            @invite="inviteUserMessage" :chatRoomIdProp="chatRoomId" :existChatUsersProp="chatUserNums"
+            :chatRoomNamePropProp="chatRoomName">
         </InviteChatUserModal>
+
+        <ChatRoomNameChangeModal v-model="changeRoomNameModal" @update:dialog="changeRoomNameModal = $event"
+            @changeRoomName="changeChatRoomName" :chatRoomIdProp="chatRoomId" :chatRoomNamePropProp="chatRoomName">
+        </ChatRoomNameChangeModal>
 
         <ExitChatRoomModal v-model="exitAlertModal" @update:dialog="exitAlertModal = $event" @exit="exitUserMesssage"
             :chatRoomIdProp="chatRoomId">
@@ -146,27 +164,31 @@ import Stomp from 'webstomp-client'
 import SockJS from 'sockjs-client'
 import ChatFileBox from '@/components/chat/ChatFileBox.vue'
 import InviteChatUserModal from './InviteChatUserModal.vue';
+import ChatRoomNameChangeModal from './ChatRoomNameChangeModal.vue';
 import ExitChatRoomModal from './ExitChatRoomModal.vue';
 
 export default {
     props: [
         'chatRoomIdProp',
         'chatRoomNameProp',
-        'chatRoomUserNumsProp',
+        'chatRoomUsersProp',
     ], // 채팅방리스트에서 받아오는 값.
     components: {
-        ChatFileBox, InviteChatUserModal, ExitChatRoomModal
+        ChatFileBox, InviteChatUserModal, ChatRoomNameChangeModal, ExitChatRoomModal
     },
     data() {
         return {
             stompClient: null,
             chatRoomId: this.chatRoomIdProp, // 채팅방 id
+            chatRoomName: null,
             chatMessageList: [], // 주고받은 채팅내역
 
             // chatUserListCheck: false, // 채팅유저리스트 제어
             chatUserList: [], // 채팅유저리스트
+            chatUserNums: [],
 
             inviteUserModal: false, // 채팅유저초대 모달 제어
+            changeRoomNameModal: false, // 채팅방명 변경 모달 제어
             exitAlertModal: false, // 채팅방나가기 모달 제어
 
             chatSenderNum: '', // 채팅방을 여는 사람 == 채팅보내는 사람
@@ -190,7 +212,10 @@ export default {
         const usersResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/chatUsers/${this.chatRoomId}`);
         if (usersResponse.data) {
             this.chatUserList = usersResponse.data.result;
+            this.chatUserNums = this.chatUserList.map(chatuser => chatuser.chatUserNum);
         }
+        this.chatRoomName = this.getChatRoomName(this.chatRoomUsersProp);
+
         this.scrollToBottom();
     },
     mounted() {
@@ -421,6 +446,15 @@ export default {
             if (usersResponse.data) {
                 this.chatUserList = usersResponse.data.result;
             }
+            this.chatRoomName = inviteUserData.chatRoomNameChange;
+        },
+
+        showchatRoomNameChangeModal() {
+            this.changeRoomNameModal = true;
+        },
+
+        changeChatRoomName(changeData){
+            this.chatRoomName = changeData.chatRoomNameChange;
         },
 
         showexitChatRoomModal() {
@@ -440,6 +474,18 @@ export default {
                 this.stompClient.send(`/app/chat/message`, JSON.stringify(messageReq));
             }
         },
+
+        getChatRoomName(users) {
+            if (this.chatUserList.length >= 3) {
+                return this.chatRoomNameProp;
+            } else if (this.chatUserList.length <= 1) {
+                return this.chatRoomUsersProp[0].chatUserName;
+            } else if (this.chatUserList.length == 2) {
+                const chatUser = users.filter(u => u.chatUserNum != this.chatSenderNum)
+                return chatUser[0].chatUserName;
+            }
+            return this.chatRoomNameProp;
+        }
 
     }
 }

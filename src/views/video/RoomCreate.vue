@@ -37,7 +37,7 @@
       closeModal() {
         this.isModalOpen = false;
       },
-      async createRoom() {
+    async createRoom() {
       try {
         await axios.post('/api/rooms/create', {
           roomName: this.roomName,
