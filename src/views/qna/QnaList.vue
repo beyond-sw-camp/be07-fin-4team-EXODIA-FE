@@ -10,45 +10,24 @@
       </v-col>
     </v-row>
 
-    <!-- 매니저 관리 모달 -->
-    <v-dialog v-model="showManagerModal" max-width="800">
+    <v-dialog v-model="showManagerModal" max-width="650">
       <v-card>
         <v-card-title class="headline">매니저 관리</v-card-title>
 
         <v-card-text>
           <v-row>
-            <!-- 유저 목록 -->
-            <v-col cols="5">
-              <h3>유저 목록</h3>
-              <v-text-field v-model="userSearchQuery" label="유저 검색" @input="searchUsers"></v-text-field>
-              <v-list>
-                <v-list-item v-for="user in filteredUsers" :key="user.userNum">
-                  <v-list-item-content>
-                    {{ user.name }}
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-btn v-create @click="addManager(user)">추가</v-btn>
-                  </v-list-item-action>
-                </v-list-item>
-              </v-list>
+            <!-- 조직도 (왼쪽) -->
+            <v-col cols="5" style="padding-right: 10px;">
+              <organization-chart @user-selected="addManager" />
             </v-col>
 
             <!-- 구분선 -->
-            <v-divider vertical></v-divider>
+            <v-divider vertical style="margin: 0 20px;"></v-divider>
 
-            <!-- 매니저 목록 -->
-            <v-col cols="5">
+            <!-- 매니저 목록 (오른쪽) -->
+            <v-col cols="5" style="padding-left: 10px;">
               <h3>매니저 목록</h3>
-              <v-list>
-                <v-list-item v-for="manager in managers" :key="manager.userNum">
-                  <v-list-item-content>
-                    {{ manager.name }}
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-btn v-delete @click="removeManager(manager)">삭제</v-btn>
-                  </v-list-item-action>
-                </v-list-item>
-              </v-list>
+              <organization-chart :managers="managers" @user-selected="removeManager" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -72,8 +51,8 @@
         <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
           @click:append="performSearch" required></v-text-field>
       </v-col>
-
     </v-row>
+
     <v-row justify="end">
       <v-col cols="12" md="3" class="d-flex justify-end">
         <v-btn v-create class="btn_write" @click="createNewPost">
@@ -122,25 +101,27 @@
 
 <script>
 import axios from "axios";
+import OrganizationChart from "@/views/organization/OrganizationChart.vue";
 
 export default {
+  components: {
+    OrganizationChart,
+  },
   data() {
     return {
-      boardItems: [], // 게시글 데이터
-      currentPage: 1, // 현재 페이지
-      totalPages: 1, // 총 페이지 수
-      itemsPerPage: 10, // 페이지당 항목 수
-      isAdmin: false, // 관리자인지 여부
-      userNum: null, // 사용자 번호
-      currentCategory: "", // 현재 카테고리
-      boardTitle: "", // 게시판 제목
-      showManagerModal: false, // 매니저 관리 모달 표시 여부
-      users: [], // 전체 유저 목록
-      filteredUsers: [], // 필터링된 유저 목록
-      userSearchQuery: "", // 유저 검색 쿼리
-      managers: [], // 매니저 목록
-
-      // 검색 관련 변수
+      boardItems: [],
+      currentPage: 1,
+      totalPages: 1,
+      itemsPerPage: 10,
+      isAdmin: false,
+      userNum: null,
+      currentCategory: "",
+      boardTitle: "",
+      showManagerModal: false,
+      users: [],
+      filteredUsers: [],
+      userSearchQuery: "",
+      managers: [],
       searchType: "title + content",
       searchQuery: "",
       searchOptions: [
@@ -148,6 +129,7 @@ export default {
         { text: "제목", value: "title" },
         { text: "내용", value: "content" },
       ],
+      departmentHierarchy: [], // 조직도 데이터를 저장할 변수
     };
   },
   props: ["category"],
@@ -191,9 +173,9 @@ export default {
         if (response.data && response.data.result) {
           const result = response.data.result;
           if (result && result.content) {
-            this.boardItems = result.content.map(item => ({
+            this.boardItems = result.content.map((item) => ({
               ...item,
-              hasAnswer: item.answeredAt !== null, // answeredAt이 존재하면 true
+              hasAnswer: item.answeredAt !== null,
             }));
             this.totalPages = result.totalPages;
           } else {
@@ -211,86 +193,69 @@ export default {
 
     // 유저 및 매니저 목록 가져오기
     async fetchUsersAndManagers() {
-  const token = localStorage.getItem("token");
-  try {
-    const [userResponse, managerResponse] = await Promise.all([
-      axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }),
-      axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/list`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }),
-    ]);
-
-    // 유저 목록은 userResponse.data.users에 있음
-    const allUsers = Array.isArray(userResponse.data.users) ? userResponse.data.users : [];
-    const managers = Array.isArray(managerResponse.data) ? managerResponse.data : [];
-
-    // 매니저로 등록되지 않은 유저들만 필터링
-    this.users = allUsers.filter(user => !managers.some(manager => manager.userNum === user.userNum));
-    this.filteredUsers = [...this.users];
-    this.managers = managers;
-
-    // 배열 데이터 확인용 로그 추가
-    console.log("전체 유저 목록:", this.users);
-    console.log("매니저 목록:", this.managers);
-    console.log("필터링된 유저 목록 (filteredUsers):", this.filteredUsers);
-
-  } catch (error) {
-    console.error("유저 및 매니저 목록을 불러오는 중 오류가 발생했습니다:", error);
-    alert("유저 및 매니저 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.");
-  }
-},
-
-
-
-
-
-    // 유저 검색
-    async searchUsers() {
+      const token = localStorage.getItem("token");
       try {
-        const params = {
-          search: this.userSearchQuery,
-          searchType: "all",
-        };
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
+        const [userResponse, managerResponse] = await Promise.all([
+          axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/list`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        const searchedUsers = response.data;
-        this.filteredUsers = searchedUsers.filter(
-          user => !this.managers.some(manager => manager.userNum === user.userNum)
-        );
+        const allUsers = Array.isArray(userResponse.data.users) ? userResponse.data.users : [];
+        const managers = Array.isArray(managerResponse.data) ? managerResponse.data : [];
+
+        this.users = allUsers.filter((user) => !managers.some((manager) => manager.userNum === user.userNum));
+        this.filteredUsers = [...this.users];
+        this.managers = managers;
+
+        console.log("전체 유저 목록:", this.users);
+        console.log("매니저 목록:", this.managers);
+        console.log("필터링된 유저 목록 (filteredUsers):", this.filteredUsers);
       } catch (error) {
-        console.error("유저 검색 중 오류가 발생했습니다:", error);
-        alert("유저를 검색하는 중 문제가 발생했습니다. 검색어를 확인하고 다시 시도해주세요.");
+        console.error("유저 및 매니저 목록을 불러오는 중 오류가 발생했습니다:", error);
+        alert("유저 및 매니저 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.");
       }
     },
 
+    // 조직도 및 부서 계층 구조 가져오기
+    async fetchDepartmentHierarchy() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/hierarchy`);
+        this.departmentHierarchy = response.data;
+      } catch (error) {
+        console.error("부서 계층 정보를 가져오는 중 오류 발생:", error);
+        alert("부서 계층 정보를 가져오는 중 문제가 발생했습니다. 다시 시도해주세요.");
+      }
+    },
 
     // 매니저 관리 모달 열기
     async openManagerModal() {
       this.showManagerModal = true;
       await this.fetchUsersAndManagers();
-      this.filteredUsers = [...this.users]; // 전체 유저 목록을 초기 상태로 설정
-    },
-
-
-    // 매니저 관리 모달 닫기
-    closeManagerModal() {
-      this.showManagerModal = false;
+      await this.fetchDepartmentHierarchy();
+      this.filteredUsers = [...this.users];
     },
 
     // 매니저 추가
     addManager(user) {
+      // 이미 매니저인지 확인
+      if (this.managers.some((manager) => manager.userNum === user.userNum)) {
+        alert("이미 매니저로 등록된 사용자입니다.");
+        return; // 매니저가 이미 있는 경우, 추가하지 않고 종료
+      }
+
       axios
         .post(`${process.env.VUE_APP_API_BASE_URL}/manager/save`, { userNum: user.userNum })
-        .then(response => {
+        .then((response) => {
           const addedManager = response.data;
           this.managers.push(addedManager);
-          this.users = this.users.filter(u => u.userNum !== user.userNum);
-          this.filteredUsers = this.filteredUsers.filter(u => u.userNum !== user.userNum);
+          this.filteredUsers = this.filteredUsers.filter((u) => u.userNum !== user.userNum);
           alert("매니저가 성공적으로 추가되었습니다.");
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("매니저 추가 중 오류가 발생했습니다:", error);
           alert("매니저 추가 중 문제가 발생했습니다. 다시 시도해주세요.");
         });
@@ -302,11 +267,11 @@ export default {
         .delete(`${process.env.VUE_APP_API_BASE_URL}/manager/delete/${manager.userNum}`)
         .then(() => {
           this.users.push(manager);
-          this.managers = this.managers.filter(m => m.userNum !== manager.userNum);
+          this.managers = this.managers.filter((m) => m.userNum !== manager.userNum);
           this.filteredUsers.push(manager);
           alert("매니저가 성공적으로 삭제되었습니다.");
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("매니저 삭제 중 오류가 발생했습니다:", error);
           alert("매니저 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
         });
@@ -325,40 +290,44 @@ export default {
 
     formatDate(date) {
       return new Date(date)
-        .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-        .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
-        .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
+        .toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })
+        .replace(/\.\s/g, ".")
+        .replace(/\.$/, "");
     },
 
-    // 새 글 작성 페이지로 이동
     createNewPost() {
       this.$router.push({ name: "CreateQuestion" });
     },
 
-    // 게시글 상세 페이지로 이동
     goToDetail(id) {
       this.$router.push({ name: "QnaDetail", params: { id } });
     },
 
-    // 검색 실행
     performSearch() {
       this.currentPage = 1;
       this.fetchBoardItems();
     },
 
-    // 나의 질문 목록으로 이동
     goToMyQuestions() {
       this.$router.push({ name: "UserQuestions" });
+    },
+
+    // 매니저 관리 모달 닫기
+    closeManagerModal() {
+      this.showManagerModal = false;
     },
   },
 };
 </script>
+
+
 
 <style scoped>
 .board-container {
   padding: 20px;
   border-radius: 12px;
 }
+
 
 .title-ellipsis {
   white-space: nowrap;
@@ -367,6 +336,10 @@ export default {
   /* 넘치는 텍스트를 숨김 */
   text-overflow: ellipsis;
   /* 넘치는 부분을 '...'로 표시 */
+}
+.v-divider {
+  width: 2px;
+  background-color: #ddd;
 }
 
 .search-form {
@@ -468,9 +441,5 @@ export default {
   margin-left: 20px;
 }
 
-.v-divider {
-  height: 100%;
-  width: 2px;
-  background-color: #ddd;
-}
+
 </style>
