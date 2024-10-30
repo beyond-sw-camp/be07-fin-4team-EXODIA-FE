@@ -34,7 +34,7 @@
         <h4 class="section-title">태그</h4>
         <div class="tags">
           <v-chip v-for="(tag, index) in tags" :key="index" class="tag-chip" outlined>
-            {{ tag.tag || tag }} <!-- 태그명 출력 -->
+            {{ tag.tag || tag }}
           </v-chip>
         </div>
       </div>
@@ -52,42 +52,54 @@
         </div>
       </div>
 
-      <!-- 댓글 작성 폼 -->
-      <v-form v-if="isLoggedIn" @submit.prevent="submitComment" class="comment-form mt-4">
-        <v-textarea label="댓글 작성" v-model="newCommentContent" required outlined></v-textarea>
-        <v-btn v-create class="mt-2" @click="submitComment">댓글 작성</v-btn>
-      </v-form>
+      <!-- 댓글 -->
+      <v-card-title>
+        <span class="headline">댓글</span>
+
+        
+        <v-row class="mt-4">
+          <v-col cols="10">
+            <v-text-field 
+              density="compact" 
+              label="댓글을 입력하세요." 
+              variant="outlined"
+              v-model="newCommentContent"> 
+            </v-text-field>
+          </v-col>
+          <v-col cols="2">
+            <v-btn v-create @click="submitComment()">등록</v-btn>
+          </v-col>
+        </v-row>
+      </v-card-title>
 
       <!-- 댓글 목록 섹션 -->
       <div class="comment-section">
-        <h3 class="section-title">댓글</h3>
         <v-list>
           <v-list-item v-for="(comment, index) in comments" :key="comment.id || index" class="comment-item">
             <div class="comment-content">
-              <!-- 사용자 프로필 이미지와 이름 표시 -->
-              <div class="comment-meta">
+              <!-- 프로필, 작성자 이름, 작성일, 수정/삭제 버튼을 배치 -->
+              <div class="comment-header">
                 <v-avatar class="icon">
-                  <v-img :src="comment.profileImage || defaultProfileImage" aspect-ratio="1"
-                        style="width: 40px; height: 40px; object-fit: cover;">
-                  </v-img>
+                  <v-img :src="comment.profileImage || defaultProfileImage" alt="프로필 이미지" />
                 </v-avatar>
-                <span class="user-name">{{ comment.name }}</span>
-              </div>
-              <!-- 댓글 내용 -->
-              <p class="comment-text">{{ comment.content }}</p>
-              <!-- 수정/삭제 버튼과 작성일 -->
-              <div class="action-section">
+                <div class="user-info">
+                  <span class="user-name">{{ comment.name }}</span>
+                  <small class="comment-date">{{ formatDate(comment.createdAt) }}</small>
+                </div>
                 <div v-if="comment.userNum === userProfile.userNum" class="action-links">
                   <span @click="editComment(comment)" class="action-link">수정</span>
                   <span @click="deleteComment(comment.id)" class="action-link delete">삭제</span>
                 </div>
-                <small class="comment-date">{{ formatDate(comment.createdAt) }}</small>
               </div>
+              
+              <!-- 댓글 내용 -->
+              <p class="comment-text">{{ comment.content }}</p>
             </div>
+
+            <v-divider style=margin-top:10px></v-divider>
           </v-list-item>
         </v-list>
       </div>
-
     </div>
 
     <!-- 에러 및 로딩 상태 표시 -->
@@ -113,6 +125,7 @@ export default {
         name: '',
         profileImage: ''
       },
+      showComments: true,
       boardTitle: '게시글 상세보기',
       tags: [] // 태그 목록을 담을 배열
     };
@@ -196,10 +209,20 @@ export default {
 
     formatDate(date) {
       return new Date(date)
-        .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        .toLocaleString('ko-KR', { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit', 
+          hour: 'numeric', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        })
         .replace(/\.\s/g, '.')
+        .replace(/,\s/g, ' ')
         .replace(/\.$/, '');
     },
+
+
 
     goBack() {
       console.log('이전 페이지로 이동');
@@ -287,15 +310,18 @@ export default {
         console.error('파일 다운로드에 실패했습니다:', error);
         alert('파일 다운로드에 실패했습니다. 다시 시도해주세요.');
       }
-    }
+    },
+
+    toggleCommentsVisibility() {
+      this.showComments = !this.showComments;
+    },
   }
 };
 </script>
 
-
 <style scoped>
 .board-container {
-  background-color: #f9fafb;
+  background-color: #ffffff;
   padding: 20px;
   border-radius: 12px;
 }
@@ -331,7 +357,7 @@ export default {
 }
 
 .file-list-section {
-  background-color: #fafafa;
+  background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 15px;
@@ -362,51 +388,61 @@ export default {
   border-radius: 8px;
   padding: 20px;
   width: 100%;
-  max-width: 1200px;
+  max-width: 900px;
 }
 
 .comment-item {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 10px;
-  width: 100%;
-  position: relative; /* 부모 요소에 상대 위치 */
+  padding: 15px;
+  margin-bottom: 15px;
+  position: relative;
 }
 
 .comment-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
 }
 
-/* 사번을 댓글 내용 위쪽 왼쪽 정렬 */
-.comment-meta .user-num {
-  font-size: 0.7rem;
-  color: #555;
-}
-
-/* 댓글 내용 스타일 */
-.comment-text {
-  font-size: 1.2rem;
-  color: #333;
+/* 프로필, 이름, 작성일, 수정/삭제 버튼을 한 줄에 배치 */
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 8px;
 }
 
-/* 수정/삭제를 댓글 범위에서 맨 오른쪽 위에 정렬 */
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 작성일을 이름 밑에 배치 */
+.comment-date {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 0.5px;
+}
+
+/* 수정/삭제 버튼을 오른쪽 끝에 배치 */
 .action-links {
   position: absolute;
-  top: 5px;
-  right: 10px;
+  bottom: 10px; /* 아래쪽 여백 */
+  right: 10px;  /* 오른쪽 여백 */
   display: flex;
   gap: 10px;
 }
-
 .action-link {
   cursor: pointer;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: #555;
-  text-decoration: underline;
 }
 
 .action-link.delete {
@@ -417,16 +453,15 @@ export default {
   color: #333;
 }
 
-/* 작성일을 댓글 범위에서 맨 오른쪽 아래에 정렬 */
-.comment-date {
-  position: absolute;
-  bottom: 3px;
-  right: 10px;
-  font-size: 0.8rem;
-  color: #777;
+/* 댓글 내용 */
+.comment-text {
+  font-size: 1rem;
+  color: #333;
+  margin-top: 10px;
+  max-width: 90%; 
+  word-break: break-word; /* 긴 단어가 있을 때 줄 바꿈 처리 */
 }
 
-/* 댓글 작성 폼 */
 .comment-form {
   margin-top: 20px;
   width: 100%;
@@ -498,18 +533,11 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 5px;
 }
 
-.icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+.user-info {
+  display: flex;
+  flex-direction: column; /* 이름과 작성일을 세로로 배치 */
 }
 
-.user-name {
-  font-size: 0.7rem;
-  font-weight: bold;
-  color: #333;
-}
 </style>
