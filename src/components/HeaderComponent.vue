@@ -34,7 +34,7 @@
             <li v-for="(notification, index) in notifications.slice(0, 4)" :key="index">
               <div class="notification-item" @click="handleNotificationClick(notification)">
                 <span>{{ truncatedMessage(notification.message, 25) }}</span>
-                <small>{{ formatDate(notification.createdAt) }}</small>
+                <small>{{ formatDate(notification.notificationTime) }}</small>
               </div>
             </li>
           </ul>
@@ -90,6 +90,8 @@
 <script>
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 export default {
   name: 'HeaderComponent',
@@ -119,6 +121,10 @@ export default {
     this.fetchChatAlarmNum();
   },
   methods: {
+
+    formatDate(notificationTime) {
+      return formatDistanceToNow(new Date(notificationTime), { addSuffix: true, locale: ko });
+    },
     // SSE 연결 설정
     initSSE() {
       const token = localStorage.getItem("token");
@@ -132,9 +138,13 @@ export default {
       // 새로운 알림 수신 시 처리
       this.eventSource.onmessage = (event) => {
         const newNotification = JSON.parse(event.data);
+        if (!newNotification.notificationTime) {
+          newNotification.notificationTime = new Date().toISOString();
+        }
+
         if (newNotification.type == '채팅알림') {
           this.unreadChatNum = newNotification.alarmNum;
-          console.log(newNotification);
+          console.log(newNotification);//
           return;
         } else if (newNotification.type == '채팅입장') {
           return;
@@ -313,13 +323,13 @@ export default {
     },
 
     // 날짜 포맷팅
-    formatDate(notificationTime) {
-      const date = new Date(notificationTime);
-      if (isNaN(date.getTime())) { // 날짜가 유효하지 않다면
-        return "Invalid date"; // 오류 메시지 대신 기본값을 반환
-      }
-      return date.toLocaleDateString(); // 유효한 경우 날짜 포맷 반환
-    },
+    // formatDate(notificationTime) {
+    //   const date = new Date(notificationTime);
+    //   if (isNaN(date.getTime())) { // 날짜가 유효하지 않다면
+    //     return "Invalid date"; // 오류 메시지 대신 기본값을 반환
+    //   }
+    //   return date.toLocaleDateString(); // 유효한 경우 날짜 포맷 반환
+    // },
     async fetchUserProfile() {
       try {
         const token = localStorage.getItem('token');
