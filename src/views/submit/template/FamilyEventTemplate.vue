@@ -79,7 +79,12 @@
                         <v-list style="background-color: rgba(123, 86, 86, 0.3);">
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
                                 @dragstart="onDragStart(user)" class="draggable-item">
-                                <v-list-item-content>{{ user.name }}</v-list-item-content>
+                                <v-list-item-content>
+                                    {{ user.name }}
+                                </v-list-item-content>
+                                <v-list-item-content>
+                                    ( {{ user.positionName }} )
+                                </v-list-item-content>
                             </v-list-item>
                         </v-list>
                     </v-card>

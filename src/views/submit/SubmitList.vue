@@ -6,7 +6,7 @@
         </v-row>
 
         <v-row justify="center">
-            <v-col cols="8">
+            <v-col cols="5">
                 <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"
                     append-icon="mdi-magnify" @click:append=searchFilter(searchQuery)
                     style="margin-bottom: 20px;"></v-text-field>
@@ -136,7 +136,10 @@ export default {
         },
         formatDate(date) {
             if (!date) return '';
-            return new Date(date).toLocaleDateString();
+            return new Date(date)
+                .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+                .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
         },
         formatLocalTime(date) {
             if (!date) return '';
