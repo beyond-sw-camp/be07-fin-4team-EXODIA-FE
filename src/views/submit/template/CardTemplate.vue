@@ -6,7 +6,7 @@
 
         <v-row style="padding:50px">
             <v-row justify="justify-space-around">
-                <v-col cols="8">
+                <v-col cols="9">
                     <v-row>
                         <v-col cols="2">
                             <v-list-subheader>신청인</v-list-subheader>
@@ -92,26 +92,73 @@
                     </v-row>
                 </v-col>
 
-                <v-col cols="4" class="createSubmit">
+                <v-col cols="3" class="create-submit">
                     <v-card style="background-color: rgba(123, 86, 86, 0.3);">
-                        <v-card-title>결재 라인</v-card-title>
-                        <v-list style="background-color: rgba(123, 86, 86, 0.3);">
+                        <v-card-title>결재 라인
+                            <v-icon class="icon" @click="toggleSubmitLineVisibility"> {{ isOpenSubmitLine ?
+                                'mdi-chevron-up' :
+                                'mdi-chevron-down' }}</v-icon>
+                        </v-card-title>
+                        <v-list v-if="isOpenSubmitLine" style="background-color: rgba(123, 86, 86, 0.3);">
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
                                 @dragstart="onDragStart(user)" class="draggable-item">
-                                <v-list-item-content>{{ user.name
-                                    }}</v-list-item-content>
+                                <v-list-item-content style="font-weight:600;">
+                                    {{ user.name }}
+                                </v-list-item-content>
+                                <v-list-item-content>
+                                    | {{ user.positionName }}
+                                </v-list-item-content>
                             </v-list-item>
                         </v-list>
                     </v-card>
-                    <v-card @dragover.prevent @drop="onDrop" class="drop-zone">
-                        <v-card-text v-if="droppedUsers.length == 0">결재자를 선택하시오.</v-card-text>
-                        <v-list>
-                            <v-list-item v-for="(droppedUser, index) in droppedUsers" :key="droppedUser.id">
-                                <v-list-item-content>{{ droppedUser.name }}</v-list-item-content>
-                                <v-icon @click="removeUser(index)" style="border:none">mdi-close</v-icon>
+                    <v-card @dragover.prevent @drop="onDrop(1)" class="drop-zone">
+                        <v-card-title>1차 결재자</v-card-title>
+                        <v-card-text v-if="firstApprovers.length === 0">팀장 직급에서 선택하시오.</v-card-text>
+                        <v-list class="drop-user">
+                            <v-list-item v-for="(approver, index) in firstApprovers" :key="approver.id">
+                                <v-avatar class="icon" size="36">
+                                    <v-img :src="approver.profileImage || defaultProfileImage" aspect-ratio="1"></v-img>
+                                </v-avatar>
+                                <v-list-item-content style="margin-left:10px">
+                                    {{ approver.name }}</v-list-item-content>
+                                <v-list-item-content> | {{ approver.positionName }}</v-list-item-content>
+                                <v-icon @click="removeUser(index, 1)" style="margin-left: auto;">mdi-close</v-icon>
                             </v-list-item>
                         </v-list>
                     </v-card>
+
+                    <v-card @dragover.prevent @drop="onDrop(2)" class="drop-zone">
+                        <v-card-title>2차 결재자</v-card-title>
+                        <v-card-text v-if="secondApprovers.length === 0">팀장 직급에서 선택하시오.</v-card-text>
+                        <v-list class="drop-user">
+                            <v-list-item v-for="(approver, index) in secondApprovers" :key="approver.id">
+                                <v-avatar class="icon" size="36">
+                                    <v-img :src="approver.profileImage || defaultProfileImage" aspect-ratio="1"></v-img>
+                                </v-avatar>
+                                <v-list-item-content style="margin-left:10px">
+                                    {{ approver.name }}</v-list-item-content>
+                                <v-list-item-content> | {{ approver.positionName }}</v-list-item-content>
+                                <v-icon @click="removeUser(index, 2)" style="margin-left: auto;">mdi-close</v-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+
+                    <v-card @dragover.prevent @drop="onDrop(3)" class="drop-zone">
+                        <v-card-title>3차 결재자</v-card-title>
+                        <v-card-text v-if="thirdApprovers.length === 0">팀장 직급에서 선택하시오.</v-card-text>
+                        <v-list class="drop-user">
+                            <v-list-item v-for="(approver, index) in thirdApprovers" :key="approver.id">
+                                <v-avatar class="icon" size="36">
+                                    <v-img :src="approver.profileImage || defaultProfileImage" aspect-ratio="1"></v-img>
+                                </v-avatar>
+                                <v-list-item-content style="margin-left:10px">
+                                    {{ approver.name }}</v-list-item-content>
+                                <v-list-item-content> | {{ approver.positionName }}</v-list-item-content>
+                                <v-icon @click="removeUser(index, 3)" style="margin-left: auto;">mdi-close</v-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+
                     <v-row class="submit-btn">
                         <v-btn v-create class="mt-8" @click="createSubmit">
                             결재 등록
@@ -157,6 +204,10 @@ export default {
                 contents: '',
                 submitUserDtos: [],
             },
+            firstApprovers: [],
+            secondApprovers: [],
+            thirdApprovers: [],
+            isOpenSubmitLine: false,
         }
     },
     mounted() {
@@ -198,23 +249,51 @@ export default {
         onDragStart(user) {
             this.draggedUser = user;
         },
-        onDrop() {
-            if (this.draggedUser && !this.droppedUsers.includes(this.draggedUser)) {
-                this.submitCreateData.submitUserDtos.push({
-                    userName: this.draggedUser.name,
-                    position: this.draggedUser.positionId,
-                });
-                this.droppedUsers.push(this.draggedUser);
-                this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
+        // onDrop() {
+        //     if (this.draggedUser && !this.droppedUsers.includes(this.draggedUser)) {
+        //         this.submitCreateData.submitUserDtos.push({
+        //             userName: this.draggedUser.name,
+        //             position: this.draggedUser.positionId,
+        //         });
+        //         this.droppedUsers.push(this.draggedUser);
+        //         this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
 
-                this.draggedUser = null;
-            } else {
-                alert("이미 결재라인에 등록되었습니다.");
-                return;
+        //         this.draggedUser = null;
+        //     } else {
+        //         alert("이미 결재라인에 등록되었습니다.");
+        //         return;
+        //     }
+        // },
+        // removeUser(index) {
+        //     this.droppedUsers.splice(index, 1);
+        //     this.submitCreateData.submitUserDtos.splice(index, 1);
+        // },
+        onDrop(level) {
+            if (this.draggedUser) {
+                const existingApprover = this.submitCreateData.submitUserDtos.find(user => user.userName === this.draggedUser.name);
+
+                if (!existingApprover) {
+                    const approverData = {
+                        userName: this.draggedUser.name,
+                        position: this.draggedUser.positionId,
+                    };
+
+                    this.submitCreateData.submitUserDtos.push(approverData);
+                    this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
+
+                    if (level === 1) this.firstApprovers.push(this.draggedUser);
+                    if (level === 2) this.secondApprovers.push(this.draggedUser);
+                    if (level === 3) this.thirdApprovers.push(this.draggedUser);
+                    this.draggedUser = null;
+                    alert("이미 결재라인에 등록되었습니다.");
+                }
             }
         },
-        removeUser(index) {
-            this.droppedUsers.splice(index, 1);
+        removeUser(index, level) {
+            if (level === 1) this.firstApprovers.splice(index, 1);
+            if (level === 2) this.secondApprovers.splice(index, 1);
+            if (level === 3) this.thirdApprovers.splice(index, 1);
+
             this.submitCreateData.submitUserDtos.splice(index, 1);
         },
         async createSubmit() {
@@ -230,10 +309,16 @@ export default {
             }
         },
         formatDate(date) {
-            return new Date(date).toLocaleDateString();
+            return new Date(date)
+                .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+                .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
         },
         formatLocalTime(date) {
             return new Date(date).toLocaleTimeString();
+        },
+        toggleSubmitLineVisibility() {
+            this.isOpenSubmitLine = !this.isOpenSubmitLine;
         }
     },
 }
@@ -252,14 +337,19 @@ export default {
 }
 
 .drop-zone {
-    min-height: 200px;
-    border: 2px dashed #7A5656;
-    padding: 20px;
+    margin: 20px 0;
+    min-height: 80px;
+    border: 2px solid rgba(122, 86, 86, 0.2);
+    padding: 5px;
 }
 
 .submit-btn {
     display: flex;
     justify-content: center;
     align-content: center;
+}
+
+.drop-user {
+    padding: 5px;
 }
 </style>
