@@ -57,7 +57,7 @@ export default {
       notificationTypes: {
         "": "전체",
         공지사항: "공지사항",
-        경조사: "경조사",
+        문의: "문의",
         예약: "예약",
         결재: "결재",
         문서: "문서",
@@ -164,21 +164,20 @@ export default {
     },
 
     // 알림 읽음 처리
-    async markAsRead(notificationId) {
-      try {
-        await axios.post(
-          `${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`,
-          null,
-          {
-            headers: this.getAuthHeaders(),
-          }
-        );
-        this.fetchNotifications();
-        this.fetchUnreadCount(); // 읽지 않은 알림 개수 다시 가져오기
-      } catch (error) {
-        console.error("알림 읽음 처리 중 오류 발생:", error);
-      }
-    },
+    // async markAsRead(notificationId) {
+    //   try {
+    //     await axios.post(
+    //       `${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`,
+    //       null,
+    //       {
+    //         headers: this.getAuthHeaders(),
+    //       }
+    //     );
+    //     console.log(`Notification ${notificationId} marked as read.`);
+    //   } catch (error) {
+    //     console.error("알림 읽음 처리 중 오류 발생:", error);
+    //   }
+    // },
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
@@ -191,16 +190,21 @@ export default {
         Authorization: `Bearer ${token}`,
       };
     },
-    handleNotificationClick(notification) {
+    async handleNotificationClick(notification) {
+      if (notification.isRead === 0) {
+        await this.markAsRead(notification.id);
+        notification.isRead = 1;  // 상태를 변경하여 UI에서도 읽음 상태 반영
+        this.unreadCount -= 1;  // 읽지 않은 개수 줄이기
+      }
       let targetUrl = '';
 
       // 알림 유형에 따른 URL 설정
       if (notification.type === '공지사항') {
         targetUrl = 'http://localhost:8082/board/notice/list';
-      } else if (notification.type === '경조사') {
-        targetUrl = 'http://localhost:8082/board/familyevent/list';
+      } else if (notification.type === '문의') {
+        targetUrl = 'http://localhost:8082/qna/list';
       } else if (notification.type === '예약') {
-        targetUrl = 'http://localhost:8082/reservation/meetReservationList';
+        targetUrl = 'http://localhost:8082/reservation/reservationList';
       } else if (notification.type === '결재') {
         targetUrl = 'http://localhost:8082/submit/list';
       } else if (notification.type === '문서') {
@@ -209,6 +213,21 @@ export default {
 
       window.location.href = targetUrl;
     },
+
+    async markAsRead(notificationId) {
+      try {
+        await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`,
+          null,
+          { headers: this.getAuthHeaders() }
+        );
+        console.log(`Notification ${notificationId} marked as read.`);
+      } catch (error) {
+        console.error("알림 읽음 처리 중 오류 발생:", error);
+      }
+    },
+
+
   }
 };
 </script>
