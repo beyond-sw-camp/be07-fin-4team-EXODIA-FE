@@ -5,7 +5,7 @@
       <input v-model="searchQuery" placeholder="조직도 검색" class="search-input" />
 
       <!-- 부서 및 사용자 리스트 -->
-      <div class="department-list">
+      <div class="department-list" v-if="orgChart">
         <ul class="scrollable-list">
           <li v-for="department in filteredHierarchy" :key="department.id" class="department-item">
             <div @click="toggleExpand(department)" class="department-name">
@@ -17,30 +17,27 @@
 
             <!-- 부서 내부의 유저 표시 -->
             <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
-              <li
-                v-for="user in department.users"
-                :key="user.userNum"
-                class="user-item"
-                @click="$emit('user-selected', user)"
-              >
-                {{ user.name }}
+              <li v-for="user in sortUser(department.users)" :key="user.userNum" class="user-item"
+                @click="$emit('user-selected', user)">
+                {{ user.name }} {{user.positionName}}
                 <span v-if="user.isManager" class="manager-label">(매니저)</span>
               </li>
 
               <!-- 하위 부서를 재귀적으로 렌더링 -->
-              <RecursiveDepartment
-                v-for="child in department.children"
-                :key="child.id"
-                :department="child"
-                :expandedDepartments="expandedDepartments"
-                :managers="managers" 
-                @toggle="toggleExpand"
-                @user-selected="$emit('user-selected', $event)"
-              />
+              <RecursiveDepartment v-for="child in department.children" :key="child.id" :department="child"
+                :expandedDepartments="expandedDepartments" :managers="managers" @toggle="toggleExpand"
+                @user-selected="$emit('user-selected', $event)" />
             </ul>
           </li>
         </ul>
       </div>
+
+      <div v-if="searchResult" class="search-user-list">
+        <v-row v-for="user in searchList" :key="user.id" @click="$emit('user-selected', user)" style="cursor: pointer; padding: 2px;">
+          {{ user.name }} {{user.positionName}}
+        </v-row>
+      </div>
+
     </div>
   </div>
 </template>
@@ -67,14 +64,48 @@ export default {
     const searchQuery = ref('');
     const expandedDepartments = ref([]);
 
+    const orgChart = ref(true);
+    const searchResult = ref(false);
+    let searchList = ref([]);
+
     // 조직도 데이터 필터링
     const filteredHierarchy = computed(() => {
       if (!searchQuery.value) {
         return hierarchy.value.filter(dept => !dept.parentId);
       }
+      // searchUser(searchQuery.value);
+      // return '';
       const query = searchQuery.value.toLowerCase();
       return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
     });
+
+    const sortUser = (users)=>{
+      return users.sort((a,b) => a.positionId - b.positionId);
+    }
+
+    watch(searchQuery, (newValue) => {
+      if (newValue) {
+        orgChart.value = false;
+        searchResult.value = true;
+        searchUser(searchQuery.value);
+      } else {
+        orgChart.value = true;
+        searchResult.value = false;
+      }
+    });
+
+    const searchUser = async (searchValue) => {
+      try {
+        const response = await axios.get('/user/search', {
+          params: { search: searchValue, searchType: 'all' },
+        });
+        searchList.value = response.data;
+        searchList.value.sort((a,b)=>a.positionId - b.positionId);
+        console.log(response);
+      } catch (e) {
+        console.error('검색결과를 가져오는 중 오류 발생: ', e);
+      }
+    }
 
     // 조직도 데이터 및 사용자 정보 가져오기
     const fetchHierarchy = async () => {
@@ -141,8 +172,14 @@ export default {
     });
 
     return {
+      orgChart,
+      searchResult,
+      searchList,
+
       hierarchy,
       searchQuery,
+      sortUser,
+      searchUser,
       expandedDepartments,
       filteredHierarchy,
       toggleExpand,
@@ -238,5 +275,10 @@ export default {
   position: absolute;
   top: 10px;
   right: 10px;
+}
+
+.search-user-list{
+  margin-top: 10px;
+  padding: 5px;
 }
 </style>
