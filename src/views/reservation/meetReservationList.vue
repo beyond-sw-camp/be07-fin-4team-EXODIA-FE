@@ -1,7 +1,7 @@
 meetReservation
 
 <template>
-  <container fluid class="container">
+  <v-container class="container">
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
     <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3"
       style="margin-top: 30px;box-shadow: 0px 4px 4px -2px #F2F2F2;">
@@ -302,7 +302,7 @@ meetReservation
     </v-dialog>
 
 
-  </container>
+  </v-container>
 </template>
 
 <script>

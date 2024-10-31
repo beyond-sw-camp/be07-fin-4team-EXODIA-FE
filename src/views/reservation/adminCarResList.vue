@@ -1,5 +1,5 @@
 <template>
-  <container fluid class="timeline-container">
+  <v-container class="container">
 
     <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3"
       style="margin-top: 30px;box-shadow: 0px 4px 4px -2px #F2F2F2;">
@@ -95,7 +95,7 @@
 
 
     </v-tabs-items>
-  </container>
+  </v-container>
 </template>
 
 <script>

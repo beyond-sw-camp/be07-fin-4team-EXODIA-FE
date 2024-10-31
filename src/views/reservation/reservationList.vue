@@ -1,5 +1,5 @@
 <template>
-  <container fluid class="container">
+  <v-container class="container">
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
 
     <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3"
@@ -14,8 +14,8 @@
     </v-tabs>
 
     <v-row style="margin-top:20px;">
-      <v-col cols="3"></v-col>
-      <v-col cols="2" class="d-flex align-center" justify-center>
+      <v-col cols="2"></v-col>
+      <v-col cols="3" class="d-flex align-center" justify-center>
         <!-- 날짜 선택 아이콘 -->
         <v-btn icon @click="openDatePicker" style="box-shadow: none">
           <v-icon>mdi-calendar</v-icon>
@@ -204,7 +204,7 @@
 
       </v-tab-item>
     </v-tabs-items>
-  </container>
+  </v-container>
 </template>
 
 <script>
