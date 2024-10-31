@@ -14,7 +14,6 @@
     </v-tabs>
 
     <v-row style="margin-top:20px;">
-
       <v-col cols="3"></v-col>
       <v-col cols="2" class="d-flex align-center" justify-center>
         <!-- 날짜 선택 아이콘 -->
@@ -38,8 +37,7 @@
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
       </v-col>
-      <!-- 장기 예약 버튼 -->
-      <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
+
     </v-row>
 
     <v-row justify="end">

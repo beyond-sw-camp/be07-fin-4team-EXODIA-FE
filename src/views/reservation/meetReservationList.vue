@@ -146,13 +146,14 @@ meetReservation
 
     <v-row>
       <v-col>
-        <h3 style="margin-top: 20px;">내 예약 내역</h3>
+        <h2 style="margin-top: 20px; margin-bottom:10px">내 예약 내역</h2>
         <br>
 
         <!-- 테이블 헤더 -->
         <v-row class="mb-2"
           style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
-          <v-col cols="3"><strong>회의실</strong></v-col>
+          <v-col cols="1"><strong>번호</strong></v-col>
+          <v-col cols="2"><strong>회의실</strong></v-col>
           <v-col cols="3"><strong>시작 시간</strong></v-col>
           <v-col cols="3"><strong>종료 시간</strong></v-col>
           <v-col cols="3"><strong>상태</strong></v-col>
@@ -160,8 +161,9 @@ meetReservation
 
         <!-- 예약 내역 리스트 -->
         <v-row v-for="(item, index) in userReservations" :key="index" class="meetReservation-row" outlined
-          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;" @click="openInviteDialog(item)">
-          <v-col cols="3">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500" @click="openInviteDialog(item)">
+          <v-col cols="1">{{ index + 1 }}</v-col>
+          <v-col cols="2">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
           <!-- 날짜와 시간만 표시하도록 변경 -->
           <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
           <v-col cols="3">{{ formatDateTime(item.endTime) }}</v-col>
@@ -176,6 +178,7 @@ meetReservation
         </v-row>
       </v-col>
     </v-row>
+
     <!-- 예약 정보 모달 -->
     <v-dialog v-model="dialogInfo" max-width="400px">
       <v-card v-if="selectedReservation">
@@ -430,7 +433,7 @@ export default {
       return room ? room.name : '회의실 정보 없음';
     },
     formatDateTime(dateTime) {
-      return moment(dateTime).format('YYYY-MM-DD HH:mm');
+      return moment(dateTime).format('YYYY.MM.DD HH:mm');
     },
     formattedDate(date) {
       const year = date.getFullYear();
