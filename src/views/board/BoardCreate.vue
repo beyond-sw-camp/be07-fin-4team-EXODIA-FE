@@ -122,7 +122,7 @@ export default {
       showTagModal: false, // 태그 추가 모달 상태
       newTagName: '', // 새로운 태그 이름
       titleMaxLength: 100, // 제목 최대 길이
-      contentMaxLength: 5000, // 내용 최대 길이
+      contentMaxLength: 30000, // 내용 최대 길이
     };
   },
   mounted() {

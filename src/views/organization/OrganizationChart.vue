@@ -17,15 +17,26 @@
 
             <!-- 부서 내부의 유저 표시 -->
             <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
-              <li v-for="user in department.users" :key="user.userNum" class="user-item"
-                @click="$emit('user-selected', user)">
+              <li
+                v-for="user in department.users"
+                :key="user.userNum"
+                class="user-item"
+                @click="$emit('user-selected', user)"
+              >
                 {{ user.name }}
+                <span v-if="user.isManager" class="manager-label">(매니저)</span>
               </li>
 
               <!-- 하위 부서를 재귀적으로 렌더링 -->
-              <RecursiveDepartment v-for="child in department.children" :key="child.id" :department="child"
-                :expandedDepartments="expandedDepartments" @toggle="toggleExpand"
-                @user-selected="$emit('user-selected', $event)" />
+              <RecursiveDepartment
+                v-for="child in department.children"
+                :key="child.id"
+                :department="child"
+                :expandedDepartments="expandedDepartments"
+                :managers="managers" 
+                @toggle="toggleExpand"
+                @user-selected="$emit('user-selected', $event)"
+              />
             </ul>
           </li>
         </ul>
@@ -35,7 +46,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import RecursiveDepartment from './RecursiveDepartment.vue';
 
@@ -44,12 +55,19 @@ export default {
   components: {
     RecursiveDepartment,
   },
+  props: {
+    managers: {
+      type: Array,
+      default: () => []
+    }
+  },
   emits: ['user-selected'],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
     const hierarchy = ref([]);
     const searchQuery = ref('');
     const expandedDepartments = ref([]);
 
+    // 조직도 데이터 필터링
     const filteredHierarchy = computed(() => {
       if (!searchQuery.value) {
         return hierarchy.value.filter(dept => !dept.parentId);
@@ -58,6 +76,7 @@ export default {
       return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
     });
 
+    // 조직도 데이터 및 사용자 정보 가져오기
     const fetchHierarchy = async () => {
       try {
         const response = await axios.get('/department/hierarchy');
@@ -67,14 +86,19 @@ export default {
       }
     };
 
+    // 사용자를 선택하면 이벤트 전송
     const selectUser = (user) => {
-      emit('user-selected', user); // 'user-selected' 이벤트 발생
+      emit('user-selected', user);
     };
 
+    // 부서 계층 구조의 유저 수 및 매니저 표시 여부 설정
     const calculateUserCounts = async (departments) => {
       const recurse = async (dept) => {
         const usersResponse = await axios.get(`/department/${dept.id}/users`);
-        dept.users = usersResponse.data || [];
+        dept.users = usersResponse.data.map(user => ({
+          ...user,
+          isManager: props.managers.some(manager => manager.userNum === user.userNum)
+        }));
 
         let totalUsers = dept.users.length;
         if (dept.children && dept.children.length > 0) {
@@ -92,6 +116,7 @@ export default {
       return departments;
     };
 
+    // 부서를 확장/축소하는 함수
     const toggleExpand = (department) => {
       if (expandedDepartments.value.includes(department.id)) {
         expandedDepartments.value = expandedDepartments.value.filter(id => id !== department.id);
@@ -100,6 +125,17 @@ export default {
       }
     };
 
+    // `managers` 속성의 변경 사항을 감지하여 hierarchy 재계산
+    watch(
+      () => props.managers,
+      async () => {
+        // `hierarchy`를 다시 계산하여 매니저 상태를 반영
+        hierarchy.value = await calculateUserCounts(hierarchy.value);
+      },
+      { deep: true }
+    );
+
+    // 컴포넌트가 마운트되면 fetchHierarchy 호출
     onMounted(() => {
       fetchHierarchy();
     });
@@ -122,17 +158,11 @@ export default {
   width: 100%;
   display: flex;
   gap: 20px;
-  /* 조직도 창과 유저 패널 사이의 간격 */
 }
 
 .org-chart {
   width: 100%;
-  /* width: fit-content; */
-  /* 조직도 창 크기 */
-  /* background-color: #f9f9f9; */
   padding: 10px;
-  /* border-radius: 8px; */
-  /* box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); */
   font-size: 12px;
   overflow-y: auto;
 }
@@ -175,13 +205,18 @@ export default {
   padding: 2px 0;
 }
 
+.manager-label {
+  font-size: 10px;
+  color: blue;
+  margin-left: 5px;
+}
+
 .expand-icon {
   margin-right: 5px;
 }
 
 .user-profile-panel {
   width: 45%;
-  /* 유저 패널 크기 */
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
