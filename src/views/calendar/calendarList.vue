@@ -1,4 +1,6 @@
-<template>
+<v-btn v-list class="mr-2" @click="goBack">목록으로</v-btn>
+<v-btn v-create class="mr-2" @click="editBoard">수정</v-btn>
+<v-btn v-delete @click="confirmDeleteBoard">삭제</v-btn><template>
   <div id="first-calendar-container" class="calendar-container">
     <FullCalendar :options="firstCalendarOptions">
       <template v-slot:eventContent="arg">

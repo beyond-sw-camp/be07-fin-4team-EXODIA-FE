@@ -421,14 +421,14 @@ export default {
 }
 
 .tag-button {
-  min-width: 100px;
+  min-width: 10px;
   text-align: center;
 }
 
 /* 둥근 모양 버튼 스타일 */
 .rounded-button {
   border-radius: 20px;
-  padding: 10px 20px;
+  padding:10px;
 }
 
 .remove-tag-btn {

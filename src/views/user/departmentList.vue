@@ -9,7 +9,7 @@
       <v-col class="d-flex justify-end">
         <v-btn v-create v-if="editMode" @click="openCreateDialog">부서 추가</v-btn>
         <v-btn v-list @click="toggleEditMode">{{ editMode ? '편집 완료' : '편집' }}</v-btn>
-        <v-btn v-delete v-if="editMode" @click="cancelEdit">취소</v-btn>
+        <v-btn v-cancel v-if="editMode" @click="cancelEdit">취소</v-btn>
       </v-col>
     </v-row>
 
@@ -67,8 +67,15 @@
             item-value="id"></v-select>
         </v-card-text>
         <v-card-actions>
-          <v-btn class="success-btn" text @click="saveDepartment">{{ isEdit ? '수정' : '추가' }}</v-btn>
-          <v-btn class="error-btn" text @click="closeDialog">취소</v-btn>
+          <v-btn 
+            text 
+            :class="isEdit ? 'v-edit' : 'v-save'" 
+            @click="saveDepartment"
+          >
+            {{ isEdit ? '수정' : '추가' }}
+          </v-btn>
+        
+          <v-btn v-cancel class="error-btn" text @click="closeDialog">취소</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -100,7 +107,7 @@
           </div>
         </v-card-text>
         <v-card-actions>
-          <v-btn v-delete text @click="detailedViewDialog = false">닫기</v-btn>
+          <v-btn v-close text @click="detailedViewDialog = false">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

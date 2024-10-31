@@ -85,8 +85,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="setSalaryDate">저장</v-btn>
-          <v-btn text @click="salaryDateDialog = false">취소</v-btn>
+          <v-btn v-save color="primary" @click="setSalaryDate">저장</v-btn>
+          <v-btn v-cancel text @click="salaryDateDialog = false">취소</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

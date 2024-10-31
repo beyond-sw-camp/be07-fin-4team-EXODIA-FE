@@ -89,7 +89,7 @@ export default {
       ],
       categoryOptions: [
         { text: "공지사항", value: "notice" },
-        { text: "경조사", value: "FAMILY_EVENT" },
+        { text: "경조사", value: "family_event" },
       ],
     };
   },
@@ -97,7 +97,9 @@ export default {
 
   computed: {
     sortedBoardItems() {
-      const pinnedItems = this.boardItems.filter(item => item.pinned).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const pinnedItems = this.boardItems
+        .filter(item => item.pinned)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       const regularItems = this.boardItems.filter(item => !item.pinned);
       return [...pinnedItems, ...regularItems];
     }
@@ -134,6 +136,14 @@ export default {
       this.userNum = localStorage.getItem("userNum");
     },
 
+    // 카테고리 값을 URL에 맞게 변환
+    convertCategory(category) {
+      if (category === "FAMILY_EVENT") {
+        return "familyevent";
+      }
+      return category.toLowerCase();
+    },
+
     // 게시글 목록을 서버에서 가져옴
     async fetchBoardItems() {
       try {
@@ -141,9 +151,10 @@ export default {
           page: this.currentPage - 1,
           size: this.itemsPerPage,
           searchType: this.searchType,
-          searchQuery: this.searchQuery || "",
+          searchQuery: this.searchQuery || ""
         };
-        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory.toLowerCase()}/list`;
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory}/list`;
+        console.log("전송할 params:", params); // 전송한 params 확인
         const response = await axios.get(apiUrl, { params });
 
         if (response.data && response.data.result) {
@@ -151,13 +162,19 @@ export default {
           this.boardItems = result.content;
           this.totalPages = result.totalPages;
 
-          console.log("받아온 boardItems:", JSON.stringify(this.boardItems, null, 2));
+          // 받아온 게시글 정보 출력
+          console.log("받아온 게시글 정보:", JSON.stringify(this.boardItems));
+
         }
       } catch (error) {
         console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
         alert("게시글 목록을 불러오는 중 문제가 발생했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
       }
     },
+
+
+
+
 
     // 페이지 변경
     onPageChange(newPage) {
@@ -179,14 +196,14 @@ export default {
     // 날짜 형식 포맷
     formatDate(date) {
       return new Date(date)
-        .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-        .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
-        .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
+        .toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })
+        .replace(/\.\s/g, ".") // 중간에 붙는 공백을 없앰
+        .replace(/\.$/, ""); // 마지막에 붙는 '.'을 없앰
     },
 
     // 핀 고정된 글 처리
     itemTitle(item) {
-      return item.pinned ? '📌 ' + item.title : item.title;
+      return item.pinned ? "📌 " + item.title : item.title;
     },
 
     // 새 글 작성 시 처리
@@ -216,6 +233,7 @@ export default {
   },
 };
 </script>
+
 
 
 
