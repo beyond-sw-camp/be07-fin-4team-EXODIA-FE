@@ -1,29 +1,33 @@
 <template>
   <div class="department-container">
-    <h1>부서 관리</h1>
-    <div class="button-group">
+    <v-row class="mb-12" style="padding-left:30px">
+      <!-- style="margin:40px 50px" -->
+      <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle || '부서 관리' }}</h1>
+    </v-row>
+
+    <v-row justify="end" class="mb-4">
+      <v-col class="d-flex justify-end">
+        <v-btn v-create v-if="editMode" @click="openCreateDialog">부서 추가</v-btn>
+        <v-btn v-list @click="toggleEditMode">{{ editMode ? '편집 완료' : '편집' }}</v-btn>
+        <v-btn v-delete v-if="editMode" @click="cancelEdit">취소</v-btn>
+      </v-col>
+    </v-row>
+
+    <!-- <div class="button-group">
       <v-btn v-if="editMode" @click="openCreateDialog" class="primary-btn">부서 추가</v-btn>
       <v-btn @click="toggleEditMode" class="success-btn">{{ editMode ? '편집 완료' : '편집' }}</v-btn>
       <v-btn v-if="editMode" @click="cancelEdit" color="error">취소</v-btn>
-    </div>
+    </div> -->
 
+    <!-- :class="fileList.length > 0 ? 'chat-content-with-file' : 'chat-content'" id="messageContainer" -->
     <div class="content-container">
       <div class="tree-container">
         <v-card v-for="department in topLevelDepartments" :key="department.id" class="mb-4 tree-card">
-          <DepartmentNode
-            :department="department"
-            :depth="0"
-            :editMode="editMode"
-            @fetch-users="fetchUsersByDepartment"
-            @drag-start="dragStart"
-            @drop="drop"
-            @open-edit-dialog="openEditDialog"
-            @delete-department="deleteDepartment"
-          />
+          <DepartmentNode :department="department" :depth="0" :editMode="editMode" @fetch-users="fetchUsersByDepartment"
+            @drag-start="dragStart" @drop="drop" @open-edit-dialog="openEditDialog"
+            @delete-department="deleteDepartment" />
           <div v-if="!editMode" class="detailed-view-btn">
-            <v-btn @click="showDetailedView(department)" icon class="detailed-view-icon">
-              <v-icon small>mdi-magnify</v-icon> <!-- 아이콘 변경 -->
-            </v-btn>
+              <v-icon @click="showDetailedView(department)" >mdi-magnify</v-icon> <!-- 아이콘 변경 -->
           </div>
         </v-card>
       </div>
@@ -31,13 +35,8 @@
       <!-- 사용자 목록 -->
       <div class="user-box">
         <h3>{{ selectedDepartmentName }}</h3>
-        <v-text-field
-          label="이름 검색"
-          v-model="searchQuery"
-          @input="searchUsers"
-          clearable
-          class="search-box"
-        ></v-text-field>
+        <v-text-field label="이름 검색" v-model="searchQuery" @input="searchUsers" clearable
+          class="search-box"></v-text-field>
         <div v-if="users.length === 0" class="no-users">
           <v-alert type="info" color="blue lighten-4">해당 부서에 소속된 사용자가 없습니다.</v-alert>
         </div>
@@ -64,13 +63,8 @@
         </v-card-title>
         <v-card-text>
           <v-text-field label="부서명" v-model="departmentForm.name"></v-text-field>
-          <v-select
-            label="상위 부서"
-            v-model="departmentForm.parentId"
-            :items="parentOptions"
-            item-title="name"
-            item-value="id"
-          ></v-select>
+          <v-select label="상위 부서" v-model="departmentForm.parentId" :items="parentOptions" item-title="name"
+            item-value="id"></v-select>
         </v-card-text>
         <v-card-actions>
           <v-btn class="success-btn" text @click="saveDepartment">{{ isEdit ? '수정' : '추가' }}</v-btn>
@@ -106,7 +100,7 @@
           </div>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" text @click="detailedViewDialog = false">닫기</v-btn>
+          <v-btn v-delete text @click="detailedViewDialog = false">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -120,7 +114,7 @@ import DepartmentNode from './DepartmentNode.vue'; // Recursive child component
 
 export default {
   components: { DepartmentNode },
-  data() { 
+  data() {
     return {
       hierarchy: [], // Department hierarchy data
       users: [], // User list data
@@ -170,7 +164,7 @@ export default {
     },
     async fetchUsersByDepartment(departmentId) {
       try {
-        this.selectedDepartmentId = departmentId; 
+        this.selectedDepartmentId = departmentId;
         const response = await axios.get(`/department/${departmentId}/users`);
         this.users = response.data;
         this.selectedDepartmentName = this.findDepartmentName(this.hierarchy, departmentId) || '부서 없음';
@@ -293,21 +287,32 @@ export default {
 };
 </script>
 
-<style>
-
+<style scoped>
 .department-container {
+  border-radius: 12px;
   padding: 20px;
 }
 
+.drawer-open {
+  transition: margin-right 0.3s ease;
+  margin-right: 200px;
+}
 
 .button-group {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  justify-content: flex-end; 
+  justify-content: flex-end;
 }
 
-.primary-btn, .success-btn, .error-btn {
+.v-btn {
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+.primary-btn,
+.success-btn,
+.error-btn {
   padding: 10px 15px;
   border-radius: 5px;
   border: none;
@@ -333,6 +338,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: auto;
+  padding-bottom: 100px;
   justify-content: flex-start;
 }
 
@@ -351,9 +357,10 @@ export default {
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   width: 28%;
-  height: 50%;
-  border-radius: 5%;
-  bottom: 10%;
+  height: 40%;
+  /* max-height: fit-content; */
+  border-radius: 10%;
+  bottom: 15%;
   right: 10%;
 }
 
@@ -408,10 +415,14 @@ export default {
 /* 부서 구조 상세 조회 스타일 */
 /* 부서 구조 상세 조회 스타일 */
 :root {
-  --level-1: #a8d5ba; /* Pastel Green */
-  --level-2: #f9d7a5; /* Pastel Yellow */
-  --level-3: #a7c7e7; /* Pastel Blue */
-  --level-4: #f7a8b8; /* Pastel Pink */
+  --level-1: #a8d5ba;
+  /* Pastel Green */
+  --level-2: #f9d7a5;
+  /* Pastel Yellow */
+  --level-3: #a7c7e7;
+  /* Pastel Blue */
+  --level-4: #f7a8b8;
+  /* Pastel Pink */
 }
 
 /* 노드 스타일 */
@@ -419,25 +430,30 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 12px; /* 노드 안의 글자 크기 */
+  font-size: 12px;
+  /* 노드 안의 글자 크기 */
   padding: 10px;
   background-color: #fff;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  width: 120px; /* 가로 크기 축소 */
-  height: 40px; /* 직사각형으로 만들기 위한 세로 크기 */
+  width: 120px;
+  /* 가로 크기 축소 */
+  height: 40px;
+  /* 직사각형으로 만들기 위한 세로 크기 */
 }
 
 /* 숫자 제거 */
 ol {
-  list-style-type: none; /* 리스트에서 숫자 없애기 */
+  list-style-type: none;
+  /* 리스트에서 숫자 없애기 */
   padding-left: 0;
 }
 
 /* 레벨별 간격 조정 */
 .level-1 {
   width: 20%;
-  margin: 0 auto 50px; /* 위 아래 간격 */
+  margin: 0 auto 50px;
+  /* 위 아래 간격 */
   background-color: var(--level-1);
 }
 
@@ -445,12 +461,14 @@ ol {
   position: relative;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  margin-bottom: 50px; /* 위 아래 간격 */
+  margin-bottom: 50px;
+  /* 위 아래 간격 */
 }
 
 .level-2 {
-  width: 30%; 
-  margin: 0 auto 50px; /* 위 아래 간격 */
+  width: 30%;
+  margin: 0 auto 50px;
+  /* 위 아래 간격 */
   background-color: var(--level-2);
 }
 
@@ -459,11 +477,13 @@ ol {
   grid-template-columns: repeat(2, 1fr);
   grid-column-gap: 20px;
   width: 50%;
-  margin: 0 auto 50px; /* 위 아래 간격 */
+  margin: 0 auto 50px;
+  /* 위 아래 간격 */
 }
 
 .level-3 {
-  margin-bottom: 50px; /* 위 아래 간격 */
+  margin-bottom: 50px;
+  /* 위 아래 간격 */
   background-color: var(--level-3);
 }
 
@@ -476,7 +496,8 @@ ol {
 .level-4 {
   background-color: var(--level-4);
   border-radius: 8px;
-  margin-bottom: 50px; /* 위 아래 간격 */
+  margin-bottom: 50px;
+  /* 위 아래 간격 */
 }
 
 /* 연결 선 제거 */
@@ -498,5 +519,4 @@ ol {
 .detailed-view-icon {
   font-size: 12px;
 }
-
 </style>

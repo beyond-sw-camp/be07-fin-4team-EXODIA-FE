@@ -23,18 +23,25 @@
                 <!-- 선택된 유저-->
                 <div class="selected-user-row" v-if="selectUser !== null">
                     <v-row>
+                        <v-chip-group column multiple active-class="selected-chip">
+                            <v-chip style="width: max-content; font-size: 13px; margin: 12px; margin-right: 0px; margin-bottom: 3px;"
+                                @click="removeUser()">
+                                {{ selectUser.name }}
+                                <v-icon style="font-size: 13px; padding-left: 2px;" right>mdi-close</v-icon>
+                            </v-chip>
+                        </v-chip-group>
+                    </v-row>
+                    <!-- <v-row>
                         <v-col class="select-user-list" cols="3">
                             <v-icon color="grey" class="close-icon" @click="removeUser()">mdi-close-circle</v-icon>
                             <div class="select-user">{{ selectUser.name }}</div>
                         </v-col>
-                    </v-row>
+                    </v-row> -->
                 </div>
 
-                <v-row>
-                    <v-col cols="12" class="text-right">
-                        <v-btn color="success" @click="showChatRoomNameChange">다음</v-btn>
-                        <v-btn color="error" @click="closeModal">취소</v-btn>
-                    </v-col>
+                <v-row justify="end">
+                    <v-btn v-list @click="showChatRoomNameChange">다음</v-btn>
+                    <v-btn v-delete @click="closeModal">취소</v-btn>
                 </v-row>
             </div>
 
@@ -50,11 +57,9 @@
                         <v-text-field v-model="chatRoomName" label="채팅방명을 다시 작성해주세요."></v-text-field>
                     </v-col>
                 </v-row>
-                <v-row>
-                    <v-col cols="12">
-                        <v-btn @click="inviteChatUser">초대</v-btn>
-                        <v-btn color="error" @click="closeModal">취소</v-btn>
-                    </v-col>
+                <v-row justify="end">
+                    <v-btn v-create @click="inviteChatUser">초대</v-btn>
+                    <v-btn v-delete @click="closeModal">취소</v-btn>
                 </v-row>
             </div>
         </v-container>
@@ -190,6 +195,10 @@ export default {
 
 .select-user-list {
     position: relative;
+}
+
+.v-btn {
+    margin-right: 10px;
 }
 
 .close-icon {

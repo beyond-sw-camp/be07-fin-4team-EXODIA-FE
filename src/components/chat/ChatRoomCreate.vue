@@ -23,20 +23,21 @@
             <!-- 선택된 유저 리스트 -->
             <div class="selected-user-row">
                 <v-row>
-                    <v-col class="select-user-list" cols="3" v-for="(userInfo, index) in selectUser" :key="index">
-                        <v-icon color="grey" class="close-icon" @click="removeUser(index)">mdi-close-circle</v-icon>
-                        <div class="select-user">{{ userInfo.name }}</div>
-                    </v-col>
+                    <v-chip-group v-if="selectUser.length" column multiple active-class="selected-chip">
+                        <v-chip v-for="(userInfo, index) in selectUser" :key="index" style="width: max-content; font-size: 13px; margin: 12px; margin-right: 0px; margin-bottom: 3px;"
+                            @click="removeUser(index)">
+                            {{ userInfo.name }}
+                            <v-icon style="font-size: 13px; padding-left: 2px;"  right>mdi-close</v-icon>
+                        </v-chip>
+                    </v-chip-group>
                 </v-row>
             </div>
 
 
             <!-- 다음 버튼 -->
-            <v-row>
-                <v-col cols="12">
-                    <v-btn color="success" @click="showChatRoomNameCreate">다음</v-btn>
-                    <v-btn color="error" @click="closeCreate">취소</v-btn>
-                </v-col>
+            <v-row justify="end">
+                    <v-btn v-list @click="showChatRoomNameCreate">다음</v-btn>
+                    <v-btn v-delete @click="closeCreate">취소</v-btn>
             </v-row>
         </v-container>
 
@@ -56,8 +57,8 @@
 
             <v-row>
                 <v-col cols="12" class="text-right">
-                    <v-btn color="success" @click="createChatRoom">생성</v-btn>
-                    <v-btn color="error" @click="closeCreate">취소</v-btn>
+                    <v-btn v-create @click="createChatRoom">생성</v-btn>
+                    <v-btn v-delete @click="closeCreate">취소</v-btn>
                 </v-col>
             </v-row>
         </v-container>
@@ -117,7 +118,7 @@ export default {
                 alert("이미 선택한 유저입니다.");
                 return;
             }
-            if(user.userNum == this.chatroomData.userNum){
+            if (user.userNum == this.chatroomData.userNum) {
                 alert("자기 자신은 선택할 수 없습니다.");
                 return;
             }
@@ -202,6 +203,10 @@ export default {
     height: 50px;
 }
 
+.v-btn {
+  margin-right: 10px;
+}
+
 .select-line {
     border: 0px;
     border-top: 2px solid rgba(0, 0, 0, 0.1);
@@ -209,31 +214,11 @@ export default {
 
 .selected-user-row {
     height: 90px;
-    width: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
     margin-bottom: 10px;
 }
 
-.select-user-list {
-    position: relative;
-}
 
-.close-icon {
-    position: absolute;
-    top: 8px;
-    left: 64px;
-    z-index: 1;
-    /* 이미지보다 아이콘이 위에 표시되도록 z-index 설정 */
-    cursor: pointer;
-    /* 클릭 가능하게 설정 */
-    font-size: small;
-}
-
-.select-user {
-    text-align: center;
-    width: max-content;
-    background-color: rgba(233, 233, 233, 0.4);
-    padding: 5px 10px;
-    border-radius: 10px;
-    font-size: 13px;
-}
 </style>
