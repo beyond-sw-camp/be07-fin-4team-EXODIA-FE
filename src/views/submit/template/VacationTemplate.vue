@@ -330,6 +330,10 @@ export default {
         },
         async createSubmit() {
             try {
+                if (this.submitCreateData.submitUserDtos.length == 0) {
+                    alert('결재라인을 등록해주세요.');
+                }
+
                 this.submitCreateData.contents = this.submitCreateData.contents = JSON.stringify(this.formData);
                 this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
 
