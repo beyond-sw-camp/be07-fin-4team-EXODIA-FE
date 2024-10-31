@@ -12,7 +12,7 @@
             </v-col>
         </v-row>
         <v-row justify="end" class="mb-4">
-            <v-col cols="auto" v-if="this.positionId == 1 && this.pageTitle == '전체 파일'">
+            <v-col cols="auto" v-if="this.positionId == 7 && this.pageTitle == '전체 파일'">
                 <v-btn v-create variant="outlined" @click="handleCreateTag()">
                     태그 생성
                 </v-btn>
@@ -575,7 +575,7 @@ v-card-title,
     display: flex;
     justify-content: start;
     align-items: center;
-    
+
 }
 
 .user-info {
