@@ -1,33 +1,31 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
-        <h1 :class="{ 'drawer-open': drawer }" style="margin:40px 50px">{{ pageTitle || '직원 목록' }}</h1>
+  <v-container class="container">
+    <v-row class="mb-12" style="padding-left:30px">
+      <!-- style="margin:40px 50px" -->
+      <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle || '직원 목록' }}</h1>
+    </v-row>
+
+    <!-- 검색 옵션 -->
+    <v-row justify="center" style="margin:0; text-align:center;">
+      <v-col cols="2">
+        <v-select v-model="searchType" :items="searchOptions" item-title="label" variant="underlined" item-value="value"
+          label="검색 기준 선택"></v-select>
       </v-col>
+      <v-col cols="7">
+        <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="performSearch"
+          style="margin-bottom: 20px;" append-icon="mdi-magnify"
+          @click:append="performSearch(searchQuery)"></v-text-field>
+      </v-col>
+    </v-row>
+
+    <v-row justify="end" class="mb-4">
       <v-col class="d-flex justify-end">
         <v-btn v-create @click="goToCreate">직원 생성</v-btn>
       </v-col>
     </v-row>
 
-    <!-- 검색 옵션 -->
-    <v-row justify="center" style="margin:0; text-align:center;">
-      <v-col cols="3">
-        <v-select v-model="searchType" :items="searchOptions" item-title="label" item-value="value" label="검색 기준 선택"
-          outlined></v-select>
-      </v-col>
-      <v-col cols="6">
-        <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="performSearch"
-          style="margin-bottom: 20px;"></v-text-field>
-      </v-col>
-      <v-col cols="4" sm="2">
-        <v-btn @click="performSearch(searchQuery)">
-          검색
-        </v-btn>
-      </v-col>
-    </v-row>
-
     <!-- 직원 목록 테이블 -->
-    <v-row justify="center">
+    <v-row justify="center" style="margin:0; text-align:center;">
       <v-col cols="12">
         <v-row class="mb-2"
           style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
@@ -39,12 +37,8 @@
           <v-col cols="2">입사일</v-col>
           <v-col cols="2">관리</v-col>
         </v-row>
-        <v-row
-          v-for="(user, index) in users"
-          :key="user.userNum"
-          @click="viewUser(user)"
-          style="border-bottom: 1px solid #e7e4e4; padding:5px; font-weight:500;"
-        >
+        <v-row v-for="(user, index) in users" :key="user.userNum" @click="viewUser(user)"
+          style="border-bottom: 1px solid #e7e4e4; padding:5px; font-weight:500;">
           <v-col cols="1">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</v-col>
           <v-col cols="2">{{ user.userNum }}</v-col>
           <v-col cols="2">{{ getDepartmentName(user.departmentId) }}</v-col>
@@ -52,12 +46,8 @@
           <v-col cols="2">{{ getPositionName(user.positionId) }}</v-col>
           <v-col cols="2">{{ user.joinDate }}</v-col>
           <v-col cols="2">
-            <v-btn icon @click.stop="editUser(user.userNum)">
-              <v-icon color="blue">mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn icon @click.stop="openDeleteDialog(user.userNum)">
-              <v-icon color="red">mdi-delete</v-icon>
-            </v-btn>
+            <v-icon color="black" style="font-size: 18px; padding-right: 15px" @click.stop="editUser(user.userNum)">mdi-pencil</v-icon>
+            <v-icon color="black" style="font-size: 18px;" @click.stop="openDeleteDialog(user.userNum)">mdi-delete</v-icon>
           </v-col>
         </v-row>
       </v-col>
@@ -70,12 +60,7 @@
 
     <!-- 페이징 -->
     <v-row justify="center">
-      <v-pagination
-        v-model="currentPage"
-        :length="totalPages"
-        :total-visible="5"
-        always-show
-      ></v-pagination>
+      <v-pagination v-model="currentPage" :length="totalPages" :total-visible="5" always-show></v-pagination>
     </v-row>
 
     <!-- 삭제 다이얼로그 -->
@@ -222,7 +207,7 @@ export default {
     },
   },
   mounted() {
-    this.fetchUsers(this.currentPage);  
+    this.fetchUsers(this.currentPage);
     this.fetchDepartments();
     this.fetchPositions();
   },
@@ -235,9 +220,19 @@ export default {
 </script>
 
 <style scoped>
-.v-row {
-  margin-bottom: 20px;
+.container {
+  padding: 20px;
+  border-radius: 12px;
 }
+
+.drawer-open {
+  transition: margin-right 0.3s ease;
+  margin-right: 200px;
+}
+
+/* .v-row {
+  margin-bottom: 20px;
+} */
 
 .v-btn {
   font-size: 14px;
@@ -281,4 +276,5 @@ thead {
 .v-pagination {
   margin-top: 20px;
 }
+
 </style>

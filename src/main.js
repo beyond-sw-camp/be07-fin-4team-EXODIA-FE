@@ -107,7 +107,8 @@ app.directive('create', {
     if (el.textContent.includes('작성') || el.textContent.includes('생성') || el.textContent.includes('수정') ||
       el.textContent.includes('등록') || el.textContent.includes('저장') || el.textContent.includes('답변') ||
       el.textContent.includes('업데이트') || el.textContent.includes('퇴근') || el.textContent.includes('변경') ||
-      el.textContent.includes('추가') || el.textContent.includes('승인') || el.textContent.includes('확인')) {
+      el.textContent.includes('추가') || el.textContent.includes('승인') || el.textContent.includes('확인')
+    || el.textContent.includes('설정') || el.textContent.includes('초대')) {
       el.style.backgroundColor = '#9a2f2f'; // 배경색 - 붉은색
       el.style.color = 'white';
       el.style.fontWeight = 'bold';
@@ -144,7 +145,9 @@ app.directive('delete', {
 
 app.directive('list', {
   mounted(el) {
-    if (el.textContent.includes('목록') || el.textContent.includes('보기') || el.textContent.includes('출근') || el.textContent.includes('시작')) {
+    if (el.textContent.includes('목록') || el.textContent.includes('보기') || el.textContent.includes('출근')
+       || el.textContent.includes('시작')|| el.textContent.includes('조회') || el.textContent.includes('편집')
+    || el.textContent.includes('다음')) {
       el.style.backgroundColor = '#4caf50'; // 배경색 - 초록색
       el.style.color = 'white';
       el.style.fontWeight = 'bold';
