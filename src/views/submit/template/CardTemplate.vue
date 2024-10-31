@@ -99,7 +99,8 @@
                                 'mdi-chevron-up' :
                                 'mdi-chevron-down' }}</v-icon>
                         </v-card-title>
-                        <v-list v-if="isOpenSubmitLine" style="background-color: rgba(123, 86, 86, 0.3);">
+                        <v-list v-if="isOpenSubmitLine"
+                            style="background-color: rgba(123, 86, 86, 0.3);max-height: 300px; overflow-y: auto;">
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
                                 @dragstart="onDragStart(user)" class="draggable-item">
                                 <v-list-item-content style="font-weight:600;">
@@ -240,12 +241,14 @@ export default {
                         });
                     } else if (user.positionName === '과장' && this.secondApprovers.length == 0) {
                         this.secondApprovers = user;
+
                         this.submitCreateData.submitUserDtos.push({
                             userName: user.name,
                             position: user.positionId,
                         });
                     } else if (user.positionName === '주임' && this.thirdApprovers.length == 0) {
                         this.thirdApprovers = user;
+
                         this.submitCreateData.submitUserDtos.push({
                             userName: user.name,
                             position: user.positionId,
@@ -281,32 +284,43 @@ export default {
         },
         onDrop(level) {
             if (this.draggedUser) {
-                const existingApprover = this.submitCreateData.submitUserDtos.find(user => user.userName === this.draggedUser.name);
-
-                console.log(this.draggedUser.positionName)
-                if (this.firstApprovers.length != 0 || this.secondApprovers.length != 0 || this.thirdApprovers.length != 0) {
-                    alert('결재자 선택은 직급당 한명만 가능합니다.')
+                if (this.firstApprovers.length != 0 && this.secondApprovers.length != 0 && this.thirdApprovers.length != 0) {
+                    alert('결재자 선택은 직급당 한명만 가능합니다.');
                 }
-                else if (!existingApprover) {
+                else {
                     if (level === 1) {
                         if (this.draggedUser.positionName != '팀장') {
                             alert('팀장 직급에서 선택해주세요')
                         } else {
-                            this.firstApprovers.push(this.draggedUser);
+                            this.firstApprovers = [this.draggedUser][0];
+                            this.submitCreateData.submitUserDtos.push({
+                                userName: this.firstApprovers.name,
+                                position: this.firstApprovers.positionId,
+                            })
+
                         }
                     }
                     if (level === 2) {
                         if (this.draggedUser.positionName != '과장') {
                             alert('과장 직급에서 선택해주세요')
                         } else {
-                            this.secondApprovers.push(this.draggedUser);
+                            this.secondApprovers = [this.draggedUser][0];
+                            this.submitCreateData.submitUserDtos.push({
+                                userName: this.secondApprovers.name,
+                                position: this.secondApprovers.positionId,
+                            })
+
                         }
                     }
                     if (level === 3) {
                         if (this.draggedUser.positionName != '주임') {
                             alert('주임 직급에서 선택해주세요')
                         } else {
-                            this.thirdApprovers.push(this.draggedUser);
+                            this.thirdApprovers = [this.draggedUser][0];
+                            this.submitCreateData.submitUserDtos.push({
+                                userName: this.thirdApprovers.name,
+                                position: this.thirdApprovers.positionId,
+                            })
                         }
                     }
                     this.draggedUser = null;
