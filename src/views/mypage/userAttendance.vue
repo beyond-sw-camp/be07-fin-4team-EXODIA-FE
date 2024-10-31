@@ -7,7 +7,10 @@
       </v-col>
 
       <v-col cols="2">
-        <v-btn ariant="outlined" v-list class="meeting-button" @click="meetingIn">
+        <v-btn v-if="userStatus == '자리비움'" variant="outlined" v-list class="meeting-button" @click="meetingIn">
+          복귀
+        </v-btn>
+        <v-btn v-else variant="outlined" v-list class="meeting-button" @click="meetingOut">
           자리비움
         </v-btn>
       </v-col>
@@ -46,7 +49,9 @@
 
           <v-col>
             <div class="user-info">
-              <div class="user-name">{{ user.userName }}</div>
+              <div class="user-name">{{ user.userName }} <span style="font-size:14px;">
+                  {{ user.positionName }}
+                </span></div>
               <div class="user-status">{{ user.statusData }}</div>
               <div class="user-time">{{ formatLocalTime(user.inTime) || ' ' }}
                 <span v-if="user.nowStatus == '출근' || user.nowStatus == '퇴근'">-</span>
@@ -86,6 +91,7 @@ export default {
       statusOptions: ['출근', '퇴근', '회의'],
 
       users: [],
+      userStatus: '',
 
     };
   },
@@ -164,10 +170,18 @@ export default {
       this.isOpenStatus = !this.isOpenStatus;
     },
     async meetingIn() {
+      // 자리비움
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/meeting-in`);
-
-        console.log(response.data);
+        await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/meeting-in`);
+        location.reload();
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    async meetingOut() {
+      // 복귀
+      try {
+        await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/meeting-out`);
         location.reload();
       } catch (e) {
         console.log(e);
@@ -189,7 +203,6 @@ export default {
         console.log("users: " + response);
         let badgeColor = '#808080';
         let statusData = '';
-
         this.users = response.data.result.map(user => {
           if (user.nowStatus == '출근') {
             badgeColor = '#4caf50';
@@ -200,7 +213,7 @@ export default {
           } else if (user.nowStatus == '자리비움') {
             user.inTime = '';
             user.outTime = '';
-            statusData = '.';
+            statusData = '자리비움 상태입니다.';
             badgeColor = '#1867c0';
           } else if (user.nowStatus == '근무전') {
             statusData = '근태 정보가 없습니다.';
@@ -209,6 +222,8 @@ export default {
           return { ...user, badgeColor, statusData };
         });
         this.users.sort((a, b) => (b.userNum === this.userNum ? 1 : 0) - (a.userNum === this.userNum ? 1 : 0));
+        this.userStatus = this.users.find(user => user.userNum === this.userNum)?.nowStatus || null;
+        console.log("status" + this.userStatus)
 
       } catch (e) {
         console.log(e);
@@ -324,7 +339,7 @@ v-alert {
 }
 
 .meeting-button {
-  background-color: #1867c0;
+  background-color: #949494;
   color: #ffffff;
   border-radius: 10px;
 }
