@@ -1,7 +1,7 @@
 <template>
   <MypageTemplate>
     <template #evaluation>
-      <v-row>
+      <v-row class="mt-4">
         <v-col v-if="isManager" cols="12" md="4">
           <v-select v-model="selectedUser" :items="departmentUsers" item-title="name" item-value="userNum"
             label="부서원 선택" dense outlined></v-select>
@@ -12,11 +12,11 @@
         <v-col>
           <v-simple-table dense>
             <thead>
-              <tr>
-                <th>대분류</th>
-                <th>중분류</th>
-                <th>평가 내용</th>
-                <th>평가</th>
+              <tr style="background-color:rgba(122,86,86,0.2);">
+                <th style="padding:10px;  border: 1px solid #f5f5f5">대분류</th>
+                <th style="padding:10px;  border: 1px solid #f5f5f5">중분류</th>
+                <th style="padding:10px;  border: 1px solid #f5f5f5">평가 내용</th>
+                <th style="padding:10px;  border: 1px solid #f5f5f5">평가</th>
               </tr>
             </thead>
             <tbody>
@@ -33,7 +33,7 @@
                 </td>
                 <td style="border: 1px solid #e0e0e0; text-align: center;">
                   <!-- 평가 선택 -->
-                  <v-select v-model="item.grade" :items="['A', 'B', 'C', 'D', 'E']" label="평가 선택" dense
+                  <v-select hide-details v-model="item.grade" :items="['A', 'B', 'C', 'D', 'E']" label="평가 선택" dense
                     style="width: 100px; background-color: #FFFFFF; border: none"
                     :disabled="item.saved && !item.editable"></v-select>
                 </td>
@@ -44,10 +44,8 @@
       </v-row>
 
       <!-- 저장 버튼 -->
-      <v-row>
-        <v-col cols="12" class="text-center">
-          <v-btn v-create @click="saveEvaluations">저장</v-btn>
-        </v-col>
+      <v-row justify="end">
+        <v-btn v-create @click="saveEvaluations">저장</v-btn>
       </v-row>
     </template>
   </MypageTemplate>
@@ -114,7 +112,7 @@ export default {
         });
         this.evaluations = response.data.map(item => ({
           ...item,
-          subEvalutionContent: item.subEvalutionContent || 'N/A',
+          subEvalutionContent: item.subEvalutionContent || '',
           grade: item.grade || '',
           saved: !!item.grade,
           editable: !item.saved

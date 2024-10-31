@@ -111,7 +111,7 @@ export default {
       showDepartmentGuide: false, // 모달을 표시할지 여부
       departmentsInfo: [], // 각 부서의 설명 정보
       isAdmin: false, // 관리자인지 여부
-      titleMaxLength: 100, // 제목 최대 길이
+      titleMaxLength: 300, // 제목 최대 길이
       contentMaxLength: 5000, // 내용 최대 길이
     };
   },
@@ -234,6 +234,18 @@ export default {
       // 제목 길이 검증
       if (this.questionTitle.length > this.titleMaxLength) {
         alert(`제목은 최대 ${this.titleMaxLength}자까지 작성할 수 있습니다. 현재 ${this.questionTitle.length}자를 입력하셨습니다.`);
+        return;
+      }
+
+        // **제목이 비었는지 검증**
+      if (this.questionTitle.trim() === '') {
+        alert('질문의 제목을 입력하세요.');
+        return;
+      }
+
+      // **내용이 비었는지 검증**
+      if (this.questionText.trim() === '') {
+        alert('질문의 내용을 입력하세요.');
         return;
       }
 

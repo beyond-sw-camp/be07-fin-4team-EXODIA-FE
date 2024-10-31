@@ -79,8 +79,16 @@ export default {
   margin-top: var(--header-height);
   padding: 50px 80px;
   background-color: #f5f5f5;
-  border-radius: 25px;
+  /* border-radius: 25px; */
   overflow-y: auto;
+  -ms-overflow-style: none;
+    /* 인터넷 익스플로러 */
+    scrollbar-width: none;
+    /* 파이어폭스 */
+}
+/* scroll 숨김 */
+.main-content::-webkit-scrollbar {
+    display: none;
 }
 
 

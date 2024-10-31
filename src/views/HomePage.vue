@@ -3,9 +3,9 @@
   <v-row>
     <v-col cols="6">
       <MainCalendarList style="font-size:12px; background-color:#ffffff;" />
-
     </v-col>
-    <v-col cols="6">
+    
+    <v-col cols="6" class="right-dashboard">
       <v-row justify="space-between">
         <!-- 공지사항 -->
         <v-col cols="12" class="board">
@@ -18,7 +18,6 @@
                 @click="$router.push('/board/notice/list')">더보기</span>
             </v-col>
           </v-row>
-
 
           <v-row>
             <!-- 게시글 목록 -->
@@ -79,11 +78,10 @@ export default {
           }
         });
 
-        console.log('Received User Profile:', response.data);
         this.userProfile = response.data;
 
-        console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
-        console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
+        // console.log('출근 시간 기록 :', this.userProfile.attendanceData?.clockInTime || '출근기록없');
+        // console.log('퇴근 시간 기록 :', this.userProfile.attendanceData?.clockOutTime || '퇴근기록없');
       } catch (error) {
         console.error('유저 정보 가져오기 실패:', error);
       }
@@ -125,6 +123,10 @@ export default {
 </script>
 
 <style scoped>
+.right-dashboard{
+  margin-top: 12px;
+}
+
 .profile-content {
   display: flex;
   flex-direction: column;

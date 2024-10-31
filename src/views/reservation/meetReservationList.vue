@@ -27,19 +27,31 @@ meetReservation
         </v-btn>
         <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;">Today</v-btn>
       </v-col>
+      
+
+      <!-- 날짜 선택 아이콘 -->
+      <v-col cols="1" class="" style="margin-left:-3%;">
+        <v-btn icon @click="openDatePicker" style="margin-right: 14%;  box-shadow: none">
+          <v-icon>mdi-calendar</v-icon>
+        </v-btn>
+      </v-col>
 
       <!-- 가운데 날짜 -->
-      <v-col cols="6" class="text-center">
+      <v-col cols="5" class="text-center" style="margin-left:-3%;">
         <h2 style="font-size: 30px;">{{ formattedDate(selectedDate) }}</h2>
       </v-col>
 
       <!-- 예약 추가 버튼 -->
-      <v-col cols="3" class="text-right">
-        <v-btn color="rgba(122, 86, 86, 0.2)" @click="openReservationDialog"
-          style="box-shadow: none; margin-right: 14% ">
-          <v-icon right>mdi-calendar-plus</v-icon>
+      <v-col cols="3" class="text-right" style="margin-left:6%;">
+        <v-btn color="rgb(154, 47, 47)" @click="openReservationDialog"
+          style="box-shadow: none; margin-right: 14%;font-weight: bold; border-radius: 10px">
+          예약하기
         </v-btn>
       </v-col>
+
+      <v-btn v-create v-if="isAdmin" @click="createNewPost">
+          작성하기
+        </v-btn>
     </v-row>
 
 
@@ -73,6 +85,8 @@ meetReservation
       </v-col>
     </v-row>
 
+    
+
     <!-- 예약 모달 -->
     <v-dialog v-model="dialog" persistent max-width="600px">
       <v-card>
@@ -100,8 +114,16 @@ meetReservation
             <!-- 시작 시간 선택 -->
             <v-row>
               <v-col>
-                <v-text-field v-model="startHour" label="시작 시간 (시)" type="number" :min="0" :max="23"
-                  required></v-text-field>
+                <v-text-field 
+                  v-model="startHour" 
+                  label="시작 시간 (시)" 
+                  type="number" 
+                  :min="0" 
+                  :max="23" 
+                  hint="0시에서 23시 사이의 시간을 입력하세요." 
+                  persistent-hint 
+                  required
+                ></v-text-field>
               </v-col>
               <v-col>
                 <v-select v-model="startMinute" :items="[0, 30]" label="시작 시간 (분)" required></v-select>
@@ -111,8 +133,15 @@ meetReservation
             <!-- 종료 시간 선택 -->
             <v-row>
               <v-col>
-                <v-text-field v-model="endHour" label="종료 시간 (시)" type="number" :min="0" :max="23"
-                  required></v-text-field>
+                <v-text-field v-model="endHour" 
+                  label="종료 시간 (시)" 
+                  type="number" 
+                  :min="0" 
+                  :max="23" 
+                  hint="0시에서 23시 사이의 시간을 입력하세요." 
+                  persistent-hint 
+                  required>
+                </v-text-field>
               </v-col>
               <v-col>
                 <v-select v-model="endMinute" :items="[0, 30]" label="종료 시간 (분)" required></v-select>
@@ -147,7 +176,8 @@ meetReservation
 
         <!-- 예약 내역 리스트 -->
         <v-row v-for="(item, index) in userReservations" :key="index" class="meetReservation-row" outlined
-          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;"
+          @click="openInviteDialog(item)">
           <v-col cols="3">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
           <!-- 날짜와 시간만 표시하도록 변경 -->
           <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
@@ -166,8 +196,7 @@ meetReservation
     <!-- 예약 정보 모달 -->
     <v-dialog v-model="dialogInfo" max-width="400px">
       <v-card v-if="selectedReservation">
-        <v-card-title class="headline"
-          style="background-color: #f5f5f5; padding: 20px; font-size: 18px; font-weight: bold;">
+        <v-card-title class="headline" style="background-color: #f5f5f5; padding: 20px; font-size: 18px; font-weight: bold;">
           예약정보
         </v-card-title>
         <v-card-text style="padding: 20px;">
@@ -209,11 +238,111 @@ meetReservation
 
         <v-card-actions style="padding: 15px;">
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
+          <v-btn class="custom-write-btn" @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="inviteDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon color="" class="mr-2">mdi-account-multiple-plus</v-icon>
+          <span class="text-h6 font-weight-bold">유저 초대</span>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text>
+          <!-- 검색 옵션 및 검색 입력 필드 -->
+          <v-row class="d-flex align-center">
+            <v-col cols="4">
+              <v-select
+                v-model="searchType"
+                :items="searchOptions"
+                item-title="text"
+                item-value="value"
+                label="검색 유형"
+                outlined
+                dense
+              ></v-select>
+            </v-col>
+            <v-col cols="8">
+              <v-text-field
+                v-model="searchQuery"
+                label="검색"
+                placeholder="유저 검색"
+                @input="searchUsers"
+                append-icon="mdi-magnify"
+                outlined
+                dense
+              ></v-text-field>
+            </v-col>
+            
+          </v-row>
+
+          <!-- 유저 리스트 -->
+          <v-list dense>
+            <v-list-item
+              v-for="user in filteredUsers"
+              :key="user.userNum"
+              class="d-flex align-center"
+            >
+              <v-row class="align-center" style="width: 100%">
+                <!-- 프로필 이미지 -->
+                <v-col cols="2">
+                  <v-avatar size="36">
+                    <v-img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지"></v-img>
+                  </v-avatar>
+                </v-col>
+                <!-- 이름, 부서명, 직급 -->
+                <v-col cols="7">
+                  <div class="text-subtitle-2 font-weight-medium">{{ user.name }}</div>
+                  <div class="grey--text text-caption">{{ user.departmentName }} • {{ user.positionName }}</div>
+                </v-col>
+                <!-- 선택 버튼 -->
+                <v-col cols="3" class="text-right">
+                  <v-btn
+                    icon
+                    @click="toggleUserSelection(user.userNum)"
+                    :color="selectedUsers.includes(user.userNum) ? 'primary' : ''"
+                    style="min-width: 36px; height: 36px; border-radius: 50%; box-shadow: none"
+                  >
+                    <v-icon>{{ selectedUsers.includes(user.userNum) ? 'mdi-check-circle' : 'mdi-plus-circle-outline' }}</v-icon>
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-list-item>
+          </v-list>
+
+          <!-- 선택된 유저 목록 -->
+          <v-divider class="my-3"></v-divider>
+          <div class="mb-2">
+            <h3 class="text-subtitle-1 font-weight-bold">선택된 유저</h3>
+            <v-chip-group
+              v-if="selectedUsers.length"
+              column
+              multiple
+              active-class="selected-chip"
+            >
+              <v-chip
+                v-for="userNum in selectedUsers"
+                :key="userNum"
+                color=""
+                class="ma-1"
+                @click="removeUserFromInviteList(userNum)"
+              >
+                {{ getUserNameById(userNum) }}
+                <v-icon small right>mdi-close</v-icon>
+              </v-chip>
+            </v-chip-group>
+            <p v-else class="grey--text">아직 유저가 선택되지 않았습니다.</p>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="inviteUsers" :disabled="!selectedUsers.length">초대하기</v-btn>
+          <v-btn color="secondary" @click="inviteDialog = false">취소</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
 
   </v-container>
@@ -232,19 +361,116 @@ export default {
       meetingRooms: [],
       reservations: [],
       timeSlots: this.generateTimeSlots(),
-      userReservations: [], // 사용자 예약 내역을 저장할 배열
+      userReservations: [],
       dialog: false,
       dialogInfo: false,
       selectedMeetingRoom: null,
-      startDate: new Date(), // 시작 날짜
+      startDate: new Date(),
       startHour: null,
       startMinute: null,
       endHour: null,
       endMinute: null,
       valid: true,
+
+      inviteDialog: false,
+      userList: [],
+      filteredUsers: [],
+      selectedUsers: [],
+      searchQuery: '',
+      searchType: '이름',
+      searchOptions: [
+        // { text: '전체', value: 'all' },
+        { text: '부서', value: 'department' },
+        { text: '직급', value: 'position' },
+        { text: '이름', value: 'name' }
+      ]
     };
   },
+  // computed: {
+  //   getSearchLabel() {
+  //     switch (this.searchType) {
+  //       case 'department':
+  //         return '부서명으로 검색';
+  //       case 'position':
+  //         return '직급으로 검색';
+  //       case 'name':
+  //         return '이름으로 검색';
+  //       default:
+  //         return '검색어 입력';
+  //     }
+  //   },
+  // },
   methods: {
+    
+    toggleUserSelection(userNum) {
+      if (this.selectedUsers.includes(userNum)) {
+        this.removeUserFromInviteList(userNum);
+      } else {
+        this.addUserToInviteList(userNum);
+      }
+    },
+    async openInviteDialog(reservation) {
+      this.selectedReservation = reservation;
+      await this.fetchUserList();
+      this.inviteDialog = true;
+    },
+    async fetchUserList() {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        this.userList = response.data;
+        this.filteredUsers = this.userList;
+      } catch (error) {
+        console.error("유저 목록 불러오기 오류:", error);
+      }
+    },
+    searchUsers() {
+      const query = this.searchQuery.toLowerCase();
+      if (this.searchType === '전체') {
+        this.filteredUsers = this.userList;
+      } else if (this.searchType === 'department') {
+        this.filteredUsers = this.userList.filter(user => user.departmentName?.toLowerCase().includes(query));
+      } else if (this.searchType === 'position') {
+        this.filteredUsers = this.userList.filter(user => user.positionName?.toLowerCase().includes(query));
+      } else if (this.searchType === 'name') {
+        this.filteredUsers = this.userList.filter(user => user.name?.toLowerCase().includes(query));
+      }
+    },
+    addUserToInviteList(userNum) {
+      if (!this.selectedUsers.includes(userNum)) {
+        this.selectedUsers.push(userNum);
+      }
+    },
+    removeUserFromInviteList(userNum) {
+      this.selectedUsers = this.selectedUsers.filter(id => id !== userNum);
+    },
+    getUserNameById(userNum) {
+      const user = this.userList.find(user => user.userNum === userNum);
+      return user ? user.name : '';
+    },
+    async inviteUsers() {
+      try {
+        if (!this.selectedReservation || !this.selectedReservation.id) {
+          alert("예약 정보를 선택해 주세요.");
+          return;
+        }
+
+        const token = localStorage.getItem("token");
+        await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/reservation/meet/${this.selectedReservation.id}/invite`,
+          this.selectedUsers,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        this.inviteDialog = false;
+        this.selectedUsers = [];
+        alert("유저가 성공적으로 초대되었습니다.");
+      } catch (error) {
+        console.error("유저 초대 오류:", error);
+      }
+    },
+
     getMeetingRoomName(meetingRoomId) {
       const room = this.meetingRooms.find(room => room.id === meetingRoomId);
       return room ? room.name : '회의실 정보 없음';
@@ -495,7 +721,7 @@ export default {
   background-color: white;
   /* border: solid 1px; */
   /* 외부 선  */
-  border: 1px solid #D8EACA;
+  /* border: 1px solid #D8EACA; */
 }
 
 .hours-row {
@@ -596,5 +822,22 @@ export default {
   font-weight: 500;
   display: inline-block;
 }
-
+.selected {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+.selected-chip {
+  background-color: #e3f2fd;
+}
+.custom-write-btn {
+  text-align: center !important;
+  cursor: pointer !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  /* padding: 10px 20px !important; */
+  box-shadow: none !important;
+  background-color: rgb(148, 148, 148) !important;
+  color: black !important;
+  font-size: 14px !important;
+  font-weight: bold;
+}
 </style>

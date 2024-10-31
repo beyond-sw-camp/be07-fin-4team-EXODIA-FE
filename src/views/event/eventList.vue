@@ -1,7 +1,11 @@
 <template>
   <v-container>
+    <v-row class="mb-12" style="padding-left:30px">
+      <!-- style="margin:40px 50px" -->
+      <h1 :class="{ 'drawer-open': drawer }">{{ pageTitle || '일정 목록' }}</h1>
+    </v-row>
+
     <v-row class="mt-4 mb-4">
-      <h1>일정 목록</h1>
       <v-col class="text-right">
         <v-btn v-create @click="showDialog = true" large>
           새로운 일정 생성
@@ -11,11 +15,11 @@
 
     <v-row class="mt-4">
       <v-col cols="12">
-        <v-row class="mb-3">
+        <!-- <v-row class="mb-3">
           <v-col cols="4"><strong>일정명</strong></v-col>
           <v-col cols="5"><strong>기간</strong></v-col>
           <v-col cols="3"><strong>히스토리</strong></v-col>
-        </v-row>
+        </v-row> -->
 
         <v-row v-for="(event, index) in eventList" :key="event.id" class="event-row">
           <v-col cols="4">
@@ -26,11 +30,11 @@
           </v-col>
 
           <v-col cols="3" class="text-right">
-            <v-btn  color="primary" text @click="toggleHistory(index, event.id)">
+            <v-btn v-list text @click="toggleHistory(index, event.id)">
               <v-icon>{{ event.showHistory ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
               히스토리 보기
             </v-btn>
-            <v-btn text color="error" @click="deleteEvent(event.id, index)">
+            <v-btn text v-delete @click="deleteEvent(event.id, index)">
               삭제
             </v-btn>
           </v-col>
@@ -289,6 +293,16 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.drawer-open {
+  transition: margin-right 0.3s ease;
+  margin-right: 200px;
+}
+
 h1 {
   margin-bottom: 20px;
 }
@@ -299,9 +313,9 @@ h1 {
   transition: background-color 0.3s;
 }
 
-.event-row:hover {
+/* .event-row:hover {
   background-color: #f9f9f9;
-}
+} */
 
 .event-type {
   font-size: 20px;
@@ -315,6 +329,7 @@ h1 {
 
 .v-btn {
   font-size: 16px;
+  margin-right: 10px;
 }
 
 .history-row {

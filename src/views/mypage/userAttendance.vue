@@ -1,18 +1,25 @@
 <template>
   <div class="userAttendance">
 
-    <v-row justify="">
-      <v-col cols="8">
+    <v-row class="attendance-bar">
+      <v-col cols="6">
         <h3>출·퇴근 기록</h3>
       </v-col>
 
-      <v-col>
+      <v-col cols="2">
+        <v-btn ariant="outlined" v-list class="meeting-button" @click="meetingIn">
+          자리비움
+        </v-btn>
+      </v-col>
+
+      <v-col cols="2">
         <!-- 출근 버튼 -->
         <v-btn variant="outlined" v-list @click="workIn">
           출근
         </v-btn>
       </v-col>
-      <v-col>
+
+      <v-col cols="2">
         <!-- 퇴근 버튼 -->
         <v-btn v-create variant="outlined" :disabled="isWorkOut" @click="workOut">
           퇴근
@@ -26,24 +33,34 @@
 
     <!-- 부서원 출근 정보 목록 -->
     <v-row class="container">
-      <v-col cols="6" class="profile-item" v-for="user in departmentUsers" :key="user.userNum">
+      <v-col cols="6" class="profile-item" v-for="user in users" :key="user.userNum">
         <v-row class="profile-container">
           <v-col class="profile-item">
             <!-- 프로필 이미지 -->
-            <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img" />
+            <img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-img"
+              @click="openStatus" />
             <!-- 출근 여부 뱃지 -->
-            <div class="badge" :class="user.isPresent ? 'badge-present' : 'badge-absent'"></div>
+            <div :style="{ backgroundColor: user.badgeColor }" class="badge"></div>
             <!-- 이름, 직책, 부서명 -->
           </v-col>
 
           <v-col>
             <div class="user-info">
-              <div class="user-name">{{ user.name }}</div>
-              <div class="user-position">{{ user.positionName }}</div>
-              <div>{{ user.inTime || ' ' }}- {{ user.outTime || ' ' }}</div>
+              <div class="user-name">{{ user.userName }}</div>
+              <div class="user-status">{{ user.statusData }}</div>
+              <div class="user-time">{{ formatLocalTime(user.inTime) || ' ' }}
+                <span v-if="user.nowStatus == '출근' || user.nowStatus == '퇴근'">-</span>
+                {{ formatLocalTime(user.outTime) || ' ' }}
+              </div>
             </div>
           </v-col>
         </v-row>
+
+        <v-list v-if="isOpenStatus && user.userNum === this.userNum">
+          <v-list-item v-for="(item, index) in statusOptions" :key="index" :value="index">
+            {{ item }}
+          </v-list-item>
+        </v-list>
       </v-col>
     </v-row>
   </div>
@@ -64,6 +81,12 @@ export default {
       departmentUsers: [],
       defaultProfileImage: "https://via.placeholder.com/150",
       userNum: localStorage.getItem('userNum') || null,
+
+      isOpenStatus: false,
+      statusOptions: ['출근', '퇴근', '회의'],
+
+      users: [],
+
     };
   },
   methods: {
@@ -105,36 +128,49 @@ export default {
         }, 3000);
       }
     },
-    async fetchDepartmentUsersAttendance() {
+    // async fetchDepartmentUsersAttendance() {
+    //   try {
+    //     const response = await axios.get(
+    //       `${process.env.VUE_APP_API_BASE_URL}/attendance/department/status`,
+    //       { headers: this.getAuthHeaders() }
+    //     );
+    //     const presentUser = response.data["출근한 사람들"];
+    //     const absentUser = response.data["출근하지 않은 사람들"];
+    //     if (presentUser.some((user) => user.userNum === this.userNum)) {
+    //       this.loggedUser = {
+    //         ...presentUser.find((user) => user.userNum === this.userNum),
+    //         isPresent: true,
+    //       };
+    //     } else if (absentUser.some((user) => user.userNum === this.userNum)) {
+    //       this.loggedUser = {
+    //         ...absentUser.find((user) => user.userNum === this.userNum),
+    //         isPresent: false,
+    //       };
+    //     }
+    //     this.departmentUsers = [
+    //       this.loggedUser,
+    //       ...presentUser
+    //         .filter((user) => user.userNum !== this.userNum)
+    //         .map((user) => ({ ...user, isPresent: true })),
+    //       ...absentUser
+    //         .filter((user) => user.userNum !== this.userNum)
+    //         .map((user) => ({ ...user, isPresent: false })),
+    //     ];
+    //   } catch (error) {
+    //     console.error("부서 출근 정보를 가져오는 중 오류 발생:", error);
+    //   }
+    // },
+    openStatus() {
+      this.isOpenStatus = !this.isOpenStatus;
+    },
+    async meetingIn() {
       try {
-        const response = await axios.get(
-          `${process.env.VUE_APP_API_BASE_URL}/attendance/department/status`,
-          { headers: this.getAuthHeaders() }
-        );
-        const presentUser = response.data["출근한 사람들"];
-        const absentUser = response.data["출근하지 않은 사람들"];
-        if (presentUser.some((user) => user.userNum === this.userNum)) {
-          this.loggedUser = {
-            ...presentUser.find((user) => user.userNum === this.userNum),
-            isPresent: true,
-          };
-        } else if (absentUser.some((user) => user.userNum === this.userNum)) {
-          this.loggedUser = {
-            ...absentUser.find((user) => user.userNum === this.userNum),
-            isPresent: false,
-          };
-        }
-        this.departmentUsers = [
-          this.loggedUser,
-          ...presentUser
-            .filter((user) => user.userNum !== this.userNum)
-            .map((user) => ({ ...user, isPresent: true })),
-          ...absentUser
-            .filter((user) => user.userNum !== this.userNum)
-            .map((user) => ({ ...user, isPresent: false })),
-        ];
-      } catch (error) {
-        console.error("부서 출근 정보를 가져오는 중 오류 발생:", error);
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/meeting-in`);
+
+        console.log(response.data);
+        location.reload();
+      } catch (e) {
+        console.log(e);
       }
     },
     getAuthHeaders() {
@@ -147,9 +183,51 @@ export default {
         Authorization: `Bearer ${token}`,
       };
     },
+    async fetchUsers() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/department/list`);
+        console.log("users: " + response);
+        let badgeColor = '#808080';
+        let statusData = '';
+
+        this.users = response.data.result.map(user => {
+          if (user.nowStatus == '출근') {
+            badgeColor = '#4caf50';
+            statusData = user.nowStatus;
+          } else if (user.nowStatus == '퇴근') {
+            badgeColor = '#f44336';
+            statusData = user.nowStatus;
+          } else if (user.nowStatus == '자리비움') {
+            user.inTime = '';
+            user.outTime = '';
+            statusData = '.';
+            badgeColor = '#1867c0';
+          } else if (user.nowStatus == '근무전') {
+            statusData = '근태 정보가 없습니다.';
+            badgeColor = '#808080';
+          }
+          return { ...user, badgeColor, statusData };
+        });
+        this.users.sort((a, b) => (b.userNum === this.userNum ? 1 : 0) - (a.userNum === this.userNum ? 1 : 0));
+
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    toggleList(userNum) {
+      if (userNum === this.userNum) {
+        this.isOpenStatus = !this.isOpenStatus;
+      }
+    },
+    formatLocalTime(date) {
+      if (!date) return '';
+      return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    },
   },
+
   mounted() {
-    this.fetchDepartmentUsersAttendance();
+    // this.fetchDepartmentUsersAttendance();
+    this.fetchUsers();
   },
 };
 </script>
@@ -171,6 +249,11 @@ v-alert {
   position: relative;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   background-color: #fff;
+}
+
+.attendance-bar {
+  display: flex;
+  align-items: center;
 }
 
 /* 유저 카드 스타일 */
@@ -195,8 +278,8 @@ v-alert {
 /* 뱃지 스타일 */
 .badge {
   position: absolute;
-  top: 30px;
-  left: 43px;
+  top: 20px;
+  left: 40px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
@@ -224,15 +307,25 @@ v-alert {
   margin-bottom: 5px;
 }
 
-.user-position,
-.user-department {
-  font-size: 14px;
+
+.user-time {
+  font-size: 12px;
   color: #808080;
+}
+
+.user-status {
+  font-size: 12px;
 }
 
 .profile-item {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.meeting-button {
+  background-color: #1867c0;
+  color: #ffffff;
+  border-radius: 10px;
 }
 </style>

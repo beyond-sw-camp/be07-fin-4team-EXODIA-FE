@@ -26,9 +26,14 @@
                     <!-- Room info -->
                     <v-list-item-content class="chat-room-list-content">
                         <div class="chat-room-info">
-                            <v-list-item-title class="chat-room-list-title">{{ chatroom.roomName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-if="chatroom.users.length > 2">{{
+                                chatroom.roomName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-else-if="chatroom.users.length < 2">{{
+                                chatroom.users[0].chatUserName }}</v-list-item-title>
+                            <v-list-item-title class="chat-room-list-title" v-else-if="chatroom.users.length = 2">{{
+                                getChatuserName(chatroom.users) }}</v-list-item-title>
                             <v-icon class="user-mini-icon">mdi-account</v-icon>
-                            <span class="chat-user-num">{{ chatroom.userNums.length }}</span>
+                            <span class="chat-user-num">{{ chatroom.users.length }}</span>
                         </div>
                         <v-list-item-subtitle class="chat-room-list-chat">{{ chatroom.recentChat
                             }}</v-list-item-subtitle>
@@ -49,7 +54,7 @@
 
     <ChatRoomView v-if="chatRoomCheck" @update:dialog="chatRoomCheck = $event"
         @update:check="chatRoomListCheck = $event" :chatRoomIdProp="chatRoomId" :chatRoomNameProp="chatRoomName"
-        @update="loadChatRoom" :chatRoomUserNumsProp="chatRoomUserNums">
+        @update="loadChatRoom" :chatRoomUsersProp="chatRoomUsers">
     </ChatRoomView>
 
     <ChatRoomCreate v-if="createChatRoom" @update:dialog="createChatRoom = $event"
@@ -84,7 +89,7 @@ export default {
             // 채팅리스트에서 채팅방으로 넘겨주는 값.
             chatRoomId: null,
             chatRoomName: "",
-            chatRoomUserNums: []
+            chatRoomUsers: []
         }
     },
     created() {
@@ -92,20 +97,7 @@ export default {
         this.loadChatRoom();
         this.initSSE();
     },
-    // mounted() {
-    //     window.addEventListener('beforeunload', this.leave)
-    // },
-    // beforeUnmount() {
-    //     window.removeEventListener('beforeunload', this.leave)
-    // },
     methods: {
-        // leave(){
-        //     if (window.opener && window.opener.parentVueInstance) {
-        //     window.opener.parentVueInstance.initSSE();
-        //     window.opener.parentVueInstance.reload();
-        //     }
-        // },
-        // SSE 연결 설정
         initSSE() {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -128,7 +120,6 @@ export default {
                     if (window.opener && window.opener.parentVueInstance) {
                         window.opener.parentVueInstance.unreadChatNum = newNotification.alarmNum;
                     }
-                    // window.opener.document.getElementById("hAlarmNum").content = newNotification.alarmNum;
                     console.log(newNotification);
                     return;
                 } else if (newNotification.type == '채팅목록') {
@@ -159,6 +150,14 @@ export default {
                 };
                 const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/search`, { params });
                 this.chatRoomList = response.data.result || [];
+                console.log("목록조회")
+                console.log(response);
+                console.log(this.chatRoomList);
+
+                // const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/list/${this.userNum}`);
+                // this.chatRoomList = response.data.result || [];
+                // console.log("목록조회")
+                // console.log(response);
             } catch (e) {
                 console.error('채팅방 목록 조회 실패', e);
             }
@@ -168,6 +167,18 @@ export default {
         searchChatRoom() {
             this.loadChatRoom();
         },
+
+        // async searchChatRoom() {
+        //     const params = {
+        //         userNum: this.userNum,
+        //         searchValue: this.searchQuery
+        //     };
+        //     const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/search`, { params });
+        //     this.chatRoomList = response.data.result || [];
+        //     console.log("목록조회")
+        //     console.log(response);
+        // },
+
 
         // 시간 추출
         getTime(createdAt) {
@@ -209,13 +220,18 @@ export default {
             this.chatRoomListCheck = false;
             this.chatRoomId = this.chatRoomList[id].roomId;
             this.chatRoomName = this.chatRoomList[id].roomName;
-            this.chatRoomUserNums = this.chatRoomList[id].userNums;
+            this.chatRoomUsers = this.chatRoomList[id].users;
         },
 
         openCreateChatRoom() { // 채팅방 생성창 열기
             this.createChatRoom = true;
             this.chatRoomListCheck = false;
         },
+
+        getChatuserName(users) {
+            const chatUser = users.filter(u => u.chatUserNum != this.userNum)
+            return chatUser[0].chatUserName;
+        }
 
     }
 }
@@ -264,7 +280,6 @@ export default {
     position: relative;
     cursor: pointer;
     height: 70px;
-
 }
 
 .chat-room-info {
@@ -281,6 +296,7 @@ export default {
     display: flex;
     cursor: pointer;
     margin-left: 15px;
+    margin-bottom: 5px;
     color: gray;
     font-size: 14px;
 }
@@ -288,6 +304,7 @@ export default {
 .chat-user-num {
     color: gray;
     font-size: 12px;
+    margin-bottom: 5px;
 }
 
 .chat-room-list-chat {

@@ -84,10 +84,12 @@
                         <v-list style="background-color: rgba(123, 86, 86, 0.3);">
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
                                 @dragstart="onDragStart(user)" class="draggable-item">
-                                <v-list-item-content>{{ user.name
-                                    }}</v-list-item-content>
-                                <v-list-item-content>{{ user.positionName
-                                    }}</v-list-item-content>
+                                <v-list-item-content>
+                                    {{ user.name }}
+                                </v-list-item-content>
+                                <v-list-item-content>
+                                    ( {{ user.positionName }} )
+                                </v-list-item-content>
                             </v-list-item>
                         </v-list>
                     </v-card>
@@ -223,7 +225,10 @@ export default {
             }
         },
         formatDate(date) {
-            return new Date(date).toLocaleDateString();
+            return new Date(date)
+                .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+                .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
         },
         formatLocalTime(date) {
             return new Date(date).toLocaleTimeString();

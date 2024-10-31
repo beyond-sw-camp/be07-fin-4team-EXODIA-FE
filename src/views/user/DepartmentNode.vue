@@ -5,41 +5,22 @@
     <li class="tree-item">
       <details>
         <summary>
-          <div
-            class="tree-node"
-            :style="getNodeStyle(depth)"
-            :draggable="editMode"
-            @dragstart="onDragStart(department)"
-            @dragover.prevent
-            @drop="onDrop(department)"
-            @click="$emit('fetch-users', department.id)"
-          >
+          <div class="tree-node" :style="getNodeStyle(depth)" :draggable="editMode" @dragstart="onDragStart(department)"
+            @dragover.prevent @drop="onDrop(department)" @click="$emit('fetch-users', department.id)">
             <v-icon large>{{ getIconForDepth(depth) }}</v-icon>
             {{ department.name || '이름 없음' }}
 
             <!-- 삭제 및 수정 버튼 -->
-            <v-btn v-if="editMode" icon @click.stop="onDeleteDepartment(department)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-            <v-btn v-if="editMode" icon @click.stop="$emit('openEditDialog', department)">
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
+            <v-icon v-if="editMode" color="black" style="font-size: 18px; padding-left:10px; padding-right: 13px" @click.stop="$emit('openEditDialog', department)">mdi-pencil</v-icon>
+            <v-icon v-if="editMode" color="black" style="font-size: 18px;" @click.stop="onDeleteDepartment(department)">mdi-delete</v-icon>
           </div>
         </summary>
 
         <!-- 자식 노드를 재귀적으로 렌더링 -->
         <ul v-if="department.children && department.children.length" class="children-nodes">
-          <tree-node
-            v-for="child in department.children"
-            :key="child.id"
-            :department="child"
-            :depth="depth + 1"
-            :edit-mode="editMode"
-            @fetch-users="$emit('fetch-users', $event)"
-            @dragStart="onDragStart($event)"
-            @drop="onDrop($event)"
-            @openEditDialog="$emit('openEditDialog', $event)"
-          />
+          <tree-node v-for="child in department.children" :key="child.id" :department="child" :depth="depth + 1"
+            :edit-mode="editMode" @fetch-users="$emit('fetch-users', $event)" @dragStart="onDragStart($event)"
+            @drop="onDrop($event)" @openEditDialog="$emit('openEditDialog', $event)" />
         </ul>
       </details>
     </li>

@@ -1,8 +1,8 @@
 <template>
-  <v-container fluid class="timeline-container">
+  <v-container fluid max-width="1040px" class="timeline-container" >
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
     <v-row justify="space-between">
-      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 42px;">
+      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 42px; margin-left: -2%;">
       
         <!-- 회의실 예약 탭 -->
         <v-tab @click="goToMeetingRoomReservation" class="text-body-1">
@@ -17,7 +17,7 @@
       </v-tabs>
 
       <!-- 오른쪽 상단에 관리자 전용 아이콘 추가 (인사팀인 경우에만 표시) -->
-      <v-btn v-if="isHrDepartment" icon @click="goToAdminPage" style="margin-top: 10px; box-shadow: none;">
+      <v-btn v-if="isHrAdmin" icon @click="goToAdminPage" style="margin-top: 10px; box-shadow: none;">
         <v-icon>mdi-cog</v-icon> <!-- 톱니바퀴 아이콘 -->
       </v-btn>
     </v-row>
@@ -34,10 +34,7 @@
         </v-btn>
         <!-- 오늘 버튼 -->
         <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -1px; margin-left: -10px;">Today</v-btn>
-        <!-- 장기 예약  -->
-        <v-btn @click="openLongTermReservationModal" style="box-shadow: none;  margin-left: -10px;">
-          <v-icon right style="margin-top: 5px">mdi-calendar-plus</v-icon>
-        </v-btn>
+
       </v-col>
       
       <v-col cols="6" class="text-center">
@@ -47,10 +44,11 @@
       <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
     </v-row>
 
-    <v-row justify="space-between" style="margin-left: 1200px">
-      <v-btn icon @click="openFilterModal" style="margin-top: 10px; box-shadow: none">
-        <v-icon>mdi-filter</v-icon> <!-- 필터 아이콘 -->
-      </v-btn>
+    <v-row justify="space-between" style="margin-left: 91%">
+        <!-- 장기 예약  -->
+        <v-btn @click="openLongTermReservationModal" style="background-color: rgb(154, 47, 47); font-weight: bold; color: white;border-radius: 10px;box-shadow: none;  margin-left: -10px;">
+          예약하기
+        </v-btn>
     </v-row>
 
     <!-- 필터 모달창 (당일 예약된 차량만 표시) -->
@@ -94,19 +92,17 @@
               <v-col cols="3"><strong>차량번호</strong></v-col>
             
               <v-col cols="3"><strong>예약상태</strong></v-col>
-              <v-col cols="1"></v-col>
+              <v-col cols="2"><strong>예약자</strong></v-col>
             </v-row>
 
             <!-- 차량 리스트 -->
-            <v-row v-for="vehicle in vehicles" :key="vehicle.carId" class="vehicle-row" outlined style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;">
+            <v-row v-for="vehicle in vehicles" :key="vehicle.carId" class="vehicle-row" 
+            :class="{ 'reserved-vehicle': vehicle.status === 'RESERVED' }"
+            outlined style="border-bottom:1px solid #E7E4E4; padding:4px; font-weight:500;">
               
-              <v-col cols="1">
-                <v-btn @click="openCarModal(vehicle)" icon color="none" style="box-shadow: none;">
-                  <v-icon>mdi-car</v-icon>
-                </v-btn>
+              <v-col cols="1" class="d-flex align-center justify-center" @click="openCarModal(vehicle)" >{{vehicle.carId}}
               </v-col>
  
-              
               <!-- 차량 종류 -->
               <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
 
@@ -114,42 +110,28 @@
               <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carNum }}</v-col>
             
               <v-col cols="3">
-                <v-btn v-if="vehicle.status === 'AVAILABLE'" color="green" @click="createReservation(vehicle.carId)">
+                <v-btn v-if="vehicle.status === 'AVAILABLE'" color="green" @click="createReservation(vehicle.carId)" class="btnNoOk">
                   예약 가능
                 </v-btn>
-                <v-btn v-else color="red">
+                <v-btn  variant="outlined" v-else style="background-color: #665f54" color="white" class="btnNoOk">
                   예약 불가
                 </v-btn>
               </v-col>
 
-              <v-col cols="1">
-                <!-- 예약 불가일 때만 아이콘 표시 -->
-                <v-hover v-if="vehicle.status === 'RESERVED'">
-                  <template v-slot:default="{ isHovering, props }">
-                    <div style="position: relative;">
-                      <v-btn v-bind="props" icon style="box-shadow: none;">
-                        <v-icon>mdi-account</v-icon>
-                      </v-btn>
-
-                      <!-- 호버 시 아이콘 오른쪽에 텍스트 표시 -->
-                      <v-row v-if="isHovering" style="position: absolute; top: 20; left: 5px; width: 130px; background-color: white; padding: 2px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">
-                        <v-col>{{ vehicle.departmentName }}  {{ vehicle.userName }}</v-col>
-                      </v-row>
-                    </div>
-                  </template>
-                </v-hover>
-
-
+              <v-col cols="2" class="d-flex align-center justify-center" style="position: relative;">
+                <v-row class="d-flex align-center justify-center">
+                  {{ vehicle.departmentName }} {{ vehicle.userName }}
+                </v-row>
               </v-col>
-
             </v-row>
+
 
           </v-col>
         </v-row>
 
         <!-- 차량 상세 정보 모달창 -->
         <v-dialog v-model="isCarModalOpen" persistent max-width="400px">
-          <v-card>
+          <v-card class="car-detail-card">
             <!-- 차량 이미지 최상단에 배치, 이미지 없을 때도 고정 크기 유지 -->
             <v-img 
               :src="selectedCar.carImage || 'https://via.placeholder.com/600x200?text=No+Image+Available'" 
@@ -157,33 +139,33 @@
               height="200px"
               max-height="200px"
               contain
-              style="margin-top: 10px;"
-              class="d-flex align-center justify-center"
+              class="car-image"
             ></v-img>
 
-            <v-card-title class="text-center">
+            <v-card-title class="text-center car-title">
               <span>{{ selectedCar.carType }} ({{ selectedCar.carNum }})</span>
             </v-card-title>
 
-            <v-card-text>
-              <v-row align="center" justify="space-between">
-                <v-col class="d-flex align-center">
+            <v-card-text class="car-details" style="align-align: center;">
+              <v-row align="center" justify="center">
+                <v-col class="d-flex align-center justify-center car-spec">
                   <v-icon left>mdi-seat</v-icon>
                   <span>{{ selectedCar.carSeat }} 인승</span>
                 </v-col>
-                <v-col class="d-flex align-center">
-                  <span>배기량: {{ selectedCar.carEngine }}L</span>
+                <v-col class="d-flex align-center justify-center car-spec">
+                  <v-icon left>mdi-engine-outline</v-icon>
+                  <span>{{ selectedCar.carEngine }}L</span>
                 </v-col>
               </v-row>
             </v-card-text>
 
-            <v-card-actions>
+            <v-card-actions class="car-actions">
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="isCarModalOpen = false">닫기</v-btn>
+              <v-btn class="close-btn" text @click="isCarModalOpen = false">닫기</v-btn>
             </v-card-actions>
-
           </v-card>
         </v-dialog>
+
 
 
         <!-- 차량 예약 모달창 -->
@@ -208,7 +190,7 @@
                   <template v-slot:activator="{ on, attrs }">
                     <v-text-field
                       v-model="startDate"
-                      label="시작 날짜"
+                      label="시작 일자"
                       type="date" 
                       v-bind="attrs"
                       v-on="on"
@@ -222,7 +204,7 @@
                   <template v-slot:activator="{ on, attrs }">
                     <v-text-field
                       v-model="endDate"
-                      label="끝 날짜"
+                      label="종료 일자"
                       type="date"
                       v-bind="attrs"
                       v-on="on"
@@ -233,9 +215,8 @@
               </v-form>
             </v-card-text>
             <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="submitLongTermReservation">예약</v-btn>
-              <v-btn color="red darken-1" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
+              <v-btn class="custom-create-register-btn" text @click="submitLongTermReservation">예약</v-btn>
+              <v-btn  class="custom-write-btn" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -248,7 +229,7 @@
 
 <script>
 import axios from "axios";
-import { mapGetters, mapActions } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
   data() {
@@ -267,17 +248,32 @@ export default {
       menuStart: false,
       menuEnd: false,
       isFilterModalOpen: false, // 필터 모달 상태
+      isInfoVisible: false, // 정보 표시 여부
+      selectedVehicleInfo: null,
     };
   },
   computed: {
-    ...mapGetters({
-      departmentName: "getDepartmentName",
-    }),
     reservedVehicles() {
       return this.vehicles.filter(vehicle => vehicle.status === 'RESERVED');
     },
+    isHrAdmin() {
+      const departmentId = localStorage.getItem('departmentId');
+      return departmentId === "4";
+    },
   },
   methods: {
+    toggleVehicleInfo(vehicle) {
+      if (this.isInfoVisible && this.selectedVehicleInfo?.carId === vehicle.carId) {
+        // 이미 같은 차량 정보가 표시 중일 때는 숨김
+        this.isInfoVisible = false;
+        this.selectedVehicleInfo = null;
+      } else {
+        // 새로운 차량 정보 표시
+        this.isInfoVisible = true;
+        this.selectedVehicleInfo = vehicle;
+      }
+    },
+
     openFilterModal() {
       console.log("reservedVehicles:", this.reservedVehicles); // reservedVehicles 데이터 출력
       this.isFilterModalOpen = true;
@@ -347,10 +343,6 @@ export default {
         const user = response.data;
         console.log('내이름은 :', user);
         this.userName = response.data.name;
-        localStorage.setItem('departmentName', user.departmentName);
-        localStorage.setItem('positionId', user.positionId);
-
-        console.log("나 유저, 부서명을 곁들인 : ", response.data.departmentName);
         this.setUserAllInfoActions();
       } catch (error) {
         console.error("유저정보를 파싱 중 에러 발생 :", error);
@@ -360,12 +352,6 @@ export default {
         }
       }
     },
-    isHrDepartment() {
-        const departmentName = localStorage.getItem('departmentName');
-        return departmentName === '인사팀';
-      },
-  
-
     // 차량 예약 메서드 추가
     async createReservation(carId) {
       const reservationData = {
@@ -465,7 +451,11 @@ export default {
     this.fetchUserInfo(); // 컴포넌트가 마운트될 때 유저 정보를 가져옴
     this.fetchVehicleAvailability(new Date()); // 차량 예약 상태를 가져옴
     this.fetchCarList();
+    document.addEventListener("click", this.hideVehicleInfo);
   },
+  beforeUnmount() {
+    document.removeEventListener("click", this.hideVehicleInfo);
+  }
 };
 </script>
 
@@ -473,8 +463,7 @@ export default {
 .timeline-container {
   background-color: white;
   /* border: solid 1px; */
-  /* 외부 선  */
-  border: 1px solid #D8EACA; 
+
 }
 .v-btn {
   margin: 0 10px;
@@ -495,5 +484,87 @@ export default {
 .v-row {
   text-align: center;
 }
+.btnNoOk {
+  padding: 10px 20px !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+}
+.reserved-vehicle {
+  opacity: 0.5; /* 투명도 설정 */
+}
+.custom-create-register-btn {
+  text-align: center !important;
+  cursor: pointer !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  margin: 20px 0px !important;
+  background-color: #a52403 !important;
+  color: white !important;
+  font-size: 14px !important;
+  box-shadow: none !important;
+  margin-left: 10px;
+  font-weight: bold;
+}
 
+.custom-write-btn {
+  text-align: center !important;
+  cursor: pointer !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  /* padding: 10px 20px !important; */
+  box-shadow: none !important;
+  background-color: rgb(148, 148, 148) !important;
+  color: black !important;
+  font-size: 14px !important;
+  font-weight: bold;
+}
+
+
+.car-detail-card {
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+}
+
+.car-image {
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.car-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.car-details {
+  
+  padding: 10px 0;
+  font-size: 16px;
+  color: #555;
+}
+
+.car-spec {
+  font-weight: BOLD;
+  color: #444;
+  font-size: 15px;
+}
+
+.car-actions {
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.close-btn {
+  background-color: #a52403 !important;
+  color: white !important;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
 </style>

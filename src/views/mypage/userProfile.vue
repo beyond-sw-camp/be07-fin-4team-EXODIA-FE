@@ -45,7 +45,9 @@
           </v-col>
         </v-row>
 
-        <v-btn v-create @click="openPasswordChangeModal">비밀번호 변경</v-btn>
+        <v-row justify="end">
+          <v-btn v-create @click="openPasswordChangeModal">비밀번호 변경</v-btn>
+        </v-row>
 
         <v-dialog v-model="passwordChangeDialog" persistent max-width="500px">
           <v-card>

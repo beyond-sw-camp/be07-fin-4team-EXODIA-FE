@@ -1,8 +1,8 @@
 <template>
   <v-container fluid class="timeline-container">
     <!-- Week Selection -->
-    <v-row justify="center">
-      <v-col cols="6">
+    <v-row justify="start" class="ml-10">
+      <v-col cols="4">
         <v-select density="compact" v-model="selectedWeek" :items="weeks" label="주차 선택" item-title="text"
           item-value="weekNumber" outlined style="margin-left: 30px;">
         </v-select>
