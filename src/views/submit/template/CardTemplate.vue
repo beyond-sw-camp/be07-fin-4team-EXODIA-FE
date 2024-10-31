@@ -111,11 +111,12 @@
                             </v-list-item>
                         </v-list>
                     </v-card>
+
                     <v-card @dragover.prevent @drop="onDrop(1)" class="drop-zone">
                         <v-card-title>3차 결재자</v-card-title>
                         <v-card-text v-if="firstApprovers.length === 0">팀장 직급에서 선택하시오.</v-card-text>
                         <v-list class="drop-user">
-                            <v-list-item>
+                            <v-list-item v-if="firstApprovers.length != 0">
                                 <v-avatar class="icon" size="36">
                                     <v-img :src="firstApprovers.profileImage || defaultProfileImage"
                                         aspect-ratio="1"></v-img>
@@ -130,9 +131,9 @@
 
                     <v-card @dragover.prevent @drop="onDrop(2)" class="drop-zone">
                         <v-card-title>2차 결재자</v-card-title>
-                        <v-card-text v-if="secondApprovers.length === 0">팀장 직급에서 선택하시오.</v-card-text>
+                        <v-card-text v-if="secondApprovers.length === 0">과장 직급에서 선택하시오.</v-card-text>
                         <v-list class="drop-user">
-                            <v-list-item>
+                            <v-list-item v-if="secondApprovers.length != 0">
                                 <v-avatar class="icon" size="36">
                                     <v-img :src="secondApprovers.profileImage || defaultProfileImage"
                                         aspect-ratio="1"></v-img>
@@ -147,9 +148,9 @@
 
                     <v-card @dragover.prevent @drop="onDrop(3)" class="drop-zone">
                         <v-card-title>1차 결재자</v-card-title>
-                        <v-card-text v-if="thirdApprovers.length === 0">팀장 직급에서 선택하시오.</v-card-text>
+                        <v-card-text v-if="thirdApprovers.length === 0">주임 직급에서 선택하시오.</v-card-text>
                         <v-list class="drop-user">
-                            <v-list-item>
+                            <v-list-item v-if="thirdApprovers.length != 0">
                                 <v-avatar class="icon" size="36">
                                     <v-img :src="thirdApprovers.profileImage || defaultProfileImage"
                                         aspect-ratio="1"></v-img>
@@ -278,42 +279,36 @@ export default {
         onDragStart(user) {
             this.draggedUser = user;
         },
-        // onDrop() {
-        //     if (this.draggedUser && !this.droppedUsers.includes(this.draggedUser)) {
-        //         this.submitCreateData.submitUserDtos.push({
-        //             userName: this.draggedUser.name,
-        //             position: this.draggedUser.positionId,
-        //         });
-        //         this.droppedUsers.push(this.draggedUser);
-        //         this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
-
-        //         this.draggedUser = null;
-        //     } else {
-        //         alert("이미 결재라인에 등록되었습니다.");
-        //         return;
-        //     }
-        // },
-        // removeUser(index) {
-        //     this.droppedUsers.splice(index, 1);
-        //     this.submitCreateData.submitUserDtos.splice(index, 1);
-        // },
         onDrop(level) {
             if (this.draggedUser) {
                 const existingApprover = this.submitCreateData.submitUserDtos.find(user => user.userName === this.draggedUser.name);
 
-                if (!existingApprover) {
-                    const approverData = {
-                        userName: this.draggedUser.name,
-                        position: this.draggedUser.positionId,
-                    };
-
-                    this.submitCreateData.submitUserDtos.push(approverData);
-                    this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
-
-
-                    if (level === 1) this.firstApprovers.push(existingApprover);
-                    if (level === 2) this.secondApprovers.push(existingApprover);
-                    if (level === 3) this.thirdApprovers.push(existingApprover);
+                console.log(this.draggedUser.positionName)
+                if (this.firstApprovers.length != 0 || this.secondApprovers.length != 0 || this.thirdApprovers.length != 0) {
+                    alert('결재자 선택은 직급당 한명만 가능합니다.')
+                }
+                else if (!existingApprover) {
+                    if (level === 1) {
+                        if (this.draggedUser.positionName != '팀장') {
+                            alert('팀장 직급에서 선택해주세요')
+                        } else {
+                            this.firstApprovers.push(this.draggedUser);
+                        }
+                    }
+                    if (level === 2) {
+                        if (this.draggedUser.positionName != '과장') {
+                            alert('과장 직급에서 선택해주세요')
+                        } else {
+                            this.secondApprovers.push(this.draggedUser);
+                        }
+                    }
+                    if (level === 3) {
+                        if (this.draggedUser.positionName != '주임') {
+                            alert('주임 직급에서 선택해주세요')
+                        } else {
+                            this.thirdApprovers.push(this.draggedUser);
+                        }
+                    }
                     this.draggedUser = null;
                 }
             }
