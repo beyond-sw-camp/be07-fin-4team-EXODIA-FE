@@ -58,29 +58,26 @@ export default {
     };
 
     const joinRoom = async (sessionId) => {
-      const userNum = localStorage.getItem("userNum");
-      if (!userNum) {
-        console.error("User number is missing.");
-        alert("로그인이 필요합니다.");
-        return;
-      }
+  const userNum = localStorage.getItem("userNum");
+  if (!userNum) {
+    console.error("User number is missing.");
+    return;
+  }
 
-      try {
-        const response = await axios.post(
-          `https://server.exodiapot.xyz/api/rooms/${sessionId}/join`,
-          null,
-          { params: { userId: userNum } }
-        );
-        const token = response.data.token;
-        router.push({
-          name: "VideoRoom",
-          params: { sessionId, token },
-        });
-      } catch (error) {
-        console.error("참가 중 오류 발생: ", error);
-        alert("참가 중 오류가 발생했습니다. 관리자에게 문의하세요.");
-      }
-    };
+  try {
+    const response = await axios.post(`https://server.exodiapot.xyz/api/rooms/${sessionId}/join`, null, {
+      params: { userNum: userNum },
+    });
+    const token = response.data.token;
+    router.push({
+      name: "VideoRoom",
+      params: { sessionId, token },
+    });
+  } catch (error) {
+    console.error("참가 중 오류 발생: ", error);
+  }
+};
+
 
     onMounted(() => {
       getRooms();
