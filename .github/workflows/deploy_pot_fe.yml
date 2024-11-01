@@ -1,0 +1,54 @@
+name: deploy to aws s3
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: source code checkout
+        uses: actions/checkout@v2
+
+      - name: setup node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+    
+      - name: npm clean
+        run: npm cache clean --force
+
+      - name: remove node_modules
+        run: rm -rf node_modules package-lock.json
+
+
+      - name: npm install
+        working-directory: .
+        run: npm install --cache
+
+      - name: npm build
+        env:
+            VUE_APP_API_BASE_URL: ${{ secrets.BASE_URL }}
+            VUE_APP_GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_KEY }}
+            VUE_APP_OPENVIDU_BASE_URL: ${{ secrets.OPENVIDU_BASE_URL }}
+            VUE_APP_OPENVIDU_SECRET: ${{ secrets.OPENVIDU_SECRET }}
+        working-directory: .
+        run: npm run build
+        
+
+      - name: setup aws cli
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{secrets.AWS_KEY}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET}}
+          aws-region: "ap-northeast-2"
+
+      - name: clear s3 bucket
+        run: aws s3 rm s3://www.exodiapot.xyz/ --recursive
+
+      - name: deploy to s3
+        run: aws s3 cp ./dist s3://www.exodiapot.xyz/ --recursive
+
+      - name: invalidate cloudfront caches
+        run: aws cloudfront create-invalidation --distribution-id EGEY0GSCY6T5L --paths "/*"

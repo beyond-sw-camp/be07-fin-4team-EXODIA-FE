@@ -1,7 +1,7 @@
 <template>
     <v-container>
       <!-- 방 만들기 버튼과 모달 창 -->
-      <v-btn @click="showCreateModal" color="primary" dark>방 만들기</v-btn>
+      <v-btn v-create @click="showCreateModal" color="primary" dark>방 만들기</v-btn>
       <v-dialog v-model="isCreateModalVisible" max-width="400px">
         <v-card>
           <v-card-title>방 만들기</v-card-title>
@@ -10,8 +10,8 @@
             <v-text-field v-model="password" label="비밀번호 (선택)" outlined type="password"></v-text-field>
           </v-card-text>
           <v-card-actions>
-            <v-btn @click="createRoom" color="success">생성</v-btn>
-            <v-btn @click="isCreateModalVisible = false" color="grey">취소</v-btn>
+            <v-btn v-create @click="createRoom" color="success">생성</v-btn>
+            <v-btn v-cancel @click="isCreateModalVisible = false" color="grey">취소</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -24,7 +24,8 @@
             <v-list-item-subtitle v-if="room.password">🔒 비밀번호 설정됨</v-list-item-subtitle>
           </v-list-item-content>
           <v-list-item-action>
-            <v-btn @click="joinRoom(room.id, room.password)" color="primary" outlined>참가</v-btn>
+            <v-btn @click="joinRoom(room.id, room.password)" color="primary" outlined v-join>참가</v-btn>
+
           </v-list-item-action>
         </v-list-item>
       </v-list>

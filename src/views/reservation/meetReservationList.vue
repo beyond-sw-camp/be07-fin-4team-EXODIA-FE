@@ -1,10 +1,10 @@
 meetReservation
 
 <template>
-  <v-container fluid class="timeline-container">
+  <v-container class="container">
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
-    <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 30px;">
-
+    <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3"
+      style="margin-top: 30px;box-shadow: 0px 4px 4px -2px #F2F2F2;">
       <v-tab @click="goToMeetingRoomReservation" class="text-body-1">
         회의실예약
       </v-tab>
@@ -15,32 +15,35 @@ meetReservation
     </v-tabs>
 
     <!-- 날짜 선택 버튼들 -->
-    <v-row class="my-3 align-center">
-      <!-- 어제 버튼 -->
-      <v-col cols="3">
-        <v-btn @click="prevDay" icon style="box-shadow: none; margin-left: 21%;">
-          <v-icon>mdi-chevron-left</v-icon>
-        </v-btn>
-        <!-- 내일 버튼 -->
-        <v-btn @click="nextDay" icon style="box-shadow: none;">
-          <v-icon>mdi-chevron-right</v-icon>
-        </v-btn>
-        <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;">Today</v-btn>
-      </v-col>
-      
-
-      <!-- 날짜 선택 아이콘 -->
-      <v-col cols="1" class="" style="margin-left:-3%;">
-        <v-btn icon @click="openDatePicker" style="margin-right: 14%;  box-shadow: none">
+    <v-row style="margin-top:20px;">
+      <v-col cols="3"></v-col>
+      <v-col cols="2" class="d-flex align-center" justify-center>
+        <!-- 날짜 선택 아이콘 -->
+        <v-btn icon @click="openDatePicker" style="box-shadow: none">
           <v-icon>mdi-calendar</v-icon>
         </v-btn>
+        <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;">
+          Today
+        </v-btn>
+        <v-btn @click="prevDay" icon style="box-shadow: none;">
+          <v-icon>mdi-chevron-left</v-icon>
+        </v-btn>
       </v-col>
 
-      <!-- 가운데 날짜 -->
-      <v-col cols="5" class="text-center" style="margin-left:-3%;">
+      <v-col cols="2" class="text-center">
         <h2 style="font-size: 30px;">{{ formattedDate(selectedDate) }}</h2>
       </v-col>
 
+      <v-col cols="1">
+        <v-btn @click="nextDay" icon style="box-shadow: none;">
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+      </v-col>
+      <!-- 장기 예약 버튼 -->
+      <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
+    </v-row>
+
+    <v-row justify="end">
       <!-- 예약 추가 버튼 -->
       <v-col cols="3" class="text-right" style="margin-left:6%;">
         <v-btn color="rgb(154, 47, 47)" @click="openReservationDialog"
@@ -50,8 +53,8 @@ meetReservation
       </v-col>
 
       <v-btn v-create v-if="isAdmin" @click="createNewPost">
-          작성하기
-        </v-btn>
+        작성하기
+      </v-btn>
     </v-row>
 
 
@@ -85,7 +88,7 @@ meetReservation
       </v-col>
     </v-row>
 
-    
+
 
     <!-- 예약 모달 -->
     <v-dialog v-model="dialog" persistent max-width="600px">
@@ -102,28 +105,15 @@ meetReservation
             <!-- 시작 날짜 선택 -->
             <v-row>
               <v-col cols="12">
-                <v-text-field
-                  v-model="startDate"
-                  label="예약 시작 날짜"
-                  type="date"
-                  required
-                />
+                <v-text-field v-model="startDate" label="예약 시작 날짜" type="date" required />
               </v-col>
             </v-row>
 
             <!-- 시작 시간 선택 -->
             <v-row>
               <v-col>
-                <v-text-field 
-                  v-model="startHour" 
-                  label="시작 시간 (시)" 
-                  type="number" 
-                  :min="0" 
-                  :max="23" 
-                  hint="0시에서 23시 사이의 시간을 입력하세요." 
-                  persistent-hint 
-                  required
-                ></v-text-field>
+                <v-text-field v-model="startHour" label="시작 시간 (시)" type="number" :min="0" :max="23"
+                  hint="0시에서 23시 사이의 시간을 입력하세요." persistent-hint required></v-text-field>
               </v-col>
               <v-col>
                 <v-select v-model="startMinute" :items="[0, 30]" label="시작 시간 (분)" required></v-select>
@@ -133,14 +123,8 @@ meetReservation
             <!-- 종료 시간 선택 -->
             <v-row>
               <v-col>
-                <v-text-field v-model="endHour" 
-                  label="종료 시간 (시)" 
-                  type="number" 
-                  :min="0" 
-                  :max="23" 
-                  hint="0시에서 23시 사이의 시간을 입력하세요." 
-                  persistent-hint 
-                  required>
+                <v-text-field v-model="endHour" label="종료 시간 (시)" type="number" :min="0" :max="23"
+                  hint="0시에서 23시 사이의 시간을 입력하세요." persistent-hint required>
                 </v-text-field>
               </v-col>
               <v-col>
@@ -162,13 +146,14 @@ meetReservation
 
     <v-row>
       <v-col>
-        <h3 style="margin-top: 20px;">내 예약 내역</h3>
+        <h2 style="margin-top: 20px; margin-bottom:10px">내 예약 내역</h2>
         <br>
 
         <!-- 테이블 헤더 -->
         <v-row class="mb-2"
           style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
-          <v-col cols="3"><strong>회의실</strong></v-col>
+          <v-col cols="1"><strong>번호</strong></v-col>
+          <v-col cols="2"><strong>회의실</strong></v-col>
           <v-col cols="3"><strong>시작 시간</strong></v-col>
           <v-col cols="3"><strong>종료 시간</strong></v-col>
           <v-col cols="3"><strong>상태</strong></v-col>
@@ -176,9 +161,9 @@ meetReservation
 
         <!-- 예약 내역 리스트 -->
         <v-row v-for="(item, index) in userReservations" :key="index" class="meetReservation-row" outlined
-          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:300;"
-          @click="openInviteDialog(item)">
-          <v-col cols="3">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500" @click="openInviteDialog(item)">
+          <v-col cols="1">{{ index + 1 }}</v-col>
+          <v-col cols="2">{{ getMeetingRoomName(item.meetingRoomId) }}</v-col>
           <!-- 날짜와 시간만 표시하도록 변경 -->
           <v-col cols="3">{{ formatDateTime(item.startTime) }} </v-col>
           <v-col cols="3">{{ formatDateTime(item.endTime) }}</v-col>
@@ -193,10 +178,12 @@ meetReservation
         </v-row>
       </v-col>
     </v-row>
+
     <!-- 예약 정보 모달 -->
     <v-dialog v-model="dialogInfo" max-width="400px">
       <v-card v-if="selectedReservation">
-        <v-card-title class="headline" style="background-color: #f5f5f5; padding: 20px; font-size: 18px; font-weight: bold;">
+        <v-card-title class="headline"
+          style="background-color: #f5f5f5; padding: 20px; font-size: 18px; font-weight: bold;">
           예약정보
         </v-card-title>
         <v-card-text style="padding: 20px;">
@@ -238,7 +225,7 @@ meetReservation
 
         <v-card-actions style="padding: 15px;">
           <v-spacer></v-spacer>
-          <v-btn class="custom-write-btn" @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
+          <v-btn v-close @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -254,37 +241,19 @@ meetReservation
           <!-- 검색 옵션 및 검색 입력 필드 -->
           <v-row class="d-flex align-center">
             <v-col cols="4">
-              <v-select
-                v-model="searchType"
-                :items="searchOptions"
-                item-title="text"
-                item-value="value"
-                label="검색 유형"
-                outlined
-                dense
-              ></v-select>
+              <v-select v-model="searchType" :items="searchOptions" item-title="text" item-value="value" label="검색 유형"
+                outlined dense></v-select>
             </v-col>
             <v-col cols="8">
-              <v-text-field
-                v-model="searchQuery"
-                label="검색"
-                placeholder="유저 검색"
-                @input="searchUsers"
-                append-icon="mdi-magnify"
-                outlined
-                dense
-              ></v-text-field>
+              <v-text-field v-model="searchQuery" label="검색" placeholder="유저 검색" @input="searchUsers"
+                append-icon="mdi-magnify" outlined dense></v-text-field>
             </v-col>
-            
+
           </v-row>
 
           <!-- 유저 리스트 -->
           <v-list dense>
-            <v-list-item
-              v-for="user in filteredUsers"
-              :key="user.userNum"
-              class="d-flex align-center"
-            >
+            <v-list-item v-for="user in filteredUsers" :key="user.userNum" class="d-flex align-center">
               <v-row class="align-center" style="width: 100%">
                 <!-- 프로필 이미지 -->
                 <v-col cols="2">
@@ -299,13 +268,11 @@ meetReservation
                 </v-col>
                 <!-- 선택 버튼 -->
                 <v-col cols="3" class="text-right">
-                  <v-btn
-                    icon
-                    @click="toggleUserSelection(user.userNum)"
+                  <v-btn icon @click="toggleUserSelection(user.userNum)"
                     :color="selectedUsers.includes(user.userNum) ? 'primary' : ''"
-                    style="min-width: 36px; height: 36px; border-radius: 50%; box-shadow: none"
-                  >
-                    <v-icon>{{ selectedUsers.includes(user.userNum) ? 'mdi-check-circle' : 'mdi-plus-circle-outline' }}</v-icon>
+                    style="min-width: 36px; height: 36px; border-radius: 50%; box-shadow: none">
+                    <v-icon>{{ selectedUsers.includes(user.userNum) ? 'mdi-check-circle' : 'mdi-plus-circle-outline'
+                      }}</v-icon>
                   </v-btn>
                 </v-col>
               </v-row>
@@ -316,19 +283,9 @@ meetReservation
           <v-divider class="my-3"></v-divider>
           <div class="mb-2">
             <h3 class="text-subtitle-1 font-weight-bold">선택된 유저</h3>
-            <v-chip-group
-              v-if="selectedUsers.length"
-              column
-              multiple
-              active-class="selected-chip"
-            >
-              <v-chip
-                v-for="userNum in selectedUsers"
-                :key="userNum"
-                color=""
-                class="ma-1"
-                @click="removeUserFromInviteList(userNum)"
-              >
+            <v-chip-group v-if="selectedUsers.length" column multiple active-class="selected-chip">
+              <v-chip v-for="userNum in selectedUsers" :key="userNum" color="" class="ma-1"
+                @click="removeUserFromInviteList(userNum)">
                 {{ getUserNameById(userNum) }}
                 <v-icon small right>mdi-close</v-icon>
               </v-chip>
@@ -338,8 +295,9 @@ meetReservation
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="inviteUsers" :disabled="!selectedUsers.length">초대하기</v-btn>
-          <v-btn color="secondary" @click="inviteDialog = false">취소</v-btn>
+          <v-btn v-invite @click="inviteUsers" :disabled="!selectedUsers.length">초대하기</v-btn>
+          <v-btn v-cancel @click="inviteDialog = false">취소</v-btn>
+
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -401,7 +359,7 @@ export default {
   //   },
   // },
   methods: {
-    
+
     toggleUserSelection(userNum) {
       if (this.selectedUsers.includes(userNum)) {
         this.removeUserFromInviteList(userNum);
@@ -476,7 +434,7 @@ export default {
       return room ? room.name : '회의실 정보 없음';
     },
     formatDateTime(dateTime) {
-      return moment(dateTime).format('YYYY-MM-DD HH:mm');
+      return moment(dateTime).format('YYYY.MM.DD HH:mm');
     },
     formattedDate(date) {
       const year = date.getFullYear();
@@ -717,6 +675,11 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  padding: 20px;
+  border-radius: 12px;
+}
+
 .timeline-container {
   background-color: white;
   /* border: solid 1px; */
@@ -822,12 +785,15 @@ export default {
   font-weight: 500;
   display: inline-block;
 }
+
 .selected {
   background-color: rgba(0, 123, 255, 0.1);
 }
+
 .selected-chip {
   background-color: #e3f2fd;
 }
+
 .custom-write-btn {
   text-align: center !important;
   cursor: pointer !important;

@@ -106,7 +106,14 @@
       </div>
     </v-card-text>
     <v-card-actions>
-      <v-btn color="primary" text @click="detailedViewDialog = false">닫기</v-btn>
+      <v-btn
+        class="v-close"
+        text
+        @click="detailedViewDialog = false"
+      >
+        닫기
+      </v-btn>
+
     </v-card-actions>
   </v-card>
 </v-dialog>
@@ -445,7 +452,7 @@ export default {
 }
 
 .cf {
-  *zoom: 1;
+  zoom: 1;
 }
 
 .content {

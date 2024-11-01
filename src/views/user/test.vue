@@ -5,7 +5,7 @@
           <h1>직원 목록</h1>
         </v-col>
         <v-col class="d-flex justify-end">
-          <v-btn color="primary" @click="goToCreate">직원 생성</v-btn>
+          <v-btn v-create color="primary" @click="goToCreate">직원 생성</v-btn>
         </v-col>
       </v-row>
   
@@ -21,9 +21,10 @@
           ></v-text-field>
         </v-col>
         <v-col cols="4" sm="2">
-          <v-btn @click="performSearch(searchQuery)">
+          <v-btn v-search @click="performSearch(searchQuery)">
             검색
           </v-btn>
+          
         </v-col>
       </v-row>
   
@@ -37,8 +38,8 @@
             <v-card-subtitle>부서: {{ getDepartmentName(user.departmentId) }}</v-card-subtitle>
             <v-card-subtitle>직급: {{ getPositionName(user.positionId) }}</v-card-subtitle>
             <v-card-actions>
-              <v-btn color="primary" @click="editUser(user.userNum)">수정</v-btn>
-              <v-btn color="red" @click="openDeleteDialog(user.userNum)">삭제</v-btn>
+              <v-btn v-update color="primary" @click="editUser(user.userNum)">수정</v-btn>
+              <v-btn v-delete color="red" @click="openDeleteDialog(user.userNum)">삭제</v-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -60,8 +61,8 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="red" @click="confirmDelete">삭제</v-btn>
-            <v-btn color="green" @click="closeDeleteDialog">취소</v-btn>
+            <v-btn v-delete color="red" @click="confirmDelete">삭제</v-btn>
+            <v-btn v-close color="green" @click="closeDeleteDialog">취소</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
