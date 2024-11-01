@@ -32,9 +32,11 @@ export default {
   methods: {
     async createRoom() {
       try {
+
         const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
-          title: this.title,
-        });
+  title: this.title,
+});
+
         console.log("방 생성 성공: ", response.data);
         this.getRooms(); // 방 목록 갱신
       } catch (error) {

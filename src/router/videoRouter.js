@@ -51,5 +51,7 @@ export const videoRouter = [
       sessionId: route.params.sessionId
     })
   }
+
+  
   
 ]
