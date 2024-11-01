@@ -5,12 +5,28 @@
         </v-row>
 
         <!-- 검색 옵션 -->
-        <v-row justify="center" :class="{ 'drawer-open': drawer }">
+        <!-- <v-row justify="center" :class="{ 'drawer-open': drawer }">
             <v-col cols="8">
                 <v-text-field v-model="keyword" placeholder="검색어를 입력하세요" variant="underlined" @input="filterDocuments"
                     append-icon="mdi-magnify" @click:append=esSearch(keyword)></v-text-field>
             </v-col>
+        </v-row> -->
+
+        <v-row justify="center" align="center" :class="{ 'drawer-open': drawer }">
+            <!-- 검색 범위 선택 -->
+            <v-col cols="2">
+                <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text"
+                    item-value="value" label="검색 범위" required></v-select>
+            </v-col>
+
+            <!-- 검색어 입력 -->
+            <v-col cols="8">
+                <v-text-field v-model="keyword" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
+                    @click:append=esSearch() required></v-text-field>
+            </v-col>
         </v-row>
+
+
         <v-row justify="end" class="mb-4">
             <v-col cols="auto" v-if="this.positionId == 7 && this.pageTitle == '전체 파일'">
                 <v-btn v-create variant="outlined" @click="handleCreateTag()">
@@ -45,7 +61,7 @@
                     <v-row :class="{ 'drawer-open': drawer }" v-for="(document, index) in documents" :key="document.id"
                         class="document" oulined @click="openDrawer(document.id)"
                         style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
-                        <v-col cols="1">{{ index + 1 }}</v-col>
+                        <v-col cols="1">{{ (page - 1) * pageSize + index + 1 }}</v-col>
                         <v-col cols="6" class="ellipsis-text-list" style="text-align:start;">{{ document.fileName
                             }}</v-col>
                         <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
@@ -269,6 +285,7 @@ export default {
             page: 1,
             pageSize: 10,
             totalPages: '',
+            totalDocuments: '',
             documents: {},
 
             comments: {},
@@ -277,6 +294,14 @@ export default {
 
             isTagDialogVisible: false,
             tagName: '',
+
+            searchOptions: [
+                { text: "전체", value: "title + description" },
+                { text: "제목", value: "title" },
+                { text: "설명", value: "description" },
+                { text: "사용자", value: "userName" },
+            ],
+            searchType: 'title + description',
         }
     },
     mounted() {
@@ -310,6 +335,7 @@ export default {
                 });
                 this.documents = response.data.result.content;
                 this.totalPages = response.data.result.totalPages;
+
             } catch (e) {
                 console.error('문서 목록을 가져오는 중 오류 발생:', e);
             }
@@ -400,21 +426,6 @@ export default {
                 alert(e.response.data.status_message);
             }
         },
-        async searchFilter(input) {
-            try {
-                if (!input) {
-                    this.localDocuments = this.documents;
-                    return;
-                }
-                const url = `${process.env.VUE_APP_API_BASE_URL}/es/document/search?keyword=${input}`;
-                const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
-
-                this.localDocuments = response.data.result;
-            }
-            catch (e) {
-                alert(e.response.data.status_message);
-            }
-        },
         confirmRevert(versionId) {
             // rollback 이전에 확인받기 위한 창
             const isConfirmed = window.confirm("이후의 문서에 대한 모든 버전이 삭제됩니다.\n 그래도 버전 되돌리기를 진행하시겠습니까?");
@@ -455,12 +466,25 @@ export default {
                 location.reload();
             }
         },
-        async esSearch(keyword) {
+        async esSearch() {
             try {
-                const url = `${process.env.VUE_APP_API_BASE_URL}/es/document/search?keyword=${keyword}`;
-                this.documents = (await axios.get(url)).data.result;
+                const url = `${process.env.VUE_APP_API_BASE_URL}/es/document/search`;
+                const documentSearchDto = {
+                    searchType: this.searchType,
+                    keyword: this.keyword
+                };
+
+                const response = await axios.post(url, documentSearchDto, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                this.documents = response.data.result.content;
+                this.localDocuments = this.documents;
+
             } catch (e) {
-                alert(e.response.data.status_message);
+                alert('검색 중 오류 발생');
                 location.reload();
             }
         },
