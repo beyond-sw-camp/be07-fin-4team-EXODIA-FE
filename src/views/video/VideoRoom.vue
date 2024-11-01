@@ -48,28 +48,36 @@ export default {
 
         session.value.on("streamCreated", (event) => {
           const subscriberContainer = document.createElement("div");
+          subscriberContainer.className = "subscriber-container";
           videoContainer.value.appendChild(subscriberContainer);
 
           try {
             const subscriber = session.value.subscribe(event.stream, subscriberContainer);
             subscribers.value.push({ subscriber, container: subscriberContainer });
-            console.log("Subscriber successfully added:", subscriber);
+            console.log("New subscriber added for stream:", event.stream.streamId);
           } catch (error) {
-            console.error("Error adding subscriber:", error);
+            console.error("Error subscribing to new stream:", error);
           }
-      });
+        });
 
         session.value.on("streamDestroyed", (event) => {
           const subscriberData = subscribers.value.find(s => s.subscriber.stream.streamId === event.stream.streamId);
           if (subscriberData) {
+            console.log("Removing subscriber for stream:", event.stream.streamId);
             videoContainer.value.removeChild(subscriberData.container);
             subscribers.value = subscribers.value.filter(s => s !== subscriberData);
           }
         });
 
+        session.value.on("iceConnectionStateChange", (event) => {
+          console.log("ICE connection state changed:", event.target.iceConnectionState);
+        });
+
         await session.value.connect(token, { clientData: "사용자 이름" });
 
         publisher.value = OV.value.initPublisher(videoContainer.value, {
+          videoSource: undefined,
+          audioSource: undefined,
           publishAudio: true,
           publishVideo: true,
         });
@@ -143,6 +151,13 @@ export default {
 .video-container {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.subscriber-container {
+  width: 300px;
+  height: 200px;
+  border: 1px solid #ddd;
 }
 .controls {
   margin-top: 10px;
