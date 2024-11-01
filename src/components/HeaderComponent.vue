@@ -200,12 +200,21 @@ export default {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/${userNum}`, {
           headers: this.getAuthHeaders(),
         });
+
+        // 전체 알림 목록 가져오기
         this.notifications = response.data;
-        this.unreadCount = this.notifications.filter(n => !n.read).length; // 읽지 않은 알림 개수 업데이트
+        
+        // 읽지 않은 알림 개수 업데이트
+        this.unreadCount = this.notifications.filter(n => !n.read).length;
+
+        // 상위 4개 알림만 유지
+        if (this.notifications.length > 4) {
+          this.notifications = this.notifications.slice(0, 4);
+        }
+
       } catch (error) {
         console.error("알림을 가져오는 중 오류 발생:", error);
       }
-
     },
 
     // 알림 목록 토글
