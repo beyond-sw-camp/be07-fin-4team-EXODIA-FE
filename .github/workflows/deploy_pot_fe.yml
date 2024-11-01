@@ -44,4 +44,4 @@ jobs:
         run: aws s3 cp ./dist s3://www.exodiapot.xyz/ --recursive
 
       - name: invalidate cloudfront caches
-        run: aws cloudfront create-invalidation --distribution-id E3EENPIWG6F91L --paths "/*"
+        run: aws cloudfront create-invalidation --distribution-id EGEY0GSCY6T5L --paths "/*"
