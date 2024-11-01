@@ -7,9 +7,7 @@
       <v-tab @click="goToAdminApprovalChange" class="text-body-1">
         관리자조회
       </v-tab>
-      <v-tab @click="goToVehicleReservation" class="text-body-1">
-        법인차량예약
-      </v-tab>
+
     </v-tabs>
 
     <!-- 관리자 예약 승인/거절 화면 -->
@@ -20,36 +18,12 @@
         <h1 style="margin-top:30px; margin-bottom:10px">예약 요청 목록</h1>
       </v-row>
 
-      <!-- <v-table>
-            <thead>
-              <tr>
-                <th>차량 번호</th>
-                <th>차량 종류</th>
-                <th>예약자</th>
-                <th>예약 상태</th>
-                <th>액션</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="reservation in reservations" :key="reservation.reservationId">
-                <td>{{ reservation.carNum }}</td>
-                <td>{{ reservation.carType }}</td>
-                <td>{{ reservation.userName }}</td>
-                <td>{{ reservation.status }}</td>
-                <td>
-                  <v-btn v-if="reservation.status === 'WAITING'" color="green"
-                    @click="approveReservation(reservation.reservationId)">
-                    승인
-                  </v-btn>
-                  <v-btn v-if="reservation.status === 'WAITING'" color="red"
-                    @click="rejectReservation(reservation.reservationId)">
-                    거절
-                  </v-btn>
-                  <span v-else>{{ reservation.status }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </v-table> -->
+
+      <v-row justify="end">
+        <v-btn v-list @click="this.$router.push('/reservation/reservationList')" style="box-shadow: none;">
+          돌아가기
+        </v-btn>
+      </v-row>
 
       <v-row justify="center" class="mt-4">
         <v-col cols="12">
@@ -79,11 +53,11 @@
               </v-chip>
             </v-col>
             <v-col cols="3">
-              <v-btn v-if="reservation.status === 'WAITING'" color="green"
+              <v-btn v-approve v-if="reservation.status === 'WAITING'" color="green"
                 @click="approveReservation(reservation.reservationId)">
                 승인
               </v-btn>
-              <v-btn v-if="reservation.status === 'WAITING'" color="red"
+              <v-btn v-reject v-if="reservation.status === 'WAITING'" color="red"
                 @click="rejectReservation(reservation.reservationId)">
                 거절
               </v-btn>
