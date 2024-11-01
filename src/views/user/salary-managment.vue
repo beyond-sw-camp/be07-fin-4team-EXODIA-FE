@@ -114,6 +114,10 @@ export default {
   },
   watch: {
     currentPage(newPage) {
+      if(this.selectedPosition!=null){
+        this.fetchSalariesByPosition(this.selectedPosition);
+        return;
+      }
       if (isNaN(newPage)) {
         this.currentPage = 1;
       }
@@ -121,6 +125,7 @@ export default {
     },
     selectedPosition(newPositionId) {
       if (newPositionId) {
+        this.currentPage = 1;
         this.fetchSalariesByPosition(newPositionId);
       }
     }
@@ -167,6 +172,7 @@ export default {
       try {
         const response = await axios.get('/positions');
         this.positions = response.data;
+        // console.log(this.positions);
       } catch (error) {
         console.error('직급 목록을 가져오는 중 오류가 발생했습니다.', error);
       }

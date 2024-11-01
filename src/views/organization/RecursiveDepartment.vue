@@ -7,9 +7,9 @@
       {{ department.name }} ({{ department.totalUsersCount }})
     </div>
     <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
-      <!-- 하위 부서의 유저들 출력 -->
+      <!-- 하위 부서의 유저들 출력 sortUser(department.users) -->
       <li 
-        v-for="user in sortUser(department.users)" 
+        v-for="user in department.users" 
         :key="user.userNum" 
         class="user-item"
         @click.stop="$emit('user-selected', user)"
@@ -44,9 +44,9 @@ export default {
       // 현재 유저가 매니저 목록에 포함되어 있는지 확인
       return this.managers.some(manager => manager.userNum === user.userNum);
     },
-    sortUser(users){
-      return users.sort((a,b) => a.positionId - b.positionId);
-    }
+    // sortUser(users){
+    //   return users.sort((a,b) => a.positionId - b.positionId);
+    // }
   }
 };
 </script>

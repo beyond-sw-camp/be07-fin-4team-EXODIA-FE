@@ -14,8 +14,8 @@
             </v-row>
             <v-row>
                 <v-col cols="12">
-                    <v-btn @click="changeChatRoomName">변경</v-btn>
-                    <v-btn color="error" @click="closeModal">취소</v-btn>
+                    <v-btn v-create @click="changeChatRoomName">변경</v-btn>
+                    <v-btn v-delete @click="closeModal">취소</v-btn>
                 </v-col>
             </v-row>
         </v-container>

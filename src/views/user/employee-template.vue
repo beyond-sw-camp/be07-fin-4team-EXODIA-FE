@@ -2,9 +2,9 @@
   <v-container class="mt-5">
     <v-card v-if="dataLoaded || isRegisterMode" class="mx-auto" max-width="800">
       <v-card-title>
-        <div v-if="isEditMode" class="text-right">
+        <!-- <div v-if="isEditMode" class="text-right">
           <v-btn @click="deleteUser()" class="red--text">삭제</v-btn>
-        </div>
+        </div> -->
         <h3 v-if="isEditMode">직원 수정</h3>
         <h3 v-else-if="isDetailMode">직원 세부 정보</h3>
         <h3 v-else>직원 등록</h3>
