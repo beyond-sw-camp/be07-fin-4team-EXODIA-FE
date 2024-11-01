@@ -4,7 +4,7 @@
     <v-col cols="6">
       <MainCalendarList style="font-size:12px; background-color:#ffffff;" />
     </v-col>
-    
+
     <v-col cols="6" class="right-dashboard">
       <v-row justify="space-between">
         <!-- 공지사항 -->
@@ -22,7 +22,7 @@
           <v-row>
             <!-- 게시글 목록 -->
             <v-row v-for="item in boardItems" :key="item.id" class="board-item" @click="goToDetail(item.id)">
-              <v-col cols="9" class="ellipsis-text" > {{ item.title }}</v-col>
+              <v-col cols="9" class="ellipsis-text"> {{ item.title }}</v-col>
               <v-col cols="3" style="color:#808080; padding-left:40px; ">{{ formatDate(item.createdAt) }}</v-col>
             </v-row>
           </v-row>
@@ -32,7 +32,9 @@
 
       <!-- 팀원 출근 현황 -->
       <v-row class="mt-10">
-        <UserAttendance />
+        <keep-alive>
+          <UserAttendance />
+        </keep-alive>
       </v-row>
     </v-col>
   </v-row>
@@ -123,7 +125,7 @@ export default {
 </script>
 
 <style scoped>
-.right-dashboard{
+.right-dashboard {
   margin-top: 12px;
 }
 
@@ -181,8 +183,8 @@ export default {
 }
 
 .board-item:last-child {
-    padding-bottom: 20px;
-  }
+  padding-bottom: 20px;
+}
 
 .board-item>.v-col {
   padding: 10px 0;
