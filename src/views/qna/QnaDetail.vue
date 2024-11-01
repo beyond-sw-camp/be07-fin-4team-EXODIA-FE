@@ -20,7 +20,7 @@
         </div>
         <div>
           <!-- 수정 및 답변하기 버튼 -->
-          <v-btn v-update class="mr-2" v-if="isQuestionAuthor" @click="goToEditQuestion" small>
+          <v-btn v-edit class="mr-2" v-if="isQuestionAuthor" @click="goToEditQuestion" small>
             수정
           </v-btn>
           <v-btn v-create v-if="!questionDetail.answerText" @click="goToAnswerPage" small>
@@ -62,7 +62,7 @@
             <p class="text-body-1">{{ questionDetail.answerText }}</p>
           </div>
           <!-- 답변 작성자와 현재 로그인된 유저가 동일할 경우 수정 버튼 표시 -->
-          <v-btn v-if="isAnswerAuthor" class="btn_solid" @click="goToEditAnswer" small>
+          <v-btn v-edit v-if="isAnswerAuthor" class="btn_solid" @click="goToEditAnswer" small>
             수정
           </v-btn>
         </div>

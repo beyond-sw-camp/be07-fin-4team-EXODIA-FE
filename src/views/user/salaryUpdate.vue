@@ -33,7 +33,8 @@
               />
             </v-col>
             <v-col cols="12" md="6">
-              <v-btn color="primary" @click="applyPercentage" :disabled="!percentage">적용</v-btn>
+              <v-btn color="primary" v-apply @click="applyPercentage" :disabled="!percentage">적용</v-btn>
+
             </v-col>
           </v-row>
 
@@ -49,8 +50,8 @@
           <!-- 저장 버튼 -->
           <v-row>
             <v-col cols="12" class="d-flex justify-end">
-              <v-btn color="primary" type="submit">저장</v-btn>
-              <v-btn @click="goBack" outlined>취소</v-btn>
+              <v-btn color="primary" v-save type="submit">저장</v-btn>
+              <v-btn v-close @click="goBack" outlined>취소</v-btn>
             </v-col>
           </v-row>
         </v-form>

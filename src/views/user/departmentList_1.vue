@@ -3,9 +3,12 @@
       <!-- 부서 관리 버튼 및 레이아웃 -->
       <h1>부서 관리</h1>
       <div class="button-group">
-        <v-btn v-if="editMode" @click="openCreateDialog" class="primary-btn">부서 추가</v-btn>
-        <v-btn @click="toggleEditMode" class="success-btn">{{ editMode ? '편집 완료' : '편집' }}</v-btn>
-        <v-btn v-if="editMode" @click="cancelEdit" class="error-btn">취소</v-btn>
+        <v-btn v-if="editMode" @click="openCreateDialog" v-create>부서 추가</v-btn>
+        <v-btn @click="toggleEditMode" :class="editMode ? 'v-edit' : 'v-list'">
+          {{ editMode ? '편집 완료' : '편집' }}
+        </v-btn>
+        <v-btn v-if="editMode" @click="cancelEdit" v-cancel>취소</v-btn>
+        
       </div>
   
       <div class="content-container">
@@ -63,8 +66,10 @@
             ></v-select>
           </v-card-text>
           <v-card-actions>
-            <v-btn class="success-btn" text @click="saveDepartment">{{ isEdit ? '수정' : '추가' }}</v-btn>
-            <v-btn class="error-btn" text @click="closeDialog">취소</v-btn>
+            <v-btn :class="isEdit ? 'v-edit' : 'v-create'" text @click="saveDepartment">
+              {{ isEdit ? '수정' : '추가' }}
+            </v-btn>    
+            <v-btn v-cancel class="error-btn" text @click="closeDialog">취소</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -79,7 +84,14 @@
             <div id="chart-container"></div>
           </v-card-text>
           <v-card-actions>
-            <v-btn color="primary" text @click="detailedViewDialog = false">닫기</v-btn>
+            <v-btn
+              class="v-close"
+              text
+              @click="detailedViewDialog = false"
+            >
+              닫기
+            </v-btn>
+
           </v-card-actions>
         </v-card>
       </v-dialog>

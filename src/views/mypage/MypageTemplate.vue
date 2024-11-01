@@ -50,6 +50,6 @@ export default {
 
 <style coped>
 .header-tabs {
-  border-bottom: 1px solid #b7b7b7;
+  box-shadow: 0px 4px 4px -2px #F2F2F2;
 }
 </style>

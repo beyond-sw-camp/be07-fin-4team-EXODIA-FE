@@ -1,54 +1,53 @@
 <template>
-  <v-container fluid max-width="1040px" class="timeline-container" >
+  <v-container class="container">
     <!-- 상단에 탭을 추가하여 차량 예약과 회의실 예약을 구분 -->
-    <v-row justify="space-between">
-      <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3" style="margin-top: 42px; margin-left: -2%;">
-      
-        <!-- 회의실 예약 탭 -->
-        <v-tab @click="goToMeetingRoomReservation" class="text-body-1">
-          회의실예약
-        </v-tab>
-        <!-- 차량 예약 탭 -->
-        <v-tab @click="goToVehicleReservation" class="text-body-1"  style="margin-left: -9px;">
-          법인차량예약
-        </v-tab>
 
-        
-      </v-tabs>
+    <v-tabs v-model="selectedTab" align-with-title background-color="grey lighten-3"
+      style="margin-top: 30px;box-shadow: 0px 4px 4px -2px #F2F2F2;">
+      <v-tab @click="goToMeetingRoomReservation" class="text-body-1">
+        회의실예약
+      </v-tab>
+      <v-tab @click="goToVehicleReservation" class="text-body-1">
+        법인차량예약
+      </v-tab>
 
-      <!-- 오른쪽 상단에 관리자 전용 아이콘 추가 (인사팀인 경우에만 표시) -->
-      <v-btn v-if="isHrAdmin" icon @click="goToAdminPage" style="margin-top: 10px; box-shadow: none;">
-        <v-icon>mdi-cog</v-icon> <!-- 톱니바퀴 아이콘 -->
-      </v-btn>
-    </v-row>
+    </v-tabs>
 
-    <v-row class="my-3 align-center" >
-      <v-col cols="4">
-        <!-- 어제 버튼 -->
-        <v-btn @click="prevDay" icon style="box-shadow: none; ">
+    <v-row style="margin-top:20px;">
+      <v-col cols="2"></v-col>
+      <v-col cols="3" class="d-flex align-center" justify-center>
+        <!-- 날짜 선택 아이콘 -->
+        <v-btn icon @click="openDatePicker" style="box-shadow: none">
+          <v-icon>mdi-calendar</v-icon>
+        </v-btn>
+        <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;">
+          Today
+        </v-btn>
+        <v-btn @click="prevDay" icon style="box-shadow: none;">
           <v-icon>mdi-chevron-left</v-icon>
         </v-btn>
-        <!-- 내일 버튼 -->
-        <v-btn @click="nextDay" icon style="box-shadow: none; margin-left: -10px;">
+      </v-col>
+
+      <v-col cols="2" class="text-center">
+        <h2 style="font-size: 30px;">{{ formattedDate(selectedDate) }}</h2>
+      </v-col>
+
+      <v-col cols="1">
+        <v-btn @click="nextDay" icon style="box-shadow: none;">
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
-        <!-- 오늘 버튼 -->
-        <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -1px; margin-left: -10px;">Today</v-btn>
+      </v-col>
 
-      </v-col>
-      
-      <v-col cols="6" class="text-center">
-        <h2 style="font-size: 30px; margin-left: -40%; letter-spacing: -0.5px;">{{ formattedDate(selectedDate) }}</h2>
-      </v-col>
-      <!-- 장기 예약 버튼 -->
-      <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
     </v-row>
 
-    <v-row justify="space-between" style="margin-left: 91%">
-        <!-- 장기 예약  -->
-        <v-btn @click="openLongTermReservationModal" style="background-color: rgb(154, 47, 47); font-weight: bold; color: white;border-radius: 10px;box-shadow: none;  margin-left: -10px;">
-          예약하기
-        </v-btn>
+    <v-row justify="end">
+      <!-- 장기 예약  -->
+      <v-btn v-create @click="openLongTermReservationModal">
+        예약하기
+      </v-btn>
+      <v-btn v-list v-if="isHrAdmin" @click="goToAdminPage" style="box-shadow: none;">
+        예약 요청 목록
+      </v-btn>
     </v-row>
 
     <!-- 필터 모달창 (당일 예약된 차량만 표시) -->
@@ -74,7 +73,7 @@
       </v-card>
     </v-dialog>
 
-
+    
     <!-- 현재 탭에 대한 내용 -->
     <v-tabs-items v-model="selectedTab">
       <!-- 차량 예약 탭 내용 -->
@@ -86,34 +85,37 @@
             <br>
 
             <!-- 테이블 헤더 -->
-            <v-row class="mb-2" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
+            <v-row class="mb-2"
+              style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:4px; color:#444444; font-weight:400;">
               <v-col cols="1"><strong></strong></v-col>
               <v-col cols="3"><strong>종류</strong></v-col>
               <v-col cols="3"><strong>차량번호</strong></v-col>
-            
+
               <v-col cols="3"><strong>예약상태</strong></v-col>
               <v-col cols="2"><strong>예약자</strong></v-col>
             </v-row>
 
             <!-- 차량 리스트 -->
-            <v-row v-for="vehicle in vehicles" :key="vehicle.carId" class="vehicle-row" 
-            :class="{ 'reserved-vehicle': vehicle.status === 'RESERVED' }"
-            outlined style="border-bottom:1px solid #E7E4E4; padding:4px; font-weight:500;">
-              
-              <v-col cols="1" class="d-flex align-center justify-center" @click="openCarModal(vehicle)" >{{vehicle.carId}}
+            <v-row v-for="vehicle in vehicles" :key="vehicle.carId" class="vehicle-row"
+              :class="{ 'reserved-vehicle': vehicle.status === 'RESERVED' }" outlined
+              style="border-bottom:1px solid #E7E4E4; padding:4px; font-weight:500;">
+
+              <v-col cols="1" class="d-flex align-center justify-center" @click="openCarModal(vehicle)">{{ vehicle.carId
+                }}
               </v-col>
- 
+
               <!-- 차량 종류 -->
               <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carType }}</v-col>
 
               <!-- 차량 번호 -->
               <v-col cols="3" class="d-flex align-center justify-center">{{ vehicle.carNum }}</v-col>
-            
+
               <v-col cols="3">
-                <v-btn v-if="vehicle.status === 'AVAILABLE'" color="green" @click="createReservation(vehicle.carId)" class="btnNoOk">
+                <v-btn v-if="vehicle.status === 'AVAILABLE'" color="green" @click="createReservation(vehicle.carId)"
+                  class="btnNoOk">
                   예약 가능
                 </v-btn>
-                <v-btn  variant="outlined" v-else style="background-color: #665f54" color="white" class="btnNoOk">
+                <v-btn variant="outlined" v-else style="background-color: #665f54" color="white" class="btnNoOk">
                   예약 불가
                 </v-btn>
               </v-col>
@@ -133,14 +135,8 @@
         <v-dialog v-model="isCarModalOpen" persistent max-width="400px">
           <v-card class="car-detail-card">
             <!-- 차량 이미지 최상단에 배치, 이미지 없을 때도 고정 크기 유지 -->
-            <v-img 
-              :src="selectedCar.carImage || 'https://via.placeholder.com/600x200?text=No+Image+Available'" 
-              alt="차량 이미지"
-              height="200px"
-              max-height="200px"
-              contain
-              class="car-image"
-            ></v-img>
+            <v-img :src="selectedCar.carImage || 'https://via.placeholder.com/600x200?text=No+Image+Available'"
+              alt="차량 이미지" height="200px" max-height="200px" contain class="car-image"></v-img>
 
             <v-card-title class="text-center car-title">
               <span>{{ selectedCar.carType }} ({{ selectedCar.carNum }})</span>
@@ -177,38 +173,22 @@
             <v-card-text>
               <v-form ref="form">
                 <!-- 차량 선택 -->
-                <v-select
-                  v-model="selectedVehicle"
-                  
+                <v-select v-model="selectedVehicle"
                   :items="vehicles.map(vehicle => ({ title: `${vehicle.carType} (${vehicle.carNum})`, value: vehicle.carId }))"
-                  label="차량 선택"
-                  required
-                ></v-select>
+                  label="차량 선택" required></v-select>
 
-  
+
                 <v-menu v-model="menuStart" :close-on-content-click="false" transition="scale-transition" offset-y>
                   <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
-                      v-model="startDate"
-                      label="시작 일자"
-                      type="date" 
-                      v-bind="attrs"
-                      v-on="on"
-                    ></v-text-field>
+                    <v-text-field v-model="startDate" label="시작 일자" type="date" v-bind="attrs" v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="startDate" @input="menuStart = false"></v-date-picker>
                 </v-menu>
 
-                  <!-- 끝 날짜 선택 -->
+                <!-- 끝 날짜 선택 -->
                 <v-menu v-model="menuEnd" :close-on-content-click="false" transition="scale-transition" offset-y>
                   <template v-slot:activator="{ on, attrs }">
-                    <v-text-field
-                      v-model="endDate"
-                      label="종료 일자"
-                      type="date"
-                      v-bind="attrs"
-                      v-on="on"
-                    ></v-text-field>
+                    <v-text-field v-model="endDate" label="종료 일자" type="date" v-bind="attrs" v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="endDate" @input="menuEnd = false"></v-date-picker>
                 </v-menu>
@@ -216,7 +196,7 @@
             </v-card-text>
             <v-card-actions>
               <v-btn class="custom-create-register-btn" text @click="submitLongTermReservation">예약</v-btn>
-              <v-btn  class="custom-write-btn" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
+              <v-btn class="custom-write-btn" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -238,7 +218,7 @@ export default {
       selectedDate: new Date(), // 오늘 날 기본
       vehicles: [], // 차량 데이터
 
-      isCarModalOpen: false, 
+      isCarModalOpen: false,
       selectedCar: {}, // 선택된 차량 정보
 
       isLongTermReservationModalOpen: false, // 장기 예약 모달 상태
@@ -280,7 +260,7 @@ export default {
     },
 
     ...mapActions(["setUserAllInfoActions"]), // 사용자 정보를 Vuex에 저장하는 액션 호출
-    
+
     formattedDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -460,14 +440,21 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  padding: 20px;
+  border-radius: 12px;
+}
+
 .timeline-container {
   background-color: white;
   /* border: solid 1px; */
 
 }
+
 .v-btn {
   margin: 0 10px;
 }
+
 .vehicle-row {
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -484,6 +471,7 @@ export default {
 .v-row {
   text-align: center;
 }
+
 .btnNoOk {
   padding: 10px 20px !important;
   text-align: center !important;
@@ -492,9 +480,12 @@ export default {
   box-shadow: none !important;
   font-size: 14px !important;
 }
+
 .reserved-vehicle {
-  opacity: 0.5; /* 투명도 설정 */
+  opacity: 0.5;
+  /* 투명도 설정 */
 }
+
 .custom-create-register-btn {
   text-align: center !important;
   cursor: pointer !important;
@@ -543,7 +534,7 @@ export default {
 }
 
 .car-details {
-  
+
   padding: 10px 0;
   font-size: 16px;
   color: #555;
