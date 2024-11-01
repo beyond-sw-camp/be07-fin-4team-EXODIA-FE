@@ -50,9 +50,14 @@ export default {
           const subscriberContainer = document.createElement("div");
           videoContainer.value.appendChild(subscriberContainer);
 
-          const subscriber = session.value.subscribe(event.stream, subscriberContainer);
-          subscribers.value.push({ subscriber, container: subscriberContainer });
-        });
+          try {
+            const subscriber = session.value.subscribe(event.stream, subscriberContainer);
+            subscribers.value.push({ subscriber, container: subscriberContainer });
+            console.log("Subscriber successfully added:", subscriber);
+          } catch (error) {
+            console.error("Error adding subscriber:", error);
+          }
+      });
 
         session.value.on("streamDestroyed", (event) => {
           const subscriberData = subscribers.value.find(s => s.subscriber.stream.streamId === event.stream.streamId);
