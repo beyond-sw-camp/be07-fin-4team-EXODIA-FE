@@ -1,25 +1,21 @@
 <template>
-  <div class="room-list">
+  <div>
     <h1>방 목록</h1>
-
-    <!-- 방 생성 -->
+    <!-- 방 제목 입력 -->
     <input v-model="newRoomTitle" placeholder="방 제목을 입력하세요" />
     <button @click="createRoom">방 생성하기</button>
 
-    <!-- 방 목록 -->
-    <ul v-if="rooms.length" class="room-list-container">
-      <li
+    <div class="rooms-container" v-if="rooms.length">
+      <div
         v-for="room in rooms"
         :key="room.sessionId"
-        class="room-item"
+        class="room-box"
         @click="joinRoom(room.sessionId)"
       >
-        <div class="room-box">
-          <div class="room-title">{{ room.title }}</div>
-          <div class="room-participants">참여 인원: {{ room.participantCount }}</div>
-        </div>
-      </li>
-    </ul>
+        <div class="room-title">{{ room.title }}</div>
+        <div class="participant-count">참여 인원: {{ room.participantCount }}</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -54,8 +50,8 @@ export default {
           title: newRoomTitle.value,
         });
         console.log("방 생성 성공: ", response.data);
-        newRoomTitle.value = ""; // 입력 필드 초기화
-        getRooms(); // 방 목록 갱신
+        newRoomTitle.value = "";
+        getRooms();
       } catch (error) {
         console.error("방 생성 오류: ", error);
       }
@@ -70,9 +66,11 @@ export default {
       }
 
       try {
-        const response = await axios.post(`https://server.exodiapot.xyz/api/rooms/${sessionId}/join`, null, {
-          params: { userId: userNum },
-        });
+        const response = await axios.post(
+          `https://server.exodiapot.xyz/api/rooms/${sessionId}/join`,
+          null,
+          { params: { userId: userNum } }
+        );
         const token = response.data.token;
         router.push({
           name: "VideoRoom",
@@ -80,7 +78,7 @@ export default {
         });
       } catch (error) {
         console.error("참가 중 오류 발생: ", error);
-        alert("방 참가에 실패했습니다. 다시 시도해주세요.");
+        alert("참가 중 오류가 발생했습니다. 관리자에게 문의하세요.");
       }
     };
 
@@ -94,45 +92,35 @@ export default {
 </script>
 
 <style scoped>
-.room-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
-
-.room-list-container {
-  list-style-type: none;
-  padding: 0;
-  width: 100%;
-  max-width: 600px;
-}
-
-.room-item {
-  cursor: pointer;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
+.rooms-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 20px;
 }
 
 .room-box {
+  padding: 20px;
   background-color: #333;
   color: #fff;
-  padding: 20px;
-  border-radius: 8px;
   text-align: center;
-  width: 100%;
-  max-width: 400px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.room-box:hover {
+  transform: scale(1.05);
 }
 
 .room-title {
-  font-size: 1.5em;
+  font-size: 18px;
   font-weight: bold;
-  margin-bottom: 10px;
 }
 
-.room-participants {
-  font-size: 1em;
-  color: #aaa;
+.participant-count {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #ccc;
 }
 </style>
