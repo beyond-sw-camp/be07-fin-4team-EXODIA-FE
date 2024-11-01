@@ -265,18 +265,19 @@ export default {
       this.redirectToNotification(notification); // 알림 유형에 따라 페이지 이동
     },
     redirectToNotification(notification) {
-      let targetUrl = '';
+      let targetUrl = `${process.env.VUE_APP_API_BASE_URL}`;
+
       // 알림 유형에 따른 URL 설정
       if (notification.type === '공지사항') {
-        targetUrl = `${process.env.VUE_APP_API_BASE_URL}:8082/board/notice/list`;
-      } else if (notification.type === '경조사') {
-        targetUrl = `${process.env.VUE_APP_API_BASE_URL}/board/familyevent/list`;
+        targetUrl += '/board/notice/list';
+      } else if (notification.type === '문의') {
+        targetUrl += '/qna/list';
       } else if (notification.type === '예약') {
-        targetUrl = `${process.env.VUE_APP_API_BASE_URL}/meetReservationList`;
+        targetUrl += '/reservation/reservationList';
       } else if (notification.type === '결재') {
-        targetUrl = `${process.env.VUE_APP_API_BASE_URL}/submit/list`;
+        targetUrl += '/submit/list';
       } else if (notification.type === '문서') {
-        targetUrl = `${process.env.VUE_APP_API_BASE_URL}/document`;
+        targetUrl += '/document';
       }
 
       window.location.href = targetUrl;
