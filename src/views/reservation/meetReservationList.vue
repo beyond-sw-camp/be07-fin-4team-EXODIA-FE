@@ -225,7 +225,7 @@ meetReservation
 
         <v-card-actions style="padding: 15px;">
           <v-spacer></v-spacer>
-          <v-btn class="custom-write-btn" @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
+          <v-btn v-close @click="dialogInfo = false" style="font-weight: bold;">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -295,8 +295,9 @@ meetReservation
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="inviteUsers" :disabled="!selectedUsers.length">초대하기</v-btn>
-          <v-btn color="secondary" @click="inviteDialog = false">취소</v-btn>
+          <v-btn v-invite @click="inviteUsers" :disabled="!selectedUsers.length">초대하기</v-btn>
+          <v-btn v-cancel @click="inviteDialog = false">취소</v-btn>
+
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -3,7 +3,7 @@
     <v-card v-if="dataLoaded || isRegisterMode" class="mx-auto" max-width="800">
       <v-card-title>
         <div v-if="isEditMode" class="text-right">
-          <v-btn @click="deleteUser()" class="red--text">삭제</v-btn>
+          <v-btn v-delete @click="deleteUser()" class="red--text">삭제</v-btn>
         </div>
         <h3 v-if="isEditMode">직원 수정</h3>
         <h3 v-else-if="isDetailMode">직원 세부 정보</h3>
@@ -135,7 +135,7 @@
 
             <!-- 관리자 코드 버튼 -->
             <v-col cols="12">
-              <v-btn @click="openAdminCodeDialog" color="primary" v-if="!isDetailMode">세부 정보 조회</v-btn>
+              <v-btn v-search @click="openAdminCodeDialog" color="primary" v-if="!isDetailMode">세부 정보 조회</v-btn>
             </v-col>
 
             <!-- 프로필 이미지 업로드 -->
@@ -151,8 +151,16 @@
 
             <!-- 저장 버튼 -->
             <v-col cols="12" class="d-flex justify-space-between">
-              <v-btn @click="goBack" outlined>목록으로</v-btn>
-              <v-btn v-if="!isDetailMode" type="submit" color="primary">{{ isEditMode ? '수정 완료' : '등록 완료' }}</v-btn>
+              <v-btn v-list @click="goBack" outlined>목록으로</v-btn>
+              <v-btn 
+                v-if="!isDetailMode" 
+                type="submit" 
+                color="primary" 
+                :class="isEditMode ? 'v-edit' : 'v-create'"
+              >
+                {{ isEditMode ? '수정 완료' : '등록 완료' }}
+              </v-btn>
+              
             </v-col>
           </v-row>
         </v-form>
@@ -166,8 +174,9 @@
           <v-text-field label="관리자 코드" v-model="adminCode" type="password" />
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="checkAdminCode">확인</v-btn>
-          <v-btn color="secondary" @click="closeAdminDialog">취소</v-btn>
+          <v-btn color="primary" v-check @click="checkAdminCode">확인</v-btn>
+          <v-btn color="secondary" v-close @click="closeAdminDialog">취소</v-btn>
+          
         </v-card-actions>
       </v-card>
     </v-dialog>

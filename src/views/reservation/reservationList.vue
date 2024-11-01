@@ -73,7 +73,7 @@
       </v-card>
     </v-dialog>
 
-
+    
     <!-- 현재 탭에 대한 내용 -->
     <v-tabs-items v-model="selectedTab">
       <!-- 차량 예약 탭 내용 -->

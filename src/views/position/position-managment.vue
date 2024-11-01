@@ -21,8 +21,8 @@
           </v-data-table>
         </template>
         <template v-slot:[`item.actions`]="{ item }">
-          <v-btn small color="primary" @click="openEditPositionDialog(item)">수정</v-btn>
-          <v-btn small color="error" @click="deletePosition(item.id)">삭제</v-btn>
+          <v-btn small v-edit @click="openEditPositionDialog(item)">수정</v-btn>
+          <v-btn small v-delete @click="deletePosition(item.id)">삭제</v-btn>
         </template>
       </v-data-table>
     </v-card>

@@ -22,7 +22,7 @@
           <v-btn v-create type="submit" class="submit-button">수정</v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn class="cancel-button" @click="goBack">취소</v-btn>
+          <v-btn v-cancel @click="goBack">취소</v-btn>
         </v-col>
       </v-row>
     </v-form>
