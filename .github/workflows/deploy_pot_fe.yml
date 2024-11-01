@@ -21,7 +21,7 @@ jobs:
 
       - name: npm install
         working-directory: .
-        run: npm install
+        run: npm install --cache
 
       - name: npm build
         env:
