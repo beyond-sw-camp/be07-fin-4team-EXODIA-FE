@@ -169,6 +169,20 @@ export default {
       };
     },
 
+    async markNotificationAsRead(notificationId) {
+      const userNum = localStorage.getItem("userNum");
+      try {
+        await axios.put(`${process.env.VUE_APP_API_BASE_URL}/notifications/${userNum}/read/${notificationId}`, {}, {
+          headers: this.getAuthHeaders(),
+        });
+        this.fetchNotifications();  // 읽음 처리 후 알림 목록 다시 불러오기
+      } catch (error) {
+        console.error("알림 읽음 처리 중 오류 발생:", error);
+      }
+    },
+
+
+
     async fetchChatAlarmNum(){
       try{
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/alarm`);
@@ -182,14 +196,16 @@ export default {
     // 알림 목록 가져오기 (최신 4개)
     async fetchNotifications() {
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/list`, {
+        const userNum = localStorage.getItem("userNum");
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/${userNum}`, {
           headers: this.getAuthHeaders(),
         });
         this.notifications = response.data;
-        console.log("알림 데이터:", this.notifications);
+        this.unreadCount = this.notifications.filter(n => !n.read).length; // 읽지 않은 알림 개수 업데이트
       } catch (error) {
         console.error("알림을 가져오는 중 오류 발생:", error);
       }
+
     },
 
     // 알림 목록 토글
@@ -235,20 +251,23 @@ export default {
     goToNotifications() {
       this.$router.push('/notification/notificationList');
     },
-    handleNotificationClick(notification) {
+    async handleNotificationClick(notification) {
+      await this.markNotificationAsRead(notification.id); // 알림 읽음 처리
+      this.redirectToNotification(notification); // 알림 유형에 따라 페이지 이동
+    },
+    redirectToNotification(notification) {
       let targetUrl = '';
-
       // 알림 유형에 따른 URL 설정
       if (notification.type === '공지사항') {
-        targetUrl = 'http://localhost:8082/board/notice/list';
+        targetUrl = `${process.env.VUE_APP_API_BASE_URL}:8082/board/notice/list`;
       } else if (notification.type === '경조사') {
-        targetUrl = 'http://localhost:8082/board/familyevent/list';
+        targetUrl = `${process.env.VUE_APP_API_BASE_URL}/board/familyevent/list`;
       } else if (notification.type === '예약') {
-        targetUrl = 'http://localhost:8082/reservation/meetReservationList';
+        targetUrl = `${process.env.VUE_APP_API_BASE_URL}/meetReservationList`;
       } else if (notification.type === '결재') {
-        targetUrl = 'http://localhost:8082/submit/list';
+        targetUrl = `${process.env.VUE_APP_API_BASE_URL}/submit/list`;
       } else if (notification.type === '문서') {
-        targetUrl = 'http://localhost:8082/document';
+        targetUrl = `${process.env.VUE_APP_API_BASE_URL}/document`;
       }
 
       window.location.href = targetUrl;
