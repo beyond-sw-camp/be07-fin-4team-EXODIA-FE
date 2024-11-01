@@ -90,10 +90,22 @@ export default {
         session.value.on("streamCreated", (event) => {
           const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
           subscribers.value.push(subscriber);
+
+          const subscriberContainer = document.querySelector(".subscribers");
+            const subscriberVideoElement = subscriberContainer.querySelector(`[data-stream-id="${event.stream.streamId}"]`);
+            if (subscriberVideoElement) {
+              subscriberContainer.removeChild(subscriberVideoElement);
+            }
         });
 
         session.value.on("streamDestroyed", (event) => {
           subscribers.value = subscribers.value.filter((s) => s.stream.streamId !== event.stream.streamId);
+
+          const subscriberContainer = document.querySelector(".subscribers");
+          const subscriberVideoElement = subscriberContainer.querySelector(`[data-stream-id="${event.stream.streamId}"]`);
+          if (subscriberVideoElement) {
+            subscriberContainer.removeChild(subscriberVideoElement);
+          }
         });
 
         await session.value.connect(token, { clientData: "사용자 이름" });

@@ -18,7 +18,6 @@
         <h1 style="margin-top:30px; margin-bottom:10px">예약 요청 목록</h1>
       </v-row>
 
-
       <v-row justify="end">
         <v-btn v-list @click="this.$router.push('/reservation/reservationList')" style="box-shadow: none;">
           돌아가기
