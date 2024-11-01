@@ -39,19 +39,19 @@
                 <td>{{ reservation.status }}</td>
                 <td>
                   <v-btn
-                    v-if="reservation.status === 'WAITING'"
-                    color="green"
-                    @click="approveReservation(reservation.reservationId)"
-                  >
-                    승인
-                  </v-btn>
-                  <v-btn
-                    v-if="reservation.status === 'WAITING'"
-                    color="red"
-                    @click="rejectReservation(reservation.reservationId)"
-                  >
-                    거절
-                  </v-btn>
+                  v-approve
+                  v-if="reservation.status === 'WAITING'"
+                  @click="approveReservation(reservation.reservationId)"
+                >
+                  승인
+                </v-btn>
+                <v-btn
+                  v-reject
+                  v-if="reservation.status === 'WAITING'"
+                  @click="rejectReservation(reservation.reservationId)"
+                >
+                  거절
+                </v-btn>
                   <span v-else>{{ reservation.status }}</span>
                 </td>
               </tr>

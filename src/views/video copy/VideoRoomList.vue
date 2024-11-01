@@ -25,7 +25,7 @@
               </v-row>
             </v-card-text>
             <v-card-actions>
-              <v-btn color="primary" @click="createRoom">방 생성</v-btn>
+              <v-btn v-create color="primary" @click="createRoom">방 생성</v-btn>
             </v-card-actions>
         </v-col>
       </v-row>

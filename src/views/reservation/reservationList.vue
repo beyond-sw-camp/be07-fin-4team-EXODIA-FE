@@ -74,7 +74,7 @@
       </v-card>
     </v-dialog>
 
-
+    
     <!-- 현재 탭에 대한 내용 -->
     <v-tabs-items v-model="selectedTab">
       <!-- 차량 예약 탭 내용 -->
@@ -215,8 +215,8 @@
               </v-form>
             </v-card-text>
             <v-card-actions>
-              <v-btn class="custom-create-register-btn" text @click="submitLongTermReservation">예약</v-btn>
-              <v-btn  class="custom-write-btn" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
+              <v-btn class="v-create" text @click="submitLongTermReservation">예약</v-btn>
+              <v-btn class="v-list" text @click="isLongTermReservationModalOpen = false">취소</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
