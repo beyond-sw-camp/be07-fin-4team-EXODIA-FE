@@ -1,34 +1,44 @@
 <template>
   <div>
-    <v-list>
-      <v-list-item v-for="room in rooms" :key="room.id" @click="joinRoom(room)">
-        {{ room.roomName }} (참여자: {{ room.participantCount }})
-      </v-list-item>
-    </v-list>
+    <h1>방 목록</h1>
+    <ul v-if="rooms.length">
+      <li v-for="room in rooms" :key="room.sessionId">
+        <span>{{ room.title }}</span>
+        <button @click="joinRoom(room.sessionId)">참가하기</button>
+      </li>
+    </ul>
+    <button @click="createRoom">방 생성하기</button>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
 export default {
-  data() {
-    return {
-      rooms: []
+  setup() {
+    const rooms = ref([]);
+    const router = useRouter();
+
+    const getRooms = async () => {
+      try {
+        const response = await axios.get("https://server.exodiapot.xyz/api/rooms/list");
+        rooms.value = response.data;
+      } catch (error) {
+        console.error("방 목록 조회 오류: ", error);
+      }
     };
+
+    const joinRoom = (sessionId) => {
+      router.push({ name: "VideoRoom", params: { sessionId } });
+    };
+
+    onMounted(() => {
+      getRooms();
+    });
+
+    return { rooms, joinRoom };
   },
-  async created() {
-    try {
-      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/rooms/list`);
-      this.rooms = response.data;
-    } catch (error) {
-      console.error('방 목록 조회 중 오류 발생:', error);
-    }
-  },
-  methods: {
-    joinRoom(room) {
-      this.$router.push({ name: 'VideoRoom', params: { roomId: room.id, sessionId: room.sessionId } });
-    }
-  }
 };
 </script>
