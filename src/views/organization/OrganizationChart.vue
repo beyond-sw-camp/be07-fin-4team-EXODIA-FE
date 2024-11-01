@@ -15,11 +15,11 @@
               {{ department.name }} ({{ department.totalUsersCount }})
             </div>
 
-            <!-- 부서 내부의 유저 표시 -->
+            <!-- 부서 내부의 유저 표시 sortUser(department.users)-->
             <ul v-if="expandedDepartments.includes(department.id)" class="user-list">
-              <li v-for="user in sortUser(department.users)" :key="user.userNum" class="user-item"
+              <li v-for="user in department.users" :key="user.userNum" class="user-item"
                 @click="$emit('user-selected', user)">
-                {{ user.name }} {{user.positionName}}
+                {{ user.name }} {{ user.positionName }}
                 <span v-if="user.isManager" class="manager-label">(매니저)</span>
               </li>
 
@@ -33,8 +33,12 @@
       </div>
 
       <div v-if="searchResult" class="search-user-list">
-        <v-row v-for="user in searchList" :key="user.id" @click="$emit('user-selected', user)" style="cursor: pointer; padding: 2px;">
-          {{ user.name }} {{user.positionName}}
+        <v-row v-for="user in searchList" :key="user.id" @click="$emit('user-selected', user)"
+          style="cursor: pointer; padding: 2px;">
+          {{ user.name }} {{ user.positionName }}
+        </v-row>
+        <v-row justify="center">
+          <v-pagination v-model="currentPage" :length="totalPages" :total-visible="5" always-show></v-pagination>
         </v-row>
       </div>
 
@@ -66,7 +70,11 @@ export default {
 
     const orgChart = ref(true);
     const searchResult = ref(false);
-    let searchList = ref([]);
+    const searchList = ref([]);
+
+    const currentPage = ref(1);
+    const totalPages = ref(0);
+
 
     // 조직도 데이터 필터링
     const filteredHierarchy = computed(() => {
@@ -79,9 +87,9 @@ export default {
       return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
     });
 
-    const sortUser = (users)=>{
-      return users.sort((a,b) => a.positionId - b.positionId);
-    }
+    // const sortUser = (users) => {
+    //   return users.sort((a, b) => a.positionId - b.positionId);
+    // }
 
     watch(searchQuery, (newValue) => {
       if (newValue) {
@@ -94,18 +102,30 @@ export default {
       }
     });
 
-    const searchUser = async (searchValue) => {
+    const searchUser = async (searchValue, page = 1) => {
       try {
         const response = await axios.get('/user/search', {
-          params: { search: searchValue, searchType: 'all' },
+          params: { search: searchValue, searchType: 'all', page: page - 1, size: 10 },
         });
-        searchList.value = response.data;
-        searchList.value.sort((a,b)=>a.positionId - b.positionId);
+        searchList.value = response.data.users;
+        totalPages.value = response.data.totalPages;
+        // searchList.value.sort((a, b) => a.positionId - b.positionId);
         console.log(response);
       } catch (e) {
         console.error('검색결과를 가져오는 중 오류 발생: ', e);
       }
     }
+
+    watch(currentPage, (newValue) => {
+      if (newValue) {
+        orgChart.value = false;
+        searchResult.value = true;
+        searchUser(searchQuery.value, newValue);
+      } else {
+        orgChart.value = true;
+        searchResult.value = false;
+      }
+    });
 
     // 조직도 데이터 및 사용자 정보 가져오기
     const fetchHierarchy = async () => {
@@ -176,9 +196,12 @@ export default {
       searchResult,
       searchList,
 
+      currentPage,
+      totalPages,
+
       hierarchy,
       searchQuery,
-      sortUser,
+      // sortUser,
       searchUser,
       expandedDepartments,
       filteredHierarchy,
@@ -277,7 +300,7 @@ export default {
   right: 10px;
 }
 
-.search-user-list{
+.search-user-list {
   margin-top: 10px;
   padding: 5px;
 }

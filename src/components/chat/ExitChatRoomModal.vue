@@ -3,8 +3,8 @@
         <v-card>
             <v-card-title class="headline">채팅방을 나가시겠습니까?</v-card-title>
             <v-card-actions>
-                <v-btn class="hover-btn" text @click="exitChatRoom">나가기</v-btn>
-                <v-btn class="hover-btn" text @click="closeModal">취소</v-btn>
+                <v-btn v-list class="hover-btn" text @click="exitChatRoom">나가기</v-btn>
+                <v-btn v-delete class="hover-btn" text @click="closeModal">취소</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

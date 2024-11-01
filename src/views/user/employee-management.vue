@@ -12,9 +12,9 @@
           label="검색 기준 선택"></v-select>
       </v-col>
       <v-col cols="7">
-        <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="performSearch"
+        <v-text-field v-model="searchQuery" placeholder="검색어를 입력하세요" variant="underlined" @input="performSearch()"
           style="margin-bottom: 20px;" append-icon="mdi-magnify"
-          @click:append="performSearch(searchQuery)"></v-text-field>
+          @click:append="performSearch()"></v-text-field>
       </v-col>
     </v-row>
 
@@ -38,7 +38,7 @@
           <v-col cols="2">관리</v-col>
         </v-row>
         <v-row v-for="(user, index) in users" :key="user.userNum" @click="viewUser(user)"
-          style="border-bottom: 1px solid #e7e4e4; padding:5px; font-weight:500;">
+          style="border-bottom: 1px solid #e7e4e4; padding:5px; font-weight:500; cursor: pointer;">
           <v-col cols="1">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</v-col>
           <v-col cols="2">{{ user.userNum }}</v-col>
           <v-col cols="2">{{ getDepartmentName(user.departmentId) }}</v-col>
@@ -109,24 +109,38 @@ export default {
       currentPage: 1,           // 현재 페이지
       itemsPerPage: 10,          // 페이지당 아이템 수
       totalPages: 0,            // 총 페이지 수
+
+      searchResultCurrentPage: 1,
     };
   },
   methods: {
-    async fetchUsers(page = 1) {
+    // async fetchUsers(page = 1) {
+    //   try {
+    //     const response = await axios.get('/user/list', {
+    //       params: { page: page - 1, size: this.itemsPerPage },  // page는 0부터 시작하므로 -1
+    //     });
+    //     this.users = response.data.users;        // 직원 리스트
+    //     this.totalPages = response.data.totalPages;  // 총 페이지 수
+    //   } catch (error) {
+    //     console.error('직원 목록을 불러오는 중 오류가 발생했습니다:', error);
+    //   }
+    // },
+
+    async performSearch(page = 1) {
       try {
-        const response = await axios.get('/user/list', {
-          params: { page: page - 1, size: this.itemsPerPage },  // page는 0부터 시작하므로 -1
+        const response = await axios.get("/user/search", {
+          params: { search: this.searchQuery, searchType: this.searchType, page: page - 1, size: this.itemsPerPage },
         });
-        this.users = response.data.users;        // 직원 리스트
-        this.totalPages = response.data.totalPages;  // 총 페이지 수
+        this.users = response.data.users;
+        this.totalPages = response.data.totalPages;
       } catch (error) {
-        console.error('직원 목록을 불러오는 중 오류가 발생했습니다:', error);
+        console.error("검색 중 오류가 발생했습니다:", error);
       }
     },
 
     goToPage(page) {
       if (page >= 1 && page <= this.totalPages) {
-        this.fetchUsers(page);
+        this.performSearch(page);
       }
     },
 
@@ -154,16 +168,7 @@ export default {
       const position = this.positions.find((pos) => pos.id === positionId);
       return position ? position.name : "알 수 없음";
     },
-    async performSearch() {
-      try {
-        const response = await axios.get("/user/search", {
-          params: { search: this.searchQuery, searchType: this.searchType },
-        });
-        this.users = response.data;
-      } catch (error) {
-        console.error("검색 중 오류가 발생했습니다:", error);
-      }
-    },
+
     viewUser(item) {
       if (item && item.userNum) {
         this.$router.push(`/employee-management/detail/${item.userNum}`);
@@ -195,7 +200,7 @@ export default {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("직원 삭제가 완료되었습니다.");
-        this.fetchUsers();
+        this.performSearch();
         this.closeDeleteDialog();
       } catch (error) {
         console.error("삭제 중 오류가 발생했습니다:", error);
@@ -207,13 +212,16 @@ export default {
     },
   },
   mounted() {
-    this.fetchUsers(this.currentPage);
+    this.performSearch(this.currentPage);
     this.fetchDepartments();
     this.fetchPositions();
   },
   watch: {
     currentPage(newPage) {
-      this.fetchUsers(newPage);
+      // if(this.searchQuery!=null){
+      //   this.performSearch(newPage);
+      // }
+      this.performSearch(newPage);
     },
   },
 };
