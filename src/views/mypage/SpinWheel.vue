@@ -114,11 +114,14 @@ export default {
       canvas.style.transform = "initial";
 
       const arc = 360 / this.product.length;
-      const adjustmentAngle = arc / 2;
+      // const adjustmentAngle = this.product.length === 2 ? arc / 4 : arc / 2;
+      const adjustmentAngle = arc * 1.5;
+      // const adjustmentAngle = arc / 2;
 
       setTimeout(() => {
         const ran = Math.floor(Math.random() * this.product.length);
-        const rotate = ran * arc + 3600 + arc * 3 - adjustmentAngle;
+        const rotate = ran * arc + 3600 + adjustmentAngle;
+        // const rotate = ran * arc + 3600 + arc * 3 - adjustmentAngle;
         this.currentRotation = rotate;
         canvas.style.transform = `rotate(-${rotate}deg)`;
         canvas.style.transition = "2s";
