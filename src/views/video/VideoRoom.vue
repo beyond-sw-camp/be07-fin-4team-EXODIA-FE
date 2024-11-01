@@ -59,7 +59,6 @@ export default {
     const isAudioEnabled = ref(true);
     const isScreenShared = ref(false);
 
-    // 현재 페이지에 보여질 구독자 리스트
     const paginatedSubscribers = computed(() => {
       const start = currentPage.value * itemsPerPage;
       return subscribers.value.slice(start, start + itemsPerPage);
@@ -92,10 +91,11 @@ export default {
           subscribers.value.push(subscriber);
 
           const subscriberContainer = document.querySelector(".subscribers");
-            const subscriberVideoElement = subscriberContainer.querySelector(`[data-stream-id="${event.stream.streamId}"]`);
-            if (subscriberVideoElement) {
-              subscriberContainer.removeChild(subscriberVideoElement);
-            }
+          const subscriberVideoElement = document.createElement("video");
+          subscriberVideoElement.dataset.streamId = event.stream.streamId;
+          subscriberVideoElement.autoplay = true;
+          subscriberContainer.appendChild(subscriberVideoElement);
+          subscriber.addVideoElement(subscriberVideoElement);
         });
 
         session.value.on("streamDestroyed", (event) => {
@@ -185,6 +185,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .main-video-container {
