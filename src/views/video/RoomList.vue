@@ -22,7 +22,7 @@ export default {
       const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/rooms/list`);
       this.rooms = response.data;
     } catch (error) {
-      console.error(error);
+      console.error('방 목록 조회 중 오류 발생:', error);
     }
   },
   methods: {

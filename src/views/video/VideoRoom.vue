@@ -32,11 +32,15 @@ export default {
   },
   methods: {
     async getToken() {
-      // 백엔드에서 토큰을 생성하여 반환
-      const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/sessions/get-token`, {
-        sessionId: this.$route.params.sessionId
-      });
-      return response.data.token;
+      try {
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/sessions/get-token`, {
+          sessionId: this.$route.params.sessionId
+        });
+        return response.data.token;
+      } catch (error) {
+        console.error('토큰 생성 실패:', error);
+        throw error;
+      }
     },
     leaveRoom() {
       if (this.session) this.session.disconnect();

@@ -23,10 +23,10 @@ export default {
           roomName: this.roomName,
           password: this.roomPassword
         });
-        console.log(response.data);
-        this.$router.push({ name: 'VideoRoom', params: { roomId: response.data.id, sessionId: response.data.sessionId } });
+        const { id, sessionId } = response.data;
+        this.$router.push({ name: 'VideoRoom', params: { roomId: id, sessionId } });
       } catch (error) {
-        console.error(error);
+        console.error('방 생성 중 오류 발생:', error);
       }
     }
   }
