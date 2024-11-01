@@ -326,7 +326,7 @@ export default {
             if (level === 2) this.secondApprovers = [];
             if (level === 3) this.thirdApprovers = [];
 
-            this.submitCreateData.submitUserDtos.splice(index, 1);
+            this.submitCreateData.submitUserDtos.splice(level - 1, 1);
         },
         async createSubmit() {
             try {
