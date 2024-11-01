@@ -1,132 +1,135 @@
 <template>
-  <v-container class="mt-5">
-    <v-row>
-      <v-col cols="12">
-        <v-card class="pa-3 mb-4">
-          <h1 class="board-title">QnA 상세 보기</h1>
-        </v-card>
-      </v-col>
-    </v-row>
+  <v-container class="mt-5 board-container" fluid>
+    <!-- 질문 상세보기 카드 -->
+    <div class="pa-4 mb-5" v-if="questionDetail">
+      <h3 class="text-h5 font-weight-bold">
+        {{ questionDetail.title }}
+      </h3>
 
-    <!-- 질문 카드와 관련된 내용 -->
-    <v-card class="pa-5" v-if="questionDetail">
-      <div class="d-flex justify-space-between align-center mb-3">
-        <h2 class="text-h4 font-weight-bold">{{ questionDetail.title }}</h2>
+      <!-- 작성자 정보 한 줄로 나열 -->
+      <div class="pa-3 meta-info-inline d-flex justify-space-between align-center mb-3">
         <div>
-          <!-- 질문 수정 버튼 (질문 작성자만 보이도록 설정) -->
-          <v-btn v-if="isQuestionAuthor" class="mr-2" @click="goToEditQuestion" color="warning">질문 수정</v-btn>
-          <!-- 답변이 작성되지 않은 경우에만 버튼 표시 -->
-          <v-btn v-if="!questionDetail.answerText" @click="goToAnswerPage" color="primary">답변하기</v-btn>
+          <p>
+            <strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }}
+            | <strong>문의 부서:</strong> {{ questionDetail.departmentName }}
+            | <strong>작성 시간:</strong> {{ formatDate(questionDetail.createdAt) }}
+            <span v-if="questionDetail.updatedAt"> 
+              | <strong>수정 시간:</strong> {{ formatDate(questionDetail.updatedAt) }}
+            </span>
+          </p>
+        </div>
+        <div>
+          <!-- 수정 및 답변하기 버튼 -->
+          <v-btn v-update class="mr-2" v-if="isQuestionAuthor" @click="goToEditQuestion" small>
+            수정
+          </v-btn>
+          <v-btn v-create v-if="!questionDetail.answerText" @click="goToAnswerPage" small>
+            답변하기
+          </v-btn>
         </div>
       </div>
 
-      <!-- 질문 상세 내용 -->
-      <v-row class="mb-5">
-        <v-col cols="12">
-          <v-card flat>
-            <v-card-text>
-              <div class="text-body-1">
-                <p><strong>작성자:</strong> {{ questionDetail.anonymous ? '익명' : questionDetail.questionUserName }} | <strong>작성 시간:</strong> {{ formatDate(questionDetail.createdAt) }} | <strong>수정 시간:</strong> {{ formatDate(questionDetail.updatedAt) }}</p>
+      <v-divider></v-divider> <!-- 상단 구분선 -->
+
+      <!-- 질문 내용 -->
+      <div class="board-body">
+        <p class="text-body-1">{{ questionDetail.questionText }}</p>
+      </div>
+
+      <!-- 질문자 파일 목록 섹션 -->
+      <div v-if="questionDetail.qfiles && questionDetail.qfiles.length > 0" class="file-list-section mb-5">
+        <h3 class="section-title">질문자 첨부 파일</h3>
+        <div class="file-grid">
+          <div v-for="file in questionDetail.qfiles" :key="file.id" class="file-item">
+            <v-img v-if="isImage(file.fileType)" :src="file.filePath" class="file-preview" alt="file image" />
+            <a :href="file.filePath" target="_blank" @click.prevent="downloadFile(file.filePath, file.fileName)">
+              {{ file.fileName }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <v-divider></v-divider> <!-- 질문과 답변 구분선 -->
+      <p v-if="questionDetail.answeredAt" class="meta-info-section mt-2">
+        <strong>답변자:</strong> {{ questionDetail.answerUserName }} | <strong>답변 시간:</strong> {{ formatDate(questionDetail.answeredAt) }}
+      </p>
+      
+      <!-- 답변 내용 및 수정 버튼 -->
+      <div v-if="questionDetail.answerText" class="board-body" style="background-color: transparent;">
+        <div class="d-flex justify-space-between align-center mb-3">
+          <div>
+            <!-- 답변 내용 -->
+            <p class="text-body-1">{{ questionDetail.answerText }}</p>
+          </div>
+          <!-- 답변 작성자와 현재 로그인된 유저가 동일할 경우 수정 버튼 표시 -->
+          <v-btn v-if="isAnswerAuthor" class="btn_solid" @click="goToEditAnswer" small>
+            수정
+          </v-btn>
+        </div>
+      </div>
+    </div>
+
+    <!-- 답변자 파일 목록 섹션 -->
+    <div v-if="questionDetail.afiles && questionDetail.afiles.length > 0" class="file-list-section mb-5">
+      <h3 class="section-title">답변자 첨부 파일</h3>
+      <div class="file-grid">
+        <div v-for="file in questionDetail.afiles" :key="file.id" class="file-item">
+          <v-img v-if="isImage(file.fileType)" :src="file.filePath" class="file-preview" alt="file image" />
+          <a :href="file.filePath" target="_blank" @click.prevent="downloadFile(file.filePath, file.fileName)">
+            {{ file.fileName }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 댓글 -->
+    <v-card-title>
+      <span class="headline">댓글</span>
+
+      
+      <v-row class="mt-4">
+        <v-col cols="10">
+          <v-text-field 
+            density="compact" 
+            label="댓글을 입력하세요." 
+            variant="outlined"
+            v-model="newCommentContent"> 
+          </v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-btn v-create @click="submitComment()">등록</v-btn>
+        </v-col>
+      </v-row>
+    </v-card-title>
+
+    <!-- 댓글 목록 섹션 -->
+    <div class="comment-section">
+      <v-list>
+        <v-list-item v-for="(comment, index) in comments" :key="comment.id || index" class="comment-item">
+          <div class="comment-content">
+            <!-- 프로필, 작성자 이름, 작성일, 수정/삭제 버튼을 배치 -->
+            <div class="comment-header">
+              <v-avatar class="icon">
+                <v-img :src="comment.profileImage || defaultProfileImage" alt="프로필 이미지" />
+              </v-avatar>
+              <div class="user-info">
+                <span class="user-name">{{ comment.name }}</span>
+                <small class="comment-date">{{ formatDate(comment.createdAt) }}</small>
               </div>
-              <p class="text-h5"><strong>질문 내용:</strong> <br>{{ questionDetail.questionText }}</p>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- 질문 파일 다운로드 및 미리보기 -->
-      <v-row v-if="questionDetail.qFiles && questionDetail.qFiles.length > 0" class="mb-5">
-        <v-col cols="12">
-          <v-card flat>
-            <v-card-title>질문 첨부 파일</v-card-title>
-            <v-card-text>
-              <v-list>
-                <v-list-item v-for="(file, index) in questionDetail.qFiles" :key="index">
-                  <v-list-item-content>
-                    <!-- 파일이 이미지인 경우 미리보기, 아닌 경우 다운로드 링크로 표시 -->
-                    <v-img v-if="isImage(file.fileName)" :src="file.filePath" class="mb-3" max-width="300" />
-                    <v-list-item-title @click="downloadFile(file.filePath)" class="file-link" v-else>
-                      <v-icon left>mdi-file</v-icon> {{ file.fileName }}
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-divider></v-divider>
-
-      <!-- 답변 섹션 -->
-      <v-row v-if="questionDetail.answerText" class="mb-5">
-        <v-col cols="12">
-          <v-card flat>
-            <v-card-title>답변</v-card-title>
-            <v-card-text>
-              <div class="text-body-1">
-                <p><strong>답변자:</strong> {{ questionDetail.answerUserName }} | <strong>답변 시간:</strong> {{ formatDate(questionDetail.answeredAt) }}</p>
-                <p class="text-h5"><strong>답변 내용:</strong> <br>{{ questionDetail.answerText }}</p>
+              <div v-if="comment.userNum === userProfile.userNum" class="action-links">
+                <span @click="editComment(comment)" class="action-link">수정</span>
+                <span @click="deleteComment(comment.id)" class="action-link delete">삭제</span>
               </div>
-              <!-- 답변 수정 버튼 (답변 작성자만 보이도록 설정) -->
-              <v-btn v-if="isAnswerAuthor" class="mt-3" @click="goToEditAnswer" color="warning">답변 수정</v-btn>
-            </v-card-text>
-
-            <!-- 답변 파일 다운로드 및 미리보기 -->
-            <v-card-actions v-if="questionDetail.aFiles && questionDetail.aFiles.length > 0">
-              <v-card-title>답변 첨부 파일</v-card-title>
-              <v-card-text>
-                <v-list>
-                  <v-list-item v-for="(file, index) in questionDetail.aFiles" :key="index">
-                    <v-list-item-content>
-                      <!-- 파일이 이미지인 경우 미리보기, 아닌 경우 다운로드 링크로 표시 -->
-                      <v-img v-if="isImage(file.fileName)" :src="file.filePath" class="mb-3" max-width="300" />
-                      <v-list-item-title @click="downloadFile(file.filePath)" class="file-link" v-else>
-                        <v-icon left>mdi-file</v-icon> {{ file.fileName }}
-                      </v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-card-text>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- 댓글 섹션 -->
-      <v-row>
-        <v-divider></v-divider>
-        <v-col cols="12">
-          <h4 class="text-h6 font-weight-bold">댓글</h4>
-          <v-list two-line>
-            <v-list-item v-for="comment in questionDetail.comments" :key="comment.id" class="py-2">
-              <v-list-item-content class="comment-content">
-                <div class="comment-text">
-                  <v-list-item-title class="text-subtitle-1">{{ comment.content }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ comment.userName }} - {{ formatDate(comment.createdAt) }}</v-list-item-subtitle>
-                </div>
-                <v-list-item-action class="action-buttons">
-                  <v-btn small text @click="editComment(comment)">수정</v-btn>
-                  <v-btn small @click="deleteComment(comment.id)">삭제</v-btn>
-                </v-list-item-action>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-
-          <!-- 댓글 작성 폼 -->
-          <v-form @submit.prevent="submitComment" class="mt-3">
-            <v-textarea label="댓글 작성" v-model="newComment" outlined required></v-textarea>
-            <div class="mt-3 d-flex justify-end">
-              <v-btn class="btn_solid" @click="goBack">목록으로</v-btn>
-              <v-btn type="submit" class="btn_comment_ok">댓글작성</v-btn>
             </div>
-          </v-form>
-        </v-col>
-      </v-row>
-    </v-card>
+            
+            <!-- 댓글 내용 -->
+            <p class="comment-text">{{ comment.content }}</p>
+          </div>
 
-    <!-- 오류 메시지 -->
-    <v-alert type="error" v-if="error">{{ error }}</v-alert>
+          <v-divider style=margin-top:10px></v-divider>
+        </v-list-item>
+      </v-list>
+    </div>
   </v-container>
 </template>
 
@@ -134,20 +137,32 @@
 import axios from 'axios';
 
 export default {
-  data() {
+    data() {
     return {
-      questionDetail: null, // 질문 및 답변 세부 정보
-      newComment: '', // 댓글 작성 필드
-      error: null, // 오류 메시지
-      userNum: '', // 사용자 사번
+      questionDetail: {}, // 빈 객체로 초기화
+      newCommentContent: '',
+      comments: [], // 빈 배열로 초기화
+      isLoggedIn: false,
+      error: null,
+      userNum: localStorage.getItem('userNum'),
+      departmentTree: [],
+      userDepartmentId: localStorage.getItem('departmentId'),
+      userProfile: {
+        userNum: localStorage.getItem('userNum') || '',
+        name: '',
+        profileImage: ''
+      },
     };
   },
+  async mounted() {
+    this.decodeToken();
+    await this.fetchQuestionDetail();
+    await this.fetchDepartmentTree();
+  },
   computed: {
-    // 현재 사용자가 질문의 작성자인지 여부 확인
     isQuestionAuthor() {
       return this.questionDetail && this.questionDetail.questionUserNum === this.userNum;
     },
-    // 현재 사용자가 답변의 작성자인지 여부 확인
     isAnswerAuthor() {
       return this.questionDetail && this.questionDetail.answerUserNum === this.userNum;
     },
@@ -155,7 +170,9 @@ export default {
   methods: {
     decodeToken() {
       this.userNum = localStorage.getItem('userNum');
+      this.isLoggedIn = !!this.userNum;
       if (!this.userNum) {
+        alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
         this.$router.push('/login');
       }
     },
@@ -164,107 +181,312 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/detail/${questionId}`);
         this.questionDetail = response.data.result;
-
-        // 익명 여부에 따라 작성자 정보를 '익명'으로 변경
-        if (this.questionDetail.anonymous) {
-          this.questionDetail.questionUserName = '익명';
-        }
-
-        this.questionDetail.qFiles = response.data.result.qfiles || [];  
-        this.questionDetail.aFiles = response.data.result.afiles || [];
+        console.log("Question Detail Data:", this.questionDetail); // 데이터를 콘솔로 확인
+        this.comments = response.data.result.comments || [];
       } catch (error) {
-        this.error = error.response ? error.response.data.message : '질문 정보를 불러오는 중 오류가 발생했습니다.';
-        console.error("Error fetching question detail:", error);
+        this.error = error.response ? error.response.data.message : '질문 정보를 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.';
+        alert(this.error);
       }
+    },
+
+    async fetchDepartmentTree() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/hierarchy`);
+        this.departmentTree = response.data;
+      } catch (error) {
+        console.error('부서 트리를 가져오는 중 오류가 발생했습니다:', error);
+        alert('부서 정보를 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
+    },
+    async goToAnswerPage() {
+      const departmentId = this.questionDetail.departmentId;
+      try {
+        const managerResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/is-manager/${this.userNum}`);
+        
+        if (managerResponse.data) {
+          const isDepartmentValid = this.checkDepartmentPermission(departmentId, Number(this.userDepartmentId));
+          if (isDepartmentValid) {
+            const questionId = this.$route.params.id;
+            this.$router.push(`/qna/answer/${questionId}`);
+          } else {
+            alert('해당 문의 부서 또는 상위 부서의 매니저만 답변할 수 있습니다.');
+          }
+        } else {
+          alert('매니저 권한이 필요합니다.');
+        }
+      } catch (error) {
+        console.error('매니저 확인 중 오류가 발생했습니다:', error);
+        alert('매니저 권한을 확인하는 중 문제가 발생했습니다. 다시 시도해주세요.');
+      }
+    },
+    checkDepartmentPermission(targetDeptId, userDeptId) {
+      if (targetDeptId === userDeptId) return true;
+
+      const departmentMap = {};
+      const mapDepartments = (departments) => {
+        departments.forEach(department => {
+          departmentMap[department.id] = department.parentId || null;
+          if (department.children && department.children.length) {
+            mapDepartments(department.children);
+          }
+        });
+      };
+      mapDepartments(this.departmentTree);
+
+      let currentParent = departmentMap[targetDeptId];
+      while (currentParent) {
+        if (currentParent === userDeptId) {
+          return true;
+        }
+        currentParent = departmentMap[currentParent];
+      }
+      return false;
     },
     goToEditQuestion() {
       this.$router.push(`/qna/update/question/${this.$route.params.id}`);
     },
     goToEditAnswer() {
-      this.$router.push(`/qna/update/answer/${this.$route.params.id}`);
-    },
-    goToAnswerPage() {
       const questionId = this.$route.params.id;
-      this.$router.push(`/qna/answer/${questionId}`);
-    },
-    isImage(fileName) {
-      return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(fileName);
+      this.$router.push(`/qna/update/answer/${questionId}`);
     },
     async submitComment() {
-      const questionId = this.$route.params.id;
+      if (!this.newCommentContent.trim()) {
+        alert('댓글 내용을 입력해주세요.');
+        return;
+      }
+      const qnaId = this.$route.params.id;
+      const newComment = {
+        content: this.newCommentContent,
+        question_id: qnaId,
+        userNum: this.userNum,
+      };
       try {
-        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/comment/create`, {
-          question_id: questionId,
-          content: this.newComment,
-          userNum: this.userNum,
-        });
-        this.newComment = '';
-        this.fetchQuestionDetail(); // 댓글 작성 후 새로고침
+        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/comment/create`, newComment);
+        this.newCommentContent = '';
+        this.fetchQuestionDetail();
+        alert('댓글이 성공적으로 등록되었습니다.');
       } catch (error) {
-        console.error("댓글 등록 오류:", error.response ? error.response.data : error);
-        this.error = error.response && error.response.data && error.response.data.message
-          ? error.response.data.message
-          : '댓글 등록에 실패했습니다.';
+        alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
       }
     },
     async deleteComment(commentId) {
-      if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
+      if (confirm("이 댓글을 삭제하시겠습니까?")) {
         try {
           await axios.get(`${process.env.VUE_APP_API_BASE_URL}/comment/delete/${commentId}`, {
             params: { userNum: this.userNum }
           });
-          alert("댓글이 성공적으로 삭제되었습니다.");
-          this.fetchQuestionDetail(); // 삭제 후 댓글 목록 다시 불러오기
+          alert("댓글이 삭제되었습니다.");
+          this.fetchQuestionDetail();
         } catch (error) {
-          console.error("댓글 삭제에 실패했습니다:", error);
-          this.error = '댓글 삭제에 실패했습니다.';
+          alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.');
         }
       }
     },
     editComment(comment) {
       const updatedContent = prompt("댓글을 수정하세요:", comment.content);
       if (updatedContent && updatedContent !== comment.content) {
-        axios
-          .put(`${process.env.VUE_APP_API_BASE_URL}/comment/update/${comment.id}`, {
-            content: updatedContent,
-            userNum: this.userNum,
+        axios.put(`${process.env.VUE_APP_API_BASE_URL}/comment/update/${comment.id}`, {
+          content: updatedContent,
+          userNum: this.userNum,
+          isEdited: true,
+        })
+          .then(() => {
+            const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
+            if (updatedCommentIndex !== -1) {
+              this.comments[updatedCommentIndex].content = updatedContent;
+              this.comments[updatedCommentIndex].isEdited = true;
+            }
+            alert('댓글이 성공적으로 수정되었습니다.');
           })
-          .then(() => this.fetchQuestionDetail()) // 댓글 수정 후 새로고침
-          .catch((error) => {
-            console.error("댓글 수정에 실패했습니다:", error);
-            this.error = '댓글 수정에 실패했습니다.';
+          .catch(() => {
+            alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
           });
       }
     },
-    goBack() {
-      this.$router.push('/qna/list');
-    },
     formatDate(date) {
-      if (!date) return '';
-      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-      return new Date(date).toLocaleDateString('ko-KR', options);
+      return new Date(date)
+        .toLocaleString('ko-KR', { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit', 
+          hour: 'numeric', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        })
+        .replace(/\.\s/g, '.')
+        .replace(/,\s/g, ' ')
+        .replace(/\.$/, '');
     },
-    downloadFile(filePath) {
-      const link = document.createElement('a');
-      link.href = filePath;
-      link.download = filePath.split('/').pop();
-      link.click();
+  
+    async created() {
+      this.decodeToken();
+      this.fetchQuestionDetail();
+      await this.fetchDepartmentTree();
     },
-  },
-  created() {
-    this.decodeToken();
-    this.fetchQuestionDetail();
-  },
+
+    isImage(fileType) {
+        return fileType.includes('image/');
+      },
+
+    downloadFile(fileUrl, fileName) {
+      try {
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('파일 다운로드에 실패했습니다:', error);
+        alert('파일 다운로드에 실패했습니다. 다시 시도해주세요.');
+      }
+    }
+  }
 };
 </script>
 
 <style scoped>
-.v-container {
+.board-container {
+  padding: 20px;
+}
+
+.meta-info-section {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.board-body {
+  width: 100%;
+  max-width: 1500px;
+  min-height: 400px;
+  padding: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.board-container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.comment-section {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
   max-width: 900px;
-  margin: 0 auto;
 }
-.v-list-item-title.file-link {
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.comment-item {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  position: relative;
+}
+.comment-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+}
+.comment-text {
+  font-size: 1rem;
+  color: #333;
+  margin-top: 10px;
+  max-width: 90%;
+  word-break: break-word;
+}
+
+.comment-form {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+
+.action-links {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.action-link {
   cursor: pointer;
-  color: green;
+  font-size: 0.8rem;
+  color: #555;
 }
+
+.action-link.delete {
+  color: red;
+}
+
+.action-link:hover {
+  color: #333;
+}
+
+.comment-date {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 0.5px;
+}
+
+.file-list-section {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.file-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.file-item {
+  flex: 0 1 30%;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.file-preview {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column; /* 이름과 작성일을 세로로 배치 */
+}
+
 </style>

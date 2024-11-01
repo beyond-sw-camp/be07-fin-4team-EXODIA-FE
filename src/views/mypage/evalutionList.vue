@@ -1,127 +1,90 @@
 <template>
-  <div class="main-view">
-  <v-container fluid>
-    <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
-      <v-tab @click="navigateTab(0)">프로필</v-tab>
-      <v-tab @click="navigateTab(1)">평가리스트</v-tab>
-      <v-tab @click="navigateTab(2)">오늘의 점심</v-tab>
-      <v-tab @click="navigateTab(3)">인사평가</v-tab>
-    </v-tabs>
+  <MypageTemplate>
+    <template #evaluation>
+      <v-row class="mt-4">
+        <v-col v-if="isManager" cols="12" md="4">
+          <v-select v-model="selectedUser" :items="departmentUsers" item-title="name" item-value="userNum"
+            label="부서원 선택" dense outlined></v-select>
+        </v-col>
+      </v-row>
 
-    <v-tabs-items v-model="activeTab">
-      <v-tab-item v-if="activeTab === 0">
-        <!-- 프로필 -->
-      </v-tab-item>
+      <v-row>
+        <v-col>
+          <v-simple-table dense>
+            <thead>
+              <tr style="background-color:rgba(122,86,86,0.2);">
+                <th style="padding:10px;  border: 1px solid #f5f5f5">대분류</th>
+                <th style="padding:10px;  border: 1px solid #f5f5f5">중분류</th>
+                <th style="padding:10px;  border: 1px solid #f5f5f5">평가 내용</th>
+                <th style="padding:10px;  border: 1px solid #f5f5f5">평가</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, index) in evaluations" :key="index">
+                <td v-if="shouldShowBigCategory(index)" :rowspan="getRowspanForBigCategory(index)"
+                  style="width: 200px; text-align: center; font-weight: bold; border: 1px solid #e0e0e0;">
+                  {{ item.bigCategoryName }}
+                </td>
+                <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
+                  {{ item.midCategoryName }}
+                </td>
+                <td style="border: 1px solid #e0e0e0; text-align: center; width: 800px;">
+                  {{ item.subEvalutionContent }}
+                </td>
+                <td style="border: 1px solid #e0e0e0; text-align: center;">
+                  <!-- 평가 선택 -->
+                  <v-select hide-details v-model="item.grade" :items="['A', 'B', 'C', 'D', 'E']" label="평가 선택" dense
+                    style="width: 100px; background-color: #FFFFFF; border: none"
+                    :disabled="item.saved && !item.editable"></v-select>
+                </td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+        </v-col>
+      </v-row>
 
-      <v-tab-item v-if="activeTab === 1">
-        <!-- 평가리스트 -->
-      </v-tab-item>
-
-      <v-tab-item v-if="activeTab === 2">
-        <!-- 오늘의 점심 -->
-      </v-tab-item>
-
-      <v-tab-item v-if="activeTab === 3">
-        <v-row>
-          <v-col v-if="isManager" cols="12" md="4">
-            <v-select
-              v-model="selectedUser"
-              :items="departmentUsers"
-              item-title="name"
-              item-value="userNum"
-              label="부서원 선택"
-              dense
-              outlined
-            ></v-select>
-          </v-col>
-        </v-row>
-
-        <v-row>
-          <v-col>
-            <v-simple-table dense>
-              <thead>
-                <tr>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(item, index) in evaluations" :key="index">
-                  <td
-                    v-if="shouldShowBigCategory(index)"
-                    :rowspan="getRowspanForBigCategory(index)"
-                    style="width: 200px; text-align: center; font-weight: bold; border: 1px solid #e0e0e0;"
-                  >
-                    {{ item.bigCategoryName }}
-                  </td>
-                  <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
-                    {{ item.midCategoryName }}
-                  </td>
-                  <td style="border: 1px solid #e0e0e0; text-align: center; width: 800px;">
-                    {{ item.subEvalutionContent }}
-                  </td>
-                  <td style="border: 1px solid #e0e0e0; text-align: center;">
-                    <!-- 평가 선택 -->
-                    <v-select
-                      v-model="item.grade"
-                      :items="['A', 'B', 'C', 'D', 'E']"
-                      label="평가 선택"
-                      dense
-                      style="width: 100px; background-color: #FFFFFF; border: none"
-                      :disabled="item.saved && !item.editable"
-                    ></v-select>
-                  </td>
-                </tr>
-              </tbody>
-            </v-simple-table>
-          </v-col>
-        </v-row>
-
-        <!-- 저장 버튼 추가 -->
-        <v-row>
-          <v-col cols="12" class="text-center">
-            <v-btn @click="saveEvaluations" color="success">저장</v-btn>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-    </v-tabs-items>
-  </v-container>
-</div>
+      <!-- 저장 버튼 -->
+      <v-row justify="end">
+        <v-btn v-create @click="saveEvaluations">저장</v-btn>
+      </v-row>
+    </template>
+  </MypageTemplate>
 </template>
 
 <script>
 import axios from 'axios';
+import MypageTemplate from './MypageTemplate.vue';
 
 export default {
+  components: {
+    MypageTemplate
+  },
   data() {
     return {
-      activeTab: 3,
-      evaluations: [], // 평가 항목들
-      departmentUsers: [], // 부서원 리스트 (팀장일 경우에만 필요)
-      selectedUser: null, // 선택된 부서원의 ID
-      isManager: false, // 팀장 여부 확인
+      evaluations: [],
+      departmentUsers: [],
+      selectedUser: null,
+      isManager: false,
     };
   },
   created() {
     this.checkIfManager();
-    this.fetchSubEvalutions(); // 기본으로 자신의 평가리스트를 가져옴
+    this.fetchSubEvalutions();
   },
   watch: {
     selectedUser(newValue) {
       if (newValue) {
-        console.log('Selected userNum:', newValue);
-        this.fetchSubEvalutions(newValue); // 선택된 유저의 평가 정보 가져오기
+        this.fetchSubEvalutions(newValue);
       }
     }
   },
   methods: {
-    // 팀장 여부 확인 후 부서원 리스트 가져오기
     async checkIfManager() {
       try {
-        const positionId = localStorage.getItem('positionId'); // 저장된 positionId 가져오기
+        const positionId = localStorage.getItem('positionId');
 
-        if (positionId === '1') { // '1'->팀장
+        if (positionId === '1') {
           this.isManager = true;
-
-          // 부서원 리스트 가져오기
           const departmentId = localStorage.getItem('departmentId');
           const departmentResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/department-users/${departmentId}`, {
             headers: {
@@ -133,45 +96,38 @@ export default {
           this.isManager = false;
         }
       } catch (error) {
-        console.error('Failed to check manager status or fetch department users', error);
+        console.error('팀장 여부 확인 실패 또는 부서원 목록 조회 실패', error);
       }
     },
-
-    // 소분류 목록 가져오기 (자신 또는 선택된 부서원 기준)
     async fetchSubEvalutions(userNum = null) {
-      console.log('Fetching evaluations for user:', userNum);
       const targetUrl = userNum
-        ? `/sub-evalution/team-evaluations/${userNum}` // 부서원 조회
-        : '/sub-evalution/list-with-categories'; // 자신의 평가리스트 조회
+        ? `/sub-evalution/team-evaluations/${userNum}`
+        : '/sub-evalution/list-with-categories';
 
       try {
         const response = await axios.get(targetUrl, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}` // Bearer Token을 헤더에 추가
+            Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
         this.evaluations = response.data.map(item => ({
           ...item,
-          subEvalutionContent: item.subEvalutionContent || 'N/A', // 소분류가 비어 있으면 'N/A'로 표시
-          grade: item.grade || '', // 기본 grade 설정
-          saved: !!item.grade, // 평가가 이미 저장되었는지 확인
-          editable: !item.saved // 저장된 항목은 수정 불가
+          subEvalutionContent: item.subEvalutionContent || '',
+          grade: item.grade || '',
+          saved: !!item.grade,
+          editable: !item.saved
         }));
       } catch (error) {
-        console.error('Failed to fetch evaluations', error);
+        console.error('평가 목록 조회 실패', error);
       }
     },
-
-    // 평가 점수 일괄 저장 및 비활성화 처리
     async saveEvaluations() {
       const currentUserNum = localStorage.getItem('userNum');
       const evaluationDtos = this.evaluations.map(evaluation => ({
         subEvalutionId: evaluation.subEvalutionId,
-        targetUserNum: this.isManager ? this.selectedUser || currentUserNum : currentUserNum, // 팀장일 경우
-        score: evaluation.grade // 평가 점수
+        targetUserNum: this.isManager ? this.selectedUser || currentUserNum : currentUserNum,
+        score: evaluation.grade
       }));
-
-      console.log('Payload:', evaluationDtos); // 전송되는 데이터 확인
 
       try {
         const response = await axios.post('/evalution/batch-create', evaluationDtos, {
@@ -179,30 +135,23 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-        console.log('Evaluations saved:', response.data);
-
-        // 평가가 저장된 후 비활성화 처리
+        console.log(response)
         this.evaluations.forEach(evaluation => {
-          evaluation.editable = false; // 수정 불가
-          evaluation.saved = true; // 저장됨 표시
+          evaluation.editable = false;
+          evaluation.saved = true;
         });
-
         alert('평가가 성공적으로 저장되었습니다.');
       } catch (error) {
-        console.error('평가 저장이 실패하였습니다', error);
+        console.error('평가 저장 실패', error);
       }
     },
-
-    // 대분류 셀 병합을 위한 로직
     shouldShowBigCategory(index) {
       if (index === 0) return true;
       return this.evaluations[index].bigCategoryName !== this.evaluations[index - 1].bigCategoryName;
     },
-
     getRowspanForBigCategory(index) {
       const currentCategory = this.evaluations[index].bigCategoryName;
       let rowspan = 0;
-
       for (let i = index; i < this.evaluations.length; i++) {
         if (this.evaluations[i].bigCategoryName === currentCategory) {
           rowspan++;
@@ -211,39 +160,14 @@ export default {
         }
       }
       return rowspan;
-    },
-
-    // 탭 이동
-    navigateTab(index) {
-      if (index === 0) {
-        this.$router.push('/mypage/userProfile');
-      } else if (index === 1) {
-        this.$router.push('/mypage/evalutionFrame');
-      } else if (index === 2) {
-        this.$router.push('/mypage/spinWheel');
-      } else {
-        this.activeTab = index;
-      }
     }
   }
 };
 </script>
 
 <style scoped>
-.main-view {
-  margin-left: -150px;
-  /* margin-top: -50px; */
-  padding: -50px;
-}
-/* 헤더 탭 여백 */
 .header-tabs {
   margin-bottom: 30px;
-}
-
-.tab-item {
-  font-weight: bold;
-  font-size: 16px;
-  color: #4CAF50;
 }
 
 .v-tabs--density-default {
@@ -258,12 +182,8 @@ export default {
   font-weight: bold;
 }
 
-/* 테이블 셀 경계선 설정 */
-th, td {
+th,
+td {
   border: 1px solid #e0e0e0;
-}
-
-td[style*="border: none"] {
-  border: none !important;
 }
 </style>

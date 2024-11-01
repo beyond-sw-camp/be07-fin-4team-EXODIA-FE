@@ -8,31 +8,27 @@
 
         <!-- 알림 타입 필터 버튼 -->
         <v-btn-toggle v-model="selectedType" class="mb-4 custom-btn-toggle">
-          <v-btn
-            v-for="(label, value) in notificationTypes"
-            :key="value"
-            :value="value"
-            class="custom-btn"
-            :class="{ active: selectedType === value }"
-          >
+          <v-btn v-for="(label, value) in notificationTypes" :key="value" :value="value" class="custom-btn"
+            :class="{ active: selectedType === value }" @click="navigateToType(value)">
             {{ label }}
           </v-btn>
         </v-btn-toggle>
 
         <!-- 알림 리스트 -->
-        <v-list style="background-color: #f5f5f5;">
+        <v-list>
           <v-list-item-group>
-            <v-list-item
-              v-for="notification in filteredNotifications"
-              :key="notification.id"
-              @click="markAsRead(notification.id)"
-              class="notification-item"
-            >
+            <v-list-item v-for="notification in filteredNotifications" :key="notification.id"
+              @click="handleNotificationClick(notification)" class="notification-item"
+              :class="{ read: notification.isRead }">
               <v-list-item-content>
-                <v-list-item-subtitle><strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{ formatDate(notification.notificationTime) }}</v-list-item-subtitle>
+                <v-list-item-subtitle>
+                  <strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{
+                    formatDate(notification.notificationTime) }}
+                </v-list-item-subtitle>
                 <br>
                 <v-list-item-title>
-                  <strong v-if="!notification.isRead">[NEW]</strong>
+                  <!-- isRead가 0일 때만 [NEW] 표시 -->
+                  <strong v-if="notification.isRead == 0">[NEW]</strong>
                   {{ notification.message }}
                 </v-list-item-title>
                 <br>
@@ -52,13 +48,16 @@ export default {
   name: "NotificationList",
   data() {
     return {
+      eventSource: null,
+      retryCount: 0,
+      maxRetryCount: 5,
       notifications: [],
       unreadCount: 0,
       selectedType: "", // 선택된 알림 타입
       notificationTypes: {
         "": "전체",
         공지사항: "공지사항",
-        경조사: "경조사",
+        문의: "문의",
         예약: "예약",
         결재: "결재",
         문서: "문서",
@@ -68,7 +67,7 @@ export default {
   created() {
     this.fetchNotifications();
     this.fetchUnreadCount();
-    this.initSSE();  // SSE 초기화
+    this.initSSE(); // SSE 초기화
   },
   computed: {
     // 선택된 타입에 따른 알림 필터링
@@ -79,10 +78,15 @@ export default {
           (notification) => notification.type === this.selectedType
         );
       }
-      return filtered.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
+      return filtered.sort(
+        (a, b) => new Date(b.notificationTime) - new Date(a.notificationTime)
+      );
     },
   },
   methods: {
+    navigateToType(value) {
+      this.selectedType = value;
+    },
     // JWT 토큰을 URL의 쿼리 파라미터로 포함한 SSE 연결
     initSSE() {
       const token = localStorage.getItem("token");
@@ -91,32 +95,53 @@ export default {
         return;
       }
 
-      // SSE 연결
-      const eventSource = new EventSource(`${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`);
-      
-      // 메시지 수신
-      eventSource.onmessage = (event) => {
-        const newNotification = JSON.parse(event.data);
-        this.notifications.unshift(newNotification); // 새로운 알림을 맨 위에 추가
-      };
+      try {
+        // EventSource 객체 생성
+        this.eventSource = new EventSource(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`
+        );
 
-      // 오류 처리
-      eventSource.onerror = (error) => {
-        console.error("SSE 연결 오류:", error);
-      };
+        // 메시지 수신 처리
+        this.eventSource.onmessage = (event) => {
+          const newNotification = JSON.parse(event.data);
+          this.notifications.unshift(newNotification); // 새로운 알림을 맨 위에 추가
+        };
+
+        // 오류 처리 및 재연결
+        this.eventSource.onerror = (error) => {
+          console.error("SSE 연결 오류 발생:", error);
+
+          if (this.retryCount < this.maxRetryCount) {
+            setTimeout(() => {
+              this.retryCount++;
+              this.initSSE(); // 재연결
+            }, this.getRetryInterval());
+          } else {
+            console.error("최대 재연결 시도 횟수에 도달했습니다.");
+          }
+        };
+      } catch (error) {
+        console.error("SSE 연결 중 예외가 발생했습니다.", error);
+      }
+    },
+    getRetryInterval() {
+      return Math.min(1000 * Math.pow(2, this.retryCount), 30000); // 최대 30초까지 증가
     },
 
     formatDate(notificationTime) {
       const date = new Date(notificationTime);
       return date.toLocaleDateString();
     },
-    
+
     // 전체 알림 리스트 가져오기
     async fetchNotifications() {
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/list`, {
-          headers: this.getAuthHeaders(),
-        });
+        const response = await axios.get(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/list`,
+          {
+            headers: this.getAuthHeaders(),
+          }
+        );
         this.notifications = response.data;
       } catch (error) {
         console.error("알림 데이터를 가져오는 중 오류 발생:", error);
@@ -126,9 +151,12 @@ export default {
     // 읽지 않은 알림 개수 가져오기
     async fetchUnreadCount() {
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/unread-count`, {
-          headers: this.getAuthHeaders(),
-        });
+        const response = await axios.get(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/unread-count`,
+          {
+            headers: this.getAuthHeaders(),
+          }
+        );
         this.unreadCount = response.data;
       } catch (error) {
         console.error("읽지 않은 알림 개수를 가져오는 중 오류 발생:", error);
@@ -136,17 +164,20 @@ export default {
     },
 
     // 알림 읽음 처리
-    async markAsRead(notificationId) {
-      try {
-        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`, null, {
-          headers: this.getAuthHeaders(),
-        });
-        this.fetchNotifications(); // 알림 리스트 다시 가져오기
-        this.fetchUnreadCount(); // 읽지 않은 알림 개수 다시 가져오기
-      } catch (error) {
-        console.error("알림 읽음 처리 중 오류 발생:", error);
-      }
-    },
+    // async markAsRead(notificationId) {
+    //   try {
+    //     await axios.post(
+    //       `${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`,
+    //       null,
+    //       {
+    //         headers: this.getAuthHeaders(),
+    //       }
+    //     );
+    //     console.log(`Notification ${notificationId} marked as read.`);
+    //   } catch (error) {
+    //     console.error("알림 읽음 처리 중 오류 발생:", error);
+    //   }
+    // },
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
@@ -159,7 +190,45 @@ export default {
         Authorization: `Bearer ${token}`,
       };
     },
-  },
+    async handleNotificationClick(notification) {
+      if (notification.isRead === 0) {
+        await this.markAsRead(notification.id);
+        notification.isRead = 1;  // 상태를 변경하여 UI에서도 읽음 상태 반영
+        this.unreadCount -= 1;  // 읽지 않은 개수 줄이기
+      }
+      let targetUrl = '';
+
+      // 알림 유형에 따른 URL 설정
+      if (notification.type === '공지사항') {
+        targetUrl = 'http://localhost:8082/board/notice/list';
+      } else if (notification.type === '문의') {
+        targetUrl = 'http://localhost:8082/qna/list';
+      } else if (notification.type === '예약') {
+        targetUrl = 'http://localhost:8082/reservation/reservationList';
+      } else if (notification.type === '결재') {
+        targetUrl = 'http://localhost:8082/submit/list';
+      } else if (notification.type === '문서') {
+        targetUrl = 'http://localhost:8082/document';
+      }
+
+      window.location.href = targetUrl;
+    },
+
+    async markAsRead(notificationId) {
+      try {
+        await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`,
+          null,
+          { headers: this.getAuthHeaders() }
+        );
+        console.log(`Notification ${notificationId} marked as read.`);
+      } catch (error) {
+        console.error("알림 읽음 처리 중 오류 발생:", error);
+      }
+    },
+
+
+  }
 };
 </script>
 
@@ -169,6 +238,7 @@ export default {
   font-weight: bold;
   color: red;
 }
+
 .custom-btn-toggle {
   display: flex;
   gap: 10px;
@@ -183,7 +253,7 @@ export default {
 }
 
 .custom-btn.active {
-  background-color: #3f51b5;
+  background-color: #4caf50;
   color: white;
   border: none;
 }
@@ -191,11 +261,17 @@ export default {
 .custom-btn:hover {
   background-color: #ddd;
 }
+
 .notification-item {
   margin-bottom: 15px !important;
   padding: 0px 40px;
   border-radius: 10px !important;
   background-color: #f9f9f9 !important;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+.notification-item.read {
+  color: gray;
+  background-color: #e0e0e0;
 }
 </style>

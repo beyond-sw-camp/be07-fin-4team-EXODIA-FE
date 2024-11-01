@@ -1,214 +1,445 @@
 <template>
-  <v-container>
-    <h1 class="board-title">QnA 목록</h1>
+  <v-container class="board-container">
+    <!-- Adjusted the title size and positioning -->
+    <v-row class="mb-12" style="padding-left:30px" justify="space-between">
+      <h1>질의 응답 ( {{ boardTitle }} )</h1>
 
-    <!-- 검색 및 필터링 옵션 -->
-    <div class="filters">
-      <v-row>
-        <!-- 검색 범위 선택 -->
-        <v-col cols="12" md="4">
-          <v-select
-            v-model="searchCategory"
-            :items="searchCategories"
-            label="검색 범위"
-          ></v-select>
-        </v-col>
-        <!-- 검색어 입력 -->
-        <v-col cols="12" md="8">
-          <v-text-field
-            v-model="searchQuery"
-            label="검색어"
-            append-icon="mdi-magnify"
-            @keyup.enter="fetchQuestions"
-            @click:append="fetchQuestions"
-          ></v-text-field>
-        </v-col>
-      </v-row>
-    </div>
+      <!-- 매니저 관리 버튼 -->
+      <v-col cols="auto" class="d-flex justify-end">
+        <v-icon size="36" @click="openManagerModal">mdi-cog-outline</v-icon>
+      </v-col>
+    </v-row>
 
-    <!-- QnA 목록 테이블 -->
-    <table class="tbl_list">
-      <caption></caption>
-      <colgroup>
-        <col width="80" />
-        <col width="auto" />
-        <col width="140" />
-        <col width="140" />
-        <col width="140" />
-      </colgroup>
-      <thead>
-        <tr>
-          <th>번호</th>
-          <th>제목</th>
-          <th>부서명</th>
-          <th>작성자</th>
-          <th>작성일</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(question, index) in questions" :key="question.id">
-          <td>{{ index + 1 + (currentPage - 1) * itemsPerPage }}</td>
-          <td @click="viewDetail(question.id)" class="text_left subject">
-            {{ question.title }}
-          </td>
-          <td>{{ question.department ? question.department.name : 'N/A' }}</td>
-          <td>{{ question.questionUserName }}</td>
-          <td>{{ formatDate(question.createdAt) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <v-dialog v-model="showManagerModal" max-width="650">
+      <v-card>
+        <v-card-title class="headline">매니저 관리</v-card-title>
 
-    <!-- 질문 작성 버튼 -->
-    <div class="btnWrap">
-      <button @click="createNewQuestion" class="btn_write">질문 작성하기</button>
-    </div>
+        <v-card-text>
+          <v-row>
+            <!-- 조직도 (왼쪽) -->
+            <v-col cols="5" style="padding-right: 10px;">
+              <organization-chart @user-selected="addManager" />
+            </v-col>
+
+            <!-- 구분선 -->
+            <v-divider vertical style="margin: 0 20px;"></v-divider>
+
+            <!-- 매니저 목록 (오른쪽) -->
+            <v-col cols="5" style="padding-left: 10px;">
+              <h3>매니저 목록</h3>
+              <organization-chart :managers="managers" @user-selected="removeManager" />
+            </v-col>
+          </v-row>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn v-delete text @click="closeManagerModal">닫기</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-row justify="center" align="center">
+      <!-- 검색 범위 선택 -->
+      <v-col cols="12" md="2">
+        <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text" item-value="value"
+          label="검색 범위" required></v-select>
+      </v-col>
+
+      <!-- 검색어 입력 -->
+      <v-col cols="12" md="8">
+        <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
+          @click:append="performSearch" required></v-text-field>
+      </v-col>
+    </v-row>
+
+    <v-row justify="end">
+      <v-col cols="12" md="3" class="d-flex justify-end">
+        <v-btn v-create class="btn_write" @click="createNewPost">
+          작성하기
+        </v-btn>
+        <v-btn v-list class="btn_my_questions" @click="goToMyQuestions">
+          나의 질문 목록
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <!-- 게시글 목록 테이블 -->
+    <v-row justify="center" class="mt-4">
+      <v-col cols="12">
+        <!-- 테이블 헤더에 상태 추가 -->
+        <v-row class="mb-2 text-center"
+          style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px; padding:4px; color:#444444; font-weight:600;">
+          <v-col cols="1"><strong>번호</strong></v-col>
+          <v-col cols="7"><strong>제목</strong></v-col>
+          <v-col cols="2"><strong>상태</strong></v-col>
+          <v-col cols="2"><strong>작성일</strong></v-col>
+        </v-row>
+
+        <!-- 게시글 목록 데이터 -->
+        <v-row v-for="(item, index) in boardItems" :key="item.id" class="board text-center" @click="goToDetail(item.id)"
+          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500; cursor:pointer">
+          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+          <v-col cols="7" class="title-ellipsis text-start" style="max-width: 100%; display: inline-block;">
+            {{ item.title }}
+          </v-col>
+
+          <v-col cols="2">
+            <v-chip :color="item.answeredAt ? 'green' : 'red'" dark small>
+              {{ item.answeredAt ? '답변완료' : '미답변' }}
+            </v-chip>
+          </v-col>
+          <v-col cols="2">{{ formatDate(item.createdAt) }}</v-col>
+        </v-row>
+      </v-col>
+    </v-row>
 
     <!-- 페이지네이션 -->
-    <v-pagination
-      v-model="currentPage"
-      :length="totalPages"
-      @input="fetchQuestions"
-      class="my-4"
-    ></v-pagination>
+    <v-pagination v-model="currentPage" :length="totalPages" @change="onPageChange" class="my-4"></v-pagination>
   </v-container>
 </template>
 
 <script>
 import axios from "axios";
+import OrganizationChart from "@/views/organization/OrganizationChart.vue";
 
 export default {
+  components: {
+    OrganizationChart,
+  },
   data() {
     return {
-      questions: [], // QnA 목록 데이터
-      currentPage: 1, // 현재 페이지 번호
-      totalPages: 1, // 전체 페이지 수
-      itemsPerPage: 10, // 페이지당 항목 수
-      searchCategory: "전체", // 검색 카테고리 기본값
-      searchQuery: "", // 검색어
-      searchCategories: ["전체", "제목", "작성자"], // 검색 카테고리 목록
+      boardItems: [],
+      currentPage: 1,
+      totalPages: 1,
+      itemsPerPage: 10,
+      isAdmin: false,
+      userNum: null,
+      currentCategory: "",
+      boardTitle: "",
+      showManagerModal: false,
+      users: [],
+      filteredUsers: [],
+      userSearchQuery: "",
+      managers: [],
+      searchType: "title + content",
+      searchQuery: "",
+      searchOptions: [
+        { text: "전체", value: "title + content" },
+        { text: "제목", value: "title" },
+        { text: "내용", value: "content" },
+      ],
+      departmentHierarchy: [], // 조직도 데이터를 저장할 변수
     };
   },
+  props: ["category"],
+  watch: {
+    currentPage() {
+      this.fetchBoardItems();
+    },
+    category(newCategory) {
+      this.currentCategory = newCategory;
+      this.setBoardTitle();
+      this.fetchBoardItems();
+    },
+  },
   created() {
-    this.fetchQuestions(); // QnA 목록 가져오기
+    this.currentCategory = this.category || "NOTICE";
+    this.checkUserRole();
+    this.setBoardTitle();
+    this.fetchBoardItems();
+    this.userNum = localStorage.getItem("userNum");
   },
   methods: {
-    // 질문 목록 가져오기
-    async fetchQuestions() {
+    // 사용자 권한 확인
+    checkUserRole() {
+      const departmentId = localStorage.getItem("departmentId");
+      this.isAdmin = departmentId === "4";
+      this.userNum = localStorage.getItem("userNum");
+    },
+
+    // 게시글 목록 가져오기
+    async fetchBoardItems() {
       try {
         const params = {
           page: this.currentPage - 1,
           size: this.itemsPerPage,
-          searchType: this.getSearchType(),
-          searchQuery: this.searchQuery,
+          searchType: this.searchType,
+          searchQuery: this.searchQuery || "",
         };
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/qna/list`;
+        const response = await axios.get(apiUrl, { params });
 
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/list`, { params });
-
-        const result = response.data.result;
-        if (result && result.content) {
-          this.questions = result.content;
-          this.totalPages = result.totalPages;
-        } else {
-          console.error("올바르지 않은 데이터 형식입니다:", response.data);
+        if (response.data && response.data.result) {
+          const result = response.data.result;
+          if (result && result.content) {
+            this.boardItems = result.content.map((item) => ({
+              ...item,
+              hasAnswer: item.answeredAt !== null,
+            }));
+            this.totalPages = result.totalPages;
+          } else {
+            this.boardItems = [];
+            this.totalPages = 1;
+          }
         }
       } catch (error) {
-        console.error("질문 목록을 불러오는 중 오류가 발생했습니다:", error);
+        this.boardItems = [];
+        this.totalPages = 1;
+        console.error("게시글 목록을 불러오는 중 오류가 발생했습니다:", error);
+        alert("게시글 목록을 불러오는 중 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.");
       }
     },
-    // 검색 유형 변환
-    getSearchType() {
-      switch (this.searchCategory) {
-        case "전체":
-          return "all";
-        case "제목":
-          return "title";
-        case "작성자":
-          return "questionUserName";
-        default:
-          return "all";
+
+    // 유저 및 매니저 목록 가져오기
+    async fetchUsersAndManagers() {
+      const token = localStorage.getItem("token");
+      try {
+        const [userResponse, managerResponse] = await Promise.all([
+          axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${process.env.VUE_APP_API_BASE_URL}/manager/list`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        const allUsers = Array.isArray(userResponse.data.users) ? userResponse.data.users : [];
+        const managers = Array.isArray(managerResponse.data) ? managerResponse.data : [];
+
+        this.users = allUsers.filter((user) => !managers.some((manager) => manager.userNum === user.userNum));
+        this.filteredUsers = [...this.users];
+        this.managers = managers;
+
+        console.log("전체 유저 목록:", this.users);
+        console.log("매니저 목록:", this.managers);
+        console.log("필터링된 유저 목록 (filteredUsers):", this.filteredUsers);
+      } catch (error) {
+        console.error("유저 및 매니저 목록을 불러오는 중 오류가 발생했습니다:", error);
+        alert("유저 및 매니저 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.");
       }
     },
+
+    // 조직도 및 부서 계층 구조 가져오기
+    async fetchDepartmentHierarchy() {
+      try {
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/department/hierarchy`);
+        this.departmentHierarchy = response.data;
+      } catch (error) {
+        console.error("부서 계층 정보를 가져오는 중 오류 발생:", error);
+        alert("부서 계층 정보를 가져오는 중 문제가 발생했습니다. 다시 시도해주세요.");
+      }
+    },
+
+    // 매니저 관리 모달 열기
+    async openManagerModal() {
+      this.showManagerModal = true;
+      await this.fetchUsersAndManagers();
+      await this.fetchDepartmentHierarchy();
+      this.filteredUsers = [...this.users];
+    },
+
+    // 매니저 추가
+    addManager(user) {
+      // 이미 매니저인지 확인
+      if (this.managers.some((manager) => manager.userNum === user.userNum)) {
+        alert("이미 매니저로 등록된 사용자입니다.");
+        return; // 매니저가 이미 있는 경우, 추가하지 않고 종료
+      }
+
+      axios
+        .post(`${process.env.VUE_APP_API_BASE_URL}/manager/save`, { userNum: user.userNum })
+        .then((response) => {
+          const addedManager = response.data;
+          this.managers.push(addedManager);
+          this.filteredUsers = this.filteredUsers.filter((u) => u.userNum !== user.userNum);
+          alert("매니저가 성공적으로 추가되었습니다.");
+        })
+        .catch((error) => {
+          console.error("매니저 추가 중 오류가 발생했습니다:", error);
+          alert("매니저 추가 중 문제가 발생했습니다. 다시 시도해주세요.");
+        });
+    },
+
+    // 매니저 삭제
+    removeManager(manager) {
+      axios
+        .delete(`${process.env.VUE_APP_API_BASE_URL}/manager/delete/${manager.userNum}`)
+        .then(() => {
+          this.users.push(manager);
+          this.managers = this.managers.filter((m) => m.userNum !== manager.userNum);
+          this.filteredUsers.push(manager);
+          alert("매니저가 성공적으로 삭제되었습니다.");
+        })
+        .catch((error) => {
+          console.error("매니저 삭제 중 오류가 발생했습니다:", error);
+          alert("매니저 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
+        });
+    },
+
+    // 페이지 변경
+    onPageChange(newPage) {
+      this.currentPage = newPage;
+      this.fetchBoardItems();
+    },
+
+    // 게시판 제목 설정
+    setBoardTitle() {
+      this.boardTitle = "Q&A";
+    },
+
     formatDate(date) {
-      const d = new Date(date);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${year}년 ${month}월 ${day}일`;
+      return new Date(date)
+        .toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })
+        .replace(/\.\s/g, ".")
+        .replace(/\.$/, "");
     },
-    createNewQuestion() {
-      this.$router.push("/qna/create");
+
+    createNewPost() {
+      this.$router.push({ name: "CreateQuestion" });
     },
-    viewDetail(id) {
-      this.$router.push(`/qna/detail/${id}`);
+
+    goToDetail(id) {
+      this.$router.push({ name: "QnaDetail", params: { id } });
+    },
+
+    performSearch() {
+      this.currentPage = 1;
+      this.fetchBoardItems();
+    },
+
+    goToMyQuestions() {
+      this.$router.push({ name: "UserQuestions" });
+    },
+
+    // 매니저 관리 모달 닫기
+    closeManagerModal() {
+      this.showManagerModal = false;
     },
   },
 };
 </script>
 
+
+
 <style scoped>
-.container {
-  padding-top: 20px;
+.board-container {
+  padding: 20px;
+  border-radius: 12px;
 }
 
-.board-title {
-  font-size: 26px;
-  font-weight: bold;
+
+.title-ellipsis {
+  white-space: nowrap;
+  /* 텍스트를 한 줄로 표시 */
+  overflow: hidden;
+  /* 넘치는 텍스트를 숨김 */
+  text-overflow: ellipsis;
+  /* 넘치는 부분을 '...'로 표시 */
+}
+.v-divider {
+  width: 2px;
+  background-color: #ddd;
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
-.filters {
-  margin-bottom: 20px;
+.v-select,
+.v-text-field {
+  flex: none;
+  width: auto;
+  margin-right: 20px;
+}
+
+.v-select .v-input__control,
+.v-text-field .v-input__control {
+  border: none;
+  background: transparent;
 }
 
 .tbl_list {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
 }
 
 .tbl_list th,
 .tbl_list td {
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-  border-left: none;
-  border-right: none;
+  white-space: nowrap;
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #000000;
+  transform: none;
+  box-sizing: border-box;
+  zoom: 1;
 }
 
 .tbl_list th {
   background-color: #f4f4f4;
-  font-weight: bold;
-}
-
-.text_left {
   text-align: left;
 }
 
-.subject {
-  text-decoration: none;
-  color: #333;
+.tbl_list td.text-left {
+  text-align: left;
 }
 
-.subject:hover {
-  text-decoration: underline;
+.tbl_list td.text-center {
+  text-align: center;
 }
 
-.btnWrap {
+.tbl_list td.text-right {
   text-align: right;
-  margin-top: 20px;
+}
+
+.tbl_list tr:hover {
+  background-color: #ababab;
 }
 
 .btn_write {
-  padding: 12px 25px;
-  background-color: #f27885;
-  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
-.btn_write:hover {
-  background-color: #fa5263;
+
+.btn_my_questions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px;
 }
+
+
+.v-pagination {
+  margin-top: 20px;
+}
+
+.v-pagination .v-pagination__item {
+  border: none;
+  color: #722121;
+}
+
+.v-pagination .v-pagination__item--active {
+  font-weight: bold;
+  background-color: #c5e1a5;
+  color: white;
+}
+
+.btn_manager_management {
+  background-color: #0056b3;
+  color: #ffffff;
+  margin-left: 20px;
+}
+
+
 </style>

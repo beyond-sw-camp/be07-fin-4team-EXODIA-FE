@@ -1,81 +1,82 @@
-<!-- 채팅방 이름, 작성. 유저 검색(이름, 사번) 추가, 삭제 -->
 <template>
     <v-container>
-        <v-card>
-            <v-card-title>
-                채팅방 생성
-            </v-card-title>
+        <!-- 채팅 상대 선택 화면 -->
+        <v-container v-if="showChatUser" class="create-container">
             <v-row>
-                <v-form @submit.prevent="createChatRoom">
-                    <!-- 채팅방 이름 입력-->
-                    <v-row>
-                        <v-text-field v-model="chatroomData.roomName">
-                        </v-text-field>
-                    </v-row>
-
-
-                    <!-- 채팅방 유저 검색 -->
-                    <v-row>
-
-                        <v-row> <!-- 유저 검색 -->
-                            <v-col>
-                                <v-text-field v-model="searchQuery" label="search"></v-text-field>
-                            </v-col>
-                            <v-col>
-                                <v-btn @click="searchUser">searchIcon</v-btn>
-                            </v-col>
-                        </v-row>
-
-                        <v-row v-for="(userInfos, index) in userList" :key="index"> <!-- 유저 리스트 : 사번순 -->
-                            <v-col>
-                                <div>
-                                    <span> {{ userInfos.name }} </span>
-                                    <span> - </span>
-                                    <span> {{ userInfos.positionName }} 님</span>
-                                    <span> - </span>
-                                    <span> {{ userInfos.departmentName }} </span>
-                                </div>
-                            </v-col>
-                            <v-col>
-                                <v-btn @click="addUser(userInfos)"> <!-- 유저 선택 -->
-                                    <span>+</span>
-                                </v-btn>
-                            </v-col>
-                        </v-row>
-
-                        <v-row v-for="(userInfo, index) in selectdUser" :key="index"> <!-- 선택 유저 리스트 : 사번순 -->
-                            <v-col>
-                                <span>{{ userInfo.name }}</span>
-                            </v-col>
-                            <v-col>
-                                <v-btn @click="removeUser(index)"> <!-- 유저 선택해제 -->
-                                    <span>-</span>
-                                </v-btn>
-                            </v-col>
-                        </v-row>
-
-                    </v-row>
-
-
-                    <!-- 채팅방 생성, 취소 버튼 -->
-                    <v-row>
-                        <v-btn type="submit">create</v-btn>
-                        <!-- <v-btn>cancel</v-btn> -->
-                    </v-row>
-
-                </v-form>
+                <v-col cols="12">
+                    <h3>채팅 상대 선택</h3>
+                </v-col>
             </v-row>
-        </v-card>
+
+            <div class="chat-user-list">
+                <OrganizationChart @user-selected="addUser" />
+            </div>
+
+            <div class="select-divider">
+                <div v-if="selectUser.length !== 0">
+                    <br>
+                    <hr class="select-line" />
+                    <br>
+                </div>
+            </div>
+
+            <!-- 선택된 유저 리스트 -->
+            <div class="selected-user-row">
+                <v-row>
+                    <v-chip-group v-if="selectUser.length" column multiple active-class="selected-chip">
+                        <v-chip v-for="(userInfo, index) in selectUser" :key="index" style="width: max-content; font-size: 13px; margin: 12px; margin-right: 0px; margin-bottom: 3px;"
+                            @click="removeUser(index)">
+                            {{ userInfo.name }}
+                            <v-icon style="font-size: 13px; padding-left: 2px;"  right>mdi-close</v-icon>
+                        </v-chip>
+                    </v-chip-group>
+                </v-row>
+            </div>
+
+
+            <!-- 다음 버튼 -->
+            <v-row justify="end">
+                    <v-btn v-list @click="showChatRoomNameCreate">다음</v-btn>
+                    <v-btn v-delete @click="closeCreate">취소</v-btn>
+            </v-row>
+        </v-container>
+
+        <!-- 채팅방 이름 작성 화면-->
+        <v-container v-if="showChatRoomName" class="create-container">
+            <v-row>
+                <v-col cols="12">
+                    <h3>채팅방 이름</h3>
+                </v-col>
+            </v-row>
+
+            <v-row>
+                <v-col cols="12">
+                    <v-text-field v-model="chatroomData.roomName" label="채팅방명을 작성해주세요."></v-text-field>
+                </v-col>
+            </v-row>
+
+            <v-row>
+                <v-col cols="12" class="text-right">
+                    <v-btn v-create @click="createChatRoom">생성</v-btn>
+                    <v-btn v-delete @click="closeCreate">취소</v-btn>
+                </v-col>
+            </v-row>
+        </v-container>
     </v-container>
 </template>
 
 <script>
 import axios from 'axios';
+import OrganizationChart from '@/views/organization/OrganizationChart.vue';
 
 export default {
+    components: {
+        OrganizationChart,
+    },
     data() {
         return {
-            searchQuery: "",
+            showChatUser: null, // 채팅유저 선택 제어
+            showChatRoomName: null, // 채팅방명 제어
 
             chatroomData: {
                 roomName: "",
@@ -83,59 +84,141 @@ export default {
                 userNums: [] // 초대받는 사람의 사번만
             }, // 채팅방 생성 데이터
 
-            userList: [], // 사원 
+            // userList: [], // 사원 
 
-            selectdUser: [], // 채팅 선택된 사원
-
+            selectUser: [], // 채팅 선택된 사원
         }
     },
     created() {
         this.chatroomData.userNum = localStorage.getItem('userNum');
-        this.loadUserList();
+        this.showChatUser = true;
+        this.showChatRoomName = false;
     },
     methods: {
-        async loadUserList() {
-            try {
-                // const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`, {
-                //     params: {
-                //         ...{ searchName: this.searchQuery } )
-                //     }
-                // });
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/list`);
-                console.log(response);
-                this.userList = response.data;
-            } catch (e) {
-                console.error('사원 목록 조회 실패', e);
-            }
-
-        },
-
-        searchUser() {
-            this.loadUserList();
-        },
+        // async searchUser() {
+        //     try {
+        //         const params = {
+        //             search: this.searchQuery,
+        //             searchType: "all",
+        //         };
+        //         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/search`, { params });
+        //         this.userList = response.data;
+        //         //⭐ 애초에 쿼리문에서 거르는게 좋을 거 같다.
+        //         this.userList = this.userList.filter((user) => user.userNum != this.chatroomData.userNum);
+        //     } catch (error) {
+        //         console.error("유저 검색 중 오류 발생:", error);
+        //     }
+        // },
 
         removeUser(index) {
-            this.selectdUser.splice(index, 1);
+            this.selectUser.splice(index, 1);
         },
-        addUser(userInfos) {
-            this.selectdUser.push(userInfos);
+        addUser(user) {
+            if (this.selectUser.indexOf(user) != -1) {
+                alert("이미 선택한 유저입니다.");
+                return;
+            }
+            if (user.userNum == this.chatroomData.userNum) {
+                alert("자기 자신은 선택할 수 없습니다.");
+                return;
+            }
+            this.selectUser.push(user);
         },
 
-        // checkUser(){ // 선택된 채팅 유저 중 중복된 인원이 있으면 안된다.
+        showChatRoomNameCreate() {
+            if (this.selectUser.length === 0) {
+                alert("유저를 고르세요.");
+                return;
+            }
+            this.chatroomData.roomName = this.selectUser.map(user => user.name).join(", ");
+            this.showChatUser = false;
+            this.showChatRoomName = true;
+        },
 
-        // },
         async createChatRoom() {
-            try{
-                this.chatroomData.userNums = this.selectdUser.map(num => num.userNum);
-                console.log(this.chatroomData);
+            try {
+                if (this.chatroomData.roomName.trim() === '') {
+                    alert("채팅방명을 작성해주세요.");
+                    return;
+                }
+                this.chatroomData.userNums = this.selectUser.map(user => user.userNum);
                 const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/create`, this.chatroomData);
                 console.log(response);
-                // this.$router.push("/chat/list");
-            }catch(e){
+                if (response.data.result.existCheck) {
+                    alert("이미 존재하는 채팅방입니다.");
+                    this.$emit('update:dialog', false);
+                    this.$emit('update:check', true);
+                    this.$emit('update');
+                    // window.location.href = '/chatRoom/list';
+                } else {
+                    alert("채팅방이 생성 성공");
+                    this.$emit('update:dialog', false);
+                    this.$emit('update:check', true);
+                    this.$emit('update');
+                }
+            } catch (e) {
                 console.error("채팅방 생성 실패", e);
             }
         },
 
+        closeCreate() {
+            this.showChatUser = true;
+            this.showChatRoomName = false;
+            this.selectUser = [];
+            this.chatroomData.roomName = "";
+            this.chatroomData.userNum = "";
+            this.chatroomData.userNums = [];
+            this.$emit('update:dialog', false);
+            this.$emit('update:check', true);
+        }
+
     }
 }
 </script>
+
+<style scoped>
+/* .create-container {
+    background-color: #f0f0f0;
+} */
+
+.chat-user-list {
+    padding-top: 15px;
+    flex: 1;
+    height: 350px;
+    width: auto;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    /* flex-shrink: 0; */
+    -ms-overflow-style: none;
+    /* 인터넷 익스플로러 */
+    scrollbar-width: none;
+    /* 파이어폭스 */
+}
+
+.chat-user-list::-webkit-scrollbar {
+    display: none;
+}
+
+.select-divider {
+    height: 50px;
+}
+
+.v-btn {
+  margin-right: 10px;
+}
+
+.select-line {
+    border: 0px;
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.selected-user-row {
+    height: 90px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+</style>

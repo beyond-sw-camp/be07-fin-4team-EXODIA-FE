@@ -6,40 +6,18 @@
           <v-card-title class="headline">회의실 생성</v-card-title>
           <v-card-text>
             <v-form @submit.prevent="createRoom">
-              <v-text-field
-                v-model="roomName"
-                label="회의실 이름"
-                required
-                outlined
-                dense
-              ></v-text-field>
-              <v-checkbox
-                v-model="usePassword"
-                label="비밀번호 설정"
-                dense
-              ></v-checkbox>
+              <v-text-field v-model="roomName" label="회의실 이름" required outlined dense></v-text-field>
+              <v-checkbox v-model="usePassword" label="비밀번호 설정" dense></v-checkbox>
               <v-slide-y-transition>
                 <div v-if="usePassword">
-                  <v-text-field
-                    v-model="password"
-                    label="비밀번호"
-                    type="password"
-                    outlined
-                    dense
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="confirmPassword"
-                    label="비밀번호 확인"
-                    type="password"
-                    outlined
-                    dense
-                    :error-messages="passwordError"
-                  ></v-text-field>
+                  <v-text-field v-model="password" label="비밀번호" type="password" outlined dense></v-text-field>
+                  <v-text-field v-model="confirmPassword" label="비밀번호 확인" type="password" outlined dense
+                    :error-messages="passwordError"></v-text-field>
                 </div>
               </v-slide-y-transition>
               <v-card-actions>
-                <v-btn color="success" @click="close">닫기</v-btn>
-                <v-btn color="error" @click="createRoom">생성</v-btn>
+                <v-btn v-create @click="createRoom">생성</v-btn>
+                <v-btn v-delete @click="close">닫기</v-btn>
               </v-card-actions>
             </v-form>
           </v-card-text>

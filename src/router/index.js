@@ -1,7 +1,7 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/views/HomePage.vue';
-import LoginPage from '@/views/Login.vue';
+import LoginPage from '@/views/LoginPage.vue';
 import { videoRouter } from './videoRouter';
 import { userRouter } from './userRouter';
 import { documentRouter } from './documentRouter';
@@ -14,6 +14,8 @@ import { positionRouter } from './positionRouter';
 import { qnaRouter } from './qnaRouter';
 import { notificationRouter } from './notificationRouter';
 import { submitRouter } from './submitRouter';
+import { eventRouter } from './eventRouter';
+import { organizationRouter } from './organizationRouter'
 
 const routes = [
   {
@@ -24,7 +26,7 @@ const routes = [
 
   {
     path: '/login',
-    name: 'Login',
+    name: 'LoginPage',
     component: LoginPage,
   },
 
@@ -40,6 +42,8 @@ const routes = [
   ...submitRouter,
   ...chatRouter,
   ...qnaRouter,
+  ...eventRouter,
+  ...organizationRouter
 ];
 
 const router = createRouter({

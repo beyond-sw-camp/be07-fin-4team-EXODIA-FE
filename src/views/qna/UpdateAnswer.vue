@@ -1,35 +1,30 @@
 <template>
-  <v-container class="mt-5">
+  <v-container class="mt-5 white-background" fluid>
     <v-form @submit.prevent="updateAnswer">
       <!-- 답변 내용 입력 -->
-      <v-textarea
-        label="답변 내용"
-        v-model="answer.answerText"
-        required
-        outlined
-        dense
-      ></v-textarea>
+      <v-textarea label="답변 내용" v-model="answer.answerText" required outlined dense class="mb-4"></v-textarea>
 
       <!-- 파일 선택 -->
-      <v-file-input
-        label="파일 선택 (선택사항)"
-        @change="onFileChange"
-        accept="*/*"
-        multiple
-        outlined
-        dense
-      ></v-file-input>
+      <v-file-input label="파일 선택 (선택사항)" @change="onFileChange" accept="*/*" multiple outlined dense
+        class="mb-4"></v-file-input>
 
       <!-- 기존 파일 및 새 파일 미리보기 -->
-      <div v-if="previewFiles.length > 0">
+      <div v-if="previewFiles.length > 0" class="mb-4">
         <p>첨부 파일 목록:</p>
         <ul>
           <li v-for="(file, index) in previewFiles" :key="index">{{ file.name }}</li>
         </ul>
       </div>
 
-      <v-btn type="submit" color="primary">수정 완료</v-btn>
-      <v-btn color="secondary" @click="goBack">취소</v-btn>
+      <!-- 제출 및 취소 버튼 -->
+      <v-row justify="end" class="mt-4">
+        <v-col cols="auto">
+          <v-btn v-create type="submit" class="submit-button">수정</v-btn>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn class="cancel-button" @click="goBack">취소</v-btn>
+        </v-col>
+      </v-row>
     </v-form>
   </v-container>
 </template>
@@ -45,6 +40,7 @@ export default {
         files: [], // 새로 선택된 파일 리스트
       },
       previewFiles: [], // 미리보기용 파일 리스트
+      answerMaxLength: 5000, // 답변 내용 최대 길이
     };
   },
   created() {
@@ -57,7 +53,7 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/qna/detail/${questionId}`);
         const detail = response.data.result;
-        
+
         // 기존의 답변 내용과 파일 목록을 저장
         this.answer.answerText = detail.answerText || '';
         this.answer.files = detail.aFiles ? detail.aFiles.map(file => ({
@@ -68,7 +64,7 @@ export default {
         // 파일 미리보기용 리스트 업데이트
         this.previewFiles = this.answer.files;
       } catch (error) {
-        alert('답변 정보를 불러오는 중 오류가 발생했습니다.');
+        alert('답변 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.');
         this.$router.push(`/qna/detail/${questionId}`);
       }
     },
@@ -85,6 +81,12 @@ export default {
     },
     // 답변 수정 요청 메서드
     async updateAnswer() {
+      // 답변 길이 검증
+      if (this.answer.answerText.length > this.answerMaxLength) {
+        alert(`답변 내용은 최대 ${this.answerMaxLength}자까지 작성할 수 있습니다. 현재 ${this.answer.answerText.length}자를 입력하셨습니다.`);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('answerText', this.answer.answerText);
 
@@ -92,6 +94,17 @@ export default {
       this.answer.files.forEach((file) => {
         formData.append('files', file);
       });
+
+      // 사용자 ID (userNum)를 로컬 스토리지에서 가져옴
+      const userNum = localStorage.getItem("userNum");
+
+      if (!userNum) {
+        alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
+        return;
+      }
+
+      // 사용자 ID 추가
+      formData.append('userNum', userNum);
 
       try {
         await axios.post(
@@ -106,7 +119,8 @@ export default {
         alert('답변이 성공적으로 수정되었습니다!');
         this.$router.push(`/qna/detail/${this.$route.params.id}`);
       } catch (error) {
-        alert('답변 수정에 실패했습니다.');
+        alert('답변 수정 중 문제가 발생했습니다. 다시 시도해 주세요.');
+        console.error(error);
       }
     },
     // 이전 페이지로 돌아가는 메서드
@@ -116,15 +130,17 @@ export default {
     },
   },
 };
+
 </script>
+
 
 <style scoped>
 .v-container {
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto;
-}
-.my-3 {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  background-color: #ffffff;
+  /* 전체 컨테이너 배경색 흰색으로 설정 */
+  padding: 20px;
+  border-radius: 12px;
 }
 </style>

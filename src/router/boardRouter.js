@@ -3,6 +3,10 @@ import BoardList from "@/views/board/BoardList.vue";
 import BoardCreate from "@/views/board/BoardCreate.vue";
 import BoardUpdate from "@/views/board/BoardUpdate.vue";
 import BoardDetail from "@/views/board/BoardDetail.vue";
+import CourseList from "@/views/board/CourseList.vue";
+import MyCourseList from "@/views/board/MyCourseList.vue";
+
+
 
 export const boardRouter = [
 
@@ -14,7 +18,7 @@ export const boardRouter = [
 
   },
   {
-    path: '/board/create',
+    path: '/board/:category/create',
     name: 'BoardCreate',
     component: BoardCreate,
     props: true,
@@ -31,4 +35,15 @@ export const boardRouter = [
     component: BoardDetail,
     props: true,
   },
+
+  {
+    path: '/board/courseList',
+    name: 'CourseList',
+    component: CourseList,
+  },
+  {
+    path: '/board/myCourseList',
+    name: 'MyCourseList',
+    component: MyCourseList,
+  }
 ];
