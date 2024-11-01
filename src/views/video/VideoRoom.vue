@@ -47,13 +47,19 @@ export default {
         session.value = OV.value.initSession();
 
         session.value.on("streamCreated", (event) => {
-          const subscriber = session.value.subscribe(event.stream, videoContainer.value);
-          subscribers.value.push(subscriber);
+          const subscriberContainer = document.createElement("div");
+          videoContainer.value.appendChild(subscriberContainer);
+
+          const subscriber = session.value.subscribe(event.stream, subscriberContainer);
+          subscribers.value.push({ subscriber, container: subscriberContainer });
         });
 
         session.value.on("streamDestroyed", (event) => {
-          const index = subscribers.value.findIndex((s) => s.stream.streamId === event.stream.streamId);
-          if (index >= 0) subscribers.value.splice(index, 1);
+          const subscriberData = subscribers.value.find(s => s.subscriber.stream.streamId === event.stream.streamId);
+          if (subscriberData) {
+            videoContainer.value.removeChild(subscriberData.container);
+            subscribers.value = subscribers.value.filter(s => s !== subscriberData);
+          }
         });
 
         await session.value.connect(token, { clientData: "사용자 이름" });
