@@ -8,30 +8,7 @@ import VideoList from '@/views/video/RoomList.vue';
 
 
 export const videoRouter = [
-  // {
-  //   path: '/video/rooms',
-  //   name: 'VideoRoomList',
-  //   component: VideoRoomList,
-  // },
-  // {
-  //   path: '/video-call',
-  //   name: 'VideoCall',
-  //   component: VideoCall,
-  // },
-  // {
-  //   path: '/video/create',
-  //   name: 'CreateRoomPage',
-  //   component: CreateRoomPage,
-  // },
-  // {
-  //   path: '/video/room/:roomId',
-  //   name: 'VideoRoom',
-  //   component: VideoRoom,
-  //   props: route => ({
-  //     roomId: Number(route.params.roomId), 
-  //     roomName: route.params.roomName
-  //   })
-  // }
+
   {
     path: '/video/list',
     name: 'RoomList',
