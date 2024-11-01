@@ -31,12 +31,13 @@ export default {
       }
     };
 
-    const joinRoom = (room) => {
+    const joinRoom = (sessionId) => {
   router.push({
     name: "VideoRoom",
-    params: { roomId: room.id, sessionId: room.sessionId },
+    params: { sessionId }
   });
 };
+
 
 
     onMounted(() => {

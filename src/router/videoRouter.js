@@ -20,15 +20,13 @@ export const videoRouter = [
     component: VideoCreate,
   },
   {
-    path: '/video/room/:roomId/:sessionId', 
+    path: '/video/room/:sessionId', 
     name: 'VideoRoom',
     component: VideoRoom,
     props: route => ({
-      roomId: Number(route.params.roomId),
       sessionId: route.params.sessionId
     })
   }
-
   
   
 ]
