@@ -297,7 +297,6 @@ export default {
                                 userName: this.firstApprovers.name,
                                 position: this.firstApprovers.positionId,
                             })
-
                         }
                     }
                     if (level === 2) {
@@ -309,7 +308,6 @@ export default {
                                 userName: this.secondApprovers.name,
                                 position: this.secondApprovers.positionId,
                             })
-
                         }
                     }
                     if (level === 3) {
@@ -328,11 +326,16 @@ export default {
             }
         },
         removeUser(index, level) {
+
             if (level === 1) this.firstApprovers = [];
             if (level === 2) this.secondApprovers = [];
             if (level === 3) this.thirdApprovers = [];
 
-            this.submitCreateData.submitUserDtos.splice(index, 1);
+
+            console.log("level: " + level);
+            this.submitCreateData.submitUserDtos.splice(level - 1, 1);
+
+            console.log(this.submitCreateData.submitUserDtos)
         },
         async createSubmit() {
             try {
