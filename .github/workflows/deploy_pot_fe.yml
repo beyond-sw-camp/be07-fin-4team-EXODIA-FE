@@ -17,7 +17,7 @@ jobs:
           node-version: "20"
     
       - name: npm clean
-        run: npm install --cache
+        run: npm cache clean --force
 
       - name: npm install
         working-directory: .
