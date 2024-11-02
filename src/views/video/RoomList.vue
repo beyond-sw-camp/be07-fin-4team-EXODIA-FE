@@ -55,13 +55,17 @@ export default {
         newRoomTitle.value = "";
 
         const sessionId = response.data.sessionId;
-        const token = response.data.token.split("token=")[1]; // token 값만 추출
+        // token을 정확히 추출하여 변수에 저장합니다
+        const tokenMatch = response.data.token.match(/token=([^&]*)/);
+        const token = tokenMatch ? tokenMatch[1] : null;
 
         if (sessionId && token) {
           router.push({
             name: "VideoRoom",
             params: { sessionId, token },
           });
+        } else {
+          console.error("Session ID 또는 Token이 유효하지 않습니다.");
         }
 
         getRooms(); // 방 목록 갱신
@@ -81,11 +85,17 @@ export default {
         const response = await axios.post(`https://server.exodiapot.xyz/api/rooms/${sessionId}/join`, null, {
           params: { userNum: userNum },
         });
-        const token = response.data.token.split("token=")[1]; // token 값만 추출
-        router.push({
-          name: "VideoRoom",
-          params: { sessionId, token },
-        });
+        const tokenMatch = response.data.token.match(/token=([^&]*)/);
+        const token = tokenMatch ? tokenMatch[1] : null;
+
+        if (token) {
+          router.push({
+            name: "VideoRoom",
+            params: { sessionId, token },
+          });
+        } else {
+          console.error("Token이 유효하지 않습니다.");
+        }
       } catch (error) {
         console.error("참가 중 오류 발생: ", error);
       }
@@ -96,7 +106,7 @@ export default {
     });
 
     return { rooms, newRoomTitle, getRooms, createRoom, joinRoom };
-  }
+  },
 };
 </script>
 
