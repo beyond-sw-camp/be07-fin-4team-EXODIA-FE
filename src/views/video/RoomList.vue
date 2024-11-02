@@ -55,7 +55,7 @@ export default {
         newRoomTitle.value = "";
 
         const sessionId = response.data.sessionId;
-        const token = response.data.token.match(/token=([^&]*)/)[1];
+        const token = response.data.token.split("token=")[1]; // token 값만 추출
 
         if (sessionId && token) {
           router.push({
@@ -81,7 +81,7 @@ export default {
         const response = await axios.post(`https://server.exodiapot.xyz/api/rooms/${sessionId}/join`, null, {
           params: { userNum: userNum },
         });
-        const token = response.data.token.match(/token=([^&]*)/)[1];
+        const token = response.data.token.split("token=")[1]; // token 값만 추출
         router.push({
           name: "VideoRoom",
           params: { sessionId, token },
@@ -96,7 +96,7 @@ export default {
     });
 
     return { rooms, newRoomTitle, getRooms, createRoom, joinRoom };
-  },
+  }
 };
 </script>
 

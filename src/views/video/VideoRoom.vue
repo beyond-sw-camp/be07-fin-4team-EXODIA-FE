@@ -75,22 +75,7 @@ export default {
 
         session.value.on("streamCreated", (event) => {
           const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
-          subscribers.value.push(subscriber);
-          const subscriberContainer = document.querySelector(".subscribers");
-          const subscriberVideoElement = document.createElement("video");
-          subscriberVideoElement.dataset.streamId = event.stream.streamId;
-          subscriberVideoElement.autoplay = true;
-          subscriberContainer.appendChild(subscriberVideoElement);
-          subscriber.addVideoElement(subscriberVideoElement);
-        });
-
-        session.value.on("streamDestroyed", (event) => {
-          subscribers.value = subscribers.value.filter((s) => s.stream.streamId !== event.stream.streamId);
-          const subscriberContainer = document.querySelector(".subscribers");
-          const subscriberVideoElement = subscriberContainer.querySelector(`[data-stream-id="${event.stream.streamId}"]`);
-          if (subscriberVideoElement) {
-            subscriberContainer.removeChild(subscriberVideoElement);
-          }
+          mainVideoContainer.value.appendChild(subscriber.videos[0].video);
         });
 
         await session.value.connect(token, { clientData: "사용자 이름" });
@@ -106,7 +91,7 @@ export default {
         console.error("화상 회의 방 참가 오류: ", error);
       }
     };
-
+    
     onMounted(joinRoom);
     onBeforeUnmount(() => {
       if (session.value) session.value.disconnect();
@@ -171,3 +156,11 @@ export default {
   },
 };
 </script>
+<style scoped>
+.main-video-container {
+  width: 100%;
+  max-width: 800px;
+  height: 600px;
+  border: 1px solid #ddd;
+}
+</style>
