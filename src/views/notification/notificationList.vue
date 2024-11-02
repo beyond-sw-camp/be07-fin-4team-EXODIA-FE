@@ -179,9 +179,8 @@ export default {
       }
     },
 
-    // 알림 클릭 핸들러
     async handleNotificationClick(notification) {
-      if (notification.isRead) {
+      if (!notification.isRead) {
         await this.markAsRead(notification.id);
         notification.isRead = true;
         if (this.unreadCount > 0) this.unreadCount -= 1;
@@ -190,17 +189,15 @@ export default {
     },
     
     redirectToNotification(notification) {
-      if (notification.type === '공지사항') {
-        window.location.href = '/board/notice/list';
-      } else if (notification.type === '문의') {
-        window.location.href = '/qna/list';
-      } else if (notification.type === '예약') {
-        window.location.href = '/reservation/reservationList';
-      } else if (notification.type === '결재') {
-        window.location.href = '/submit/list';
-      } else if (notification.type === '문서') {
-        window.location.href = '/document';
-      }
+      const routeMap = {
+        "공지사항": "/board/notice/list",
+        "문의": "/qna/list",
+        "예약": "/reservation/reservationList",
+        "결재": "/submit/list",
+        "문서": "/document",
+      };
+      const route = routeMap[notification.type] || "/";
+      window.location.href = route;
     },
 
     // 인증 헤더 가져오기
