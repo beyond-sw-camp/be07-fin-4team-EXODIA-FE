@@ -68,11 +68,6 @@ export default {
       return subscribers.value.slice(start, start + itemsPerPage);
     });
 
-// eslint-disable-next-line no-unused-vars
-const hasMorePages = computed(() => {
-  return (currentPage.value + 1) * itemsPerPage < subscribers.value.length;
-});
-
     const joinRoom = async () => {
       try {
         OV.value = new OpenVidu();

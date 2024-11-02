@@ -55,7 +55,6 @@ export default {
     newRoomTitle.value = "";
 
     const sessionId = response.data.sessionId;
-    // 순수 token 값만 추출
     const token = response.data.token.split("token=")[1]; 
 
     if (sessionId && token) {
@@ -71,26 +70,26 @@ export default {
   }
 };
 
-    const joinRoom = async (sessionId) => {
-      const userNum = localStorage.getItem("userNum");
-      if (!userNum) {
-        console.error("User number is missing.");
-        return;
-      }
+const joinRoom = async (sessionId) => {
+  const userNum = localStorage.getItem("userNum");
+  if (!userNum) {
+    console.error("User number is missing.");
+    return;
+  }
 
-      try {
-        const response = await axios.post(`https://server.exodiapot.xyz/api/rooms/${sessionId}/join`, null, {
-          params: { userNum: userNum },
-        });
-        const token = response.data.token.split("token=")[1]; 
-        router.push({
-          name: "VideoRoom",
-          params: { sessionId, token },
-        });
-      } catch (error) {
-        console.error("참가 중 오류 발생: ", error);
-      }
-    };
+  try {
+    const response = await axios.post(`https://server.exodiapot.xyz/api/rooms/${sessionId}/join`, null, {
+      params: { userNum: userNum },
+    });
+    const token = response.data.token.split("token=")[1]; 
+    router.push({
+      name: "VideoRoom",
+      params: { sessionId, token },
+    });
+  } catch (error) {
+    console.error("참가 중 오류 발생: ", error);
+  }
+};
 
     onMounted(() => {
       getRooms();
