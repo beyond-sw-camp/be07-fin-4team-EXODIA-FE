@@ -6,7 +6,7 @@
     </div>
     <div class="side-videos">
       <div v-for="(video, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(video)">
-        <video :srcObject="video.stream.getMediaStream()" autoplay playsinline muted></video>
+        <video ref="sideVideo" autoplay playsinline muted></video>
       </div>
     </div>
     <button @click="leaveRoom">방 나가기</button>
@@ -22,80 +22,83 @@ export default {
     return {
       roomTitle: '',
       sideVideos: [],
-      mainVideo: null,
+      OV: null,
+      session: null,
+      publisher: null,
     };
   },
   created() {
     this.initializeRoom();
   },
   methods: {
-
     async initializeRoom() {
-  const { sessionId } = this.$route.params;
-  try {
-    const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
-      params: { userNum: localStorage.getItem("userNum") },
-    });
-    const token = response.data.token;
+      const { sessionId } = this.$route.params;
+      try {
+        const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        const token = response.data.token;
 
-    // OpenVidu 연결 설정
-    this.OV = new OpenVidu();
-    this.session = this.OV.initSession();
+        // OpenVidu 연결 설정
+        this.OV = new OpenVidu();
+        this.session = this.OV.initSession();
 
-    this.session.on('streamCreated', (event) => {
-      const subscriber = this.session.subscribe(event.stream, undefined);
-      this.sideVideos.push(subscriber);
-    });
+        this.session.on('streamCreated', (event) => {
+          const subscriber = this.session.subscribe(event.stream, undefined);
+          this.sideVideos.push(subscriber);
+          this.$nextTick(() => {
+            const sideVideoElement = this.$refs.sideVideo[this.sideVideos.length - 1];
+            sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+          });
+        });
 
-    await this.session.connect(token, { clientData: "사용자명" });
+        await this.session.connect(token, { clientData: "사용자명" });
 
-    this.publisher = this.OV.initPublisher(undefined, {
-      videoSource: undefined, // 디폴트 카메라 사용
-      audioSource: undefined, // 디폴트 마이크 사용
-      publishAudio: true,     // 오디오 켜기
-      publishVideo: true,     // 비디오 켜기
-      resolution: '640x480',  // 해상도 설정
-      frameRate: 30,          // 프레임 설정
-      insertMode: 'APPEND',   // 비디오 추가 모드
-      mirror: false           // 미러링 비활성화 (필요에 따라 설정)
-    });
+        // 자신의 비디오 스트림을 위한 publisher 설정
+        this.publisher = this.OV.initPublisher(undefined, {
+          videoSource: undefined, // 디폴트 카메라 사용
+          audioSource: undefined, // 디폴트 마이크 사용
+          publishAudio: true,     // 오디오 켜기
+          publishVideo: true,     // 비디오 켜기
+          resolution: '640x480',  // 해상도 설정
+          frameRate: 30,          // 프레임 설정
+          insertMode: 'APPEND',   // 비디오 추가 모드
+          mirror: false           // 미러링 비활성화 (필요에 따라 설정)
+        });
 
-    this.publisher.once('accessAllowed', () => {
-      this.mainVideo.srcObject = this.publisher.stream.getMediaStream();
-    });
+        this.publisher.once('accessAllowed', () => {
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        });
 
-    this.session.publish(this.publisher);
-  } catch (error) {
-    console.error("방 참여 중 오류 발생:", error);
-  }
-},
-async leaveRoom() {
-  const { sessionId } = this.$route.params;
-  try {
-    if (this.session) {
-      this.session.disconnect();
-    }
-    await axios.post(`/api/rooms/${sessionId}/leave`, null, {
-      params: { userNum: localStorage.getItem("userNum") },
-    });
-    this.$router.push({ name: 'RoomList' });
-  } catch (error) {
-    console.error("방 나가기 중 오류 발생:", error);
-  }
-},
-
-    switchToMain(video) {
-      const currentMainStream = this.mainVideo.srcObject;
-      this.mainVideo.srcObject = video.stream;
-      video.stream = currentMainStream;
+        this.session.publish(this.publisher);
+      } catch (error) {
+        console.error("방 참여 중 오류 발생:", error);
+      }
     },
-   
+    async leaveRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        if (this.session) {
+          this.session.disconnect();
+        }
+        await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        this.$router.push({ name: 'RoomList' });
+      } catch (error) {
+        console.error("방 나가기 중 오류 발생:", error);
+      }
+    },
+    switchToMain(video) {
+      const currentMainStream = this.$refs.mainVideo.srcObject;
+      this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
+      video.stream.srcObject = currentMainStream;
+    },
   },
 };
 </script>
 
 <style>
-/* 기본 스타일 설정 */
 .room-view {
   display: flex;
   flex-direction: column;
