@@ -280,7 +280,7 @@ export default {
         '/document';
       }
 
-      window.location.href = targetUrl;
+      // window.location.href = targetUrl;
     },
 
 
