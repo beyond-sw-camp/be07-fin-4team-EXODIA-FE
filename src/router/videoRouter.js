@@ -1,5 +1,3 @@
-// import VideoRoomList from '@/views/video/VideoRoomList.vue'; 
-// import CreateRoomPage from '@/views/video/CreateRoomPage.vue'; 
 import VideoRoom from '@/views/video/VideoRoom.vue';
 import VideoCreate from '@/views/video/RoomCreate.vue';
 import VideoList from '@/views/video/RoomList.vue';
@@ -8,30 +6,7 @@ import VideoList from '@/views/video/RoomList.vue';
 
 
 export const videoRouter = [
-  // {
-  //   path: '/video/rooms',
-  //   name: 'VideoRoomList',
-  //   component: VideoRoomList,
-  // },
-  // {
-  //   path: '/video-call',
-  //   name: 'VideoCall',
-  //   component: VideoCall,
-  // },
-  // {
-  //   path: '/video/create',
-  //   name: 'CreateRoomPage',
-  //   component: CreateRoomPage,
-  // },
-  // {
-  //   path: '/video/room/:roomId',
-  //   name: 'VideoRoom',
-  //   component: VideoRoom,
-  //   props: route => ({
-  //     roomId: Number(route.params.roomId), 
-  //     roomName: route.params.roomName
-  //   })
-  // }
+
   {
     path: '/video/list',
     name: 'RoomList',
@@ -43,13 +18,14 @@ export const videoRouter = [
     component: VideoCreate,
   },
   {
-    path: '/video/room/:roomId/:sessionId', 
+    path: '/video/room/:sessionId', 
     name: 'VideoRoom',
     component: VideoRoom,
     props: route => ({
-      roomId: Number(route.params.roomId),
-      sessionId: route.params.sessionId
+      sessionId: route.params.sessionId,
+      token: route.params.token
     })
   }
+  
   
 ]

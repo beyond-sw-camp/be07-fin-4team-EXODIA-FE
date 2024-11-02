@@ -1,47 +1,166 @@
+<!-- VideoRoom.vue -->
 <template>
   <div>
-    <div id="video-container"></div>
-    <v-btn @click="leaveRoom">나가기</v-btn>
+    <h1>화상 회의 방</h1>
+    <div ref="mainVideoContainer" class="main-video-container"></div>
+    <div class="subscriber-container">
+      <button @click="prevPage" v-if="currentPage > 0">‹</button>
+      <div class="subscribers">
+        <div
+          v-for="subscriber in paginatedSubscribers"
+          :key="subscriber.stream.streamId"
+          class="subscriber-video"
+          @click="changeMainStream(subscriber)"
+        >
+          <video ref="subscriberVideo" autoplay></video>
+        </div>
+      </div>
+      <button @click="nextPage" v-if="hasMorePages">›</button>
+    </div>
+
+    <!-- 컨트롤 버튼들 -->
+    <div class="controls">
+      <v-btn icon @click="toggleVideo">
+        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="toggleAudio">
+        <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="shareScreen">
+        <v-icon>{{ isScreenShared ? 'mdi-monitor-share' : 'mdi-monitor' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="leaveRoom">
+        <v-icon>mdi-logout</v-icon>
+      </v-btn>
+    </div>
   </div>
 </template>
 
 <script>
-import OpenVidu from 'openvidu-browser';
-import axios from 'axios';
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { OpenVidu } from "openvidu-browser";
+import { useRoute } from "vue-router";
 
 export default {
-  data() {
+  setup() {
+    const route = useRoute();
+    const token = route.params.token;
+
+    if (!token) {
+      console.error("Token is missing in query.");
+      throw new Error("Token is required to join the session.");
+    }
+
+    const mainVideoContainer = ref(null);
+    const subscribers = ref([]);
+    const OV = ref(null);
+    const session = ref(null);
+    const publisher = ref(null);
+    const currentPage = ref(0);
+    const itemsPerPage = 4;
+
+    const isVideoEnabled = ref(true);
+    const isAudioEnabled = ref(true);
+    const isScreenShared = ref(false);
+
+    const paginatedSubscribers = computed(() => {
+      const start = currentPage.value * itemsPerPage;
+      return subscribers.value.slice(start, start + itemsPerPage);
+    });
+
+    const joinRoom = async () => {
+      try {
+        OV.value = new OpenVidu();
+        session.value = OV.value.initSession();
+
+        session.value.on("streamCreated", (event) => {
+          const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
+          mainVideoContainer.value.appendChild(subscriber.videos[0].video);
+        });
+
+        await session.value.connect(token, { clientData: "사용자 이름" });
+
+        publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
+          videoSource: undefined,
+          audioSource: undefined,
+          publishAudio: true,
+          publishVideo: true,
+        });
+        session.value.publish(publisher.value);
+      } catch (error) {
+        console.error("화상 회의 방 참가 오류: ", error);
+      }
+    };
+    
+    onMounted(joinRoom);
+    onBeforeUnmount(() => {
+      if (session.value) session.value.disconnect();
+      OV.value = null;
+      session.value = null;
+      publisher.value = null;
+      subscribers.value = [];
+    });
+
     return {
-      session: null
+      mainVideoContainer,
+      paginatedSubscribers,
+      prevPage: () => { if (currentPage.value > 0) currentPage.value--; },
+      nextPage: () => { if ((currentPage.value + 1) * itemsPerPage < subscribers.value.length) currentPage.value++; },
+      leaveRoom: () => {
+        if (session.value) session.value.disconnect();
+        OV.value = null;
+        session.value = null;
+        publisher.value = null;
+        subscribers.value = [];
+      },
+      toggleVideo: () => {
+        if (publisher.value) {
+          isVideoEnabled.value = !isVideoEnabled.value;
+          publisher.value.publishVideo(isVideoEnabled.value);
+        }
+      },
+      toggleAudio: () => {
+        if (publisher.value) {
+          isAudioEnabled.value = !isAudioEnabled.value;
+          publisher.value.publishAudio(isAudioEnabled.value);
+        }
+      },
+      shareScreen: async () => {
+        if (!isScreenShared.value) {
+          const screenPublisher = await OV.value.initPublisherAsync(mainVideoContainer.value, {
+            videoSource: "screen",
+            publishAudio: isAudioEnabled.value,
+            publishVideo: true,
+          });
+          session.value.unpublish(publisher.value);
+          session.value.publish(screenPublisher);
+          publisher.value = screenPublisher;
+        } else {
+          session.value.unpublish(publisher.value);
+          publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
+            publishAudio: isAudioEnabled.value,
+            publishVideo: isVideoEnabled.value,
+          });
+          session.value.publish(publisher.value);
+        }
+        isScreenShared.value = !isScreenShared.value;
+      },
+      changeMainStream: (subscriber) => {
+        mainVideoContainer.value.innerHTML = "";
+        subscriber.addVideoElement(mainVideoContainer.value);
+      },
+      isVideoEnabled,
+      isAudioEnabled,
+      isScreenShared,
     };
   },
-  async mounted() {
-    const OV = new OpenVidu();
-    this.session = OV.initSession();
-    this.session.on('streamCreated', (event) => {
-      this.session.subscribe(event.stream, 'video-container');
-    });
-    try {
-      const token = await this.getToken();
-      await this.session.connect(token, { clientData: '사용자 이름' });
-      const publisher = OV.initPublisher('video-container');
-      this.session.publish(publisher);
-    } catch (error) {
-      console.error('방 접속 실패:', error);
-    }
-  },
-  methods: {
-    async getToken() {
-      // 백엔드에서 토큰을 생성하여 반환
-      const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/sessions/get-token`, {
-        sessionId: this.$route.params.sessionId
-      });
-      return response.data.token;
-    },
-    leaveRoom() {
-      if (this.session) this.session.disconnect();
-      this.$router.push({ name: 'RoomList' });
-    }
-  }
 };
 </script>
+<style scoped>
+.main-video-container {
+  width: 100%;
+  max-width: 800px;
+  height: 600px;
+  border: 1px solid #ddd;
+}
+</style>
