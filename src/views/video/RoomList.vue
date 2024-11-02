@@ -1,4 +1,3 @@
-<!-- RoomList.vue -->
 <template>
   <div>
     <h1>방 목록</h1>
@@ -19,7 +18,6 @@
   </div>
 </template>
 
-// RoomList.vue
 <script>
 import axios from "axios";
 import { ref, onMounted } from "vue";
@@ -41,38 +39,37 @@ export default {
     };
 
     const createRoom = async () => {
-  const userNum = localStorage.getItem("userNum");
-  if (!newRoomTitle.value || !userNum) {
-    alert("방 제목과 사용자 번호를 입력해주세요.");
-    return;
-  }
+      const userNum = localStorage.getItem("userNum");
+      if (!newRoomTitle.value || !userNum) {
+        alert("방 제목과 사용자 번호를 입력해주세요.");
+        return;
+      }
 
-  try {
-    const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
-      title: newRoomTitle.value,
-      userNum: userNum,
-    });
-    console.log("방 생성 성공: ", response.data);
-    newRoomTitle.value = "";
+      try {
+        const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
+          title: newRoomTitle.value,
+          userNum: userNum,
+        });
+        console.log("방 생성 성공: ", response.data);
+        newRoomTitle.value = "";
 
-    const sessionId = response.data.sessionId;
-    // 토큰에서 'token=' 다음의 부분만 추출
-    const token = response.data.token.split("token=")[1]; 
+        const sessionId = response.data.sessionId;
+        const token = response.data.token.split("token=")[1];
 
-    if (sessionId && token) {
-      router.push({
-        name: "VideoRoom",
-        params: { sessionId, token },
-      });
-    } else {
-      console.error("세션 ID 또는 토큰이 없습니다.");
-    }
+        if (sessionId && token) {
+          router.push({
+            name: "VideoRoom",
+            params: { sessionId, token },
+          });
+        } else {
+          console.error("세션 ID 또는 토큰이 없습니다.");
+        }
 
-    getRooms(); // 방 목록 갱신
-  } catch (error) {
-    console.error("방 생성 오류: ", error);
-  }
-};
+        getRooms();
+      } catch (error) {
+        console.error("방 생성 오류: ", error);
+      }
+    };
 
     const joinRoom = async (sessionId) => {
       const userNum = localStorage.getItem("userNum");
@@ -106,7 +103,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .rooms-container {
   display: grid;
@@ -114,7 +110,6 @@ export default {
   gap: 16px;
   margin-top: 20px;
 }
-
 .room-box {
   padding: 20px;
   background-color: #333;
@@ -124,16 +119,13 @@ export default {
   cursor: pointer;
   transition: transform 0.2s ease;
 }
-
 .room-box:hover {
   transform: scale(1.05);
 }
-
 .room-title {
   font-size: 18px;
   font-weight: bold;
 }
-
 .participant-count {
   margin-top: 10px;
   font-size: 14px;
