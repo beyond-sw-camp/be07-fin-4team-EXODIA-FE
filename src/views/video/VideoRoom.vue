@@ -75,16 +75,16 @@ export default {
           subscriber.on('streamPlaying', () => {
             this.$nextTick(() => {
               const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
-              const sideVideoElement = this.$refs[videoRefName];
+              const sideVideoElement = this.$refs[videoRefName][0]; // 배열이 아닌 요소로 참조
 
-              if (sideVideoElement && sideVideoElement[0]) {
-                sideVideoElement[0].srcObject = subscriber.stream.getMediaStream();
-                sideVideoElement[0].play().catch(error => {
+              if (sideVideoElement) {
+                sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+                sideVideoElement.play().catch(error => {
                   console.warn("비디오 자동 재생이 차단되었습니다:", error);
                 });
 
                 console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
-                console.log("비디오 요소 srcObject 설정 확인:", sideVideoElement[0].srcObject);
+                console.log(`${subscriber.stream.streamId} 비디오 요소 srcObject 설정 확인:`, sideVideoElement.srcObject);
               } else {
                 console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
               }
