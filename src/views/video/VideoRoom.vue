@@ -71,12 +71,10 @@ export default {
           const subscriber = this.session.subscribe(event.stream, undefined);
           this.sideVideos.push(subscriber);
 
-          // streamPlaying 이벤트가 발생할 때까지 기다렸다가 srcObject 설정
           subscriber.on('streamPlaying', () => {
-            console.log(`streamPlaying 이벤트 발생: ${subscriber.stream.streamId}`);
             this.$nextTick(() => {
               const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
-              const sideVideoElement = this.$refs[videoRefName][0]; 
+              const sideVideoElement = this.$refs[videoRefName][0];
 
               if (sideVideoElement) {
                 sideVideoElement.srcObject = subscriber.stream.getMediaStream();
