@@ -175,7 +175,7 @@ export default {
         await axios.put(`${process.env.VUE_APP_API_BASE_URL}/notifications/${userNum}/read/${notificationId}`, {}, {
           headers: this.getAuthHeaders(),
         });
-        this.fetchNotifications();  // 읽음 처리 후 알림 목록 다시 불러오기
+        console.log(`알림 ${notificationId} 읽음 처리 완료`);
       } catch (error) {
         console.error("알림 읽음 처리 중 오류 발생:", error);
       }
@@ -261,8 +261,15 @@ export default {
       this.$router.push('/notification/notificationList');
     },
     async handleNotificationClick(notification) {
-      await this.markNotificationAsRead(notification.id); // 알림 읽음 처리
-      this.redirectToNotification(notification); // 알림 유형에 따라 페이지 이동
+      // 알림을 읽음 처리합니다
+      if (!notification.read) {
+        await this.markNotificationAsRead(notification.id);
+        // 읽지 않은 알림 개수 줄이기
+        this.unreadCount -= 1;
+        notification.read = true;  // 상태 업데이트
+      }
+      // 알림 클릭 시 알림 유형에 따라 경로 이동
+      this.redirectToNotification(notification);
     },
     redirectToNotification(notification) {
       if (notification.type === '공지사항') {
@@ -278,7 +285,7 @@ export default {
       }
     },
 
-    
+
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
