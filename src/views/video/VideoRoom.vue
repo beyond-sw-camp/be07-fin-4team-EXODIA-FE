@@ -1,11 +1,8 @@
+<!-- VideoRoom.vue -->
 <template>
   <div>
     <h1>화상 회의 방</h1>
-
-    <!-- 본인 화면 (메인) -->
     <div ref="mainVideoContainer" class="main-video-container"></div>
-
-    <!-- 다른 참가자 화면들 (하단에 가로 배치, 최대 4명씩) -->
     <div class="subscriber-container">
       <button @click="prevPage" v-if="currentPage > 0">‹</button>
       <div class="subscribers">
@@ -13,10 +10,10 @@
           v-for="subscriber in paginatedSubscribers"
           :key="subscriber.stream.streamId"
           class="subscriber-video"
+          @click="changeMainStream(subscriber)"
         >
           <video ref="subscriberVideo" autoplay></video>
         </div>
-      
       </div>
       <button @click="nextPage" v-if="hasMorePages">›</button>
     </div>
@@ -40,16 +37,15 @@
 </template>
 
 <script>
-// import axios from "axios";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { OpenVidu } from "openvidu-browser";
+import { useRoute } from "vue-router";
 
 export default {
-  props: ['sessionId', 'token'],
-  setup(props) {
-    console.log("Session ID:", props.sessionId); 
-    console.log("Token:", props.token || "Token is missing"); 
-    
+  setup() {
+    const route = useRoute();
+    const token = route.params.token; // sessionId는 제거했습니다.
+
     const mainVideoContainer = ref(null);
     const subscribers = ref([]);
     const OV = ref(null);
@@ -61,7 +57,6 @@ export default {
     const isVideoEnabled = ref(true);
     const isAudioEnabled = ref(true);
     const isScreenShared = ref(false);
-
 
     const paginatedSubscribers = computed(() => {
       const start = currentPage.value * itemsPerPage;
@@ -105,12 +100,10 @@ export default {
           }
         });
 
-        // token이 제대로 전달되었는지 확인 후 연결 시도
-        if (props.token) {
-          const extractedToken = props.token.includes("token=") ? props.token.split("token=")[1] : props.token;
-          await session.value.connect(extractedToken, { clientData: "사용자 이름" });
+        if (token) {
+          await session.value.connect(token, { clientData: "사용자 이름" });
         } else {
-          throw new Error("Token is missing in props.");
+          throw new Error("Token is missing in query.");
         }
 
         publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
@@ -125,6 +118,10 @@ export default {
       }
     };
 
+    const changeMainStream = (subscriber) => {
+      mainVideoContainer.value.innerHTML = "";
+      subscriber.addVideoElement(mainVideoContainer.value);
+    };
 
     const leaveRoom = () => {
       if (session.value) session.value.disconnect();
@@ -170,13 +167,7 @@ export default {
     };
 
     onMounted(joinRoom);
-    onBeforeUnmount(() => {
-      if (session.value) session.value.disconnect();
-      OV.value = null;
-      session.value = null;
-      publisher.value = null;
-      subscribers.value = [];
-    });
+    onBeforeUnmount(leaveRoom);
 
     return {
       mainVideoContainer,
@@ -188,6 +179,7 @@ export default {
       toggleVideo,
       toggleAudio,
       shareScreen,
+      changeMainStream,
       isVideoEnabled,
       isAudioEnabled,
       isScreenShared,
@@ -195,40 +187,3 @@ export default {
   },
 };
 </script>
-
-
-<style scoped>
-.main-video-container {
-  width: 100%;
-  max-width: 800px;
-  height: 600px;
-  margin-bottom: 20px;
-  border: 2px solid #333;
-}
-
-.subscriber-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow-x: hidden;
-}
-
-.subscribers {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow: hidden;
-}
-
-.subscriber-video {
-  width: 150px;
-  height: 100px;
-  border: 1px solid #ddd;
-}
-
-.controls {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-</style>

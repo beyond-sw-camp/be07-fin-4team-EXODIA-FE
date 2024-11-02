@@ -1,7 +1,7 @@
+<!-- RoomList.vue -->
 <template>
   <div>
     <h1>방 목록</h1>
-    <!-- 방 제목 입력 -->
     <input v-model="newRoomTitle" placeholder="방 제목을 입력하세요" />
     <button @click="createRoom">방 생성하기</button>
 
@@ -30,7 +30,6 @@ export default {
     const newRoomTitle = ref("");
     const router = useRouter();
 
-    // 방 목록 가져오기
     const getRooms = async () => {
       try {
         const response = await axios.get("https://server.exodiapot.xyz/api/rooms/list");
@@ -40,7 +39,6 @@ export default {
       }
     };
 
-    // 방 생성 및 자동 입장
     const createRoom = async () => {
       const userNum = localStorage.getItem("userNum");
       if (!newRoomTitle.value || !userNum) {
@@ -58,19 +56,20 @@ export default {
 
         const sessionId = response.data.sessionId;
         const token = response.data.token;
-        router.push({
-        name: "VideoRoom",
-        params: { sessionId, token }, 
-      });
 
+        if (sessionId && token) {
+          router.push({
+            name: "VideoRoom",
+            params: { sessionId, token },
+          });
+        }
 
-        getRooms(); // 방 목록 갱신
+        getRooms();
       } catch (error) {
         console.error("방 생성 오류: ", error);
       }
     };
 
-    // 다른 사용자 입장
     const joinRoom = async (sessionId) => {
       const userNum = localStorage.getItem("userNum");
       if (!userNum) {
