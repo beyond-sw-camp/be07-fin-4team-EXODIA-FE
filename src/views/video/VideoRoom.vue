@@ -65,8 +65,12 @@ export default {
         this.session = this.OV.initSession();
 
         this.session.on('streamCreated', (event) => {
+          console.log('새 스트림 생성됨:', event.stream);
           const subscriber = this.session.subscribe(event.stream, undefined);
           this.sideVideos.push(subscriber);
+
+          console.log(`스트림 구독 완료: ${subscriber.stream.streamId}`);
+
 
           this.$nextTick(() => {
             const sideVideoElements = this.$refs.sideVideo;
@@ -76,6 +80,16 @@ export default {
               sideVideoElements.srcObject = subscriber.stream.getMediaStream();
             }
           });
+        });
+
+        this.session.on('connectionCreated', (event) => {
+          console.log(`새 참가자 연결됨: ${event.connection.connectionId}`);
+          console.log('현재 참가자 수:', this.session.connections.length);
+        });
+
+        this.session.on('connectionDestroyed', (event) => {
+          console.log(`참가자 연결 해제됨: ${event.connection.connectionId}`);
+          console.log('남은 참가자 수:', this.session.connections.length);
         });
 
         await this.session.connect(token, { clientData: "사용자명" });
@@ -102,7 +116,7 @@ export default {
       }
     },
 
-    
+
     toggleAudio() {
       this.isAudioEnabled = !this.isAudioEnabled;
       this.publisher.publishAudio(this.isAudioEnabled);
