@@ -48,6 +48,10 @@ export default {
       try {
         const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
           title: newRoomTitle.value,
+        }, {
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
         console.log("방 생성 성공: ", response.data);
         newRoomTitle.value = "";
@@ -58,10 +62,10 @@ export default {
     };
 
     const joinRoom = async (sessionId) => {
-  const userNum = localStorage.getItem("userNum");
-  if (!userNum) {
-    console.error("User number is missing.");
-    return;
+    const userNum = localStorage.getItem("userNum");
+    if (!userNum) {
+      console.error("User number is missing.");
+      return;
   }
 
   try {
