@@ -24,7 +24,8 @@ export const videoRouter = [
     name: 'VideoRoom',
     component: VideoRoom,
     props: route => ({
-      sessionId: route.params.sessionId
+      sessionId: route.params.sessionId,
+      token: route.params.token
     })
   }
   

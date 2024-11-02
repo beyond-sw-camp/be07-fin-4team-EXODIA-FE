@@ -45,8 +45,12 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { OpenVidu } from "openvidu-browser";
 
 export default {
-  props: ["sessionId"],
+  props: ['sessionId', 'token'],
   setup(props) {
+    
+    console.log("Session ID:", this.sessionId);
+    console.log("Token:", this.token);
+
     const mainVideoContainer = ref(null);
     const subscribers = ref([]);
     const OV = ref(null);
