@@ -67,13 +67,16 @@ export default {
 
         // 다른 참가자의 스트림 구독 처리
         this.session.on('streamCreated', (event) => {
-          console.log('새 스트림 생성됨:', event.stream);
-          const subscriber = this.session.subscribe(event.stream, undefined);
-          this.sideVideos.push(subscriber); // 먼저 배열에 추가
+    console.log('새 스트림 생성됨:', event.stream);
+    const subscriber = this.session.subscribe(event.stream, undefined);
+    this.sideVideos.push(subscriber);
 
-          this.$nextTick(() => {
+    // streamPlaying 이벤트가 발생할 때까지 기다렸다가 srcObject 설정
+    subscriber.on('streamPlaying', () => {
+        this.$nextTick(() => {
             const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
             const sideVideoElement = this.$refs[videoRefName][0];
+            
             if (sideVideoElement) {
                 sideVideoElement.srcObject = subscriber.stream.getMediaStream();
                 
@@ -89,7 +92,8 @@ export default {
                 console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
             }
         });
-      });
+    });
+});
 
 
 
