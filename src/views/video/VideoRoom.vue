@@ -39,7 +39,8 @@
 <script>
 import { OpenVidu } from 'openvidu-browser';
 import axios from 'axios';
-import UserVideo from '@/components/UserVideo.vue';
+import UserVideo from '../../components/UserVideo.vue';
+
 
 export default {
   components: { UserVideo },
