@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import { OpenVidu } from 'openvidu-browser';
 import axios from 'axios';
 
 export default {
@@ -34,9 +35,27 @@ export default {
     const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
       params: { userNum: localStorage.getItem("userNum") },
     });
-    this.roomTitle = response.data.title;
-    this.mainVideo = this.$refs.mainVideo;
-    // OpenVidu 관련 비디오 설정 추가 가능
+    const token = response.data.token;
+
+    // OpenVidu 연결 설정
+    this.OV = new OpenVidu();
+    this.session = this.OV.initSession();
+
+    this.session.on('streamCreated', (event) => {
+      const subscriber = this.session.subscribe(event.stream, undefined);
+      this.sideVideos.push(subscriber);
+    });
+
+    await this.session.connect(token, { clientData: "사용자명" });
+
+    this.publisher = this.OV.initPublisher(undefined, {
+      videoSource: undefined,
+      publishAudio: true,
+      publishVideo: true,
+    });
+    this.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+    this.session.publish(this.publisher);
+
   } catch (error) {
     console.error("방 참여 중 오류 발생:", error);
   }
@@ -44,6 +63,9 @@ export default {
 async leaveRoom() {
   const { sessionId } = this.$route.params;
   try {
+    if (this.session) {
+      this.session.disconnect();
+    }
     await axios.post(`/api/rooms/${sessionId}/leave`, null, {
       params: { userNum: localStorage.getItem("userNum") },
     });
@@ -52,6 +74,7 @@ async leaveRoom() {
     console.error("방 나가기 중 오류 발생:", error);
   }
 },
+
     switchToMain(video) {
       const currentMainStream = this.mainVideo.srcObject;
       this.mainVideo.srcObject = video.stream;
