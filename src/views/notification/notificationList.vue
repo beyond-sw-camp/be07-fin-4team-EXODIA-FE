@@ -180,6 +180,7 @@ export default {
         await this.markAsRead(notification.id);
         notification.isRead = true;
         if (this.unreadCount > 0) this.unreadCount -= 1;
+        this.fetchNotifications();
       }
       this.redirectToNotification(notification);
     },
