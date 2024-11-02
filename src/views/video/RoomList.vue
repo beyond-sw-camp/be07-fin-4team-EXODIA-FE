@@ -40,26 +40,25 @@ export default {
     };
 
     const createRoom = async () => {
-      if (!newRoomTitle.value) {
-        alert("방 제목을 입력해주세요.");
+      const userNum = localStorage.getItem("userNum"); 
+      if (!newRoomTitle.value || !userNum) {
+        alert("방 제목과 사용자 번호를 입력해주세요.");
         return;
       }
 
       try {
         const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
           title: newRoomTitle.value,
-        }, {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          userNum: userNum,
         });
         console.log("방 생성 성공: ", response.data);
-        newRoomTitle.value = "";
-        getRooms();
+        newRoomTitle.value = ""; 
+        getRooms();  
       } catch (error) {
         console.error("방 생성 오류: ", error);
       }
     };
+
 
     const joinRoom = async (sessionId) => {
     const userNum = localStorage.getItem("userNum");
