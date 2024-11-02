@@ -64,6 +64,7 @@ export default {
         this.OV = new OpenVidu();
         this.session = this.OV.initSession();
 
+        
         // 다른 참가자의 스트림 구독 설정
         this.session.on('streamCreated', (event) => {
           console.log('새 스트림 생성됨:', event.stream);
