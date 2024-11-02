@@ -18,7 +18,7 @@ export const videoRouter = [
     component: VideoCreate,
   },
   {
-    path: '/video/room/:sessionId', 
+    path: '/video/room/:sessionId/:token', 
     name: 'VideoRoom',
     component: VideoRoom,
     props: route => ({
@@ -26,6 +26,7 @@ export const videoRouter = [
       token: route.params.token
     })
   }
+  
   
   
 ]

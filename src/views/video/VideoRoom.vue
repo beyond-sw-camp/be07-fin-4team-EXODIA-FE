@@ -44,8 +44,10 @@ import { useRoute } from "vue-router";
 export default {
   setup() {
     const route = useRoute();
+    const sessionId = route.params.sessionId;
     const token = route.params.token;
-
+    console.log(sessionId);
+    
     if (!token) {
       console.error("Token이 누락되었습니다. 세션에 참여할 수 없습니다.");
       return; // 토큰이 없으면 방에 입장할 수 없으므로 함수 종료
