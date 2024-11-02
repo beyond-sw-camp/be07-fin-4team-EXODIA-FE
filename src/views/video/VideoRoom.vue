@@ -43,14 +43,18 @@
 // import axios from "axios";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { OpenVidu } from "openvidu-browser";
+import { useRoute } from "vue-router";
 
 export default {
   props: ['sessionId', 'token'],
   setup(props) {
-    
-    console.log("Session ID:", props.sessionId);
-    console.log("Token:", props.token);
+    const route = useRoute();
+    const sessionId = route.params.sessionId;
+    const token = route.query.token;
 
+    console.log("Session ID:", sessionId); 
+    console.log("Token:", token); 
+    
     const mainVideoContainer = ref(null);
     const subscribers = ref([]);
     const OV = ref(null);

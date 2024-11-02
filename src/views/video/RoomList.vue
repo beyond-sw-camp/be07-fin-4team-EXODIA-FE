@@ -58,13 +58,14 @@ export default {
 
         const sessionId = response.data.sessionId;
         const token = response.data.token;
-
         if (sessionId && token) {
           router.push({
             name: "VideoRoom",
-            params: { sessionId, token },
+            params: { sessionId },
+            query: { token },  // query로 token을 전달
           });
         }
+
 
         getRooms(); // 방 목록 갱신
       } catch (error) {

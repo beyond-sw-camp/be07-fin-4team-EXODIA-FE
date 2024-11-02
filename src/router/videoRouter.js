@@ -1,5 +1,3 @@
-// import VideoRoomList from '@/views/video/VideoRoomList.vue'; 
-// import CreateRoomPage from '@/views/video/CreateRoomPage.vue'; 
 import VideoRoom from '@/views/video/VideoRoom.vue';
 import VideoCreate from '@/views/video/RoomCreate.vue';
 import VideoList from '@/views/video/RoomList.vue';
