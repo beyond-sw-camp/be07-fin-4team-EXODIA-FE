@@ -9,7 +9,7 @@
 
     <!-- 다른 참가자 비디오들 -->
     <div class="side-videos">
-      <div v-for="(video, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(video)">
+      <div v-for="(video, index) in sideVideos" :key="index" class="side-video">
         <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
       </div>
     </div>
@@ -68,17 +68,14 @@ export default {
         // 스트림 생성 시 이벤트 처리
         this.session.on('streamCreated', (event) => {
           console.log('새 스트림 생성됨:', event.stream);
-          const subscriber = this.session.subscribe(event.stream, undefined);
-          this.sideVideos.push(subscriber);
-
-          console.log(`스트림 구독 완료: ${subscriber.stream.streamId}`);
 
           // DOM 렌더링 후 비디오에 스트림 연결
           this.$nextTick(() => {
-            const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
+            const videoRefName = 'sideVideo' + this.sideVideos.length;
             const sideVideoElement = this.$refs[videoRefName][0];
             if (sideVideoElement) {
-              sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+              const subscriber = this.session.subscribe(event.stream, sideVideoElement);
+              this.sideVideos.push(subscriber);
               console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
             } else {
               console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
