@@ -176,12 +176,6 @@ export default {
           headers: this.getAuthHeaders(),
         });
 
-        const notification = this.notifications.find(n => n.id === notificationId);
-        if (notification) {
-          notification.read = true;
-          notification.notificationTime = notification.notificationTime || new Date().toISOString();  // 기존 시간 유지
-        }
-
         console.log(`알림 ${notificationId} 읽음 처리 완료`);
       } catch (error) {
         console.error("알림 읽음 처리 중 오류 발생:", error);
