@@ -35,10 +35,10 @@
       <div v-if="searchResult" class="search-user-list">
         <v-row v-for="user in searchList" :key="user.id" @click="$emit('user-selected', user)"
           style="cursor: pointer; padding: 2px;">
-          {{ user.name }} {{ user.positionName }}
+          {{user.departmentName}} {{ user.name }} {{ user.positionName }}
         </v-row>
-        <v-row justify="center">
-          <v-pagination v-model="currentPage" :length="totalPages" :total-visible="5" always-show></v-pagination>
+        <v-row justify="center" >
+          <v-pagination v-model="currentPage" :length="totalPages" :total-visible="5" size="smaller" always-show></v-pagination>
         </v-row>
       </div>
 
