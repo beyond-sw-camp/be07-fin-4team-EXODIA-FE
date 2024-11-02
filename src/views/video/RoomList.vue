@@ -39,31 +39,38 @@ export default {
       }
     };
 
+
+    
     const createRoom = async () => {
-  const userNum = localStorage.getItem("userNum"); 
-  if (!newRoomTitle.value || !userNum) {
-    alert("방 제목과 사용자 번호를 입력해주세요.");
-    return;
-  }
-
-  try {
-    const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
-      title: newRoomTitle.value,
-      userNum: userNum,
-    });
-    console.log("방 생성 성공: ", response.data);
-    newRoomTitle.value = ""; 
-
-    const sessionId = response.data.sessionId;
-    if (sessionId) {
-      // 방 생성 후 해당 방으로 바로 입장
-      await joinRoom(sessionId);
+    const userNum = localStorage.getItem("userNum"); 
+    if (!newRoomTitle.value || !userNum) {
+        alert("방 제목과 사용자 번호를 입력해주세요.");
+        return;
     }
 
-    getRooms();  // 방 목록 갱신
-  } catch (error) {
-    console.error("방 생성 오류: ", error);
-  }
+    try {
+        const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
+            title: newRoomTitle.value,
+            userNum: userNum,
+        });
+        console.log("방 생성 성공: ", response.data);
+        newRoomTitle.value = ""; 
+
+        const sessionId = response.data.sessionId;
+        const token = response.data.token; // 방 생성 시 받은 token
+
+        if (sessionId && token) {
+            // 방 생성 후 해당 방으로 바로 입장
+            router.push({
+                name: "VideoRoom",
+                params: { sessionId, token },
+            });
+        }
+
+        getRooms();  // 방 목록 갱신
+    } catch (error) {
+        console.error("방 생성 오류: ", error);
+    }
 };
 
 

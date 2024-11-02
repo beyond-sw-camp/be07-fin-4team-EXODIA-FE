@@ -48,8 +48,8 @@ export default {
   props: ['sessionId', 'token'],
   setup(props) {
     
-    console.log("Session ID:", this.sessionId);
-    console.log("Token:", this.token);
+    console.log("Session ID:", props.sessionId);
+    console.log("Token:", props.token);
 
     const mainVideoContainer = ref(null);
     const subscribers = ref([]);
@@ -81,50 +81,47 @@ export default {
     };
 
     const joinRoom = async () => {
-      try {
-        const response = await axios.post("https://server.exodiapot.xyz/api/sessions/get-token", {
-          sessionId: props.sessionId,
-        });
-        const token = response.data;
-
+    try {
         OV.value = new OpenVidu();
         session.value = OV.value.initSession();
 
         session.value.on("streamCreated", (event) => {
-          const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
-          subscribers.value.push(subscriber);
+            const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
+            subscribers.value.push(subscriber);
 
-          const subscriberContainer = document.querySelector(".subscribers");
-          const subscriberVideoElement = document.createElement("video");
-          subscriberVideoElement.dataset.streamId = event.stream.streamId;
-          subscriberVideoElement.autoplay = true;
-          subscriberContainer.appendChild(subscriberVideoElement);
-          subscriber.addVideoElement(subscriberVideoElement);
+            const subscriberContainer = document.querySelector(".subscribers");
+            const subscriberVideoElement = document.createElement("video");
+            subscriberVideoElement.dataset.streamId = event.stream.streamId;
+            subscriberVideoElement.autoplay = true;
+            subscriberContainer.appendChild(subscriberVideoElement);
+            subscriber.addVideoElement(subscriberVideoElement);
         });
 
         session.value.on("streamDestroyed", (event) => {
-          subscribers.value = subscribers.value.filter((s) => s.stream.streamId !== event.stream.streamId);
+            subscribers.value = subscribers.value.filter((s) => s.stream.streamId !== event.stream.streamId);
 
-          const subscriberContainer = document.querySelector(".subscribers");
-          const subscriberVideoElement = subscriberContainer.querySelector(`[data-stream-id="${event.stream.streamId}"]`);
-          if (subscriberVideoElement) {
-            subscriberContainer.removeChild(subscriberVideoElement);
-          }
+            const subscriberContainer = document.querySelector(".subscribers");
+            const subscriberVideoElement = subscriberContainer.querySelector(`[data-stream-id="${event.stream.streamId}"]`);
+            if (subscriberVideoElement) {
+                subscriberContainer.removeChild(subscriberVideoElement);
+            }
         });
 
-        await session.value.connect(token, { clientData: "사용자 이름" });
+        // 전달된 props.token을 사용해 세션에 연결
+        await session.value.connect(props.token, { clientData: "사용자 이름" });
 
         publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
-          videoSource: undefined,
-          audioSource: undefined,
-          publishAudio: true,
-          publishVideo: true,
+            videoSource: undefined,
+            audioSource: undefined,
+            publishAudio: true,
+            publishVideo: true,
         });
         session.value.publish(publisher.value);
-      } catch (error) {
+    } catch (error) {
         console.error("화상 회의 방 참가 오류: ", error);
-      }
-    };
+    }
+};
+
 
     const leaveRoom = () => {
       if (session.value) session.value.disconnect();
