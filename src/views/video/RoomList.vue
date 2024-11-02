@@ -48,19 +48,25 @@ export default {
       }
     },
     async createRoom() {
-      try {
-        const response = await axios.post('/api/rooms/create', {
-          title: this.newRoomTitle,
-          userNum: localStorage.getItem("userNum"),
-        });
-        const newRoom = response.data;
-        this.rooms.push(newRoom);
-        this.closeModal();
-        this.enterRoom(newRoom.sessionId); // 방 생성 후 바로 입장
-      } catch (error) {
-        console.error("방 생성 오류:", error);
-      }
-    },
+  try {
+    const response = await axios.post('/api/rooms/create', {
+      title: this.newRoomTitle,
+      userNum: localStorage.getItem("userNum"),
+    });
+    const newRoom = response.data;
+    console.log("방 생성 성공:", newRoom); // 응답 데이터 확인
+
+    if (newRoom && newRoom.sessionId) {
+      this.rooms.push(newRoom);
+      this.closeModal();
+      this.enterRoom(newRoom.sessionId); // sessionId가 있을 경우에만 입장
+    } else {
+      console.error("유효하지 않은 방 응답 데이터:", newRoom);
+    }
+  } catch (error) {
+    console.error("방 생성 오류:", error);
+  }
+},
     enterRoom(sessionId) {
       this.$router.push({ name: 'RoomView', params: { sessionId } });
     },

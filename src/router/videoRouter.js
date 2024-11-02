@@ -13,10 +13,10 @@ export const videoRouter = [
     name: 'VideoCreate',
     component: VideoCreate,
   },
-  {
-    path: '/video/room/:sessionId/:token',
-    name: 'VideoRoom',
+{
+    path: '/room/:sessionId',
+    name: 'RoomView',
     component: VideoRoom,
-    props: true,
-  }
+    props: true, 
+  },
 ];
