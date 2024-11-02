@@ -43,17 +43,12 @@
 // import axios from "axios";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { OpenVidu } from "openvidu-browser";
-import { useRoute } from "vue-router";
 
 export default {
   props: ['sessionId', 'token'],
   setup(props) {
-    const route = useRoute();
-    const sessionId = route.params.sessionId;
-    const token = route.query.token;
-
-    console.log("Session ID:", sessionId); 
-    console.log("Token:", token); 
+    console.log("Session ID:", props.sessionId); 
+    console.log("Token:", props.token); 
     
     const mainVideoContainer = ref(null);
     const subscribers = ref([]);
@@ -66,6 +61,7 @@ export default {
     const isVideoEnabled = ref(true);
     const isAudioEnabled = ref(true);
     const isScreenShared = ref(false);
+
 
     const paginatedSubscribers = computed(() => {
       const start = currentPage.value * itemsPerPage;
@@ -111,8 +107,9 @@ export default {
             }
         });
 
-        // 전달된 props.token을 사용해 세션에 연결
-        await session.value.connect(props.token, { clientData: "사용자 이름" });
+        const extractedToken = props.token.includes("token=") ? props.token.split("token=")[1] : props.token;
+        await session.value.connect(extractedToken, { clientData: "사용자 이름" });
+
 
         publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
             videoSource: undefined,
@@ -171,7 +168,13 @@ export default {
     };
 
     onMounted(joinRoom);
-    onBeforeUnmount(leaveRoom);
+    onBeforeUnmount(() => {
+      if (session.value) session.value.disconnect();
+      OV.value = null;
+      session.value = null;
+      publisher.value = null;
+      subscribers.value = [];
+    });
 
     return {
       mainVideoContainer,
