@@ -1,15 +1,34 @@
 <template>
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
+    
+    <!-- 메인 비디오 -->
     <div class="main-video">
       <video ref="mainVideo" autoplay playsinline></video>
     </div>
+
+    <!-- 다른 참가자 비디오들 -->
     <div class="side-videos">
       <div v-for="(video, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(video)">
         <video ref="sideVideo" autoplay playsinline muted></video>
       </div>
     </div>
-    <button @click="leaveRoom">방 나가기</button>
+    
+    <!-- 제어 아이콘 버튼들 -->
+    <v-row class="controls" justify="center">
+      <v-btn icon @click="toggleAudio">
+        <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="toggleVideo">
+        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="startScreenShare">
+        <v-icon>mdi-monitor-share</v-icon>
+      </v-btn>
+      <v-btn icon @click="leaveRoom">
+        <v-icon>mdi-logout</v-icon>
+      </v-btn>
+    </v-row>
   </div>
 </template>
 
@@ -25,6 +44,8 @@ export default {
       OV: null,
       session: null,
       publisher: null,
+      isAudioEnabled: true,
+      isVideoEnabled: true,
     };
   },
   created() {
@@ -46,9 +67,14 @@ export default {
         this.session.on('streamCreated', (event) => {
           const subscriber = this.session.subscribe(event.stream, undefined);
           this.sideVideos.push(subscriber);
+
           this.$nextTick(() => {
-            const sideVideoElement = this.$refs.sideVideo[this.sideVideos.length - 1];
-            sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+            const sideVideoElements = this.$refs.sideVideo;
+            if (Array.isArray(sideVideoElements)) {
+              sideVideoElements[this.sideVideos.length - 1].srcObject = subscriber.stream.getMediaStream();
+            } else {
+              sideVideoElements.srcObject = subscriber.stream.getMediaStream();
+            }
           });
         });
 
@@ -75,6 +101,27 @@ export default {
         console.error("방 참여 중 오류 발생:", error);
       }
     },
+
+    
+    toggleAudio() {
+      this.isAudioEnabled = !this.isAudioEnabled;
+      this.publisher.publishAudio(this.isAudioEnabled);
+    },
+    toggleVideo() {
+      this.isVideoEnabled = !this.isVideoEnabled;
+      this.publisher.publishVideo(this.isVideoEnabled);
+    },
+    startScreenShare() {
+      const screenPublisher = this.OV.initPublisher(undefined, {
+        videoSource: 'screen',
+        publishAudio: this.isAudioEnabled,
+      });
+      this.session.unpublish(this.publisher);
+      this.publisher = screenPublisher;
+      this.session.publish(this.publisher);
+    },
+
+
     async leaveRoom() {
       const { sessionId } = this.$route.params;
       try {
