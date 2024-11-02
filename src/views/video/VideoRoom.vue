@@ -48,7 +48,7 @@ export default {
   props: ['sessionId', 'token'],
   setup(props) {
     console.log("Session ID:", props.sessionId); 
-    console.log("Token:", props.token); 
+    console.log("Token:", props.token || "Token is missing"); 
     
     const mainVideoContainer = ref(null);
     const subscribers = ref([]);
@@ -81,47 +81,49 @@ export default {
     };
 
     const joinRoom = async () => {
-    try {
+      try {
         OV.value = new OpenVidu();
         session.value = OV.value.initSession();
 
         session.value.on("streamCreated", (event) => {
-            const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
-            subscribers.value.push(subscriber);
-
-            const subscriberContainer = document.querySelector(".subscribers");
-            const subscriberVideoElement = document.createElement("video");
-            subscriberVideoElement.dataset.streamId = event.stream.streamId;
-            subscriberVideoElement.autoplay = true;
-            subscriberContainer.appendChild(subscriberVideoElement);
-            subscriber.addVideoElement(subscriberVideoElement);
+          const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
+          subscribers.value.push(subscriber);
+          const subscriberContainer = document.querySelector(".subscribers");
+          const subscriberVideoElement = document.createElement("video");
+          subscriberVideoElement.dataset.streamId = event.stream.streamId;
+          subscriberVideoElement.autoplay = true;
+          subscriberContainer.appendChild(subscriberVideoElement);
+          subscriber.addVideoElement(subscriberVideoElement);
         });
 
         session.value.on("streamDestroyed", (event) => {
-            subscribers.value = subscribers.value.filter((s) => s.stream.streamId !== event.stream.streamId);
-
-            const subscriberContainer = document.querySelector(".subscribers");
-            const subscriberVideoElement = subscriberContainer.querySelector(`[data-stream-id="${event.stream.streamId}"]`);
-            if (subscriberVideoElement) {
-                subscriberContainer.removeChild(subscriberVideoElement);
-            }
+          subscribers.value = subscribers.value.filter((s) => s.stream.streamId !== event.stream.streamId);
+          const subscriberContainer = document.querySelector(".subscribers");
+          const subscriberVideoElement = subscriberContainer.querySelector(`[data-stream-id="${event.stream.streamId}"]`);
+          if (subscriberVideoElement) {
+            subscriberContainer.removeChild(subscriberVideoElement);
+          }
         });
 
-        const extractedToken = props.token.includes("token=") ? props.token.split("token=")[1] : props.token;
-        await session.value.connect(extractedToken, { clientData: "사용자 이름" });
-
+        // token이 제대로 전달되었는지 확인 후 연결 시도
+        if (props.token) {
+          const extractedToken = props.token.includes("token=") ? props.token.split("token=")[1] : props.token;
+          await session.value.connect(extractedToken, { clientData: "사용자 이름" });
+        } else {
+          throw new Error("Token is missing in props.");
+        }
 
         publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
-            videoSource: undefined,
-            audioSource: undefined,
-            publishAudio: true,
-            publishVideo: true,
+          videoSource: undefined,
+          audioSource: undefined,
+          publishAudio: true,
+          publishVideo: true,
         });
         session.value.publish(publisher.value);
-    } catch (error) {
+      } catch (error) {
         console.error("화상 회의 방 참가 오류: ", error);
-    }
-};
+      }
+    };
 
 
     const leaveRoom = () => {
