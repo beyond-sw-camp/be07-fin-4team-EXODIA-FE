@@ -1,21 +1,17 @@
-<!-- VideoRoom.vue -->
 <template>
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
     
     <!-- 메인 비디오 -->
     <div class="main-video">
-      <user-video :stream-manager="publisher" v-if="publisher"></user-video>
+      <video ref="mainVideo" autoplay playsinline></video>
     </div>
 
     <!-- 다른 참가자 비디오들 -->
     <div class="side-videos">
-      <user-video
-        v-for="(subscriber, index) in subscribers"
-        :key="index"
-        :stream-manager="subscriber"
-        @click="switchToMain(subscriber)"
-      ></user-video>
+      <div v-for="(subscriber, index) in sideVideos" :key="index" class="side-video">
+        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
+      </div>
     </div>
     
     <!-- 제어 아이콘 버튼들 -->
@@ -39,15 +35,12 @@
 <script>
 import { OpenVidu } from 'openvidu-browser';
 import axios from 'axios';
-import UserVideo from '../../components/UserVideo.vue';
-
 
 export default {
-  components: { UserVideo },
   data() {
     return {
       roomTitle: '',
-      subscribers: [],
+      sideVideos: [],
       OV: null,
       session: null,
       publisher: null,
@@ -72,18 +65,45 @@ export default {
         this.OV = new OpenVidu();
         this.session = this.OV.initSession();
 
+        // 다른 참가자의 스트림 구독 처리
         this.session.on('streamCreated', (event) => {
+          console.log('새 스트림 생성됨:', event.stream);
           const subscriber = this.session.subscribe(event.stream, undefined);
-          this.subscribers.push(subscriber);
+
+          subscriber.on('streamPlaying', () => {
+            this.$nextTick(() => {
+              const videoRefName = 'sideVideo' + this.sideVideos.length;
+              const sideVideoElement = this.$refs[videoRefName][0];
+              if (sideVideoElement) {
+                sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+              }
+            });
+          });
+
+          this.sideVideos.push(subscriber);
+        });
+
+        this.session.on('connectionCreated', (event) => {
+          console.log(`새 참가자 연결됨: ${event.connection.connectionId}`);
+        });
+
+        this.session.on('connectionDestroyed', (event) => {
+          console.log(`참가자 연결 해제됨: ${event.connection.connectionId}`);
         });
 
         await this.session.connect(token, { clientData: "사용자명" });
 
+        // 자신의 비디오 스트림 생성 및 mainVideo에 연결
         this.publisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined,
-          audioSource: undefined,
-          publishAudio: this.isAudioEnabled,
-          publishVideo: this.isVideoEnabled,
+          videoSource: undefined, // 기본 웹캠 사용
+          audioSource: undefined, // 기본 마이크 사용
+          publishAudio: true,
+          publishVideo: true,
+        });
+
+        this.publisher.once('accessAllowed', () => {
+          console.log("내 비디오 스트림 설정됨.");
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
         });
 
         this.session.publish(this.publisher);
@@ -91,6 +111,7 @@ export default {
         console.error("방 참여 중 오류 발생:", error);
       }
     },
+
     toggleAudio() {
       this.isAudioEnabled = !this.isAudioEnabled;
       this.publisher.publishAudio(this.isAudioEnabled);
@@ -108,6 +129,7 @@ export default {
       this.publisher = screenPublisher;
       this.session.publish(this.publisher);
     },
+
     async leaveRoom() {
       const { sessionId } = this.$route.params;
       try {
@@ -122,14 +144,16 @@ export default {
         console.error("방 나가기 중 오류 발생:", error);
       }
     },
-    switchToMain(subscriber) {
-      this.publisher = subscriber;
+    switchToMain(video) {
+      const currentMainStream = this.$refs.mainVideo.srcObject;
+      this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
+      video.stream.srcObject = currentMainStream;
     },
   },
 };
 </script>
 
-<style scoped>
+<style>
 .room-view {
   display: flex;
   flex-direction: column;
@@ -142,5 +166,13 @@ export default {
 .side-videos {
   display: flex;
   gap: 10px;
+}
+.side-video {
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
+}
+.controls {
+  margin-top: 15px;
 }
 </style>
