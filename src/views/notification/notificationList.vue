@@ -253,6 +253,7 @@ export default {
   background-color: #e8f5e9;
   color: black;
   font-weight: bold;
+  padding: 15px;
 }
 
 .notification-item.read {
