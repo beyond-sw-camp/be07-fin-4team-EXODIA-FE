@@ -85,6 +85,7 @@
                                 'mdi-chevron-up' :
                                 'mdi-chevron-down' }}</v-icon>
                         </v-card-title>
+
                         <v-list v-if="isOpenSubmitLine"
                             style="background-color: rgba(123, 86, 86, 0.3);max-height: 300px; overflow-y: auto;">
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
@@ -94,31 +95,18 @@
                                 </v-list-item-content>
                                 <v-list-item-content>
                                     | {{ user.positionName }}
+                                    <span v-if="user.userNum === this.userNum">
+                                        <v-chip>본인</v-chip>
+                                    </span>
                                 </v-list-item-content>
                             </v-list-item>
                         </v-list>
                     </v-card>
 
-                    <v-card @dragover.prevent @drop="onDrop(1)" class="drop-zone">
-                        <v-card-title>3차 결재자</v-card-title>
-                        <v-card-text v-if="firstApprovers.length === 0">팀장 직급에서 선택하시오.</v-card-text>
-                        <v-list class="drop-user">
-                            <v-list-item v-if="firstApprovers.length != 0">
-                                <v-avatar class="icon" size="36">
-                                    <v-img :src="firstApprovers.profileImage || defaultProfileImage"
-                                        aspect-ratio="1"></v-img>
-                                </v-avatar>
-                                <v-list-item-content style="margin-left:10px">
-                                    {{ firstApprovers.name }}</v-list-item-content>
-                                <v-list-item-content> | {{ firstApprovers.positionName }}</v-list-item-content>
-                                <v-icon @click="removeUser(index, 1)" style="margin-left: auto;">mdi-close</v-icon>
-                            </v-list-item>
-                        </v-list>
-                    </v-card>
-
-                    <v-card @dragover.prevent @drop="onDrop(2)" class="drop-zone">
+                    <!-- 팀장만 2차까지 존재 -->
+                    <v-card v-if="this.positionId == 7" @dragover.prevent @drop="onDrop(2)" class="drop-zone">
                         <v-card-title>2차 결재자</v-card-title>
-                        <v-card-text v-if="secondApprovers.length === 0">과장 직급에서 선택하시오.</v-card-text>
+                        <v-card-text v-if="secondApprovers.length === 0">본부장 직급에서 선택하시오.</v-card-text>
                         <v-list class="drop-user">
                             <v-list-item v-if="secondApprovers.length != 0">
                                 <v-avatar class="icon" size="36">
@@ -133,22 +121,32 @@
                         </v-list>
                     </v-card>
 
-                    <v-card @dragover.prevent @drop="onDrop(3)" class="drop-zone">
+
+                    <v-card @dragover.prevent @drop="onDrop(1)" class="drop-zone">
                         <v-card-title>1차 결재자</v-card-title>
-                        <v-card-text v-if="thirdApprovers.length === 0">주임 직급에서 선택하시오.</v-card-text>
+
+                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId >= 7">팀장 직급에서
+                            선택하시오.</v-card-text>
+                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId === 7">부서장 직급에서
+                            선택하시오.</v-card-text>
+                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId == 6">본부장 직급에서
+                            선택하시오.</v-card-text>
+                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId <= 5">사장 직급에서
+                            선택하시오.</v-card-text>
                         <v-list class="drop-user">
-                            <v-list-item v-if="thirdApprovers.length != 0">
+                            <v-list-item v-if="firstApprovers.length != 0">
                                 <v-avatar class="icon" size="36">
-                                    <v-img :src="thirdApprovers.profileImage || defaultProfileImage"
+                                    <v-img :src="firstApprovers.profileImage || defaultProfileImage"
                                         aspect-ratio="1"></v-img>
                                 </v-avatar>
                                 <v-list-item-content style="margin-left:10px">
-                                    {{ thirdApprovers.name }}</v-list-item-content>
-                                <v-list-item-content> | {{ thirdApprovers.positionName }}</v-list-item-content>
-                                <v-icon @click="removeUser(index, 3)" style="margin-left: auto;">mdi-close</v-icon>
+                                    {{ firstApprovers.name }}</v-list-item-content>
+                                <v-list-item-content> | {{ firstApprovers.positionName }}</v-list-item-content>
+                                <v-icon @click="removeUser(index, 1)" style="margin-left: auto;">mdi-close</v-icon>
                             </v-list-item>
                         </v-list>
                     </v-card>
+
                     <v-row class="submit-btn">
                         <v-btn v-create class="mt-8" @click="createSubmit">
                             결재라인 등록
@@ -203,6 +201,7 @@ export default {
             thirdApprovers: [],
             isOpenSubmitLine: false,
 
+            positions: [],
         }
     },
     mounted() {
@@ -225,27 +224,39 @@ export default {
     methods: {
         async fetchUsers() {
             try {
-                const response = await axios.get(`/department/${this.departmentId}/users`);
-                this.users = response.data.filter(u => Number(u.positionId) <= Number(this.positionId));
+                const response = await axios.get(`/department/${this.departmentId}/parent/users`);
+                this.users = response.data
+                    .filter(u => Number(u.positionId) <= Number(this.positionId))
+                    .sort((a, b) => Number(a.positionId) - Number(b.positionId));
 
                 for (let i = 0; i < this.users.length; i++) {
                     let user = this.users[i];
 
-                    if (user.positionName === '팀장' && this.firstApprovers.length == 0) {
-                        this.firstApprovers = user;
+                    if (this.positionId >= 8) {
+                        // 팀장 이하
+                        this.positions[0] = 7;
+                    } else if (this.positionId == 7) {
+                        // 팀장
+                        this.positions[0] = 6;
+                        this.positions[1] = 5;
 
+                    } else if (this.positionId == 6) {
+                        // 본부장
+                        this.positions[0] = 5;
+                    } else if (this.positionId <= 5) {
+                        // 본부장 이사
+                        this.positions[0] = 1;
+                    }
+
+                    if (user.positionId === this.positions[0] && this.firstApprovers.length == 0) {
+                        this.firstApprovers = user;
                         this.submitCreateData.submitUserDtos.push({
                             userName: user.name,
                             position: user.positionId,
                         });
-                    } else if (user.positionName === '과장' && this.secondApprovers.length == 0) {
+                    }
+                    if (user.positionId === this.positions[1] && this.secondApprovers.length == 0) {
                         this.secondApprovers = user;
-                        this.submitCreateData.submitUserDtos.push({
-                            userName: user.name,
-                            position: user.positionId,
-                        });
-                    } else if (user.positionName === '주임' && this.thirdApprovers.length == 0) {
-                        this.thirdApprovers = user;
                         this.submitCreateData.submitUserDtos.push({
                             userName: user.name,
                             position: user.positionId,
@@ -283,8 +294,8 @@ export default {
                 }
                 else {
                     if (level === 1) {
-                        if (this.draggedUser.positionName != '팀장') {
-                            alert('팀장 직급에서 선택해주세요')
+                        if (this.draggedUser.positionId != this.positions[1]) {
+                            alert('지정된 직급에서 선택해주세요')
                         } else {
                             this.firstApprovers = [this.draggedUser][0];
                             this.submitCreateData.submitUserDtos.push({
@@ -295,8 +306,8 @@ export default {
                         }
                     }
                     if (level === 2) {
-                        if (this.draggedUser.positionName != '과장') {
-                            alert('과장 직급에서 선택해주세요')
+                        if (this.draggedUser.positionId != this.positions[0]) {
+                            alert('지정된 직급에서 선택해주세요')
                         } else {
                             this.secondApprovers = [this.draggedUser][0];
                             this.submitCreateData.submitUserDtos.push({
@@ -306,17 +317,6 @@ export default {
 
                         }
                     }
-                    if (level === 3) {
-                        if (this.draggedUser.positionName != '주임') {
-                            alert('주임 직급에서 선택해주세요')
-                        } else {
-                            this.thirdApprovers = [this.draggedUser][0];
-                            this.submitCreateData.submitUserDtos.push({
-                                userName: this.thirdApprovers.name,
-                                position: this.thirdApprovers.positionId,
-                            })
-                        }
-                    }
                     this.draggedUser = null;
                 }
             }
@@ -324,7 +324,6 @@ export default {
         removeUser(index, level) {
             if (level === 1) this.firstApprovers = [];
             if (level === 2) this.secondApprovers = [];
-            if (level === 3) this.thirdApprovers = [];
 
             this.submitCreateData.submitUserDtos.splice(level - 1, 1);
         },
@@ -354,7 +353,6 @@ export default {
             return new Date(date).toLocaleTimeString();
         },
         calculateDays() {
-            // console.log("시작: " + this.formData.휴가시작일);
             const startDate = new Date(this.formData.휴가시작일);
             const endDate = new Date(this.formData.휴가종료일);
             let totalDays = 0;
