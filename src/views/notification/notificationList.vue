@@ -184,10 +184,11 @@ export default {
       if (notification.isRead) {
         await this.markAsRead(notification.id);
         notification.isRead = true;
-        this.unreadCount--;
+        if (this.unreadCount > 0) this.unreadCount -= 1;
       }
       this.redirectToNotification(notification);
     },
+    
     redirectToNotification(notification) {
       if (notification.type === '공지사항') {
         window.location.href = '/board/notice/list';
