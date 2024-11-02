@@ -9,7 +9,7 @@
 
     <!-- 다른 참가자 비디오들 -->
     <div class="side-videos">
-      <div v-for="(video, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(video)">
+      <div v-for="(subscriber, index) in sideVideos" :key="index" class="side-video">
         <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
       </div>
     </div>
@@ -55,62 +55,60 @@ export default {
     async initializeRoom() {
       const { sessionId } = this.$route.params;
       try {
+        console.log("세션 ID로 서버 연결 시도 중:", sessionId);
+
         const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
           params: { userNum: localStorage.getItem("userNum") },
         });
         const token = response.data.token;
 
-        // OpenVidu 연결 설정
         this.OV = new OpenVidu();
         this.session = this.OV.initSession();
 
-        
-        // 다른 참가자의 스트림 구독 설정
+        // 다른 참가자의 스트림 구독 처리
         this.session.on('streamCreated', (event) => {
           console.log('새 스트림 생성됨:', event.stream);
           const subscriber = this.session.subscribe(event.stream, undefined);
           this.sideVideos.push(subscriber);
 
-          console.log(`스트림 구독 완료: ${subscriber.stream.streamId}`);
-
-          // DOM이 렌더링된 후 비디오 요소에 srcObject 설정
-          this.$nextTick(() => {
+          // 지연을 줘서 `sideVideos` 배열 업데이트 후 srcObject 설정
+          setTimeout(() => {
             const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
             const sideVideoElement = this.$refs[videoRefName][0];
+
             if (sideVideoElement) {
               sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+              sideVideoElement.play().catch(error => {
+                console.warn("비디오 자동 재생이 차단되었습니다:", error);
+              });
               console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
+              console.log(`${subscriber.stream.streamId} 비디오 요소 srcObject 설정 확인:`, sideVideoElement.srcObject);
             } else {
               console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
             }
-          });
+          }, 500); // 500ms 지연
         });
 
         this.session.on('connectionCreated', (event) => {
           console.log(`새 참가자 연결됨: ${event.connection.connectionId}`);
-          console.log('현재 참가자 수:', this.session.connections.length);
         });
 
         this.session.on('connectionDestroyed', (event) => {
           console.log(`참가자 연결 해제됨: ${event.connection.connectionId}`);
-          console.log('남은 참가자 수:', this.session.connections.length);
         });
 
         await this.session.connect(token, { clientData: "사용자명" });
 
-        // 자신의 비디오 스트림 설정
+        // 자신의 비디오 스트림 생성 및 mainVideo에 연결
         this.publisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined, // 디폴트 카메라 사용
-          audioSource: undefined, // 디폴트 마이크 사용
-          publishAudio: true,     // 오디오 켜기
-          publishVideo: true,     // 비디오 켜기
-          resolution: '640x480',  // 해상도 설정
-          frameRate: 30,          // 프레임 설정
-          insertMode: 'APPEND',   // 비디오 추가 모드
-          mirror: false           // 미러링 비활성화 (필요에 따라 설정)
+          videoSource: undefined, // 기본 웹캠 사용
+          audioSource: undefined, // 기본 마이크 사용
+          publishAudio: true,
+          publishVideo: true,
         });
 
         this.publisher.once('accessAllowed', () => {
+          console.log("내 비디오 스트림 설정됨.");
           this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
         });
 
@@ -160,6 +158,7 @@ export default {
   },
 };
 </script>
+
 
 <style>
 .room-view {
