@@ -5,11 +5,10 @@
 
     <!-- 방 목록 -->
     <div v-for="room in rooms" :key="room.sessionId" class="room-card" @click="enterRoom(room.sessionId)">
-      <img :src="room.thumbnail" alt="Room Thumbnail" class="room-thumbnail"/>
-      <div class="room-info">
+      <div class="room-thumbnail">
         <h3>{{ room.title }}</h3>
-        <p>참가자 수: {{ room.participantCount }}</p>
       </div>
+      <p>참가자 수: {{ room.participantCount }}</p>
     </div>
 
     <!-- 방 생성 모달 -->
@@ -45,11 +44,8 @@ export default {
         const response = await axios.get('/api/rooms/list');
         this.rooms = response.data;
       } catch (error) {
-        console.error("Error fetching rooms:", error);
+        console.error("방 목록 조회 오류:", error);
       }
-    },
-    enterRoom(sessionId) {
-      this.$router.push({ name: 'RoomView', params: { sessionId } });
     },
     async createRoom() {
       try {
@@ -57,11 +53,16 @@ export default {
           title: this.newRoomTitle,
           userNum: localStorage.getItem("userNum"),
         });
-        this.rooms.push(response.data);
+        const newRoom = response.data;
+        this.rooms.push(newRoom);
         this.closeModal();
+        this.enterRoom(newRoom.sessionId); // 방 생성 후 바로 입장
       } catch (error) {
-        console.error("Error creating room:", error);
+        console.error("방 생성 오류:", error);
       }
+    },
+    enterRoom(sessionId) {
+      this.$router.push({ name: 'RoomView', params: { sessionId } });
     },
     closeModal() {
       this.showCreateRoomModal = false;
@@ -80,12 +81,16 @@ export default {
   width: 200px;
   margin: 10px;
   padding: 10px;
-  border: 1px solid #ddd;
   cursor: pointer;
 }
 .room-thumbnail {
   width: 100%;
-  height: auto;
+  height: 120px;
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
 }
 .room-info {
   text-align: center;
