@@ -265,22 +265,17 @@ export default {
       this.redirectToNotification(notification); // 알림 유형에 따라 페이지 이동
     },
     redirectToNotification(notification) {
-      // let targetUrl = `https://www.exodiapot.xyz`;
-
-      // 알림 유형에 따른 URL 설정
       if (notification.type === '공지사항') {
-        '/board/notice/list';
+        window.location.href = '/board/notice/list';
       } else if (notification.type === '문의') {
-        '/qna/list';
+        window.location.href = '/qna/list';
       } else if (notification.type === '예약') {
-        '/reservation/reservationList';
+        window.location.href = '/reservation/reservationList';
       } else if (notification.type === '결재') {
-        '/submit/list';
+        window.location.href = '/submit/list';
       } else if (notification.type === '문서') {
-        '/document';
+        window.location.href = '/document';
       }
-
-      // window.location.href = targetUrl;
     },
 
 
