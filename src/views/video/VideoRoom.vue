@@ -29,30 +29,35 @@ export default {
   },
   methods: {
     async initializeRoom() {
-      const { sessionId } = this.$route.params;
-      try {
-        const response = await axios.post(`/api/rooms/${sessionId}/join`, { userNum: localStorage.getItem("userNum") });
-        this.roomTitle = response.data.title;
-        this.mainVideo = this.$refs.mainVideo;
-        // OpenVidu 관련 세팅 및 비디오 스트림 추가 로직 여기에 구현
-      } catch (error) {
-        console.error("방 참여 중 오류 발생:", error);
-      }
-    },
+  const { sessionId } = this.$route.params;
+  try {
+    const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
+      params: { userNum: localStorage.getItem("userNum") },
+    });
+    this.roomTitle = response.data.title;
+    this.mainVideo = this.$refs.mainVideo;
+    // OpenVidu 관련 비디오 설정 추가 가능
+  } catch (error) {
+    console.error("방 참여 중 오류 발생:", error);
+  }
+},
+async leaveRoom() {
+  const { sessionId } = this.$route.params;
+  try {
+    await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+      params: { userNum: localStorage.getItem("userNum") },
+    });
+    this.$router.push({ name: 'RoomList' });
+  } catch (error) {
+    console.error("방 나가기 중 오류 발생:", error);
+  }
+},
     switchToMain(video) {
       const currentMainStream = this.mainVideo.srcObject;
       this.mainVideo.srcObject = video.stream;
       video.stream = currentMainStream;
     },
-    async leaveRoom() {
-      const { sessionId } = this.$route.params;
-      try {
-        await axios.post(`/api/rooms/${sessionId}/leave`, { userNum: localStorage.getItem("userNum") });
-        this.$router.push({ name: 'RoomList' });
-      } catch (error) {
-        console.error("방 나가기 중 오류 발생:", error);
-      }
-    },
+   
   },
 };
 </script>
