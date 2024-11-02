@@ -10,7 +10,7 @@
     <!-- 다른 참가자 비디오들 -->
     <div class="side-videos">
       <div v-for="(video, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(video)">
-        <video ref="sideVideo" autoplay playsinline muted></video>
+        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
       </div>
     </div>
     
@@ -64,6 +64,7 @@ export default {
         this.OV = new OpenVidu();
         this.session = this.OV.initSession();
 
+        // 다른 참가자의 스트림 구독 설정
         this.session.on('streamCreated', (event) => {
           console.log('새 스트림 생성됨:', event.stream);
           const subscriber = this.session.subscribe(event.stream, undefined);
@@ -71,13 +72,15 @@ export default {
 
           console.log(`스트림 구독 완료: ${subscriber.stream.streamId}`);
 
-
+          // DOM이 렌더링된 후 비디오 요소에 srcObject 설정
           this.$nextTick(() => {
-            const sideVideoElements = this.$refs.sideVideo;
-            if (Array.isArray(sideVideoElements)) {
-              sideVideoElements[this.sideVideos.length - 1].srcObject = subscriber.stream.getMediaStream();
+            const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
+            const sideVideoElement = this.$refs[videoRefName][0];
+            if (sideVideoElement) {
+              sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+              console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
             } else {
-              sideVideoElements.srcObject = subscriber.stream.getMediaStream();
+              console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
             }
           });
         });
@@ -94,7 +97,7 @@ export default {
 
         await this.session.connect(token, { clientData: "사용자명" });
 
-        // 자신의 비디오 스트림을 위한 publisher 설정
+        // 자신의 비디오 스트림 설정
         this.publisher = this.OV.initPublisher(undefined, {
           videoSource: undefined, // 디폴트 카메라 사용
           audioSource: undefined, // 디폴트 마이크 사용
@@ -116,7 +119,6 @@ export default {
       }
     },
 
-
     toggleAudio() {
       this.isAudioEnabled = !this.isAudioEnabled;
       this.publisher.publishAudio(this.isAudioEnabled);
@@ -134,7 +136,6 @@ export default {
       this.publisher = screenPublisher;
       this.session.publish(this.publisher);
     },
-
 
     async leaveRoom() {
       const { sessionId } = this.$route.params;
@@ -177,5 +178,8 @@ export default {
   width: 100px;
   height: 100px;
   cursor: pointer;
+}
+.controls {
+  margin-top: 15px;
 }
 </style>
