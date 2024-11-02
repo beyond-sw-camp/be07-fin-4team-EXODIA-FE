@@ -1,17 +1,21 @@
+<!-- VideoRoom.vue -->
 <template>
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
     
     <!-- 메인 비디오 -->
     <div class="main-video">
-      <video ref="mainVideo" autoplay playsinline></video>
+      <user-video :stream-manager="publisher" v-if="publisher"></user-video>
     </div>
 
     <!-- 다른 참가자 비디오들 -->
     <div class="side-videos">
-      <div v-for="(video, index) in sideVideos" :key="index" class="side-video">
-        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
-      </div>
+      <user-video
+        v-for="(subscriber, index) in subscribers"
+        :key="index"
+        :stream-manager="subscriber"
+        @click="switchToMain(subscriber)"
+      ></user-video>
     </div>
     
     <!-- 제어 아이콘 버튼들 -->
@@ -35,12 +39,14 @@
 <script>
 import { OpenVidu } from 'openvidu-browser';
 import axios from 'axios';
+import UserVideo from '@/components/UserVideo.vue';
 
 export default {
+  components: { UserVideo },
   data() {
     return {
       roomTitle: '',
-      sideVideos: [],
+      subscribers: [],
       OV: null,
       session: null,
       publisher: null,
@@ -65,47 +71,18 @@ export default {
         this.OV = new OpenVidu();
         this.session = this.OV.initSession();
 
-        // 스트림 생성 시 이벤트 처리
         this.session.on('streamCreated', (event) => {
-          console.log('새 스트림 생성됨:', event.stream);
-
-          // DOM 렌더링 후 비디오에 스트림 연결
-          this.$nextTick(() => {
-            const videoRefName = 'sideVideo' + this.sideVideos.length;
-            const sideVideoElement = this.$refs[videoRefName][0];
-            if (sideVideoElement) {
-              const subscriber = this.session.subscribe(event.stream, sideVideoElement);
-              this.sideVideos.push(subscriber);
-              console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
-            } else {
-              console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
-            }
-          });
-        });
-
-        this.session.on('connectionCreated', (event) => {
-          console.log(`새 참가자 연결됨: ${event.connection.connectionId}`);
-          console.log('현재 참가자 수:', this.session.connections.length);
-        });
-
-        this.session.on('connectionDestroyed', (event) => {
-          console.log(`참가자 연결 해제됨: ${event.connection.connectionId}`);
-          console.log('남은 참가자 수:', this.session.connections.length);
+          const subscriber = this.session.subscribe(event.stream, undefined);
+          this.subscribers.push(subscriber);
         });
 
         await this.session.connect(token, { clientData: "사용자명" });
 
-        // 자신의 비디오 스트림 생성
         this.publisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined, // 기본 웹캠 사용
-          audioSource: undefined, // 기본 마이크 사용
-          publishAudio: true,
-          publishVideo: true,
-        });
-
-        this.publisher.once('accessAllowed', () => {
-          console.log("내 비디오 스트림 설정됨.");
-          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+          videoSource: undefined,
+          audioSource: undefined,
+          publishAudio: this.isAudioEnabled,
+          publishVideo: this.isVideoEnabled,
         });
 
         this.session.publish(this.publisher);
@@ -113,7 +90,6 @@ export default {
         console.error("방 참여 중 오류 발생:", error);
       }
     },
-
     toggleAudio() {
       this.isAudioEnabled = !this.isAudioEnabled;
       this.publisher.publishAudio(this.isAudioEnabled);
@@ -131,7 +107,6 @@ export default {
       this.publisher = screenPublisher;
       this.session.publish(this.publisher);
     },
-
     async leaveRoom() {
       const { sessionId } = this.$route.params;
       try {
@@ -146,16 +121,14 @@ export default {
         console.error("방 나가기 중 오류 발생:", error);
       }
     },
-    switchToMain(video) {
-      const currentMainStream = this.$refs.mainVideo.srcObject;
-      this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
-      video.stream.srcObject = currentMainStream;
+    switchToMain(subscriber) {
+      this.publisher = subscriber;
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
 .room-view {
   display: flex;
   flex-direction: column;
@@ -168,13 +141,5 @@ export default {
 .side-videos {
   display: flex;
   gap: 10px;
-}
-.side-video {
-  width: 100px;
-  height: 100px;
-  cursor: pointer;
-}
-.controls {
-  margin-top: 15px;
 }
 </style>
