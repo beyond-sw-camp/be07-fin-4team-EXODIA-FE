@@ -60,7 +60,7 @@ export default {
         if (sessionId && token) {
           router.push({
             name: "VideoRoom",
-            params: { sessionId, token },
+            params: { sessionId, token }
           });
         }
 

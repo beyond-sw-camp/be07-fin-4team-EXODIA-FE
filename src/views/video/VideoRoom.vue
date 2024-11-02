@@ -1,41 +1,3 @@
-<!-- VideoRoom.vue -->
-<template>
-  <div>
-    <h1>화상 회의 방</h1>
-    <div ref="mainVideoContainer" class="main-video-container"></div>
-    <div class="subscriber-container">
-      <button @click="prevPage" v-if="currentPage > 0">‹</button>
-      <div class="subscribers">
-        <div
-          v-for="subscriber in paginatedSubscribers"
-          :key="subscriber.stream.streamId"
-          class="subscriber-video"
-          @click="changeMainStream(subscriber)"
-        >
-          <video ref="subscriberVideo" autoplay></video>
-        </div>
-      </div>
-      <button @click="nextPage" v-if="hasMorePages">›</button>
-    </div>
-
-    <!-- 컨트롤 버튼들 -->
-    <div class="controls">
-      <v-btn icon @click="toggleVideo">
-        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
-      </v-btn>
-      <v-btn icon @click="toggleAudio">
-        <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
-      </v-btn>
-      <v-btn icon @click="shareScreen">
-        <v-icon>{{ isScreenShared ? 'mdi-monitor-share' : 'mdi-monitor' }}</v-icon>
-      </v-btn>
-      <v-btn icon @click="leaveRoom">
-        <v-icon>mdi-logout</v-icon>
-      </v-btn>
-    </div>
-  </div>
-</template>
-
 <script>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { OpenVidu } from "openvidu-browser";
@@ -44,7 +6,16 @@ import { useRoute } from "vue-router";
 export default {
   setup() {
     const route = useRoute();
-    const token = route.params.token; // sessionId는 제거했습니다.
+    // `token`에서 실제 token 값만 추출
+    let fullToken = route.params.token;
+    let token = fullToken && fullToken.includes("token=")
+      ? fullToken.split("token=")[1] // "token=" 이후의 부분만 추출
+      : fullToken;
+
+    if (!token) {
+      console.error("Token is missing in query.");
+      throw new Error("Token is required to join the session.");
+    }
 
     const mainVideoContainer = ref(null);
     const subscribers = ref([]);
@@ -100,11 +71,7 @@ export default {
           }
         });
 
-        if (token) {
-          await session.value.connect(token, { clientData: "사용자 이름" });
-        } else {
-          throw new Error("Token is missing in query.");
-        }
+        await session.value.connect(token, { clientData: "사용자 이름" });
 
         publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
           videoSource: undefined,
