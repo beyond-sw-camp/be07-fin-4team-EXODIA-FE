@@ -1,66 +1,80 @@
 <template>
-  <div>
-    <h1>화상 회의 방</h1>
-    <div ref="mainVideoContainer" class="main-video-container"></div>
+  <div class="room-view">
+    <h2>화상회의 방: {{ roomTitle }}</h2>
+    <div class="main-video">
+      <video ref="mainVideo" autoplay></video>
+    </div>
+    <div class="side-videos">
+      <div v-for="(video, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(video)">
+        <video :srcObject="video.stream" autoplay muted></video>
+      </div>
+    </div>
+    <button @click="leaveRoom">방 나가기</button>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import { OpenVidu } from "openvidu-browser";
+import axios from 'axios';
 
 export default {
-  props: ["sessionId", "token"],
-  setup(props) {
-    const mainVideoContainer = ref(null);
-    const OV = ref(null);
-    const session = ref(null);
-    const publisher = ref(null);
-
-    const joinRoom = async () => {
-      try {
-        OV.value = new OpenVidu();
-        session.value = OV.value.initSession();
-
-        session.value.on("streamCreated", (event) => {
-          const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
-          mainVideoContainer.value.appendChild(subscriber.videos[0].video);
-        });
-
-        await session.value.connect(props.token, { clientData: "사용자 이름" });
-
-        publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
-          videoSource: undefined,
-          audioSource: undefined,
-          publishAudio: true,
-          publishVideo: true,
-        });
-        session.value.publish(publisher.value);
-      } catch (error) {
-        console.error("화상 회의 방 참가 오류: ", error);
-      }
-    };
-
-    onMounted(joinRoom);
-    onBeforeUnmount(() => {
-      if (session.value) session.value.disconnect();
-      OV.value = null;
-      session.value = null;
-      publisher.value = null;
-    });
-
+  data() {
     return {
-      mainVideoContainer,
+      roomTitle: '',
+      sideVideos: [],
+      mainVideo: null,
     };
+  },
+  created() {
+    this.initializeRoom();
+  },
+  methods: {
+    async initializeRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        const response = await axios.post(`/api/rooms/${sessionId}/join`, { userNum: localStorage.getItem("userNum") });
+        this.roomTitle = response.data.title;
+        this.mainVideo = this.$refs.mainVideo;
+        // OpenVidu 관련 세팅 및 비디오 스트림 추가 로직 여기에 구현
+      } catch (error) {
+        console.error("방 참여 중 오류 발생:", error);
+      }
+    },
+    switchToMain(video) {
+      const currentMainStream = this.mainVideo.srcObject;
+      this.mainVideo.srcObject = video.stream;
+      video.stream = currentMainStream;
+    },
+    async leaveRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        await axios.post(`/api/rooms/${sessionId}/leave`, { userNum: localStorage.getItem("userNum") });
+        this.$router.push({ name: 'RoomList' });
+      } catch (error) {
+        console.error("방 나가기 중 오류 발생:", error);
+      }
+    },
   },
 };
 </script>
 
-<style scoped>
-.main-video-container {
-  width: 100%;
-  max-width: 800px;
-  height: 600px;
-  border: 1px solid #ddd;
+<style>
+/* 기본 스타일 설정 */
+.room-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.main-video {
+  width: 80%;
+  margin-bottom: 10px;
+}
+.side-videos {
+  display: flex;
+  gap: 10px;
+}
+.side-video {
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
 }
 </style>
