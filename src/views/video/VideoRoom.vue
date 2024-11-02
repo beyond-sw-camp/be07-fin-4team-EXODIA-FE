@@ -75,13 +75,35 @@ export default {
             const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
             const sideVideoElement = this.$refs[videoRefName][0];
             if (sideVideoElement) {
-              sideVideoElement.srcObject = subscriber.stream.getMediaStream();
-              console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
+                sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+                
+                console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
+                console.log("비디오 요소 srcObject 설정 확인:", sideVideoElement.srcObject);
+                
+                if (sideVideoElement.srcObject) {
+                    console.log(`비디오 스트림이 정상적으로 연결되었습니다: ${subscriber.stream.streamId}`);
+                } else {
+                    console.warn("비디오 요소에 스트림 연결 실패. srcObject가 null입니다.");
+                }
             } else {
-              console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
+                console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
             }
-          });
         });
+      });
+
+
+
+        //   this.$nextTick(() => {
+        //     const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
+        //     const sideVideoElement = this.$refs[videoRefName][0];
+        //     if (sideVideoElement) {
+        //       sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+        //       console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
+        //     } else {
+        //       console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
+        //     }
+        //   });
+        // });
 
         this.session.on('connectionCreated', (event) => {
           console.log(`새 참가자 연결됨: ${event.connection.connectionId}`);
