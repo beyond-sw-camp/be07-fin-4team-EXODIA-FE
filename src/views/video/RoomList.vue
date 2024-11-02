@@ -56,7 +56,7 @@ export default {
         newRoomTitle.value = "";
 
         const sessionId = response.data.sessionId;
-        const token = response.data.token.split('token=')[1]; // 정확히 token만 추출합니다.
+        const token = response.data.token.split('token=')[1]; 
 
         if (sessionId && token) {
           router.push({
