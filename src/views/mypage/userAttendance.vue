@@ -81,9 +81,7 @@ export default {
   methods: {
     async workIn() {
       try {
-        const now = new Date();
-        const kstOffset = 9 * 60 * 60 * 1000; // UTC+9 시간대를 위한 밀리초 오프셋
-        const kstDate = new Date(now.getTime() + kstOffset);
+        const kstDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
 
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, { workInTime: kstDate.toISOString() }, {
           headers: this.getAuthHeaders()
@@ -104,9 +102,7 @@ export default {
     },
     async workOut() {
       try {
-        const now = new Date();
-        const kstOffset = 9 * 60 * 60 * 1000;
-        const kstDate = new Date(now.getTime() + kstOffset);
+        const kstDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
 
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, { workOutTime: kstDate.toISOString() }, {
           headers: this.getAuthHeaders()

@@ -202,14 +202,13 @@ export default {
 
         // 전체 알림 목록 가져오기
         this.notifications = response.data;
-        
+
+        this.notifications.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
+
         // 읽지 않은 알림 개수 업데이트
         this.unreadCount = this.notifications.filter(n => !n.read).length;
 
-        // 상위 4개 알림만 유지
-        if (this.notifications.length > 4) {
-          this.notifications = this.notifications.slice(0, 4);
-        }
+        this.notifications = this.notifications.slice(0, 4);
 
       } catch (error) {
         console.error("알림을 가져오는 중 오류 발생:", error);
