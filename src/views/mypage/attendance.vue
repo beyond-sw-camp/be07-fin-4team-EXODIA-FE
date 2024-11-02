@@ -135,11 +135,11 @@ export default {
       }
     },
 
-
     // 출근 API 호출
     async workIn() {
       try {
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, {}, {
+        const kstDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, { workInTime: kstDate.toISOString() }, {
           headers: this.getAuthHeaders()
         });
         this.message = response.data.message;
@@ -149,14 +149,14 @@ export default {
       } catch (error) {
         this.message = "출근 기록 중 오류 발생";
         this.alertType = "error";
-        // console.error(error);
       }
     },
 
     // 퇴근 API 호출
     async workOut() {
       try {
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, {}, {
+        const kstDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, { workOutTime: kstDate.toISOString() }, {
           headers: this.getAuthHeaders()
         });
         this.message = response.data.message;
