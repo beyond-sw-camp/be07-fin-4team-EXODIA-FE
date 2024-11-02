@@ -55,17 +55,17 @@ export default {
     async initializeRoom() {
       const { sessionId } = this.$route.params;
       try {
+        console.log("세션 ID로 서버 연결 시도 중:", sessionId);
+
         const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
           params: { userNum: localStorage.getItem("userNum") },
         });
         const token = response.data.token;
 
-        // OpenVidu 연결 설정
         this.OV = new OpenVidu();
         this.session = this.OV.initSession();
 
-        
-        // 다른 참가자의 스트림 구독 설정
+        // 스트림 생성 시 이벤트 처리
         this.session.on('streamCreated', (event) => {
           console.log('새 스트림 생성됨:', event.stream);
           const subscriber = this.session.subscribe(event.stream, undefined);
@@ -73,7 +73,7 @@ export default {
 
           console.log(`스트림 구독 완료: ${subscriber.stream.streamId}`);
 
-          // DOM이 렌더링된 후 비디오 요소에 srcObject 설정
+          // DOM 렌더링 후 비디오에 스트림 연결
           this.$nextTick(() => {
             const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
             const sideVideoElement = this.$refs[videoRefName][0];
@@ -98,19 +98,16 @@ export default {
 
         await this.session.connect(token, { clientData: "사용자명" });
 
-        // 자신의 비디오 스트림 설정
+        // 자신의 비디오 스트림 생성
         this.publisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined, // 디폴트 카메라 사용
-          audioSource: undefined, // 디폴트 마이크 사용
-          publishAudio: true,     // 오디오 켜기
-          publishVideo: true,     // 비디오 켜기
-          resolution: '640x480',  // 해상도 설정
-          frameRate: 30,          // 프레임 설정
-          insertMode: 'APPEND',   // 비디오 추가 모드
-          mirror: false           // 미러링 비활성화 (필요에 따라 설정)
+          videoSource: undefined, // 기본 웹캠 사용
+          audioSource: undefined, // 기본 마이크 사용
+          publishAudio: true,
+          publishVideo: true,
         });
 
         this.publisher.once('accessAllowed', () => {
+          console.log("내 비디오 스트림 설정됨.");
           this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
         });
 
