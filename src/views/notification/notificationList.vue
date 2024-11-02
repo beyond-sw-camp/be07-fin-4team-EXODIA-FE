@@ -51,7 +51,7 @@ export default {
       maxRetryCount: 5,
       notifications: [],
       unreadCount: 0,
-      selectedType: "", // 선택된 알림 타입
+      selectedType: "",
       notificationTypes: {
         "": "전체",
         공지사항: "공지사항",
@@ -65,7 +65,7 @@ export default {
   created() {
     this.fetchNotifications();
     this.fetchUnreadCount();
-    this.initSSE(); // SSE 초기화
+    this.initSSE();
   },
   computed: {
     // 선택된 타입에 따른 알림 필터링
@@ -94,7 +94,6 @@ export default {
       }
 
       try {
-        // EventSource 객체 생성
         this.eventSource = new EventSource(
           `${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`
         );
@@ -124,7 +123,7 @@ export default {
       }
     },
     getRetryInterval() {
-      return Math.min(1000 * Math.pow(2, this.retryCount), 30000); // 최대 30초까지 증가
+      return Math.min(1000 * Math.pow(2, this.retryCount), 30000);
     },
 
     formatDate(notificationTime) {
@@ -143,7 +142,7 @@ export default {
           }
         );
         this.notifications = response.data;
-        this.unreadCount = this.notifications.filter(n => !n.isRead).length; // 읽지 않은 알림 개수 업데이트
+        this.unreadCount = this.notifications.filter(n => !n.isRead).length;
       } catch (error) {
         console.error("알림 데이터를 가져오는 중 오류 발생:", error);
       }
@@ -174,7 +173,7 @@ export default {
           null,
           { headers: this.getAuthHeaders() }
         );
-        console.log(`Notification ${notificationId} marked as read.`);
+        console.log(`알림 ${notificationId} 읽음 상태로 변화`);
       } catch (error) {
         console.error("알림 읽음 처리 중 오류 발생:", error);
       }
@@ -182,31 +181,25 @@ export default {
 
     // 알림 클릭 핸들러
     async handleNotificationClick(notification) {
-      if (notification.isRead === 0) {
+      if (notification.isRead) {
         await this.markAsRead(notification.id);
-        notification.isRead = 1; // 상태를 변경하여 UI에서도 읽음 상태 반영
-        this.unreadCount -= 1; // 읽지 않은 개수 줄이기
+        notification.isRead = true;
+        this.unreadCount--;
       }
       this.redirectToNotification(notification);
     },
-
     redirectToNotification(notification) {
-      let targetUrl = `${process.env.VUE_APP_API_BASE_URL}`;
-
-      // 알림 유형에 따른 URL 설정
       if (notification.type === '공지사항') {
-        targetUrl += '/board/notice/list';
+        window.location.href = '/board/notice/list';
       } else if (notification.type === '문의') {
-        targetUrl += '/qna/list';
+        window.location.href = '/qna/list';
       } else if (notification.type === '예약') {
-        targetUrl += '/reservation/reservationList';
+        window.location.href = '/reservation/reservationList';
       } else if (notification.type === '결재') {
-        targetUrl += '/submit/list';
+        window.location.href = '/submit/list';
       } else if (notification.type === '문서') {
-        targetUrl += '/document';
+        window.location.href = '/document';
       }
-
-      window.location.href = targetUrl;
     },
 
     // 인증 헤더 가져오기
