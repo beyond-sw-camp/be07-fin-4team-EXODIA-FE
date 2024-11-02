@@ -85,6 +85,7 @@
                                 'mdi-chevron-up' :
                                 'mdi-chevron-down' }}</v-icon>
                         </v-card-title>
+
                         <v-list v-if="isOpenSubmitLine"
                             style="background-color: rgba(123, 86, 86, 0.3);max-height: 300px; overflow-y: auto;">
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
@@ -94,6 +95,9 @@
                                 </v-list-item-content>
                                 <v-list-item-content>
                                     | {{ user.positionName }}
+                                    <span v-if="user.userNum === this.userNum">
+                                        <v-chip>본인</v-chip>
+                                    </span>
                                 </v-list-item-content>
                             </v-list-item>
                         </v-list>
@@ -127,7 +131,7 @@
                             선택하시오.</v-card-text>
                         <v-card-text v-if="firstApprovers.length === 0 && this.positionId == 6">본부장 직급에서
                             선택하시오.</v-card-text>
-                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId == 5">사장 직급에서
+                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId <= 5">사장 직급에서
                             선택하시오.</v-card-text>
                         <v-list class="drop-user">
                             <v-list-item v-if="firstApprovers.length != 0">
@@ -221,7 +225,9 @@ export default {
         async fetchUsers() {
             try {
                 const response = await axios.get(`/department/${this.departmentId}/parent/users`);
-                this.users = response.data.filter(u => Number(u.positionId) <= Number(this.positionId));
+                this.users = response.data
+                    .filter(u => Number(u.positionId) <= Number(this.positionId))
+                    .sort((a, b) => Number(a.positionId) - Number(b.positionId));
 
                 for (let i = 0; i < this.users.length; i++) {
                     let user = this.users[i];
@@ -237,7 +243,7 @@ export default {
                     } else if (this.positionId == 6) {
                         // 본부장
                         this.positions[0] = 5;
-                    } else {
+                    } else if (this.positionId <= 5) {
                         // 본부장 이사
                         this.positions[0] = 1;
                     }

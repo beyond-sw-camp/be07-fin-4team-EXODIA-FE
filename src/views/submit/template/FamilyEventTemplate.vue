@@ -82,13 +82,20 @@
                         </v-card-title>
                         <v-list v-if="isOpenSubmitLine"
                             style="background-color: rgba(123, 86, 86, 0.3);max-height: 300px; overflow-y: auto;">
+
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
                                 @dragstart="onDragStart(user)" class="draggable-item">
+                                <v-divider v-if="index === 0 || user.positionId !== users[index - 1].positionId"
+                                    class="position-separator"
+                                    style="background-color: rgba(100, 50, 50, 0.5); height: 2px; margin: 8px 0;" />
                                 <v-list-item-content style="font-weight:600;">
                                     {{ user.name }}
                                 </v-list-item-content>
                                 <v-list-item-content>
                                     | {{ user.positionName }}
+                                    <span v-if="user.userNum === this.userNum">
+                                        <v-chip>본인</v-chip>
+                                    </span>
                                 </v-list-item-content>
                             </v-list-item>
                         </v-list>
@@ -122,8 +129,9 @@
                             선택하시오.</v-card-text>
                         <v-card-text v-if="firstApprovers.length === 0 && this.positionId == 6">본부장 직급에서
                             선택하시오.</v-card-text>
-                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId == 5">사장 직급에서
+                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId <= 5">사장 직급에서
                             선택하시오.</v-card-text>
+
                         <v-list class="drop-user">
                             <v-list-item v-if="firstApprovers.length != 0">
                                 <v-avatar class="icon" size="36">
@@ -228,7 +236,9 @@ export default {
         async fetchUsers() {
             try {
                 const response = await axios.get(`/department/${this.departmentId}/parent/users`);
-                this.users = response.data.filter(u => Number(u.positionId) <= Number(this.positionId));
+                this.users = response.data
+                    .filter(u => Number(u.positionId) <= Number(this.positionId))
+                    .sort((a, b) => Number(a.positionId) - Number(b.positionId));
 
                 for (let i = 0; i < this.users.length; i++) {
                     let user = this.users[i];
@@ -244,7 +254,7 @@ export default {
                     } else if (this.positionId == 6) {
                         // 본부장
                         this.positions[0] = 5;
-                    } else {
+                    } else if (this.positionId <= 5) {
                         // 본부장 이사
                         this.positions[0] = 1;
                     }
@@ -333,8 +343,6 @@ export default {
                 if (this.submitCreateData.submitUserDtos.length == 0) {
                     alert('결재라인을 등록해주세요.');
                 }
-
-                this.submitCreateData.submitUserDtos.slice().sort((a, b) => b.PositionId - a.PositionId);
                 this.submitCreateData.submitUserDtos.sort((a, b) => b.position - a.position);
 
                 this.submitCreateData.contents = `{"경조종류": "${this.formData.mainEventType} ${this.formData.familyRelation}"}`;
