@@ -238,7 +238,6 @@ export default {
         this.fetchDepartment();
 
         this.fetchUsers();
-        console.log(this.submitCreateData.submitUserDtos)
         this.submitCreateData.submitType = '법인 카드 사용 신청서';
     },
     methods: {
@@ -368,8 +367,6 @@ export default {
             if (level === 3) this.thirdApprovers = [];
 
             this.submitCreateData.submitUserDtos.splice(level - 1, 1);
-
-            console.log(this.submitCreateData.submitUserDtos)
         },
         async createSubmit() {
             try {

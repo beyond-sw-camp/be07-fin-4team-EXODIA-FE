@@ -353,7 +353,6 @@ export default {
             return new Date(date).toLocaleTimeString();
         },
         calculateDays() {
-            // console.log("시작: " + this.formData.휴가시작일);
             const startDate = new Date(this.formData.휴가시작일);
             const endDate = new Date(this.formData.휴가종료일);
             let totalDays = 0;
