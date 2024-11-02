@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import axios from "axios";
+// import axios from "axios";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { OpenVidu } from "openvidu-browser";
 
