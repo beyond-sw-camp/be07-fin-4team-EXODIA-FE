@@ -55,13 +55,11 @@ export default {
   },
   data() {
     return {
-
       userProfile: {},
       boardItems: [],
       currentPage: 1,
       totalPages: 1,
       itemsPerPage: 10,
-
 
     }
   },
