@@ -71,24 +71,22 @@ export default {
           const subscriber = this.session.subscribe(event.stream, undefined);
           this.sideVideos.push(subscriber);
 
-          subscriber.on('streamPlaying', () => {
-            this.$nextTick(() => {
-              const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
-              const sideVideoElement = this.$refs[videoRefName][0];
+          // 지연을 줘서 `sideVideos` 배열 업데이트 후 srcObject 설정
+          setTimeout(() => {
+            const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
+            const sideVideoElement = this.$refs[videoRefName][0];
 
-              if (sideVideoElement) {
-                sideVideoElement.srcObject = subscriber.stream.getMediaStream();
-                sideVideoElement.play().catch(error => {
-                  console.warn("비디오 자동 재생이 차단되었습니다:", error);
-                });
-
-                console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
-                console.log(`${subscriber.stream.streamId} 비디오 요소 srcObject 설정 확인:`, sideVideoElement.srcObject);
-              } else {
-                console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
-              }
-            });
-          });
+            if (sideVideoElement) {
+              sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+              sideVideoElement.play().catch(error => {
+                console.warn("비디오 자동 재생이 차단되었습니다:", error);
+              });
+              console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
+              console.log(`${subscriber.stream.streamId} 비디오 요소 srcObject 설정 확인:`, sideVideoElement.srcObject);
+            } else {
+              console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
+            }
+          }, 500); // 500ms 지연
         });
 
         this.session.on('connectionCreated', (event) => {
@@ -160,6 +158,7 @@ export default {
   },
 };
 </script>
+
 
 <style>
 .room-view {
