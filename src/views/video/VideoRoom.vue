@@ -82,7 +82,7 @@ export default {
                 
                 console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
                 console.log("비디오 요소 srcObject 설정 확인:", sideVideoElement.srcObject);
-                
+                sideVideoElement.play(); 
                 if (sideVideoElement.srcObject) {
                     console.log(`비디오 스트림이 정상적으로 연결되었습니다: ${subscriber.stream.streamId}`);
                 } else {
