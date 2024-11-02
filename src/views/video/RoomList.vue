@@ -40,35 +40,36 @@ export default {
     };
 
     const createRoom = async () => {
-      const userNum = localStorage.getItem("userNum");
-      if (!newRoomTitle.value || !userNum) {
-        alert("방 제목과 사용자 번호를 입력해주세요.");
-        return;
-      }
+  const userNum = localStorage.getItem("userNum");
+  if (!newRoomTitle.value || !userNum) {
+    alert("방 제목과 사용자 번호를 입력해주세요.");
+    return;
+  }
 
-      try {
-        const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
-          title: newRoomTitle.value,
-          userNum: userNum,
-        });
-        console.log("방 생성 성공: ", response.data);
-        newRoomTitle.value = "";
+  try {
+    const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
+      title: newRoomTitle.value,
+      userNum: userNum,
+    });
+    console.log("방 생성 성공: ", response.data);
+    newRoomTitle.value = "";
 
-        const sessionId = response.data.sessionId;
-        const token = response.data.token;
+    const sessionId = response.data.sessionId;
+    // 순수 token 값만 추출
+    const token = response.data.token.split("token=")[1]; 
 
-        if (sessionId && token) {
-          router.push({
-            name: "VideoRoom",
-            params: { sessionId, token }
-          });
-        }
+    if (sessionId && token) {
+      router.push({
+        name: "VideoRoom",
+        params: { sessionId, token },
+      });
+    }
 
-        getRooms();
-      } catch (error) {
-        console.error("방 생성 오류: ", error);
-      }
-    };
+    getRooms(); // 방 목록 갱신
+  } catch (error) {
+    console.error("방 생성 오류: ", error);
+  }
+};
 
     const joinRoom = async (sessionId) => {
       const userNum = localStorage.getItem("userNum");
@@ -81,7 +82,7 @@ export default {
         const response = await axios.post(`https://server.exodiapot.xyz/api/rooms/${sessionId}/join`, null, {
           params: { userNum: userNum },
         });
-        const token = response.data.token;
+        const token = response.data.token.split("token=")[1]; 
         router.push({
           name: "VideoRoom",
           params: { sessionId, token },
