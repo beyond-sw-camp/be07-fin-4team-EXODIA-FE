@@ -630,6 +630,12 @@ export default {
         const startTime = new Date(selectedStartDate.getTime() - timezoneOffset).toISOString();
         const endTime = new Date(selectedEndDate.getTime() - timezoneOffset).toISOString();
 
+        // 현재 시간과 비교
+        const now = new Date();
+        if (selectedStartDate < now) {
+            alert("과거 시간으로는 예약할 수 없습니다.");
+            return;
+        }
         // 입력한 시간이 유효한지 체크
         if (isNaN(selectedStartDate) || isNaN(selectedEndDate)) {
           alert("올바른 날짜 및 시간을 입력해 주세요.");
