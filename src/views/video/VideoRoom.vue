@@ -115,7 +115,7 @@ export default {
         console.error("비밀번호 확인 오류:", error);
       }
     },
-    
+
     checkPassword() {
       if (this.enteredPassword === this.roomPassword) {
         this.showPasswordModal = false;
@@ -206,30 +206,33 @@ export default {
       this.isVideoEnabled = !this.isVideoEnabled;
       this.publisher.publishVideo(this.isVideoEnabled);
     },
+
     toggleScreenShare() {
-      if (!this.isScreenSharing) {
+    if (!this.isScreenSharing) {
         const screenPublisher = this.OV.initPublisher(undefined, {
-          videoSource: 'screen',
-          publishAudio: this.isAudioEnabled,
+            videoSource: 'screen',
+            publishAudio: this.isAudioEnabled,
         });
-        this.session.unpublish(this.publisher);
+
+        this.session.unpublish(this.publisher); 
         this.publisher = screenPublisher;
         this.session.publish(this.publisher);
         this.isScreenSharing = true;
-      } else {
+    } else {
         const cameraPublisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined,
-          audioSource: undefined,
-          publishAudio: this.isAudioEnabled,
-          publishVideo: this.isVideoEnabled,
-          mirror: true,
+            videoSource: undefined,
+            audioSource: undefined,
+            publishAudio: this.isAudioEnabled,
+            publishVideo: this.isVideoEnabled,
+            mirror: true,
         });
-        this.session.unpublish(this.publisher);
+
+        this.session.unpublish(this.publisher);  
         this.publisher = cameraPublisher;
         this.session.publish(this.publisher);
         this.isScreenSharing = false;
-      }
-    },
+    }
+},
 
     async leaveRoom() {
       const { sessionId } = this.$route.params;
@@ -253,9 +256,15 @@ export default {
 
       if (mainVideoElement && sideVideoElement) {
         const mainStream = mainVideoElement.srcObject;
-        mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+        const sideStream = subscriber.stream.getMediaStream();
+
+        mainVideoElement.srcObject = sideStream;
         sideVideoElement.srcObject = mainStream;
-      }
+
+        const tempSubscriber = this.mainSubscriber;
+        this.mainSubscriber = subscriber;
+        this.sideVideos[index] = tempSubscriber;
+    }
     },
     prevPage() {
       if (this.currentPage > 0) this.currentPage--;
