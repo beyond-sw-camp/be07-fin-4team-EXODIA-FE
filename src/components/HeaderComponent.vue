@@ -119,8 +119,7 @@ export default {
   methods: {
 
     formatDate(notificationTime) {
-      const localDate = new Date(notificationTime);
-      return format(localDate, 'PPPpp', { locale: ko }); // 원하는 형식으로 수정
+      return formatDistanceToNow(new Date(notificationTime), { addSuffix: true, locale: ko });
     },
     // SSE 연결 설정
     initSSE() {
