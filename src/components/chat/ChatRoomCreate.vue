@@ -115,15 +115,15 @@ export default {
             this.selectUser.splice(index, 1);
         },
         addUser(user) {
-            // if (this.selectUser.indexOf(user) != -1) {
-            //     alert("이미 선택한 유저입니다.");
-            //     return;
-            // }
-            if(this.selectUser.filter((select) => {return select.userNum === user.userNum})){
+            if (this.selectUser.indexOf(user) != -1) {
                 alert("이미 선택한 유저입니다.");
+                console.log("뭐가 들어가는거니.")
+                console.log(this.selectUser.indexOf(user));
+                console.log(this.selectUser);
+                console.log(user);
                 return;
             }
-
+            
             if (user.userNum == this.chatroomData.userNum) {
                 alert("자기 자신은 선택할 수 없습니다.");
                 return;
