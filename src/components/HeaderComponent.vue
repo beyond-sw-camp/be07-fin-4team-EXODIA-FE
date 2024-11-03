@@ -123,7 +123,8 @@ export default {
   methods: {
 
     formatDate(notificationTime) {
-      return formatDistanceToNow(new Date(notificationTime), { addSuffix: true, locale: ko });
+      const localDate = new Date(notificationTime);
+      return format(localDate, 'PPPpp', { locale: ko }); // 원하는 형식으로 수정
     },
     // SSE 연결 설정
     initSSE() {
@@ -283,7 +284,7 @@ export default {
         window.location.href = '/document';
       }
     },
-    
+
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
