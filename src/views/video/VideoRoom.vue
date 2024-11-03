@@ -93,28 +93,25 @@ export default {
   },
   
   created() {
-    this.initializeRoom();
+    this.checkRoomPassword();
   },
   methods: {
 
     async checkRoomPassword() {
-      const { sessionId } = this.$route.params;
-      try {
-        const response = await axios.post('/api/rooms/verify-password', {
-          sessionId,
-          password: this.enteredPassword,
-        });
-        
-        if (response.data.success) {
-          this.showPasswordModal = false;
-          this.initializeRoom();
-        } else {
-          alert("비밀번호가 일치하지 않습니다.");
-        }
-      } catch (error) {
-        console.error("비밀번호 확인 오류:", error);
+    const { sessionId } = this.$route.params;
+    try {
+      const response = await axios.get(`/api/rooms/${sessionId}`);
+      this.roomPassword = response.data.password;
+
+      if (this.roomPassword) {
+        this.showPasswordModal = true;
+      } else {
+        this.initializeRoom();
       }
-    },
+    } catch (error) {
+      console.error("방 정보를 확인하는 중 오류 발생:", error);
+    }
+  },
 
     checkPassword() {
       if (this.enteredPassword === this.roomPassword) {
@@ -124,11 +121,11 @@ export default {
         alert("비밀번호가 일치하지 않습니다.");
       }
     },
+
     closePasswordModal() {
       this.showPasswordModal = false;
       this.$router.push({ name: 'RoomList' });
     },
-
 
 
     async initializeRoom() {
@@ -214,6 +211,7 @@ export default {
             publishAudio: this.isAudioEnabled,
         });
 
+        // 기존의 카메라 스트림을 사이드로 이동시키지 않고 유지
         this.session.unpublish(this.publisher); 
         this.publisher = screenPublisher;
         this.session.publish(this.publisher);
@@ -227,12 +225,13 @@ export default {
             mirror: true,
         });
 
-        this.session.unpublish(this.publisher);  
+        this.session.unpublish(this.publisher);
         this.publisher = cameraPublisher;
         this.session.publish(this.publisher);
         this.isScreenSharing = false;
     }
-},
+}
+,
 
     async leaveRoom() {
       const { sessionId } = this.$route.params;
@@ -250,22 +249,28 @@ export default {
     },
 
 
-  switchToMain(subscriber, index) {
-      const mainVideoElement = this.$refs.mainVideo;
-      const sideVideoElement = this.$refs['sideVideo' + (this.currentPage * this.maxVideosPerPage + index)][0];
+    switchToMain(subscriber, index) {
+    const mainVideoElement = this.$refs.mainVideo;
+    const sideVideoElement = this.$refs['sideVideo' + (this.currentPage * this.maxVideosPerPage + index)][0];
 
-      if (mainVideoElement && sideVideoElement) {
+    if (mainVideoElement && sideVideoElement) {
         const mainStream = mainVideoElement.srcObject;
         const sideStream = subscriber.stream.getMediaStream();
 
         mainVideoElement.srcObject = sideStream;
         sideVideoElement.srcObject = mainStream;
 
-        const tempSubscriber = this.mainSubscriber;
+        // 메인과 사이드 비디오 위치를 자유롭게 전환할 수 있도록 업데이트
+        const mainSubscriber = this.mainSubscriber;
         this.mainSubscriber = subscriber;
-        this.sideVideos[index] = tempSubscriber;
+        this.sideVideos[index] = mainSubscriber;
+
+        // 비디오 교체 후 다시 로드
+        mainVideoElement.load();
+        sideVideoElement.load();
     }
-    },
+}
+,
     prevPage() {
       if (this.currentPage > 0) this.currentPage--;
     },

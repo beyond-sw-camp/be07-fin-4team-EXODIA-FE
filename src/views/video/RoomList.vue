@@ -8,7 +8,7 @@
       <div v-for="room in rooms" :key="room.sessionId" class="room-card" @click="enterRoom(room.sessionId)">
         <div class="room-thumbnail">
           <h3>{{ room.title }}</h3>
-          <v-icon v-if="room.hasPassword">mdi-lock</v-icon>
+          <v-icon v-if="room.password">mdi-lock</v-icon>
         </div>
         <p>참가자 수: {{ room.participantCount }}</p>
       </div>
@@ -137,7 +137,7 @@ export default {
       this.newRoomPasswordConfirm = '';
       this.enablePassword = false;
     },
-    
+
     closePasswordModal() {
       this.showPasswordModal = false;
       this.inputPassword = '';
