@@ -119,7 +119,7 @@ export default {
             //     alert("이미 선택한 유저입니다.");
             //     return;
             // }
-            if(this.selectUser.filter(select => select.userNum == user.userNum)){
+            if(this.selectUser.filter((select) => {return select.userNum === user.userNum})){
                 alert("이미 선택한 유저입니다.");
                 return;
             }
