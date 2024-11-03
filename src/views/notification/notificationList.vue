@@ -247,6 +247,7 @@ export default {
   border-radius: 10px !important;
   background-color: #f9f9f9 !important;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1) !important;
+  padding: 15px;
 }
 
 .notification-item.unread {
