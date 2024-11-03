@@ -11,6 +11,7 @@
     <div class="side-videos">
       <div v-for="(subscriber, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(subscriber, index)">
         <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
+        <p class="video-name">{{ subscriber.stream.connection.data }}</p>
       </div>
     </div>
 
@@ -106,6 +107,7 @@ export default {
           audioSource: undefined, 
           publishAudio: true,
           publishVideo: true,
+          mirror: true, 
         });
 
         this.publisher.once('accessAllowed', () => {
@@ -151,12 +153,12 @@ export default {
         console.error("방 나가기 중 오류 발생:", error);
       }
     },
-    switchToMain(video) {
-      const currentMainStream = this.$refs.mainVideo.srcObject;
-      this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
-      video.stream.srcObject = currentMainStream;
-    },
-  },
+  //   switchToMain(video) {
+  //     const currentMainStream = this.$refs.mainVideo.srcObject;
+  //     this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
+  //     video.stream.srcObject = currentMainStream;
+  //   },
+  // },
 
   switchToMain(subscriber, index) {
       const mainVideoElement = this.$refs.mainVideo;
@@ -168,6 +170,7 @@ export default {
         sideVideoElement.srcObject = mainStream;
       }
     },
+}
 };
 </script>
 
@@ -181,12 +184,13 @@ export default {
 }
 
 .main-video {
-  width: 60%;
-  max-width: 800px;
+  width: 50%;
+  max-width: 700px;
   margin-bottom: 20px;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  border: 4px solid #3498db;
 }
 
 .main-video video {
@@ -203,17 +207,33 @@ export default {
 }
 
 .side-video {
-  width: 160px;
-  height: 90px;
-  border-radius: 8px;
+  width: 180px;
+  height: 100px;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  border: 2px solid #bdc3c7;
+  transition: transform 0.2s;
+}
+
+.side-video:hover {
+  transform: scale(1.05);
+  border-color: #3498db;
 }
 
 .side-video video {
   width: 100%;
   height: 100%;
+  transform: scaleX(-1); 
+}
+
+.video-name {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #2c3e50;
+  font-weight: bold;
 }
 
 .controls {
