@@ -377,8 +377,6 @@ export default {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/document/detail/${id}`;
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
 
-                console.log('Document data:', response.data.result);
-
                 this.selectedDocument = response.data.result;
                 this.drawer = true;
                 console.log("tags: " + this.selectedDocument.tags)
