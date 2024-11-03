@@ -39,9 +39,6 @@
         </v-list>
       </v-col>
     </v-row>
-      <v-btn color="red" @click="clearNotifications" class="mb-4">
-        모든 알림 삭제
-      </v-btn>
   </v-container>
 </template>
 
@@ -87,32 +84,6 @@ export default {
     },
   },
   methods: {
-    async clearNotifications() {
-        try {
-          const response = await axios.delete(
-            `${process.env.VUE_APP_API_BASE_URL}/notifications/clear-all`,
-            {
-              headers: this.getAuthHeaders(),
-            }
-          );
-          console.log("모든 알림이 삭제되었습니다.");
-          this.fetchNotifications(); // 알림 목록 다시 가져오기
-        } catch (error) {
-          console.error("알림 삭제 중 오류 발생:", error);
-        }
-      },
-      getAuthHeaders() {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("토큰이 없습니다. 로그인이 필요합니다.");
-          return {};
-        }
-        return {
-          Authorization: `Bearer ${token}`,
-        };
-      },
-    },
-
     navigateToType(value) {
       this.selectedType = value;
     },
