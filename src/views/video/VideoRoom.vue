@@ -1,28 +1,26 @@
 <template>
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
+
+    <!-- Main Video -->
     <div class="main-video">
       <video ref="mainVideo" autoplay playsinline></video>
     </div>
-    <div class="side-videos-container">
-      <v-btn icon @click="prevPage" v-if="currentPage > 0">
-        <v-icon>mdi-chevron-left</v-icon>
-      </v-btn>
-      <div class="side-videos">
-        <div
-          v-for="(subscriber, index) in paginatedSideVideos"
-          :key="index"
-          class="side-video"
-          @click="switchToMain(subscriber, index)"
-        >
-          <video :ref="'sideVideo' + (currentPage * maxVideosPerPage + index)" autoplay playsinline muted></video>
-          <p class="video-name">{{ subscriber.stream.connection.data }}</p>
-        </div>
+
+    <!-- Side Videos -->
+    <div class="side-videos">
+      <div
+        v-for="(subscriber, index) in sideVideos"
+        :key="index"
+        class="side-video"
+        @click="switchToMain(subscriber, index)"
+      >
+        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
+        <p class="video-name">{{ subscriber.stream.connection.data }}</p>
       </div>
-      <v-btn icon @click="nextPage" v-if="(currentPage + 1) * maxVideosPerPage < sideVideos.length">
-        <v-icon>mdi-chevron-right</v-icon>
-      </v-btn>
     </div>
+
+    <!-- Control Buttons -->
     <v-row class="controls" justify="center">
       <v-btn icon @click="toggleAudio">
         <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
@@ -30,26 +28,13 @@
       <v-btn icon @click="toggleVideo">
         <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
       </v-btn>
-      <v-btn icon @click="toggleScreenShare">
-        <v-icon>{{ isScreenSharing ? 'mdi-monitor-off' : 'mdi-monitor-share' }}</v-icon>
+      <v-btn icon @click="startScreenShare">
+        <v-icon>mdi-monitor-share</v-icon>
       </v-btn>
       <v-btn icon @click="leaveRoom">
         <v-icon>mdi-logout</v-icon>
       </v-btn>
     </v-row>
-    <v-dialog v-model="showPasswordModal" persistent max-width="400">
-      <v-card>
-        <v-card-title>비밀번호 입력</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="enteredPassword" label="비밀번호" type="password"></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn v-create text @click="checkPassword">입장</v-btn>
-          <v-btn v-delete text @click="closePasswordModal">취소</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
@@ -67,55 +52,12 @@ export default {
       publisher: null,
       isAudioEnabled: true,
       isVideoEnabled: true,
-      currentPage: 0,
-      maxVideosPerPage: 4,
-      showPasswordModal: false,
-      enteredPassword: '',
-      roomPassword: '', 
     };
   },
-  computed: {
-    paginatedSideVideos() {
-      const start = this.currentPage * this.maxVideosPerPage;
-      return this.sideVideos.slice(start, start + this.maxVideosPerPage);
-    },
-  },
-  
   created() {
-    this.checkRoomPassword();
+    this.initializeRoom();
   },
   methods: {
-
-    async checkRoomPassword() {
-      const { sessionId } = this.$route.params;
-      try {
-        const response = await axios.get(`/api/rooms/${sessionId}`);
-        this.roomPassword = response.data.password;
-
-        if (this.roomPassword) {
-          this.showPasswordModal = true;
-        } else {
-          this.initializeRoom();
-        }
-      } catch (error) {
-        console.error("방 정보를 확인하는 중 오류 발생:", error);
-      }
-    },
-
-    checkPassword() {
-      if (this.enteredPassword === this.roomPassword) {
-        this.showPasswordModal = false;
-        this.initializeRoom();
-      } else {
-        alert("비밀번호가 일치하지 않습니다.");
-      }
-    },
-
-    closePasswordModal() {
-      this.showPasswordModal = false;
-      this.$router.push({ name: 'RoomList' });
-    },
-
     async initializeRoom() {
       const { sessionId } = this.$route.params;
       try {
@@ -137,29 +79,30 @@ export default {
 
             if (sideVideoElement) {
               sideVideoElement.srcObject = subscriber.stream.getMediaStream();
-              sideVideoElement.play().catch(error => {
-                console.warn("비디오 자동 재생이 차단되었습니다:", error);
+              sideVideoElement.play().catch((error) => {
+                console.warn("Video auto-play blocked", error);
               });
             }
           }, 500);
         });
 
         this.session.on('connectionCreated', (event) => {
-          console.log(`새 참가자 연결됨: ${event.connection.connectionId}`);
+          console.log(`New participant connected: ${event.connection.connectionId}`);
         });
 
         this.session.on('connectionDestroyed', (event) => {
-          console.log(`참가자 연결 해제됨: ${event.connection.connectionId}`);
+          console.log(`Participant left: ${event.connection.connectionId}`);
         });
 
         await this.session.connect(token, { clientData: "사용자명" });
 
+        // Initialize and publish main video
         this.publisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined, 
-          audioSource: undefined, 
-          publishAudio: true,
-          publishVideo: true,
-          mirror: true, 
+          videoSource: undefined,
+          audioSource: undefined,
+          publishAudio: this.isAudioEnabled,
+          publishVideo: this.isVideoEnabled,
+          mirror: true,
         });
 
         this.publisher.once('accessAllowed', () => {
@@ -168,7 +111,7 @@ export default {
 
         this.session.publish(this.publisher);
       } catch (error) {
-        console.error("방 참여 중 오류 발생:", error);
+        console.error("Error joining the room:", error);
       }
     },
 
@@ -180,35 +123,25 @@ export default {
       this.isVideoEnabled = !this.isVideoEnabled;
       this.publisher.publishVideo(this.isVideoEnabled);
     },
+    startScreenShare() {
+      const screenPublisher = this.OV.initPublisher(undefined, {
+        videoSource: 'screen',
+        publishAudio: this.isAudioEnabled,
+      });
+      this.session.unpublish(this.publisher);
+      this.publisher = screenPublisher;
+      this.session.publish(this.publisher);
+    },
+    switchToMain(subscriber, index) {
+      const mainVideoElement = this.$refs.mainVideo;
+      const sideVideoElement = this.$refs['sideVideo' + index][0];
 
-    toggleScreenShare() {
-      if (!this.isScreenSharing) {
-        const screenPublisher = this.OV.initPublisher(undefined, {
-          videoSource: 'screen',
-          publishAudio: this.isAudioEnabled,
-        });
-        this.session.unpublish(this.publisher); 
-        this.publisher = screenPublisher;
-        this.session.publish(this.publisher);
-        this.isScreenSharing = true;
-      } else {
-        const cameraPublisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined,
-          audioSource: undefined,
-          publishAudio: this.isAudioEnabled,
-          publishVideo: this.isVideoEnabled,
-          mirror: true,
-        });
-        this.session.unpublish(this.publisher);
-        this.publisher = cameraPublisher;
-        this.session.publish(this.publisher);
-        this.isScreenSharing = false;
+      if (mainVideoElement && sideVideoElement) {
+        const mainStream = mainVideoElement.srcObject;
+        mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+        sideVideoElement.srcObject = mainStream;
       }
     },
-
-
-
-    
     async leaveRoom() {
       const { sessionId } = this.$route.params;
       try {
@@ -220,14 +153,12 @@ export default {
         });
         this.$router.push({ name: 'RoomList' });
       } catch (error) {
-        console.error("방 나가기 중 오류 발생:", error);
+        console.error("Error leaving the room:", error);
       }
     },
   },
 };
 </script>
-
-
 
 <style>
 .room-view {
@@ -238,8 +169,8 @@ export default {
 }
 
 .main-video {
-  width: 70%;
-  max-width: 900px;
+  width: 50%;
+  max-width: 700px;
   margin-bottom: 20px;
   border-radius: 10px;
   overflow: hidden;
@@ -252,21 +183,17 @@ export default {
   height: auto;
 }
 
-
-.side-videos-container {
-  display: flex;
-  align-items: center;
-}
-
 .side-videos {
   display: flex;
-  gap: 15px;
-  max-width: 85%;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 80%;
 }
 
 .side-video {
-  width: 200px;
-  height: 130px;
+  width: 180px;
+  height: 100px;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
@@ -283,7 +210,7 @@ export default {
 .side-video video {
   width: 100%;
   height: 100%;
-  transform: scaleX(-1); 
+  transform: scaleX(-1);
 }
 
 .video-name {
