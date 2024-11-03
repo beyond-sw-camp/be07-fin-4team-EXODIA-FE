@@ -83,7 +83,7 @@ export default {
       try {
         const positionId = localStorage.getItem('positionId');
 
-        if (positionId === '1') {
+        if (positionId === '7') {
           this.isManager = true;
           const departmentId = localStorage.getItem('departmentId');
           const departmentResponse = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/user/department-users/${departmentId}`, {
@@ -115,7 +115,7 @@ export default {
           subEvalutionContent: item.subEvalutionContent || '',
           grade: item.grade || '',
           saved: !!item.grade,
-          editable: !item.saved
+          editable: !item.grade
         }));
       } catch (error) {
         console.error('평가 목록 조회 실패', error);
