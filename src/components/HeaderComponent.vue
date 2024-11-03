@@ -69,9 +69,8 @@
 
             <v-icon style="padding-right:5px; font-size:20px; align">mdi-account</v-icon>
 
-            <button @click="$router.push('/mypage/vacation')">
-              마이페이지
-            </button>
+            <button @click="goToVacationPage">마이페이지</button>
+
           </v-row>
           <v-row justify="center" class="toggle-btn">
             <v-icon style="padding-right:5px; font-size:20px">mdi-logout</v-icon>
@@ -169,12 +168,12 @@ export default {
       };
     },
 
-    async fetchChatAlarmNum(){
-      try{
+    async fetchChatAlarmNum() {
+      try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/alarm`);
         this.unreadChatNum = response.data.result;
         console.log(response);
-      }catch(error){
+      } catch (error) {
         console.error("오류발생");
       }
     },
@@ -321,7 +320,16 @@ export default {
         this.logout();
       }
     },
-
+    handleClickOutside(event) {
+      const dropdown = this.$el.querySelector('.dropdown');
+      if (dropdown && !dropdown.contains(event.target)) {
+        this.isDropdownOpen = false;
+      }
+    },
+    goToVacationPage(event) {
+      event.preventDefault(); // 기본 동작 방지
+      this.$router.push('/mypage/vacation');
+    },
     // 날짜 포맷팅
     // formatDate(notificationTime) {
     //   const date = new Date(notificationTime);
