@@ -29,7 +29,7 @@
                     outlined hide-details dense :disabled="item.saved && !item.editable" />
                 </td>
                 <td style="padding:0 10px;">
-                  <v-btn icon @click="toggleEditAndSave(item, index)"
+                  <v-btn icon @click="changeStatus(item)"
                     style="justify-content: center; width: 30px; height: 30px; background-color: transparent; box-shadow: none;">
                     <v-icon>{{ item.editable ? 'mdi-check' : 'mdi-pencil' }}</v-icon>
                   </v-btn>
@@ -89,10 +89,18 @@ export default {
           subEvalutionContent: item.subEvalutionContent || '',
           grade: item.grade || '',
           saved: !!item.subEvalutionContent,
-          editable: !item.saved,
+          editable: !item.subEvalutionContent,
         }));
+
       } catch (error) {
-        console.error('Failed to fetch evaluations', error);
+        console.error('소분류 불러오기 실패', error);
+      }
+    },
+    changeStatus(item) {
+      if (item.editable) {
+        this.toggleEditAndSave(item);
+      } else {
+        item.editable = true;
       }
     },
     async toggleEditAndSave(item) {
@@ -106,8 +114,8 @@ export default {
             },
           });
 
-          item.editable = false;
           item.saved = true;
+          item.editable = false;
           alert('수정이 완료되었습니다.');
         } catch (error) {
           console.error('소분류 수정 실패', error);
@@ -160,7 +168,6 @@ export default {
             item.editable = false;
           }
         });
-
         alert('모든 소분류가 성공적으로 저장되었습니다.');
       } catch (error) {
         console.error('Failed to save sub-evaluations', error);
