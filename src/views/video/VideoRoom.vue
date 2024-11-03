@@ -7,15 +7,28 @@
       <video ref="mainVideo" autoplay playsinline></video>
     </div>
 
-    <!-- 다른 참가자 비디오들 -->
-    <div class="side-videos">
-      <div v-for="(subscriber, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(subscriber, index)">
-        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
-        <p class="video-name">{{ subscriber.stream.connection.data }}</p>
-      </div>
-    </div>
+    <!-- 다른 참가자 비디오들 (4개씩 표시, 좌우 화살표) -->
+    <div class="side-videos-container">
+      <v-btn icon @click="prevPage" v-if="currentPage > 0">
+        <v-icon>mdi-chevron-left</v-icon>
+      </v-btn>
 
-    <!-- 제어 아이콘 버튼들 -->
+      <div class="side-videos">
+        <div
+          v-for="(subscriber, index) in paginatedSideVideos"
+          :key="index"
+          class="side-video"
+          @click="switchToMain(subscriber, index)"
+        >
+          <video :ref="'sideVideo' + (currentPage * maxVideosPerPage + index)" autoplay playsinline muted></video>
+          <p class="video-name">{{ subscriber.stream.connection.data }}</p>
+        </div>
+      </div>
+
+      <v-btn icon @click="nextPage" v-if="(currentPage + 1) * maxVideosPerPage < sideVideos.length">
+        <v-icon>mdi-chevron-right</v-icon>
+      </v-btn>
+    </div>
     <v-row class="controls" justify="center">
       <v-btn icon @click="toggleAudio">
         <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
@@ -33,7 +46,6 @@
   </div>
 </template>
 
-
 <script>
 import { OpenVidu } from 'openvidu-browser';
 import axios from 'axios';
@@ -48,8 +60,18 @@ export default {
       publisher: null,
       isAudioEnabled: true,
       isVideoEnabled: true,
+      currentPage: 0,
+      maxVideosPerPage: 4,
     };
   },
+  computed: {
+    paginatedSideVideos() {
+      const start = this.currentPage * this.maxVideosPerPage;
+      return this.sideVideos.slice(start, start + this.maxVideosPerPage);
+    },
+  },
+
+  
   created() {
     this.initializeRoom();
   },
@@ -162,7 +184,7 @@ export default {
 
   switchToMain(subscriber, index) {
       const mainVideoElement = this.$refs.mainVideo;
-      const sideVideoElement = this.$refs['sideVideo' + index][0];
+      const sideVideoElement = this.$refs['sideVideo' + (this.currentPage * this.maxVideosPerPage + index)][0];
 
       if (mainVideoElement && sideVideoElement) {
         const mainStream = mainVideoElement.srcObject;
@@ -170,7 +192,13 @@ export default {
         sideVideoElement.srcObject = mainStream;
       }
     },
-}
+    prevPage() {
+      if (this.currentPage > 0) this.currentPage--;
+    },
+    nextPage() {
+      if ((this.currentPage + 1) * this.maxVideosPerPage < this.sideVideos.length) this.currentPage++;
+    },
+  },
 };
 </script>
 
@@ -198,12 +226,16 @@ export default {
   height: auto;
 }
 
+
+.side-videos-container {
+  display: flex;
+  align-items: center;
+}
+
 .side-videos {
   display: flex;
-  justify-content: center;
   gap: 10px;
-  flex-wrap: wrap;
-  max-width: 80%;
+  max-width: 85%;
 }
 
 .side-video {
