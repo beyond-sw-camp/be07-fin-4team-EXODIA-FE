@@ -81,7 +81,9 @@ export default {
   methods: {
     async workIn() {
       try {
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, {}, {
+        const kstDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, { workInTime: kstDate.toISOString() }, {
           headers: this.getAuthHeaders()
         });
         this.message = response.data.message;
@@ -100,7 +102,9 @@ export default {
     },
     async workOut() {
       try {
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, {}, {
+        const kstDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, { workOutTime: kstDate.toISOString() }, {
           headers: this.getAuthHeaders()
         });
         this.message = response.data.message;
@@ -202,15 +206,23 @@ v-alert {
 }
 
 .userAttendance {
-  padding: 20px;
+  padding: 0px 20px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   position: relative;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   background-color: #fff;
+  max-height: 460px;
+  overflow-y: auto;
+
 }
 
 .attendance-bar {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  box-shadow: 0px 4px 4px -2px #F2F2F2;
+  z-index: 10;
   display: flex;
   align-items: center;
 }
@@ -290,5 +302,9 @@ v-alert {
   background-color: #949494;
   color: #ffffff;
   border-radius: 10px;
+}
+
+.container {
+  padding-top: 10px;
 }
 </style>

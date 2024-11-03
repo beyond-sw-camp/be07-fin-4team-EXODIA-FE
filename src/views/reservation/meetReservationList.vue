@@ -15,11 +15,28 @@ meetReservation
     </v-tabs>
 
     <!-- 날짜 선택 버튼들 -->
-    <v-row style="margin-top:20px;">
-      <v-col cols="3"></v-col>
-      <v-col cols="2" class="d-flex align-center" justify-center>
+    <v-row style="margin-top:20px; margin-right: 70px;" align="center" justify="center" display="flex">
         <!-- 날짜 선택 아이콘 -->
-        <v-btn icon @click="openDatePicker" style="box-shadow: none">
+        <v-btn icon @click="openDatePicker" style="box-shadow: none" align="center">
+          <v-icon>mdi-calendar</v-icon>
+        </v-btn>
+        <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;" align="center">
+          Today
+        </v-btn>
+        <v-btn @click="prevDay" icon style="box-shadow: none;">
+          <v-icon>mdi-chevron-left</v-icon>
+        </v-btn>
+        <h2 style="font-size: 25px;">{{ formattedDate(selectedDate) }}</h2>
+        <v-btn @click="nextDay" icon style="box-shadow: none; ">
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+    </v-row>
+    
+    <!-- <v-row style="margin-top:20px;">
+      <v-col cols="3"></v-col>
+      <v-col cols="2" class="d-flex align-center" justify-center> -->
+        <!-- 날짜 선택 아이콘 -->
+        <!-- <v-btn icon @click="openDatePicker" style="box-shadow: none">
           <v-icon>mdi-calendar</v-icon>
         </v-btn>
         <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;">
@@ -31,17 +48,17 @@ meetReservation
       </v-col>
 
       <v-col cols="2" class="text-center">
-        <h2 style="font-size: 30px;">{{ formattedDate(selectedDate) }}</h2>
+        <h2 style="font-size: 25px;">{{ formattedDate(selectedDate) }}</h2>
       </v-col>
 
       <v-col cols="1">
         <v-btn @click="nextDay" icon style="box-shadow: none;">
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
-      </v-col>
+      </v-col> -->
       <!-- 장기 예약 버튼 -->
       <!-- <v-btn class="ml-2" @click="openLongTermReservationModal" color="primary" outlined>장기 예약</v-btn> -->
-    </v-row>
+    <!-- </v-row> -->
 
     <v-row justify="end">
       <!-- 예약 추가 버튼 -->
@@ -613,6 +630,12 @@ export default {
         const startTime = new Date(selectedStartDate.getTime() - timezoneOffset).toISOString();
         const endTime = new Date(selectedEndDate.getTime() - timezoneOffset).toISOString();
 
+        // 현재 시간과 비교
+        const now = new Date();
+        if (selectedStartDate < now) {
+            alert("과거 시간으로는 예약할 수 없습니다.");
+            return;
+        }
         // 입력한 시간이 유효한지 체크
         if (isNaN(selectedStartDate) || isNaN(selectedEndDate)) {
           alert("올바른 날짜 및 시간을 입력해 주세요.");
@@ -713,6 +736,10 @@ export default {
   display: flex;
   flex-wrap: nowrap;
 
+}
+
+.v-btn {
+  margin: 0 10px;
 }
 
 .timeline-bar {

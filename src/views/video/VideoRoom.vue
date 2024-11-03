@@ -1,122 +1,222 @@
 <template>
-    <div>
-      <div class="main-video">
-        <video autoplay ref="mainVideo" />
+  <div class="room-view">
+    <h2>화상회의 방: {{ roomTitle }}</h2>
+
+    <!-- 메인 비디오 -->
+    <div class="main-video">
+      <video ref="mainVideo" autoplay playsinline></video>
+    </div>
+
+    <!-- 다른 참가자 비디오들 -->
+    <div class="side-videos">
+      <div v-for="(subscriber, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(subscriber, index)">
+        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
       </div>
-      <div class="participants">
-        <div v-for="(participant, index) in participants" :key="index" class="participant-video">
-          <video autoplay :ref="'participant' + index" />
-        </div>
-      </div>
-      <v-btn icon @click="toggleMute">
-        <v-icon>{{ isMuted ? 'mdi-microphone-off' : 'mdi-microphone' }}</v-icon>
+    </div>
+
+    <!-- 제어 아이콘 버튼들 -->
+    <v-row class="controls" justify="center">
+      <v-btn icon @click="toggleAudio">
+        <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
       </v-btn>
       <v-btn icon @click="toggleVideo">
-        <v-icon>{{ isVideoOn ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
+        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
       </v-btn>
-      <v-btn icon @click="toggleScreenShare">
+      <v-btn icon @click="startScreenShare">
         <v-icon>mdi-monitor-share</v-icon>
       </v-btn>
       <v-btn icon @click="leaveRoom">
         <v-icon>mdi-logout</v-icon>
       </v-btn>
-    </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  import { OpenVidu } from 'openvidu-browser';
-  
-  export default {
-    data() {
-      return {
-        isMuted: false,
-        isVideoOn: true,
-        isScreenSharing: false,
-        participants: [],
-        session: null,
-        token: null,
-        screenPublisher: null,
-      };
+    </v-row>
+  </div>
+</template>
+
+
+<script>
+import { OpenVidu } from 'openvidu-browser';
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      roomTitle: '',
+      sideVideos: [],
+      OV: null,
+      session: null,
+      publisher: null,
+      isAudioEnabled: true,
+      isVideoEnabled: true,
+    };
+  },
+  created() {
+    this.initializeRoom();
+  },
+  methods: {
+    async initializeRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        console.log("세션 ID로 서버 연결 시도 중:", sessionId);
+
+        const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        const token = response.data.token;
+
+        this.OV = new OpenVidu();
+        this.session = this.OV.initSession();
+
+        // 다른 참가자의 스트림 구독 처리
+        this.session.on('streamCreated', (event) => {
+          console.log('새 스트림 생성됨:', event.stream);
+          const subscriber = this.session.subscribe(event.stream, undefined);
+          this.sideVideos.push(subscriber);
+
+          // 지연을 줘서 `sideVideos` 배열 업데이트 후 srcObject 설정
+          setTimeout(() => {
+            const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
+            const sideVideoElement = this.$refs[videoRefName][0];
+
+            if (sideVideoElement) {
+              sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+              sideVideoElement.play().catch(error => {
+                console.warn("비디오 자동 재생이 차단되었습니다:", error);
+              });
+              console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
+              console.log(`${subscriber.stream.streamId} 비디오 요소 srcObject 설정 확인:`, sideVideoElement.srcObject);
+            } else {
+              console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
+            }
+          }, 500); // 500ms 지연
+        });
+
+        this.session.on('connectionCreated', (event) => {
+          console.log(`새 참가자 연결됨: ${event.connection.connectionId}`);
+        });
+
+        this.session.on('connectionDestroyed', (event) => {
+          console.log(`참가자 연결 해제됨: ${event.connection.connectionId}`);
+        });
+
+        await this.session.connect(token, { clientData: "사용자명" });
+
+        // 자신의 비디오 스트림 생성 및 mainVideo에 연결
+        this.publisher = this.OV.initPublisher(undefined, {
+          videoSource: undefined, 
+          audioSource: undefined, 
+          publishAudio: true,
+          publishVideo: true,
+        });
+
+        this.publisher.once('accessAllowed', () => {
+          console.log("내 비디오 스트림 설정됨.");
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        });
+
+        this.session.publish(this.publisher);
+      } catch (error) {
+        console.error("방 참여 중 오류 발생:", error);
+      }
     },
-    methods: {
-      async joinSession() {
-        try {
-          const response = await axios.post('/api/sessions/get-token', { sessionId: this.$route.params.sessionId });
-          this.token = response.data;
-  
-          this.session = new OpenVidu().initSession();
-  
-          this.session.on('streamCreated', (event) => {
-            const subscriber = this.session.subscribe(event.stream, undefined);
-            this.participants.push(subscriber);
-            this.$nextTick(() => {
-              this.$refs[`participant${this.participants.length - 1}`][0].srcObject = subscriber.stream.getMediaStream();
-            });
-          });
-  
-          await this.session.connect(this.token, { clientData: '사용자' });
-          const publisher = new OpenVidu().initPublisher();
-          this.session.publish(publisher);
-  
-          this.$refs.mainVideo.srcObject = publisher.stream.getMediaStream();
-        } catch (error) {
-          console.error("세션 연결 중 오류 발생:", error);
+
+    toggleAudio() {
+      this.isAudioEnabled = !this.isAudioEnabled;
+      this.publisher.publishAudio(this.isAudioEnabled);
+    },
+    toggleVideo() {
+      this.isVideoEnabled = !this.isVideoEnabled;
+      this.publisher.publishVideo(this.isVideoEnabled);
+    },
+    startScreenShare() {
+      const screenPublisher = this.OV.initPublisher(undefined, {
+        videoSource: 'screen',
+        publishAudio: this.isAudioEnabled,
+      });
+      this.session.unpublish(this.publisher);
+      this.publisher = screenPublisher;
+      this.session.publish(this.publisher);
+    },
+
+    async leaveRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        if (this.session) {
+          this.session.disconnect();
         }
-      },
-      toggleMute() {
-        this.isMuted = !this.isMuted;
-        this.session.publishers[0].publishAudio(!this.isMuted);
-      },
-      toggleVideo() {
-        this.isVideoOn = !this.isVideoOn;
-        this.session.publishers[0].publishVideo(this.isVideoOn);
-      },
-      async toggleScreenShare() {
-        if (!this.isScreenSharing) {
-          try {
-            this.screenPublisher = new OpenVidu().initPublisher(undefined, {
-              videoSource: "screen",
-              publishAudio: true,
-              mirror: false,
-            });
-            await this.session.publish(this.screenPublisher);
-            this.isScreenSharing = true;
-            this.$refs.mainVideo.srcObject = this.screenPublisher.stream.getMediaStream();
-          } catch (error) {
-            console.error("화면 공유 시작 중 오류 발생:", error);
-          }
-        } else {
-          this.session.unpublish(this.screenPublisher);
-          this.screenPublisher = null;
-          this.isScreenSharing = false;
-          const publisher = this.session.publishers[0];
-          this.$refs.mainVideo.srcObject = publisher.stream.getMediaStream();
-        }
-      },
-      leaveRoom() {
-        if (this.screenPublisher) {
-          this.session.unpublish(this.screenPublisher);
-        }
-        this.session.disconnect();
+        await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
         this.$router.push({ name: 'RoomList' });
-      },
+      } catch (error) {
+        console.error("방 나가기 중 오류 발생:", error);
+      }
     },
-    async mounted() {
-      await this.joinSession();
+    switchToMain(video) {
+      const currentMainStream = this.$refs.mainVideo.srcObject;
+      this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
+      video.stream.srcObject = currentMainStream;
     },
-  };
-  </script>
-  
-  
-  <style scoped>
-  .main-video {
-    max-width: 600px;
-    margin: auto;
-  }
-  .participants {
-    display: flex;
-    justify-content: center;
-  }
-  </style>
-  
+  },
+
+  switchToMain(subscriber, index) {
+      const mainVideoElement = this.$refs.mainVideo;
+      const sideVideoElement = this.$refs['sideVideo' + index][0];
+
+      if (mainVideoElement && sideVideoElement) {
+        const mainStream = mainVideoElement.srcObject;
+        mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+        sideVideoElement.srcObject = mainStream;
+      }
+    },
+};
+</script>
+
+
+<style>
+.room-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.main-video {
+  width: 60%;
+  max-width: 800px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.main-video video {
+  width: 100%;
+  height: auto;
+}
+
+.side-videos {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 80%;
+}
+
+.side-video {
+  width: 160px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.side-video video {
+  width: 100%;
+  height: 100%;
+}
+
+.controls {
+  margin-top: 20px;
+}
+</style>

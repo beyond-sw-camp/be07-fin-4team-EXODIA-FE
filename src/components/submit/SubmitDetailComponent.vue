@@ -111,15 +111,15 @@
 
 
         <!-- 승인 거절 -->
-        <v-row v-if="selectedSubmit.submitStatus === '대기중' && isMySubmitReq == 'false'" class="approveOrReject"
-            justify="end">
-            <v-col cols="1">
-                <v-btn v-create value="승인" v-model="approvalStatus" @click="confirmApprove()">
+        <v-row v-if="selectedSubmit.submitStatus === '대기중' && isMySubmitReq == 'false'"
+            class="approveOrReject d-flex justify-end">
+            <v-col cols="auto">
+                <v-btn v-create value="승인" variant="outlined" v-model="approvalStatus" @click="confirmApprove()">
                     승인
                 </v-btn>
             </v-col>
-            <v-col cols="1">
-                <v-btn v-delete value="반려" v-model="approvalStatus" @click="
+            <v-col cols="auto">
+                <v-btn v-delete value="반려" variant="outlined" v-model="approvalStatus" @click="
                     handleApprovalChange('반려')">
                     반려
                 </v-btn>
