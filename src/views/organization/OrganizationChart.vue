@@ -76,6 +76,8 @@ export default {
     const currentPage = ref(1);
     const totalPages = ref(0);
 
+    const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000; // 유효 기간: 1일
+
 
     // 조직도 데이터 필터링
     const filteredHierarchy = computed(() => {
@@ -87,10 +89,6 @@ export default {
       const query = searchQuery.value.toLowerCase();
       return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
     });
-
-    // const sortUser = (users) => {
-    //   return users.sort((a, b) => a.positionId - b.positionId);
-    // }
 
     watch(searchQuery, (newValue) => {
       if (newValue) {
@@ -128,102 +126,47 @@ export default {
       }
     });
 
-    // 조직도 데이터 및 사용자 정보 가져오기
-    // const fetchHierarchy = async () => {
-    //   try {
-    //     const response = await axios.get('/department/hierarchy');
-    //     hierarchy.value = await calculateUserCounts(response.data);
-    //   } catch (error) {
-    //     console.error('부서 계층 정보를 가져오는 중 오류 발생:', error);
-    //   }
-    // };
+    // 네트워크 요청을 캐싱하고 데이터를 반환하는 함수
+    const getCachedOrFetch = async (url, cacheName) => {
+      const cache = await caches.open(cacheName);
 
-    const fetchHierarchy = async () => {
-      const cacheName = 'org-chart-cache';
-      const requestUrl = '/department/hierarchy';
-
-      try {
-        // 1. Cache API에 접근
-        const cache = await caches.open(cacheName);
-
-        // 2. 캐시에서 요청한 데이터가 있는지 확인
-        const cachedResponse = await cache.match(requestUrl);
-        if (cachedResponse) {
-          // 캐시된 데이터가 있을 경우, 캐시에서 데이터를 가져오기
-          const cachedData = await cachedResponse.json();
-          hierarchy.value = await calculateUserCounts(cachedData);
-          return;
-        }
-
-        // 3. 캐시에 데이터가 없을 경우 네트워크 요청을 통해 데이터 가져오기
-        const networkResponse = await axios.get(requestUrl);
-        const data = networkResponse.data;
-
-        // 4. 가져온 데이터를 캐시에 저장
-        await cache.put(requestUrl, new Response(JSON.stringify(data)));
-
-        // 5. hierarchy 설정
-        hierarchy.value = await calculateUserCounts(data);
-      } catch (error) {
-        console.error('부서 계층 정보를 가져오는 중 오류 발생:', error);
+      // 캐시에서 데이터 확인
+      const cachedResponse = await cache.match(url);
+      if (cachedResponse && !isCacheExpired(cachedResponse)) {
+        return cachedResponse.json(); // 만료되지 않았으면 캐시에서 데이터를 반환
       }
+
+      // 만료되었거나 캐시가 없으면 네트워크 요청
+      const response = await axios.get(url);
+      const data = response.data;
+
+      // fetch-date를 포함한 새로운 응답 객체 생성
+      const responseToCache = new Response(JSON.stringify(data), {
+        headers: { 'fetch-date': new Date().toISOString() },
+      });
+
+      // 캐시에 데이터 저장
+      await cache.put(url, responseToCache);
+      return data;
     };
 
-    // 사용자를 선택하면 이벤트 전송
-    const selectUser = (user) => {
-      emit('user-selected', user);
+    const isCacheExpired = (cachedResponse) => {
+      const fetchDate = cachedResponse.headers.get('fetch-date');
+      if (!fetchDate) return true; // fetch-date가 없으면 만료된 것으로 간주
+
+      const fetchTime = new Date(fetchDate).getTime();
+      const currentTime = Date.now();
+      return (currentTime - fetchTime) > ONE_DAY_IN_MS; // 1일이 지났으면 만료
     };
-
-    // 부서 계층 구조의 유저 수 및 매니저 표시 여부 설정
-    // const calculateUserCounts = async (departments) => {
-    //   const recurse = async (dept) => {
-    //     const usersResponse = await axios.get(`/department/${dept.id}/users`);
-    //     dept.users = usersResponse.data.map(user => ({
-    //       ...user,
-    //       isManager: props.managers.some(manager => manager.userNum === user.userNum)
-    //     }));
-
-    //     let totalUsers = dept.users.length;
-    //     if (dept.children && dept.children.length > 0) {
-    //       for (const child of dept.children) {
-    //         totalUsers += await recurse(child);
-    //       }
-    //     }
-    //     dept.totalUsersCount = totalUsers;
-    //     return totalUsers;
-    //   };
-
-    //   for (const dept of departments) {
-    //     await recurse(dept);
-    //   }
-    //   return departments;
-    // };
 
     const calculateUserCounts = async (departments) => {
-      const cacheName = 'user-data-cache';
-
-      // 재귀적으로 부서 및 사용자 수 계산
       const recurse = async (dept) => {
+        const cacheName = 'user-data-cache';
         const requestUrl = `/department/${dept.id}/users`;
 
         try {
-          // 1. Cache API에 접근
-          const cache = await caches.open(cacheName);
-
-          // 2. 캐시에서 부서의 사용자 정보를 확인
-          const cachedResponse = await cache.match(requestUrl);
-          let usersData;
-          if (cachedResponse) {
-            // 캐시된 데이터가 있을 경우, 캐시에서 데이터를 가져오기
-            usersData = await cachedResponse.json();
-          } else {
-            // 캐시에 데이터가 없을 경우 네트워크 요청을 통해 데이터 가져오기
-            const usersResponse = await axios.get(requestUrl);
-            usersData = usersResponse.data;
-
-            // 가져온 데이터를 캐시에 저장
-            await cache.put(requestUrl, new Response(JSON.stringify(usersData)));
-          }
+          // 캐시에서 데이터 가져오기 또는 갱신된 데이터 가져오기
+          const usersData = await getCachedOrFetch(requestUrl, cacheName);
 
           // 부서 사용자 정보 설정 및 매니저 표시 여부 적용
           dept.users = usersData.map(user => ({
@@ -252,6 +195,17 @@ export default {
       return departments;
     };
 
+    const fetchHierarchy = async () => {
+      const cacheName = 'org-chart-cache';
+      const requestUrl = '/department/hierarchy';
+
+      try {
+        const data = await getCachedOrFetch(requestUrl, cacheName);
+        hierarchy.value = await calculateUserCounts(data);
+      } catch (error) {
+        console.error('부서 계층 정보를 가져오는 중 오류 발생:', error);
+      }
+    };
 
     // 부서를 확장/축소하는 함수
     const toggleExpand = (department) => {
@@ -285,9 +239,13 @@ export default {
       currentPage,
       totalPages,
 
+      ONE_DAY_IN_MS,
+      getCachedOrFetch,
+      isCacheExpired,
+
+
       hierarchy,
       searchQuery,
-      // sortUser,
       searchUser,
       expandedDepartments,
       filteredHierarchy,
