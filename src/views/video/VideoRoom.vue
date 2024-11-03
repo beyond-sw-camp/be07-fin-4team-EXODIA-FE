@@ -1,7 +1,7 @@
 <template>
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
-    
+
     <!-- 메인 비디오 -->
     <div class="main-video">
       <video ref="mainVideo" autoplay playsinline></video>
@@ -9,11 +9,12 @@
 
     <!-- 다른 참가자 비디오들 -->
     <div class="side-videos">
-      <div v-for="(subscriber, index) in sideVideos" :key="index" class="side-video">
+      <div v-for="(subscriber, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(subscriber, index)">
         <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
+        <p class="video-name">{{ subscriber.stream.connection.data }}</p>
       </div>
     </div>
-    
+
     <!-- 제어 아이콘 버튼들 -->
     <v-row class="controls" justify="center">
       <v-btn icon @click="toggleAudio">
@@ -31,6 +32,7 @@
     </v-row>
   </div>
 </template>
+
 
 <script>
 import { OpenVidu } from 'openvidu-browser';
@@ -101,10 +103,11 @@ export default {
 
         // 자신의 비디오 스트림 생성 및 mainVideo에 연결
         this.publisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined, // 기본 웹캠 사용
-          audioSource: undefined, // 기본 마이크 사용
+          videoSource: undefined, 
+          audioSource: undefined, 
           publishAudio: true,
           publishVideo: true,
+          mirror: true, 
         });
 
         this.publisher.once('accessAllowed', () => {
@@ -150,12 +153,24 @@ export default {
         console.error("방 나가기 중 오류 발생:", error);
       }
     },
-    switchToMain(video) {
-      const currentMainStream = this.$refs.mainVideo.srcObject;
-      this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
-      video.stream.srcObject = currentMainStream;
+  //   switchToMain(video) {
+  //     const currentMainStream = this.$refs.mainVideo.srcObject;
+  //     this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
+  //     video.stream.srcObject = currentMainStream;
+  //   },
+  // },
+
+  switchToMain(subscriber, index) {
+      const mainVideoElement = this.$refs.mainVideo;
+      const sideVideoElement = this.$refs['sideVideo' + index][0];
+
+      if (mainVideoElement && sideVideoElement) {
+        const mainStream = mainVideoElement.srcObject;
+        mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+        sideVideoElement.srcObject = mainStream;
+      }
     },
-  },
+}
 };
 </script>
 
@@ -165,21 +180,63 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
 }
+
 .main-video {
-  width: 80%;
-  margin-bottom: 10px;
+  width: 50%;
+  max-width: 700px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  border: 4px solid #3498db;
 }
+
+.main-video video {
+  width: 100%;
+  height: auto;
+}
+
 .side-videos {
   display: flex;
+  justify-content: center;
   gap: 10px;
+  flex-wrap: wrap;
+  max-width: 80%;
 }
+
 .side-video {
-  width: 100px;
+  width: 180px;
   height: 100px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  border: 2px solid #bdc3c7;
+  transition: transform 0.2s;
 }
+
+.side-video:hover {
+  transform: scale(1.05);
+  border-color: #3498db;
+}
+
+.side-video video {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1); 
+}
+
+.video-name {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
 .controls {
-  margin-top: 15px;
+  margin-top: 20px;
 }
 </style>
