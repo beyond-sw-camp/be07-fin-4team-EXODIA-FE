@@ -65,16 +65,13 @@
           <v-row justify="center">
             <div class="user-department">{{ this.userProfile.departmentName }} {{ this.userProfile.positionName }}</div>
           </v-row>
-          <v-row justify="center" class="toggle-btn">
-
+          <v-row @click="goToVacationPage" justify="center" class="toggle-btn">
             <v-icon style="padding-right:5px; font-size:20px; align">mdi-account</v-icon>
-
-            <button @click="goToVacationPage">마이페이지</button>
-
+            <button>마이페이지</button>
           </v-row>
-          <v-row justify="center" class="toggle-btn">
+          <v-row @click="logout" justify="center" class="toggle-btn">
             <v-icon style="padding-right:5px; font-size:20px">mdi-logout</v-icon>
-            <button @click="logout">
+            <button>
               로그아웃
             </button>
           </v-row>
