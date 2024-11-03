@@ -178,6 +178,7 @@ export default {
       }
     },
 
+    
     async fetchChatAlarmNum(){
       try{
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/alarm`);
