@@ -3,7 +3,10 @@
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
       <v-tab :to="'/mypage/vacation'">전사/근태 통계</v-tab>
       <v-tab :to="'/mypage/userProfile'">프로필</v-tab>
-      <v-tab :to="'/mypage/evalutionList'">인사평가</v-tab>
+      
+      <!-- 평가기간 체크를 위한 코드 -->
+      <v-tab :to="'/mypage/evalutionList'" :disabled="!isEvaluationPeriod" @click.prevent="checkEvaluationPeriod">인사평가</v-tab>
+
       <v-tab :to="'/mypage/spinWheel'">오늘의 점심</v-tab>
       <v-tab :to="'/mypage/evalutionFrame'">평가리스트</v-tab>
       <v-tab :to="'/board/myCourseList'">나의강좌</v-tab>
@@ -33,20 +36,46 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   name: 'MypageTemplate',
   data() {
     return {
       activeTab: this.$route.path,
+      isEvaluationPeriod: false,
     };
   },
   watch: {
     '$route.path'(newPath) {
       this.activeTab = newPath;
     }
+  },
+  methods: {
+    async fetchEvaluationPeriod() {
+      try {
+        const response = await axios.get('/eventDate/getEventId/인사평가');
+        const { startDate, endDate } = response.data;
+
+        // 현재 날짜
+        const currentDate = new Date();
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        this.isEvaluationPeriod = currentDate >= start && currentDate <= end;
+      } catch (error) {
+        console.error('Failed to fetch evaluation period:', error);
+      }
+    },
+    checkEvaluationPeriod() {
+      if (!this.isEvaluationPeriod) {
+        alert('현재는 인사평가 기간이 아닙니다.');
+      }
+    }
   }
+
 };
 </script>
+
 
 <style coped>
 .header-tabs {

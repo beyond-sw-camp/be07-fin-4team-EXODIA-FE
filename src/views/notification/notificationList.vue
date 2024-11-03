@@ -17,19 +17,22 @@
         <!-- 알림 리스트 -->
         <v-list>
           <v-list-item-group>
-            <v-list-item v-for="notification in filteredNotifications" :key="notification.id"
-              @click="handleNotificationClick(notification)" class="notification-item"
-              :class="{ read: notification.isRead }">
+            <v-list-item
+              v-for="notification in filteredNotifications"
+              :key="notification.id"
+              @click="handleNotificationClick(notification)"
+              class="notification-item"
+              :class="{ read: notification.isRead, unread: !notification.isRead }"
+            >
               <v-list-item-content>
                 <v-list-item-subtitle>
-                  <strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{ formatDate(notification.notificationTime) }}
+                  <strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp;
+                  {{ formatDate(notification.notificationTime) }}
                 </v-list-item-subtitle>
-                <br>
                 <v-list-item-title>
-                  <strong v-if="notification.isRead == 0">[NEW]</strong>
+                  <strong v-if="!notification.isRead" class="new-label">[NEW]</strong>
                   {{ notification.message }}
                 </v-list-item-title>
-                <br>
               </v-list-item-content>
             </v-list-item>
           </v-list-item-group>
@@ -51,7 +54,7 @@ export default {
       maxRetryCount: 5,
       notifications: [],
       unreadCount: 0,
-      selectedType: "", // 선택된 알림 타입
+      selectedType: "",
       notificationTypes: {
         "": "전체",
         공지사항: "공지사항",
@@ -65,10 +68,9 @@ export default {
   created() {
     this.fetchNotifications();
     this.fetchUnreadCount();
-    this.initSSE(); // SSE 초기화
+    this.initSSE();
   },
   computed: {
-    // 선택된 타입에 따른 알림 필터링
     filteredNotifications() {
       let filtered = this.notifications;
       if (this.selectedType) {
@@ -85,7 +87,6 @@ export default {
     navigateToType(value) {
       this.selectedType = value;
     },
-    // JWT 토큰을 URL의 쿼리 파라미터로 포함한 SSE 연결
     initSSE() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -94,26 +95,23 @@ export default {
       }
 
       try {
-        // EventSource 객체 생성
         this.eventSource = new EventSource(
           `${process.env.VUE_APP_API_BASE_URL}/notifications/subscribe?token=${token}`
         );
 
-        // 메시지 수신 처리
         this.eventSource.onmessage = (event) => {
           const newNotification = JSON.parse(event.data);
-          this.notifications.unshift(newNotification); // 새로운 알림을 맨 위에 추가
-          this.unreadCount++;  // 새 알림 수신 시 읽지 않은 개수 증가
+          this.notifications.unshift(newNotification);
+          this.unreadCount++;
         };
 
-        // 오류 처리 및 재연결
         this.eventSource.onerror = (error) => {
           console.error("SSE 연결 오류 발생:", error);
 
           if (this.retryCount < this.maxRetryCount) {
             setTimeout(() => {
               this.retryCount++;
-              this.initSSE(); // 재연결
+              this.initSSE();
             }, this.getRetryInterval());
           } else {
             console.error("최대 재연결 시도 횟수에 도달했습니다.");
@@ -124,7 +122,7 @@ export default {
       }
     },
     getRetryInterval() {
-      return Math.min(1000 * Math.pow(2, this.retryCount), 30000); // 최대 30초까지 증가
+      return Math.min(1000 * Math.pow(2, this.retryCount), 30000);
     },
 
     formatDate(notificationTime) {
@@ -132,7 +130,6 @@ export default {
       return date.toLocaleDateString();
     },
 
-    // 전체 알림 리스트 가져오기
     async fetchNotifications() {
       try {
         const userNum = localStorage.getItem("userNum");
@@ -143,13 +140,12 @@ export default {
           }
         );
         this.notifications = response.data;
-        this.unreadCount = this.notifications.filter(n => !n.isRead).length; // 읽지 않은 알림 개수 업데이트
+        this.unreadCount = this.notifications.filter((n) => !n.isRead).length;
       } catch (error) {
         console.error("알림 데이터를 가져오는 중 오류 발생:", error);
       }
     },
 
-    // 읽지 않은 알림 개수 가져오기
     async fetchUnreadCount() {
       try {
         const userNum = localStorage.getItem("userNum");
@@ -165,7 +161,6 @@ export default {
       }
     },
 
-    // 알림 읽음 처리
     async markAsRead(notificationId) {
       const userNum = localStorage.getItem("userNum");
       try {
@@ -174,42 +169,34 @@ export default {
           null,
           { headers: this.getAuthHeaders() }
         );
-        console.log(`Notification ${notificationId} marked as read.`);
+        console.log(`알림 ${notificationId} 읽음 상태로 변화`);
       } catch (error) {
         console.error("알림 읽음 처리 중 오류 발생:", error);
       }
     },
 
-    // 알림 클릭 핸들러
     async handleNotificationClick(notification) {
-      if (notification.isRead === 0) {
+      if (!notification.isRead) {
         await this.markAsRead(notification.id);
-        notification.isRead = 1; // 상태를 변경하여 UI에서도 읽음 상태 반영
-        this.unreadCount -= 1; // 읽지 않은 개수 줄이기
+        notification.isRead = true;
+        if (this.unreadCount > 0) this.unreadCount -= 1;
+        this.fetchNotifications();
       }
       this.redirectToNotification(notification);
     },
 
     redirectToNotification(notification) {
-      let targetUrl = `${process.env.VUE_APP_API_BASE_URL}`;
-
-      // 알림 유형에 따른 URL 설정
-      if (notification.type === '공지사항') {
-        targetUrl += '/board/notice/list';
-      } else if (notification.type === '문의') {
-        targetUrl += '/qna/list';
-      } else if (notification.type === '예약') {
-        targetUrl += '/reservation/reservationList';
-      } else if (notification.type === '결재') {
-        targetUrl += '/submit/list';
-      } else if (notification.type === '문서') {
-        targetUrl += '/document';
-      }
-
-      window.location.href = targetUrl;
+      const routeMap = {
+        공지사항: "/board/notice/list",
+        문의: "/qna/list",
+        예약: "/reservation/reservationList",
+        결재: "/submit/list",
+        문서: "/document",
+      };
+      const route = routeMap[notification.type] || "/";
+      window.location.href = route;
     },
 
-    // 인증 헤더 가져오기
     getAuthHeaders() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -260,10 +247,23 @@ export default {
   border-radius: 10px !important;
   background-color: #f9f9f9 !important;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1) !important;
+  padding: 15px;
+}
+
+.notification-item.unread {
+  background-color: #e8f5e9;
+  color: black;
+  font-weight: bold;
+  padding: 15px;
 }
 
 .notification-item.read {
   color: gray;
   background-color: #e0e0e0;
+}
+
+.new-label {
+  color: #f44336;
+  margin-right: 8px;
 }
 </style>

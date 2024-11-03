@@ -2,11 +2,7 @@ import VideoRoom from '@/views/video/VideoRoom.vue';
 import VideoCreate from '@/views/video/RoomCreate.vue';
 import VideoList from '@/views/video/RoomList.vue';
 
-// import VideoCall from '@/views/video/VideoCall.vue';
-
-
 export const videoRouter = [
-
   {
     path: '/video/list',
     name: 'RoomList',
@@ -17,15 +13,10 @@ export const videoRouter = [
     name: 'VideoCreate',
     component: VideoCreate,
   },
-  {
-    path: '/video/room/:sessionId', 
-    name: 'VideoRoom',
+{
+    path: '/room/:sessionId',
+    name: 'RoomView',
     component: VideoRoom,
-    props: route => ({
-      sessionId: route.params.sessionId,
-      token: route.params.token
-    })
-  }
-  
-  
-]
+    props: true, 
+  },
+];

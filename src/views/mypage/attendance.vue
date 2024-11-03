@@ -135,38 +135,43 @@ export default {
       }
     },
 
-
     // 출근 API 호출
     async workIn() {
       try {
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, {}, {
+        const now = new Date();
+        const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+        const workInTime = `${kstDate.getFullYear()}-${String(kstDate.getMonth() + 1).padStart(2, '0')}-${String(kstDate.getDate()).padStart(2, '0')}T${String(kstDate.getHours()).padStart(2, '0')}:${String(kstDate.getMinutes()).padStart(2, '0')}:00`;
+
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-in`, { workInTime }, {
           headers: this.getAuthHeaders()
         });
         this.message = response.data.message;
         this.alertType = "success";
-        this.isWorkIn = true;  // 출근 완료
+        this.isWorkIn = true;
         location.reload();
       } catch (error) {
         this.message = "출근 기록 중 오류 발생";
         this.alertType = "error";
-        // console.error(error);
       }
     },
 
     // 퇴근 API 호출
     async workOut() {
       try {
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, {}, {
+        const now = new Date();
+        const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+        const workOutTime = `${kstDate.getFullYear()}-${String(kstDate.getMonth() + 1).padStart(2, '0')}-${String(kstDate.getDate()).padStart(2, '0')}T${String(kstDate.getHours()).padStart(2, '0')}:${String(kstDate.getMinutes()).padStart(2, '0')}:00`;
+
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/attendance/work-out`, { workOutTime }, {
           headers: this.getAuthHeaders()
         });
         this.message = response.data.message;
         this.alertType = "success";
-        this.isWorkOut = true;  // 퇴근 완료
+        this.isWorkOut = true;
         location.reload();
       } catch (error) {
         this.message = "퇴근 기록 중 오류 발생";
         this.alertType = "error";
-        // console.error(error);
       }
     },
 

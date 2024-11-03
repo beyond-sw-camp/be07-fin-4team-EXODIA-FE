@@ -1,166 +1,242 @@
-<!-- VideoRoom.vue -->
 <template>
-  <div>
-    <h1>화상 회의 방</h1>
-    <div ref="mainVideoContainer" class="main-video-container"></div>
-    <div class="subscriber-container">
-      <button @click="prevPage" v-if="currentPage > 0">‹</button>
-      <div class="subscribers">
-        <div
-          v-for="subscriber in paginatedSubscribers"
-          :key="subscriber.stream.streamId"
-          class="subscriber-video"
-          @click="changeMainStream(subscriber)"
-        >
-          <video ref="subscriberVideo" autoplay></video>
-        </div>
-      </div>
-      <button @click="nextPage" v-if="hasMorePages">›</button>
+  <div class="room-view">
+    <h2>화상회의 방: {{ roomTitle }}</h2>
+
+    <!-- Main Video -->
+    <div class="main-video">
+      <video ref="mainVideo" autoplay playsinline></video>
     </div>
 
-    <!-- 컨트롤 버튼들 -->
-    <div class="controls">
-      <v-btn icon @click="toggleVideo">
-        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
-      </v-btn>
+    <!-- Side Videos -->
+    <div class="side-videos">
+      <div
+        v-for="(subscriber, index) in sideVideos"
+        :key="index"
+        class="side-video"
+        @click="switchToMain(subscriber, index)"
+      >
+        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
+        <p class="video-name">{{ subscriber.stream.connection.data }}</p>
+      </div>
+    </div>
+
+    <!-- Control Buttons -->
+    <v-row class="controls" justify="center">
       <v-btn icon @click="toggleAudio">
         <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
       </v-btn>
-      <v-btn icon @click="shareScreen">
-        <v-icon>{{ isScreenShared ? 'mdi-monitor-share' : 'mdi-monitor' }}</v-icon>
+      <v-btn icon @click="toggleVideo">
+        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="startScreenShare">
+        <v-icon>mdi-monitor-share</v-icon>
       </v-btn>
       <v-btn icon @click="leaveRoom">
         <v-icon>mdi-logout</v-icon>
       </v-btn>
-    </div>
+    </v-row>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { OpenVidu } from "openvidu-browser";
-import { useRoute } from "vue-router";
+import { OpenVidu } from 'openvidu-browser';
+import axios from 'axios';
 
 export default {
-  setup() {
-    const route = useRoute();
-    const token = route.params.token;
-
-    if (!token) {
-      console.error("Token is missing in query.");
-      throw new Error("Token is required to join the session.");
-    }
-
-    const mainVideoContainer = ref(null);
-    const subscribers = ref([]);
-    const OV = ref(null);
-    const session = ref(null);
-    const publisher = ref(null);
-    const currentPage = ref(0);
-    const itemsPerPage = 4;
-
-    const isVideoEnabled = ref(true);
-    const isAudioEnabled = ref(true);
-    const isScreenShared = ref(false);
-
-    const paginatedSubscribers = computed(() => {
-      const start = currentPage.value * itemsPerPage;
-      return subscribers.value.slice(start, start + itemsPerPage);
-    });
-
-    const joinRoom = async () => {
+  data() {
+    return {
+      roomTitle: '',
+      sideVideos: [],
+      OV: null,
+      session: null,
+      publisher: null,
+      isAudioEnabled: true,
+      isVideoEnabled: true,
+    };
+  },
+  created() {
+    this.initializeRoom();
+  },
+  methods: {
+    async initializeRoom() {
+      const { sessionId } = this.$route.params;
       try {
-        OV.value = new OpenVidu();
-        session.value = OV.value.initSession();
+        const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        const token = response.data.token;
 
-        session.value.on("streamCreated", (event) => {
-          const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
-          mainVideoContainer.value.appendChild(subscriber.videos[0].video);
+        this.OV = new OpenVidu();
+        this.session = this.OV.initSession();
+
+        this.session.on('streamCreated', (event) => {
+          const subscriber = this.session.subscribe(event.stream, undefined);
+          this.sideVideos.push(subscriber);
+
+          setTimeout(() => {
+            const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
+            const sideVideoElement = this.$refs[videoRefName][0];
+
+            if (sideVideoElement) {
+              sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+              sideVideoElement.play().catch((error) => {
+                console.warn("Video auto-play blocked", error);
+              });
+            }
+          }, 500);
         });
 
-        await session.value.connect(token, { clientData: "사용자 이름" });
+        this.session.on('connectionCreated', (event) => {
+          console.log(`New participant connected: ${event.connection.connectionId}`);
+        });
 
-        publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
+        this.session.on('connectionDestroyed', (event) => {
+          console.log(`Participant left: ${event.connection.connectionId}`);
+        });
+
+        await this.session.connect(token, { clientData: "사용자명" });
+
+        // Initialize and publish main video
+        this.publisher = this.OV.initPublisher(undefined, {
           videoSource: undefined,
           audioSource: undefined,
-          publishAudio: true,
-          publishVideo: true,
+          publishAudio: this.isAudioEnabled,
+          publishVideo: this.isVideoEnabled,
+          mirror: true,
         });
-        session.value.publish(publisher.value);
-      } catch (error) {
-        console.error("화상 회의 방 참가 오류: ", error);
-      }
-    };
-    
-    onMounted(joinRoom);
-    onBeforeUnmount(() => {
-      if (session.value) session.value.disconnect();
-      OV.value = null;
-      session.value = null;
-      publisher.value = null;
-      subscribers.value = [];
-    });
 
-    return {
-      mainVideoContainer,
-      paginatedSubscribers,
-      prevPage: () => { if (currentPage.value > 0) currentPage.value--; },
-      nextPage: () => { if ((currentPage.value + 1) * itemsPerPage < subscribers.value.length) currentPage.value++; },
-      leaveRoom: () => {
-        if (session.value) session.value.disconnect();
-        OV.value = null;
-        session.value = null;
-        publisher.value = null;
-        subscribers.value = [];
+        this.publisher.once('accessAllowed', () => {
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        });
+
+        this.session.publish(this.publisher);
+      } catch (error) {
+        console.error("Error joining the room:", error);
+      }
+    },
+
+    toggleAudio() {
+      this.isAudioEnabled = !this.isAudioEnabled;
+      this.publisher.publishAudio(this.isAudioEnabled);
+    },
+    toggleVideo() {
+      this.isVideoEnabled = !this.isVideoEnabled;
+      this.publisher.publishVideo(this.isVideoEnabled);
+    },
+    startScreenShare() {
+      const screenPublisher = this.OV.initPublisher(undefined, {
+        videoSource: 'screen',
+        publishAudio: this.isAudioEnabled,
+      });
+      this.session.unpublish(this.publisher);
+      this.publisher = screenPublisher;
+      this.session.publish(this.publisher);
+    },
+switchToMain(subscriber, index) {
+  const mainVideoElement = this.$refs.mainVideo;
+  const sideVideoElement = this.$refs['sideVideo' + index][0];
+
+  if (mainVideoElement && sideVideoElement) {
+    // Get the current main video stream
+    const mainStream = mainVideoElement.srcObject;
+
+    // Update the main video to show the selected subscriber's stream
+    mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+
+    // Replace the side video with the previously main stream
+    sideVideoElement.srcObject = mainStream;
+
+    // Swap the side video stream in the sideVideos array with the main video
+    this.sideVideos[index] = {
+      ...this.publisher, // main video becomes a side video
+      stream: {
+        getMediaStream: () => mainStream,
       },
-      toggleVideo: () => {
-        if (publisher.value) {
-          isVideoEnabled.value = !isVideoEnabled.value;
-          publisher.value.publishVideo(isVideoEnabled.value);
-        }
-      },
-      toggleAudio: () => {
-        if (publisher.value) {
-          isAudioEnabled.value = !isAudioEnabled.value;
-          publisher.value.publishAudio(isAudioEnabled.value);
-        }
-      },
-      shareScreen: async () => {
-        if (!isScreenShared.value) {
-          const screenPublisher = await OV.value.initPublisherAsync(mainVideoContainer.value, {
-            videoSource: "screen",
-            publishAudio: isAudioEnabled.value,
-            publishVideo: true,
-          });
-          session.value.unpublish(publisher.value);
-          session.value.publish(screenPublisher);
-          publisher.value = screenPublisher;
-        } else {
-          session.value.unpublish(publisher.value);
-          publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
-            publishAudio: isAudioEnabled.value,
-            publishVideo: isVideoEnabled.value,
-          });
-          session.value.publish(publisher.value);
-        }
-        isScreenShared.value = !isScreenShared.value;
-      },
-      changeMainStream: (subscriber) => {
-        mainVideoContainer.value.innerHTML = "";
-        subscriber.addVideoElement(mainVideoContainer.value);
-      },
-      isVideoEnabled,
-      isAudioEnabled,
-      isScreenShared,
     };
+  }
+
+
+    },
+    async leaveRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        if (this.session) {
+          this.session.disconnect();
+        }
+        await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        this.$router.push({ name: 'RoomList' });
+      } catch (error) {
+        console.error("Error leaving the room:", error);
+      }
+    },
   },
 };
 </script>
-<style scoped>
-.main-video-container {
+
+<style>
+.room-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.main-video {
+  width: 50%;
+  max-width: 700px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  border: 4px solid #3498db;
+}
+
+.main-video video {
   width: 100%;
-  max-width: 800px;
-  height: 600px;
-  border: 1px solid #ddd;
+  height: auto;
+}
+
+.side-videos {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 80%;
+}
+
+.side-video {
+  width: 180px;
+  height: 100px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  border: 2px solid #bdc3c7;
+  transition: transform 0.2s;
+}
+
+.side-video:hover {
+  transform: scale(1.05);
+  border-color: #3498db;
+}
+
+.side-video video {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+}
+
+.video-name {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.controls {
+  margin-top: 20px;
 }
 </style>
