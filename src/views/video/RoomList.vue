@@ -5,13 +5,15 @@
 
     <!-- 방 목록 -->
     <div class="room-grid">
-      <div v-for="room in rooms" :key="room.sessionId" class="room-card" @click="enterRoom(room.sessionId)">
-        <div class="room-thumbnail">
-          <h3>{{ room.title }}</h3>
-          <v-icon v-if="room.hasPassword">mdi-lock</v-icon>
-        </div>
-        <p>참가자 수: {{ room.participantCount }}</p>
+    <!-- 방 목록 부분에서 클릭 이벤트 수정 -->
+    <div v-for="room in rooms" :key="room.sessionId" class="room-card" @click="enterRoom(room)">
+      <div class="room-thumbnail">
+        <h3>{{ room.title }}</h3>
+        <v-icon v-if="room.password">mdi-lock</v-icon>
       </div>
+      <p>참가자 수: {{ room.participantCount }}</p>
+</div>
+
     </div>
 
     <!-- 방 생성 모달 -->
@@ -86,12 +88,13 @@ export default {
         const response = await axios.post('/api/rooms/create', {
           title: this.newRoomTitle,
           userNum: localStorage.getItem("userNum"),
+          password: this.enablePassword ? this.newRoomPassword : null
         });
         const newRoom = response.data;
         if (newRoom && newRoom.sessionId) {
           this.rooms.push(newRoom);
           this.closeModal();
-          this.enterRoom(newRoom.sessionId); // 생성 후 입장
+          this.enterRoom(newRoom); // 방 생성 후 입장
         } else {
           console.error("유효하지 않은 방 응답 데이터:", newRoom);
         }
@@ -100,35 +103,32 @@ export default {
       }
     },
 
-    handleRoomClick(room) {
-      if (room.hasPassword) {
-        this.selectedRoom = room;
-        this.showPasswordModal = true;
+  async enterRoom(room) {
+    if (room.password) {
+      this.selectedRoom = room;
+      this.showPasswordModal = true;
+    } else {
+      this.$router.push({ name: 'RoomView', params: { sessionId: room.sessionId } });
+    }
+  },
+
+  async verifyPassword() {
+    try {
+      const response = await axios.post(`/api/rooms/verify-password`, {
+        sessionId: this.selectedRoom.sessionId,
+        password: this.inputPassword,
+      });
+      if (response.data.success) {
+        this.$router.push({ name: 'RoomView', params: { sessionId: this.selectedRoom.sessionId } });
+        this.closePasswordModal();
       } else {
-        this.enterRoom(room.sessionId);
+        alert("비밀번호가 틀렸습니다.");
       }
-    },
+    } catch (error) {
+      console.error("비밀번호 확인 오류:", error);
+    }
+  },
 
-    async verifyPassword() {
-      try {
-        const response = await axios.post(`/api/rooms/verify-password`, {
-          sessionId: this.selectedRoom.sessionId,
-          password: this.inputPassword,
-        });
-        if (response.data.success) {
-          this.enterRoom(this.selectedRoom.sessionId);
-          this.closePasswordModal();
-        } else {
-          alert("비밀번호가 틀렸습니다.");
-        }
-      } catch (error) {
-        console.error("비밀번호 확인 오류:", error);
-      }
-    },
-
-    enterRoom(sessionId) {
-      this.$router.push({ name: 'RoomView', params: { sessionId } });
-    },
 
     closeModal() {
       this.showCreateRoomModal = false;
@@ -137,7 +137,7 @@ export default {
       this.newRoomPasswordConfirm = '';
       this.enablePassword = false;
     },
-    
+
     closePasswordModal() {
       this.showPasswordModal = false;
       this.inputPassword = '';

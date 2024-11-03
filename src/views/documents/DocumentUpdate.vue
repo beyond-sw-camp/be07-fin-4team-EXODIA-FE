@@ -138,7 +138,7 @@ export default {
                 alert(response.data.status_message);
                 this.$router.push('/document');
             } catch (e) {
-                console.log("response: " + e.response.data)
+                // console.log("response: " + e.response.data)
                 if (e.response && e.response.data && e.response.data.status_message) {
                     alert(e.response.data.status_message);
                 } else {
