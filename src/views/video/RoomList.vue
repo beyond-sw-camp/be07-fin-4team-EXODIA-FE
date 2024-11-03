@@ -5,13 +5,15 @@
 
     <!-- 방 목록 -->
     <div class="room-grid">
-      <div v-for="room in rooms" :key="room.sessionId" class="room-card" @click="enterRoom(room.sessionId)">
-        <div class="room-thumbnail">
-          <h3>{{ room.title }}</h3>
-          <v-icon v-if="room.password">mdi-lock</v-icon>
-        </div>
-        <p>참가자 수: {{ room.participantCount }}</p>
+    <!-- 방 목록 부분에서 클릭 이벤트 수정 -->
+    <div v-for="room in rooms" :key="room.sessionId" class="room-card" @click="enterRoom(room)">
+      <div class="room-thumbnail">
+        <h3>{{ room.title }}</h3>
+        <v-icon v-if="room.password">mdi-lock</v-icon>
       </div>
+      <p>참가자 수: {{ room.participantCount }}</p>
+</div>
+
     </div>
 
     <!-- 방 생성 모달 -->
@@ -101,33 +103,32 @@ export default {
       }
     },
 
-    async enterRoom(room) {
-      if (room.password) {
-        // 비밀번호가 있는 경우, 모달을 열고 비밀번호 확인
-        this.selectedRoom = room;
-        this.showPasswordModal = true;
-      } else {
-        // 비밀번호가 없는 경우, 바로 입장
-        this.$router.push({ name: 'RoomView', params: { sessionId: room.sessionId } });
-      }
-    },
+  async enterRoom(room) {
+    if (room.password) {
+      this.selectedRoom = room;
+      this.showPasswordModal = true;
+    } else {
+      this.$router.push({ name: 'RoomView', params: { sessionId: room.sessionId } });
+    }
+  },
 
-    async verifyPassword() {
-      try {
-        const response = await axios.post(`/api/rooms/verify-password`, {
-          sessionId: this.selectedRoom.sessionId,
-          password: this.inputPassword,
-        });
-        if (response.data.success) {
-          this.$router.push({ name: 'RoomView', params: { sessionId: this.selectedRoom.sessionId } });
-          this.closePasswordModal();
-        } else {
-          alert("비밀번호가 틀렸습니다.");
-        }
-      } catch (error) {
-        console.error("비밀번호 확인 오류:", error);
+  async verifyPassword() {
+    try {
+      const response = await axios.post(`/api/rooms/verify-password`, {
+        sessionId: this.selectedRoom.sessionId,
+        password: this.inputPassword,
+      });
+      if (response.data.success) {
+        this.$router.push({ name: 'RoomView', params: { sessionId: this.selectedRoom.sessionId } });
+        this.closePasswordModal();
+      } else {
+        alert("비밀번호가 틀렸습니다.");
       }
-    },
+    } catch (error) {
+      console.error("비밀번호 확인 오류:", error);
+    }
+  },
+
 
     closeModal() {
       this.showCreateRoomModal = false;
