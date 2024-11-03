@@ -65,17 +65,13 @@
           <v-row justify="center">
             <div class="user-department">{{ this.userProfile.departmentName }} {{ this.userProfile.positionName }}</div>
           </v-row>
-          <v-row justify="center" class="toggle-btn">
-
+          <v-row @click="goToVacationPage" justify="center" class="toggle-btn">
             <v-icon style="padding-right:5px; font-size:20px; align">mdi-account</v-icon>
-
-            <button @click="$router.push('/mypage/vacation')">
-              마이페이지
-            </button>
+            <button>마이페이지</button>
           </v-row>
-          <v-row justify="center" class="toggle-btn">
+          <v-row @click="logout" justify="center" class="toggle-btn">
             <v-icon style="padding-right:5px; font-size:20px">mdi-logout</v-icon>
-            <button @click="logout">
+            <button>
               로그아웃
             </button>
           </v-row>
@@ -169,7 +165,6 @@ export default {
         }
       };
     },
-
     async markNotificationAsRead(notificationId) {
       const userNum = localStorage.getItem("userNum");
       try {
@@ -188,7 +183,7 @@ export default {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/alarm`);
         this.unreadChatNum = response.data.result;
         console.log(response);
-      }catch(error){
+      } catch (error) {
         console.error("오류발생");
       }
     },
@@ -352,7 +347,16 @@ export default {
         this.logout();
       }
     },
-
+    handleClickOutside(event) {
+      const dropdown = this.$el.querySelector('.dropdown');
+      if (dropdown && !dropdown.contains(event.target)) {
+        this.isDropdownOpen = false;
+      }
+    },
+    goToVacationPage(event) {
+      event.preventDefault(); // 기본 동작 방지
+      this.$router.push('/mypage/vacation');
+    },
     // 날짜 포맷팅
     // formatDate(notificationTime) {
     //   const date = new Date(notificationTime);
