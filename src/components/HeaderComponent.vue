@@ -270,8 +270,9 @@ export default {
       this.redirectToNotification(notification);
     },
     redirectToNotification(notification) {
-      if (notification.type === '공지사항') {
-        window.location.href = '/board/notice/list';
+      if (notification.type === '공지사항' && notification.targetId) {
+        this.$router.push(`/board/detail/${notification.targetId}`);
+        console.log(notification.targetId);
       } else if (notification.type === '문의') {
         window.location.href = '/qna/list';
       } else if (notification.type === '예약') {
@@ -282,8 +283,6 @@ export default {
         window.location.href = '/document';
       }
     },
-
-
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
