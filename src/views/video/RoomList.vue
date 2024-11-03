@@ -1,90 +1,139 @@
+<!-- RoomList.vue -->
 <template>
-    <v-container>
-      <!-- 방 만들기 버튼과 모달 창 -->
-      <v-btn v-create @click="showCreateModal" color="primary" dark>방 만들기</v-btn>
-      <v-dialog v-model="isCreateModalVisible" max-width="400px">
-        <v-card>
-          <v-card-title>방 만들기</v-card-title>
-          <v-card-text>
-            <v-text-field v-model="roomName" label="방 이름" outlined></v-text-field>
-            <v-text-field v-model="password" label="비밀번호 (선택)" outlined type="password"></v-text-field>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn v-create @click="createRoom" color="success">생성</v-btn>
-            <v-btn v-cancel @click="isCreateModalVisible = false" color="grey">취소</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-  
-      <!-- 방 목록 -->
-      <v-list>
-        <v-list-item v-for="room in rooms" :key="room.id">
-          <v-list-item-content>
-            <v-list-item-title>{{ room.roomName }}</v-list-item-title>
-            <v-list-item-subtitle v-if="room.password">🔒 비밀번호 설정됨</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-list-item-action>
-            <v-btn @click="joinRoom(room.id, room.password)" color="primary" outlined v-join>참가</v-btn>
+  <div>
+    <h1>방 목록</h1>
+    <input v-model="newRoomTitle" placeholder="방 제목을 입력하세요" />
+    <button @click="createRoom">방 생성하기</button>
 
-          </v-list-item-action>
-        </v-list-item>
-      </v-list>
-    </v-container>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        rooms: [],
-        isCreateModalVisible: false,
-        roomName: '',
-        password: '',
-      };
-    },
-    methods: {
-      showCreateModal() {
-        this.isCreateModalVisible = true;
-      },
-      async createRoom() {
-   try {
-      const response = await axios.post('/api/rooms/create', {
-         roomName: this.roomName,
-         password: this.password
-      });
-      const newRoom = response.data;
+    <div class="rooms-container" v-if="rooms.length">
+      <div
+        v-for="room in rooms"
+        :key="room.sessionId"
+        class="room-box"
+        @click="joinRoom(room.sessionId)"
+      >
+        <div class="room-title">{{ room.title }}</div>
+        <div class="participant-count">참여 인원: {{ room.participantCount }}</div>
+      </div>
+    </div>
+  </div>
+</template>
 
-      await this.joinRoom(newRoom.id, newRoom.sessionId)
-   } catch (error) {
-      console.error("방 생성 중 오류 발생:", error);
-   } finally {
-      this.isCreateModalVisible = false;
-   }
-},
-async joinRoom(roomId, sessionId) {
-    try {
-        if (!roomId || !sessionId) {
-            throw new Error("방 참가를 위한 필수 정보가 없습니다.");
+// RoomList.vue
+<script>
+import axios from "axios";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+
+export default {
+  setup() {
+    const rooms = ref([]);
+    const newRoomTitle = ref("");
+    const router = useRouter();
+
+    const getRooms = async () => {
+      try {
+        const response = await axios.get("https://server.exodiapot.xyz/api/rooms/list");
+        rooms.value = response.data;
+      } catch (error) {
+        console.error("방 목록 조회 오류: ", error);
+      }
+    };
+
+    const createRoom = async () => {
+      const userNum = localStorage.getItem("userNum");
+      if (!newRoomTitle.value || !userNum) {
+        alert("방 제목과 사용자 번호를 입력해주세요.");
+        return;
+      }
+
+      try {
+        const response = await axios.post("https://server.exodiapot.xyz/api/rooms/create", {
+          title: newRoomTitle.value,
+          userNum: userNum,
+        });
+        console.log("방 생성 성공: ", response.data);
+        newRoomTitle.value = "";
+
+        const sessionId = response.data.sessionId;
+        const token = response.data.token.split('token=')[1]; // 정확히 token만 추출합니다.
+
+        if (sessionId && token) {
+          router.push({
+            name: "VideoRoom",
+            params: { sessionId, token },
+          });
         }
-        this.$router.push({ name: 'VideoRoom', params: { roomId, sessionId } });
-    } catch (error) {
-        console.error("방 참가 중 오류 발생:", error);
-    }
-      },
-    },
-    async created() {
-      const response = await axios.get('/api/rooms/list');
-      this.rooms = response.data;
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .v-container {
-    max-width: 600px;
-    margin: auto;
-  }
-  </style>
-  
+
+        getRooms(); // 방 목록 갱신
+      } catch (error) {
+        console.error("방 생성 오류: ", error);
+      }
+    };
+
+    const joinRoom = async (sessionId) => {
+      const userNum = localStorage.getItem("userNum");
+      if (!userNum) {
+        console.error("User number is missing.");
+        return;
+      }
+
+      try {
+        const response = await axios.post(`https://server.exodiapot.xyz/api/rooms/${sessionId}/join`, null, {
+          params: { userNum: userNum },
+        });
+        const token = response.data.token.split('token=')[1];
+        if (token) {
+          router.push({
+            name: "VideoRoom",
+            params: { sessionId, token },
+          });
+        }
+      } catch (error) {
+        console.error("참가 중 오류 발생: ", error);
+      }
+    };
+
+    onMounted(() => {
+      getRooms();
+    });
+
+    return { rooms, newRoomTitle, getRooms, createRoom, joinRoom };
+  },
+};
+</script>
+
+
+<style scoped>
+.rooms-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.room-box {
+  padding: 20px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.room-box:hover {
+  transform: scale(1.05);
+}
+
+.room-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.participant-count {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #ccc;
+}
+</style>

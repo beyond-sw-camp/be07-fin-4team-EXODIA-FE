@@ -22,12 +22,10 @@
               :class="{ read: notification.isRead }">
               <v-list-item-content>
                 <v-list-item-subtitle>
-                  <strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{
-                    formatDate(notification.notificationTime) }}
+                  <strong>{{ notification.type }}</strong> &nbsp;&nbsp;&nbsp; {{ formatDate(notification.notificationTime) }}
                 </v-list-item-subtitle>
                 <br>
                 <v-list-item-title>
-                  <!-- isRead가 0일 때만 [NEW] 표시 -->
                   <strong v-if="notification.isRead == 0">[NEW]</strong>
                   {{ notification.message }}
                 </v-list-item-title>
@@ -105,6 +103,7 @@ export default {
         this.eventSource.onmessage = (event) => {
           const newNotification = JSON.parse(event.data);
           this.notifications.unshift(newNotification); // 새로운 알림을 맨 위에 추가
+          this.unreadCount++;  // 새 알림 수신 시 읽지 않은 개수 증가
         };
 
         // 오류 처리 및 재연결
@@ -136,13 +135,15 @@ export default {
     // 전체 알림 리스트 가져오기
     async fetchNotifications() {
       try {
+        const userNum = localStorage.getItem("userNum");
         const response = await axios.get(
-          `${process.env.VUE_APP_API_BASE_URL}/notifications/list`,
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/${userNum}`,
           {
             headers: this.getAuthHeaders(),
           }
         );
         this.notifications = response.data;
+        this.unreadCount = this.notifications.filter(n => !n.isRead).length; // 읽지 않은 알림 개수 업데이트
       } catch (error) {
         console.error("알림 데이터를 가져오는 중 오류 발생:", error);
       }
@@ -151,8 +152,9 @@ export default {
     // 읽지 않은 알림 개수 가져오기
     async fetchUnreadCount() {
       try {
+        const userNum = localStorage.getItem("userNum");
         const response = await axios.get(
-          `${process.env.VUE_APP_API_BASE_URL}/notifications/unread-count`,
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/unread-count/${userNum}`,
           {
             headers: this.getAuthHeaders(),
           }
@@ -164,20 +166,48 @@ export default {
     },
 
     // 알림 읽음 처리
-    // async markAsRead(notificationId) {
-    //   try {
-    //     await axios.post(
-    //       `${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`,
-    //       null,
-    //       {
-    //         headers: this.getAuthHeaders(),
-    //       }
-    //     );
-    //     console.log(`Notification ${notificationId} marked as read.`);
-    //   } catch (error) {
-    //     console.error("알림 읽음 처리 중 오류 발생:", error);
-    //   }
-    // },
+    async markAsRead(notificationId) {
+      const userNum = localStorage.getItem("userNum");
+      try {
+        await axios.put(
+          `${process.env.VUE_APP_API_BASE_URL}/notifications/${userNum}/read/${notificationId}`,
+          null,
+          { headers: this.getAuthHeaders() }
+        );
+        console.log(`Notification ${notificationId} marked as read.`);
+      } catch (error) {
+        console.error("알림 읽음 처리 중 오류 발생:", error);
+      }
+    },
+
+    // 알림 클릭 핸들러
+    async handleNotificationClick(notification) {
+      if (notification.isRead === 0) {
+        await this.markAsRead(notification.id);
+        notification.isRead = 1; // 상태를 변경하여 UI에서도 읽음 상태 반영
+        this.unreadCount -= 1; // 읽지 않은 개수 줄이기
+      }
+      this.redirectToNotification(notification);
+    },
+
+    redirectToNotification(notification) {
+      let targetUrl = `${process.env.VUE_APP_API_BASE_URL}`;
+
+      // 알림 유형에 따른 URL 설정
+      if (notification.type === '공지사항') {
+        targetUrl += '/board/notice/list';
+      } else if (notification.type === '문의') {
+        targetUrl += '/qna/list';
+      } else if (notification.type === '예약') {
+        targetUrl += '/reservation/reservationList';
+      } else if (notification.type === '결재') {
+        targetUrl += '/submit/list';
+      } else if (notification.type === '문서') {
+        targetUrl += '/document';
+      }
+
+      window.location.href = targetUrl;
+    },
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
@@ -190,45 +220,7 @@ export default {
         Authorization: `Bearer ${token}`,
       };
     },
-    async handleNotificationClick(notification) {
-      if (notification.isRead === 0) {
-        await this.markAsRead(notification.id);
-        notification.isRead = 1;  // 상태를 변경하여 UI에서도 읽음 상태 반영
-        this.unreadCount -= 1;  // 읽지 않은 개수 줄이기
-      }
-      let targetUrl = '';
-
-      // 알림 유형에 따른 URL 설정
-      if (notification.type === '공지사항') {
-        targetUrl = 'http://localhost:8082/board/notice/list';
-      } else if (notification.type === '문의') {
-        targetUrl = 'http://localhost:8082/qna/list';
-      } else if (notification.type === '예약') {
-        targetUrl = 'http://localhost:8082/reservation/reservationList';
-      } else if (notification.type === '결재') {
-        targetUrl = 'http://localhost:8082/submit/list';
-      } else if (notification.type === '문서') {
-        targetUrl = 'http://localhost:8082/document';
-      }
-
-      window.location.href = targetUrl;
-    },
-
-    async markAsRead(notificationId) {
-      try {
-        await axios.post(
-          `${process.env.VUE_APP_API_BASE_URL}/notifications/mark-as-read/${notificationId}`,
-          null,
-          { headers: this.getAuthHeaders() }
-        );
-        console.log(`Notification ${notificationId} marked as read.`);
-      } catch (error) {
-        console.error("알림 읽음 처리 중 오류 발생:", error);
-      }
-    },
-
-
-  }
+  },
 };
 </script>
 

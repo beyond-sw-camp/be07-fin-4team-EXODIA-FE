@@ -164,9 +164,19 @@ export default {
         }
       };
     },
-
-    async fetchChatAlarmNum() {
+    async markNotificationAsRead(notificationId) {
+      const userNum = localStorage.getItem("userNum");
       try {
+        await axios.put(`${process.env.VUE_APP_API_BASE_URL}/notifications/${userNum}/read/${notificationId}`, {}, {
+          headers: this.getAuthHeaders(),
+        });
+        this.fetchNotifications();  // 읽음 처리 후 알림 목록 다시 불러오기
+      } catch (error) {
+        console.error("알림 읽음 처리 중 오류 발생:", error);
+      }
+    },
+    async fetchChatAlarmNum(){
+      try{
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/chatRoom/alarm`);
         this.unreadChatNum = response.data.result;
         console.log(response);
@@ -178,11 +188,22 @@ export default {
     // 알림 목록 가져오기 (최신 4개)
     async fetchNotifications() {
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/list`, {
+        const userNum = localStorage.getItem("userNum");
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/notifications/${userNum}`, {
           headers: this.getAuthHeaders(),
         });
+
+        // 전체 알림 목록 가져오기
         this.notifications = response.data;
-        console.log("알림 데이터:", this.notifications);
+        
+        // 읽지 않은 알림 개수 업데이트
+        this.unreadCount = this.notifications.filter(n => !n.read).length;
+
+        // 상위 4개 알림만 유지
+        if (this.notifications.length > 4) {
+          this.notifications = this.notifications.slice(0, 4);
+        }
+
       } catch (error) {
         console.error("알림을 가져오는 중 오류 발생:", error);
       }
@@ -231,25 +252,25 @@ export default {
     goToNotifications() {
       this.$router.push('/notification/notificationList');
     },
-    handleNotificationClick(notification) {
-      let targetUrl = '';
-
-      // 알림 유형에 따른 URL 설정
+    async handleNotificationClick(notification) {
+      await this.markNotificationAsRead(notification.id); // 알림 읽음 처리
+      this.redirectToNotification(notification); // 알림 유형에 따라 페이지 이동
+    },
+    redirectToNotification(notification) {
       if (notification.type === '공지사항') {
-        targetUrl = 'http://localhost:8082/board/notice/list';
-      } else if (notification.type === '경조사') {
-        targetUrl = 'http://localhost:8082/board/familyevent/list';
+        window.location.href = '/board/notice/list';
+      } else if (notification.type === '문의') {
+        window.location.href = '/qna/list';
       } else if (notification.type === '예약') {
-        targetUrl = 'http://localhost:8082/reservation/meetReservationList';
+        window.location.href = '/reservation/reservationList';
       } else if (notification.type === '결재') {
-        targetUrl = 'http://localhost:8082/submit/list';
+        window.location.href = '/submit/list';
       } else if (notification.type === '문서') {
-        targetUrl = 'http://localhost:8082/document';
+        window.location.href = '/document';
       }
-
-      window.location.href = targetUrl;
     },
 
+    
 
     // 인증 헤더 가져오기
     getAuthHeaders() {
