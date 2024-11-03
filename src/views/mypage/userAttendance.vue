@@ -118,7 +118,6 @@ export default {
       }
     },
     async meetingIn() {
-      console.log("자리비움")
       // 자리비움
       try {
         await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/meeting-in`);
@@ -149,7 +148,6 @@ export default {
     async fetchUsers() {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/department/list`);
-        console.log("users: " + response);
         let badgeColor = '#808080';
         let statusData = '';
         this.users = response.data.result.map(user => {
@@ -172,8 +170,6 @@ export default {
         });
         this.users.sort((a, b) => (b.userNum === this.userNum ? 1 : 0) - (a.userNum === this.userNum ? 1 : 0));
         this.userStatus = this.users.find(user => user.userNum === this.userNum)?.nowStatus || null;
-        console.log("status" + this.userStatus)
-
       } catch (e) {
         console.log(e);
       }
