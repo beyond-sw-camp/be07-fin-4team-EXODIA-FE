@@ -132,15 +132,30 @@ export default {
       this.publisher = screenPublisher;
       this.session.publish(this.publisher);
     },
-    switchToMain(subscriber, index) {
-      const mainVideoElement = this.$refs.mainVideo;
-      const sideVideoElement = this.$refs['sideVideo' + index][0];
+switchToMain(subscriber, index) {
+  const mainVideoElement = this.$refs.mainVideo;
+  const sideVideoElement = this.$refs['sideVideo' + index][0];
 
-      if (mainVideoElement && sideVideoElement) {
-        const mainStream = mainVideoElement.srcObject;
-        mainVideoElement.srcObject = subscriber.stream.getMediaStream();
-        sideVideoElement.srcObject = mainStream;
-      }
+  if (mainVideoElement && sideVideoElement) {
+    // Get the current main video stream
+    const mainStream = mainVideoElement.srcObject;
+
+    // Update the main video to show the selected subscriber's stream
+    mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+
+    // Replace the side video with the previously main stream
+    sideVideoElement.srcObject = mainStream;
+
+    // Swap the side video stream in the sideVideos array with the main video
+    this.sideVideos[index] = {
+      ...this.publisher, // main video becomes a side video
+      stream: {
+        getMediaStream: () => mainStream,
+      },
+    };
+  }
+
+
     },
     async leaveRoom() {
       const { sessionId } = this.$route.params;
