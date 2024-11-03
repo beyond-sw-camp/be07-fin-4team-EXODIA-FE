@@ -78,7 +78,7 @@ export default {
     },
 
     async createRoom() {
-   if (this.enablePassword && this.newRoomPassword !== this.newRoomPasswordConfirm) {
+      if (this.enablePassword && this.newRoomPassword !== this.newRoomPasswordConfirm) {
         alert("비밀번호가 일치하지 않습니다.");
         return;
       }
@@ -92,7 +92,7 @@ export default {
         if (newRoom && newRoom.sessionId) {
           this.rooms.push(newRoom);
           this.closeModal();
-          this.enterRoom(newRoom.sessionId); // 생성 후 입장
+          this.enterRoom(newRoom); // 방 생성 후 입장
         } else {
           console.error("유효하지 않은 방 응답 데이터:", newRoom);
         }
@@ -101,13 +101,14 @@ export default {
       }
     },
 
-
-    handleRoomClick(room) {
-      if (room.hasPassword) {
+    async enterRoom(room) {
+      if (room.password) {
+        // 비밀번호가 있는 경우, 모달을 열고 비밀번호 확인
         this.selectedRoom = room;
         this.showPasswordModal = true;
       } else {
-        this.enterRoom(room.sessionId);
+        // 비밀번호가 없는 경우, 바로 입장
+        this.$router.push({ name: 'RoomView', params: { sessionId: room.sessionId } });
       }
     },
 
@@ -118,7 +119,7 @@ export default {
           password: this.inputPassword,
         });
         if (response.data.success) {
-          this.enterRoom(this.selectedRoom.sessionId);
+          this.$router.push({ name: 'RoomView', params: { sessionId: this.selectedRoom.sessionId } });
           this.closePasswordModal();
         } else {
           alert("비밀번호가 틀렸습니다.");
@@ -126,10 +127,6 @@ export default {
       } catch (error) {
         console.error("비밀번호 확인 오류:", error);
       }
-    },
-
-    enterRoom(sessionId) {
-      this.$router.push({ name: 'RoomView', params: { sessionId } });
     },
 
     closeModal() {
