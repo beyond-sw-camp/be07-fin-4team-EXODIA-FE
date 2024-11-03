@@ -86,8 +86,8 @@ export default {
       }
       // searchUser(searchQuery.value);
       // return '';
-      // const query = searchQuery.value.toLowerCase();
-      // return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
+      const query = searchQuery.value.toLowerCase();
+      return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
     });
 
     watch(searchQuery, (newValue) => {
