@@ -78,7 +78,7 @@ export default {
     },
 
     async createRoom() {
-      if (this.enablePassword && this.newRoomPassword !== this.newRoomPasswordConfirm) {
+   if (this.enablePassword && this.newRoomPassword !== this.newRoomPasswordConfirm) {
         alert("비밀번호가 일치하지 않습니다.");
         return;
       }
@@ -86,6 +86,7 @@ export default {
         const response = await axios.post('/api/rooms/create', {
           title: this.newRoomTitle,
           userNum: localStorage.getItem("userNum"),
+          password: this.enablePassword ? this.newRoomPassword : null
         });
         const newRoom = response.data;
         if (newRoom && newRoom.sessionId) {
@@ -99,6 +100,7 @@ export default {
         console.error("방 생성 오류:", error);
       }
     },
+
 
     handleRoomClick(room) {
       if (room.hasPassword) {

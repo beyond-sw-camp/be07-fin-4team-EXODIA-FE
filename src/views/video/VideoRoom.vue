@@ -232,6 +232,14 @@ export default {
     }
 }
 ,
+handleRoomClick(room) {
+   if (room.password) { // 비밀번호가 설정된 경우만 확인 모달 표시
+      this.selectedRoom = room;
+      this.showPasswordModal = true;
+   } else {
+      this.enterRoom(room.sessionId);
+   }
+},
 
     async leaveRoom() {
       const { sessionId } = this.$route.params;
