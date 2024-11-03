@@ -272,6 +272,7 @@ export default {
     redirectToNotification(notification) {
       if (notification.type === '공지사항' && notification.targetId) {
         this.$router.push(`/board/detail/${notification.targetId}`);
+        console.log(notification.targetId);
       } else if (notification.type === '문의') {
         window.location.href = '/qna/list';
       } else if (notification.type === '예약') {

@@ -163,7 +163,7 @@ export default {
           this.totalPages = result.totalPages;
 
           // 받아온 게시글 정보 출력
-          console.log("받아온 게시글 정보:", JSON.stringify(this.boardItems));
+          // console.log("받아온 게시글 정보:", JSON.stringify(this.boardItems));
 
         }
       } catch (error) {
@@ -171,10 +171,6 @@ export default {
         alert("게시글 목록을 불러오는 중 문제가 발생했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
       }
     },
-
-
-
-
 
     // 페이지 변경
     onPageChange(newPage) {
