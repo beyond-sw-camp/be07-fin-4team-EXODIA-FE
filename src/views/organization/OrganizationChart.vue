@@ -86,8 +86,8 @@ export default {
       }
       // searchUser(searchQuery.value);
       // return '';
-      const query = searchQuery.value.toLowerCase();
-      return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
+      // const query = searchQuery.value.toLowerCase();
+      // return hierarchy.value.filter(dept => dept.name.toLowerCase().includes(query));
     });
 
     watch(searchQuery, (newValue) => {
@@ -125,6 +125,11 @@ export default {
         searchResult.value = false;
       }
     });
+
+    // 사용자를 선택하면 이벤트 전송
+    const selectUser = (user) => {
+      emit('user-selected', user);
+    };
 
     // 네트워크 요청을 캐싱하고 데이터를 반환하는 함수
     const getCachedOrFetch = async (url, cacheName) => {
