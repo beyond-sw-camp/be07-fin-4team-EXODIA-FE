@@ -124,7 +124,8 @@ export default {
             }
             // if (this.selectUser.indexOf(user) != -1) {
             //     alert("이미 선택한 유저입니다.");
-            //     console.log("뭐가 들어가는거니. torf list, one")
+
+            //     console.log("뭐가 들어가는거니1 torf list, one")
             //     console.log(this.selectUser.indexOf(user));
             //     console.log(this.selectUser);
             //     console.log(user);
