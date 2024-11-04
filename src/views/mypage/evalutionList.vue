@@ -174,6 +174,7 @@ export default {
           url = `${process.env.VUE_APP_API_BASE_URL}/user/department-users/${departmentId}`;
         } else if (this.positionId == 6 || this.positionId == 5) {
           url = `${process.env.VUE_APP_API_BASE_URL}/sub-evalution/user/list`;
+
         }
 
         const response = await axios.get(url, {
@@ -205,6 +206,7 @@ export default {
           score: item.score || '',
           saved: !!item.score,
           editable: !item.score,
+
         }));
       } catch (error) {
         console.error('평가 목록 조회 실패', error);
