@@ -69,6 +69,7 @@ export default {
         params: { userNum: localStorage.getItem("userNum") },
       });
       const token = response.data.token;
+      await this.session.connect(token, { clientData: "사용자명" });
 
       this.OV = new OpenVidu();
       this.session = this.OV.initSession();
@@ -92,15 +93,14 @@ export default {
 
       await this.session.connect(token, { clientData: "사용자명" });
 
-      // 메인 비디오를 설정하고 퍼블리시
-      this.publisher = this.OV.initPublisher(undefined, {
-        videoSource: undefined, // 카메라 비디오로 설정
-        audioSource: undefined,
+        this.publisher = this.OV.initPublisher(undefined, {
+        videoSource: this.isScreenSharing ? 'screen' : undefined, 
+        audioSource: this.isAudioEnabled ? undefined : false,   
         publishAudio: this.isAudioEnabled,
         publishVideo: this.isVideoEnabled,
-        mirror: true,
+        mirror: !this.isScreenSharing, 
       });
-
+      
       this.publisher.once('accessAllowed', () => {
         this.mainVideo = this.publisher;
         this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
