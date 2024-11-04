@@ -121,64 +121,27 @@ export default {
       this.publisher.publishVideo(this.isVideoEnabled);
     },
 
-    startScreenShare() {
-      if (!this.isScreenSharing) {
-        // 화면 공유 시작
-        const screenPublisher = this.OV.initPublisher(undefined, {
-          videoSource: 'screen',
-          publishAudio: this.isAudioEnabled,
-        });
-
-        // 기존 퍼블리셔 저장 및 대체
-        this.originalPublisher = this.publisher;
-        this.session.unpublish(this.publisher);
-        this.publisher = screenPublisher;
-        this.mainVideo = this.publisher;
-        
-        setTimeout(() => {
-          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
-        }, 500);
-
-        this.session.publish(this.publisher);
-        this.isScreenSharing = true;
-      } else {
-        // 화면 공유 종료 시 원래 퍼블리셔로 복구
-        this.session.unpublish(this.publisher);
-        this.publisher = this.originalPublisher; // 원래 퍼블리셔로 돌아감
-        this.mainVideo = this.publisher; // 메인 비디오도 원래 비디오로 복구
-        
-        setTimeout(() => {
-          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
-        }, 500);
-
-        this.session.publish(this.publisher);
-        this.isScreenSharing = false;
-      }
-    },
-
-    switchToMain(subscriber, index) {
-      // 기존 메인 비디오를 sideVideos 배열에 추가하고 클릭한 sideVideo를 메인으로 설정
-      const previousMainVideo = this.mainVideo;
-      this.mainVideo = subscriber;
-      this.sideVideos.splice(index, 1, previousMainVideo); // 교체
-    },
-
-    async leaveRoom() {
-      const { sessionId } = this.$route.params;
-      try {
-        if (this.session) {
-          this.session.disconnect();
-        }
-        await axios.post(`/api/rooms/${sessionId}/leave`, null, {
-          params: { userNum: localStorage.getItem("userNum") },
-        });
-        this.$router.push({ name: 'RoomList' });
-      } catch (error) {
-        console.error("Error leaving the room:", error);
-      }
-    },
   },
-};
+  async startScreenShare() {
+  if (!this.isScreenSharing) {
+    try {
+      await this.publisher.replaceTrack({ videoSource: 'screen' });
+      this.isScreenSharing = true;
+    } catch (error) {
+      console.error("Failed to start screen share:", error);
+    }
+  } else {
+    try {
+      await this.publisher.replaceTrack({ videoSource: undefined });
+      this.isScreenSharing = false;
+    } catch (error) {
+      console.error("Failed to stop screen share:", error);
+    }
+  }
+}, 
+  }
+
+
 </script>
 
 <style>
