@@ -4,7 +4,7 @@
 
     <!-- Main Video -->
     <div class="main-video">
-      <video ref="mainVideo" autoplay playsinline></video>
+      <video ref="mainVideo" :srcObject="mainVideo ? mainVideo.stream.getMediaStream() : null" autoplay playsinline></video>
     </div>
 
     <!-- Side Videos -->
@@ -15,8 +15,8 @@
         class="side-video"
         @click="switchToMain(subscriber, index)"
       >
-        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
-        <p class="video-name">{{ subscriber.stream.connection.data }}</p>
+        <video :ref="'sideVideo' + index" :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline muted></video>
+        <p class="video-name">{{ subscriber.stream.connection ? subscriber.stream.connection.data : 'Unknown' }}</p>
       </div>
     </div>
 
@@ -46,7 +46,8 @@ export default {
   data() {
     return {
       roomTitle: '',
-      sideVideos: [],
+      mainVideo: null, // 메인 비디오
+      sideVideos: [], // 사이드 비디오 배열
       OV: null,
       session: null,
       publisher: null,
@@ -86,17 +87,9 @@ export default {
           }, 500);
         });
 
-        this.session.on('connectionCreated', (event) => {
-          console.log(`New participant connected: ${event.connection.connectionId}`);
-        });
-
-        this.session.on('connectionDestroyed', (event) => {
-          console.log(`Participant left: ${event.connection.connectionId}`);
-        });
-
         await this.session.connect(token, { clientData: "사용자명" });
 
-        // Initialize and publish main video
+        // 메인 비디오를 설정하고 퍼블리시
         this.publisher = this.OV.initPublisher(undefined, {
           videoSource: undefined,
           audioSource: undefined,
@@ -106,6 +99,7 @@ export default {
         });
 
         this.publisher.once('accessAllowed', () => {
+          this.mainVideo = this.publisher;
           this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
         });
 
@@ -133,29 +127,13 @@ export default {
       this.session.publish(this.publisher);
     },
 
-
-  switchToMain(subscriber, index) {
-    const mainVideoElement = this.$refs.mainVideo;
-    const sideVideoElement = this.$refs['sideVideo' + index][0];
-
-    if (mainVideoElement && sideVideoElement) {
-      const mainStream = mainVideoElement.srcObject;
-      mainVideoElement.srcObject = subscriber.stream.getMediaStream();
-      sideVideoElement.srcObject = mainStream;
-      this.sideVideos.splice(index, 1, {
-        stream: {
-          getMediaStream: () => mainStream,
-        },
-        connection: {
-          data: this.publisher.stream.connection ? this.publisher.stream.connection.data : "Main Video",
-        },
-      });
-    }
-
-
-
-
+    switchToMain(subscriber, index) {
+      // 기존 메인 비디오를 sideVideos 배열에 추가하고 클릭한 sideVideo를 메인으로 설정
+      const previousMainVideo = this.mainVideo;
+      this.mainVideo = subscriber;
+      this.sideVideos.splice(index, 1, previousMainVideo); // 교체
     },
+
     async leaveRoom() {
       const { sessionId } = this.$route.params;
       try {
