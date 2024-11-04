@@ -132,28 +132,31 @@ export default {
       this.publisher = screenPublisher;
       this.session.publish(this.publisher);
     },
-switchToMain(subscriber, index) {
+
+    
+    switchToMain(subscriber, index) {
   const mainVideoElement = this.$refs.mainVideo;
   const sideVideoElement = this.$refs['sideVideo' + index][0];
 
   if (mainVideoElement && sideVideoElement) {
-    // Get the current main video stream
+    // 현재 메인 비디오 스트림 참조를 저장
     const mainStream = mainVideoElement.srcObject;
 
-    // Update the main video to show the selected subscriber's stream
+    // 클릭한 sideVideo의 스트림을 메인 비디오로 설정
     mainVideoElement.srcObject = subscriber.stream.getMediaStream();
 
-    // Replace the side video with the previously main stream
+    // sideVideo에 기존 메인 비디오 스트림을 할당
     sideVideoElement.srcObject = mainStream;
 
-    // Swap the side video stream in the sideVideos array with the main video
-    this.sideVideos[index] = {
-      ...this.publisher, // main video becomes a side video
+    // 사이드 비디오 배열 업데이트
+    this.sideVideos.splice(index, 1, {
       stream: {
         getMediaStream: () => mainStream,
       },
-    };
+      connection: { data: "Main Video" },
+    });
   }
+
 
 
     },
