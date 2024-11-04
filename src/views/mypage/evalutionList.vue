@@ -6,14 +6,14 @@
         <!-- 팀원은 팀장이 -->
         <!-- 팀장은 부서장, 본부장 -->
         <!-- 부서장, 본부장은 본인이 -->
-        <v-col v-if="this.positionId >= 5 && this.positionId <= 7" cols="12" md="4">
+        <v-col v-if="this.positionId >= 5 && this.positionId <= 7 && isEvaluationPeriod" cols="12" md="4">
           <v-select v-model="selectedUser" :items="departmentUsers" item-title="name" item-value="userNum"
             label="부서원 선택" dense outlined></v-select>
         </v-col>
       </v-row>
 
       <!-- 인사평가 기간이라면 평가할 수 있도록 -->
-      <div v-if="isEvaluationPeriod" style="padding:16px; margin-top:10px;">
+      <div v-if="isEvaluationPeriod && this.evaluations.length != 0" style="padding:16px; margin-top:10px;">
         <v-row>
           <v-col>
             <v-table dense>
@@ -34,12 +34,12 @@
                   <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
                     {{ item.midCategoryName }}
                   </td>
-                  <td style="border: 1px solid #e0e0e0; text-align: center; width: 800px;">
+                  <td style="border: 1px solid #e0e0e0; width: 800px;">
                     {{ item.subEvalutionContent }}
                   </td>
                   <td style="border: 1px solid #e0e0e0; text-align: center; padding:0 ">
                     <!-- 평가 선택 -->
-                    <v-select hide-details v-model="item.grade" :items="['A', 'B', 'C', 'D', 'E']" label="평가 선택" dense
+                    <v-select hide-details v-model="item.score" :items="['A', 'B', 'C', 'D', 'E']" label="평가 선택" dense
                       style="width: 100px; background-color: #FFFFFF; border: none; padding:0"
                       :disabled="item.saved && !item.editable"></v-select>
                   </td>
@@ -55,17 +55,23 @@
         </v-row>
       </div>
 
+      <div v-if="isEvaluationPeriod && this.evaluations.length == 0" style="padding:16px; margin-top:10px;">
+        <div class="mb-6"><strong>* 평가 항목이 존재하지 않습니다.</strong></div>
+      </div>
+
       <!-- 인사평가 기간이 아니라면 -->
       <div v-if="!isEvaluationPeriod" style="padding:16px; margin-top:10px;">
+        <div class="mb-6"><strong>* {{ formatDate(this.startDate) }}부터 {{ formatDate(this.endDate) }} 까지의 인사평가
+            결과입니다.</strong></div>
         <v-row>
           <v-col>
             <v-table dense>
               <thead>
                 <tr style="background-color:rgba(122,86,86,0.2);">
-                  <th style="padding:10px;  border: 1px solid #f5f5f5">대분류</th>
-                  <th style="padding:10px;  border: 1px solid #f5f5f5">중분류</th>
-                  <th style="padding:10px;  border: 1px solid #f5f5f5">평가 내용</th>
-                  <th style="padding:10px;  border: 1px solid #f5f5f5">평가</th>
+                  <th style="padding:10px; text-align: center; border: 1px solid #f5f5f5; font-weight:800">대분류</th>
+                  <th style="padding:10px; text-align: center; border: 1px solid #f5f5f5; font-weight:800">중분류</th>
+                  <th style="padding:10px;  text-align: center;border: 1px solid #f5f5f5; font-weight:800">평가 내용</th>
+                  <th style="padding:10px;  text-align: center;border: 1px solid #f5f5f5; font-weight:800">평가</th>
                 </tr>
               </thead>
               <tbody>
@@ -77,7 +83,7 @@
                   <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
                     {{ item.midCategoryName }}
                   </td>
-                  <td style="border: 1px solid #e0e0e0; text-align: center; width: 800px;">
+                  <td style="border: 1px solid #e0e0e0;  width: 800px;">
                     {{ item.subEvalutionContent }}
                   </td>
                   <td
@@ -86,7 +92,7 @@
                   </td>
                 </tr>
 
-                <tr style="height:56px; border:none; font-weight: 800;">
+                <tr style="height:56px; border:none; font-weight: 800; font-size:16px">
                   <td colspan="3" style="text-align:right; border:none; padding-right: 10px;">
                     총점:
                   </td>
@@ -100,9 +106,8 @@
         </v-row>
       </div>
 
-      <v-row v-if="isEvaluationPeriod && isEvaluated">
-        이미 평가한 기록이 존재합니다.
-      </v-row>
+
+
     </template>
   </MypageTemplate>
 </template>
@@ -118,6 +123,7 @@ export default {
   data() {
     return {
       positionId: localStorage.getItem('positionId'),
+      userNum: localStorage.getItem('userNum'),
 
       evaluations: [],
       departmentUsers: [],
@@ -127,10 +133,14 @@ export default {
       isEvaluated: false,
       avgEvalutions: [],
       totalScore: '',
+
+      startDate: '',
+      endDate: '',
     };
   },
   created() {
-    this.checkIfManager();
+    this.fetchUsers();
+    this.fetchEvaluationPeriod();
     if (this.isEvaluationPeriod) {
       this.fetchSubEvalutions();
 
@@ -152,7 +162,8 @@ export default {
     }
   },
   methods: {
-    async checkIfManager() {
+    async fetchUsers() {
+      // 인사 평가 할 대상 리스트
       try {
         const departmentId = localStorage.getItem('departmentId');
 
@@ -175,10 +186,13 @@ export default {
       }
     },
     async fetchSubEvalutions(userNum = null) {
+      // 평가 항목 및 평가 기록 조회)
+
       const targetUrl = userNum
         ? `/sub-evalution/team-evaluations/${userNum}`
-        : '/sub-evalution/list-with-categories';
-
+        // : '/sub-evalution/list-with-categories';
+        : `/sub-evalution/team-evaluations/${this.userNum}`
+      console.log(targetUrl)
       try {
         const response = await axios.get(targetUrl, {
           headers: {
@@ -201,16 +215,16 @@ export default {
       const evaluationDtos = this.evaluations.map(evaluation => ({
         subEvalutionId: evaluation.subEvalutionId,
         targetUserNum: this.isManager ? this.selectedUser || currentUserNum : currentUserNum,
-        score: evaluation.grade
+        score: evaluation.score
       }));
 
       try {
-        const response = await axios.post('/evalution/batch-create', evaluationDtos, {
+        await axios.post('/evalution/batch-create', evaluationDtos, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-        console.log(response)
+
         this.evaluations.forEach(evaluation => {
           evaluation.editable = false;
           evaluation.saved = true;
@@ -263,10 +277,29 @@ export default {
 
         this.totalScore = this.avgEvalutions.reduce((sum, item) => sum + item.avgScore, 0);
         this.totalScore /= 7;
+        this.totalScore = parseFloat(this.totalScore.toFixed(2));
+
 
       } catch (error) {
         console.error('소분류 불러오기 실패', error);
       }
+    },
+    async fetchEvaluationPeriod() {
+      try {
+        const response = await axios.get('/eventDate/getEventId/인사평가');
+        const { startDate, endDate } = response.data;
+
+        this.startDate = new Date(startDate);
+        this.endDate = new Date(endDate);
+      } catch (error) {
+        console.error('Failed to fetch evaluation period:', error);
+      }
+    },
+    formatDate(date) {
+      return new Date(date)
+        .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        .replace(/\.\s/g, '.') // 중간에 붙는 공백을 없앰
+        .replace(/\.$/, ''); // 마지막에 붙는 '.'을 없앰
     },
   }
 };
