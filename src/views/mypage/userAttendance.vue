@@ -125,6 +125,10 @@ export default {
       // 자리비움
       try {
         await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/meeting-in`);
+        if (this.userStatus == '퇴근') {
+          alert("퇴근 후에는 자리비움이 불가능합니다.");
+          return;
+        }
         location.reload();
       } catch (e) {
         console.log(e);
