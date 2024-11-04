@@ -122,33 +122,44 @@ export default {
   },
 
   async startScreenShare() {
-    if (!this.isScreenSharing) {
-      try {
-        const screenPublisher = this.OV.initPublisher(undefined, {
-          videoSource: 'screen',
-          publishAudio: this.isAudioEnabled,
-        });
+  if (!this.isScreenSharing) {
+    try {
+      // 화면 공유 퍼블리셔를 생성합니다.
+      const screenPublisher = this.OV.initPublisher(undefined, {
+        videoSource: 'screen',
+        publishAudio: this.isAudioEnabled, 
+      });
 
-        await this.session.unpublish(this.publisher);
-        this.mainVideo = screenPublisher;
-        await this.session.publish(screenPublisher);
-        this.isScreenSharing = true;
+      // 기존 퍼블리셔를 저장해 두고, 화면 공유 퍼블리셔로 교체합니다.
+      this.originalPublisher = this.publisher;
+      await this.session.unpublish(this.publisher); 
+      this.publisher = screenPublisher;
+      this.mainVideo = this.publisher;
+      
+      // 화면 공유 퍼블리셔를 세션에 퍼블리시합니다.
+      await this.session.publish(screenPublisher);
 
-        this.screenPublisher = screenPublisher;
-      } catch (error) {
-        console.error("Failed to start screen share:", error);
-      }
-    } else {
-      try {
-        await this.session.unpublish(this.screenPublisher);
-        this.mainVideo = this.publisher;
-        await this.session.publish(this.publisher); 
-        this.isScreenSharing = false;
-      } catch (error) {
-        console.error("Failed to stop screen share:", error);
-      }
+      // 화면 공유 상태를 true로 설정합니다.
+      this.isScreenSharing = true;
+    } catch (error) {
+      console.error("Failed to start screen share:", error);
     }
-  },
+  } else {
+    // 화면 공유를 중지하고 원래 퍼블리셔로 복구합니다.
+    try {
+      await this.session.unpublish(this.publisher); 
+      this.publisher = this.originalPublisher; 
+      this.mainVideo = this.publisher;
+
+      // 원래 퍼블리셔를 다시 퍼블리시합니다.
+      await this.session.publish(this.publisher);
+      this.isScreenSharing = false;
+    } catch (error) {
+      console.error("Failed to stop screen share:", error);
+    }
+  }
+},
+
 
 
   switchToMain(subscriber, index) {
