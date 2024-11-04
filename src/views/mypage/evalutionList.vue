@@ -6,7 +6,7 @@
         <!-- 팀원은 팀장이 -->
         <!-- 팀장은 부서장, 본부장 -->
         <!-- 부서장, 본부장은 본인이 -->
-        <v-col v-if="this.positionId >= 5 || this.positionId <= 7" cols="12" md="4">
+        <v-col v-if="this.positionId >= 5 && this.positionId <= 7" cols="12" md="4">
           <v-select v-model="selectedUser" :items="departmentUsers" item-title="name" item-value="userNum"
             label="부서원 선택" dense outlined></v-select>
         </v-col>
@@ -161,7 +161,7 @@ export default {
         if (this.positionId == 7) { //팀장
           url = `${process.env.VUE_APP_API_BASE_URL}/user/department-users/${departmentId}`;
         } else if (this.positionId == 6 || this.positionId == 5) {
-          url = `${process.env.VUE_APP_API_BASE_URL}/attendance/department/list`;
+          url = `${process.env.VUE_APP_API_BASE_URL}/sub-evalution/user/list`;
         }
 
         const response = await axios.get(url, {
@@ -170,13 +170,6 @@ export default {
           }
         });
         this.departmentUsers = response.data.result;
-
-        if (this.positionId == 6 || this.positionId == 5) {
-          this.departmentUsers = response.data.result.filter(user => user.positionId <= 7);
-        }
-        // else {
-        //   this.departmentUsers = response.data.result;
-        // }
       } catch (error) {
         console.error('팀장 여부 확인 실패 또는 부서원 목록 조회 실패', error);
       }
