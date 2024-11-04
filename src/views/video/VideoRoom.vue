@@ -62,7 +62,6 @@ export default {
   },
   
   methods: {
-    methods: {
   async initializeRoom() {
     const { sessionId } = this.$route.params;
     try {
@@ -73,11 +72,6 @@ export default {
 
       this.OV = new OpenVidu();
       this.session = this.OV.initSession();
-
-      if (!this.session) {
-        console.error("Failed to initialize OpenVidu session.");
-        return;
-      }
 
       this.session.on('streamCreated', (event) => {
         const subscriber = this.session.subscribe(event.stream, undefined);
@@ -107,11 +101,6 @@ export default {
         mirror: true,
       });
 
-      if (!this.publisher) {
-        console.error("Failed to initialize publisher.");
-        return;
-      }
-
       this.publisher.once('accessAllowed', () => {
         this.mainVideo = this.publisher;
         this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
@@ -124,21 +113,12 @@ export default {
   },
 
   toggleAudio() {
-    if (this.publisher) {
-      this.isAudioEnabled = !this.isAudioEnabled;
-      this.publisher.publishAudio(this.isAudioEnabled);
-    } else {
-      console.error("Publisher is not initialized.");
-    }
+    this.isAudioEnabled = !this.isAudioEnabled;
+    this.publisher.publishAudio(this.isAudioEnabled);
   },
-
   toggleVideo() {
-    if (this.publisher) {
-      this.isVideoEnabled = !this.isVideoEnabled;
-      this.publisher.publishVideo(this.isVideoEnabled);
-    } else {
-      console.error("Publisher is not initialized.");
-    }
+    this.isVideoEnabled = !this.isVideoEnabled;
+    this.publisher.publishVideo(this.isVideoEnabled);
   },
 
   async startScreenShare() {
@@ -148,11 +128,6 @@ export default {
           videoSource: 'screen',
           publishAudio: this.isAudioEnabled,
         });
-
-        if (!screenPublisher) {
-          console.error("Failed to initialize screen publisher.");
-          return;
-        }
 
         await this.session.unpublish(this.publisher);
         this.mainVideo = screenPublisher;
@@ -175,6 +150,7 @@ export default {
     }
   },
 
+
   switchToMain(subscriber, index) {
     const previousMainVideo = this.mainVideo;
     this.mainVideo = subscriber;
@@ -196,7 +172,6 @@ export default {
     }
   },
 },
-  }
 }
 </script>
 
