@@ -207,8 +207,6 @@ export default {
 }
 </script>
 
-
-
 <style>
 .room-view {
   display: flex;
