@@ -48,6 +48,7 @@ export default {
 };
 </script>
 
+
 <style coped>
 .header-tabs {
   box-shadow: 0px 4px 4px -2px #F2F2F2;

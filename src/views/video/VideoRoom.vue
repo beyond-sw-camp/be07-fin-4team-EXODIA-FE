@@ -1,166 +1,222 @@
-<!-- VideoRoom.vue -->
 <template>
-  <div>
-    <h1>화상 회의 방</h1>
-    <div ref="mainVideoContainer" class="main-video-container"></div>
-    <div class="subscriber-container">
-      <button @click="prevPage" v-if="currentPage > 0">‹</button>
-      <div class="subscribers">
-        <div
-          v-for="subscriber in paginatedSubscribers"
-          :key="subscriber.stream.streamId"
-          class="subscriber-video"
-          @click="changeMainStream(subscriber)"
-        >
-          <video ref="subscriberVideo" autoplay></video>
-        </div>
-      </div>
-      <button @click="nextPage" v-if="hasMorePages">›</button>
+  <div class="room-view">
+    <h2>화상회의 방: {{ roomTitle }}</h2>
+
+    <!-- 메인 비디오 -->
+    <div class="main-video">
+      <video ref="mainVideo" autoplay playsinline></video>
     </div>
 
-    <!-- 컨트롤 버튼들 -->
-    <div class="controls">
-      <v-btn icon @click="toggleVideo">
-        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
-      </v-btn>
+    <!-- 다른 참가자 비디오들 -->
+    <div class="side-videos">
+      <div v-for="(subscriber, index) in sideVideos" :key="index" class="side-video" @click="switchToMain(subscriber, index)">
+        <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
+      </div>
+    </div>
+
+    <!-- 제어 아이콘 버튼들 -->
+    <v-row class="controls" justify="center">
       <v-btn icon @click="toggleAudio">
         <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
       </v-btn>
-      <v-btn icon @click="shareScreen">
-        <v-icon>{{ isScreenShared ? 'mdi-monitor-share' : 'mdi-monitor' }}</v-icon>
+      <v-btn icon @click="toggleVideo">
+        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="startScreenShare">
+        <v-icon>mdi-monitor-share</v-icon>
       </v-btn>
       <v-btn icon @click="leaveRoom">
         <v-icon>mdi-logout</v-icon>
       </v-btn>
-    </div>
+    </v-row>
   </div>
 </template>
 
+
 <script>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { OpenVidu } from "openvidu-browser";
-import { useRoute } from "vue-router";
+import { OpenVidu } from 'openvidu-browser';
+import axios from 'axios';
 
 export default {
-  setup() {
-    const route = useRoute();
-    const token = route.params.token;
-
-    if (!token) {
-      console.error("Token is missing in query.");
-      throw new Error("Token is required to join the session.");
-    }
-
-    const mainVideoContainer = ref(null);
-    const subscribers = ref([]);
-    const OV = ref(null);
-    const session = ref(null);
-    const publisher = ref(null);
-    const currentPage = ref(0);
-    const itemsPerPage = 4;
-
-    const isVideoEnabled = ref(true);
-    const isAudioEnabled = ref(true);
-    const isScreenShared = ref(false);
-
-    const paginatedSubscribers = computed(() => {
-      const start = currentPage.value * itemsPerPage;
-      return subscribers.value.slice(start, start + itemsPerPage);
-    });
-
-    const joinRoom = async () => {
+  data() {
+    return {
+      roomTitle: '',
+      sideVideos: [],
+      OV: null,
+      session: null,
+      publisher: null,
+      isAudioEnabled: true,
+      isVideoEnabled: true,
+    };
+  },
+  created() {
+    this.initializeRoom();
+  },
+  methods: {
+    async initializeRoom() {
+      const { sessionId } = this.$route.params;
       try {
-        OV.value = new OpenVidu();
-        session.value = OV.value.initSession();
+        console.log("세션 ID로 서버 연결 시도 중:", sessionId);
 
-        session.value.on("streamCreated", (event) => {
-          const subscriber = session.value.subscribe(event.stream, document.createElement("div"));
-          mainVideoContainer.value.appendChild(subscriber.videos[0].video);
+        const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        const token = response.data.token;
+
+        this.OV = new OpenVidu();
+        this.session = this.OV.initSession();
+
+        // 다른 참가자의 스트림 구독 처리
+        this.session.on('streamCreated', (event) => {
+          console.log('새 스트림 생성됨:', event.stream);
+          const subscriber = this.session.subscribe(event.stream, undefined);
+          this.sideVideos.push(subscriber);
+
+          // 지연을 줘서 `sideVideos` 배열 업데이트 후 srcObject 설정
+          setTimeout(() => {
+            const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
+            const sideVideoElement = this.$refs[videoRefName][0];
+
+            if (sideVideoElement) {
+              sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+              sideVideoElement.play().catch(error => {
+                console.warn("비디오 자동 재생이 차단되었습니다:", error);
+              });
+              console.log(`다른 참가자의 스트림이 ${videoRefName}에 연결됨: ${subscriber.stream.streamId}`);
+              console.log(`${subscriber.stream.streamId} 비디오 요소 srcObject 설정 확인:`, sideVideoElement.srcObject);
+            } else {
+              console.warn(`비디오 요소를 찾을 수 없음: ${videoRefName}`);
+            }
+          }, 500); // 500ms 지연
         });
 
-        await session.value.connect(token, { clientData: "사용자 이름" });
+        this.session.on('connectionCreated', (event) => {
+          console.log(`새 참가자 연결됨: ${event.connection.connectionId}`);
+        });
 
-        publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
-          videoSource: undefined,
-          audioSource: undefined,
+        this.session.on('connectionDestroyed', (event) => {
+          console.log(`참가자 연결 해제됨: ${event.connection.connectionId}`);
+        });
+
+        await this.session.connect(token, { clientData: "사용자명" });
+
+        // 자신의 비디오 스트림 생성 및 mainVideo에 연결
+        this.publisher = this.OV.initPublisher(undefined, {
+          videoSource: undefined, 
+          audioSource: undefined, 
           publishAudio: true,
           publishVideo: true,
         });
-        session.value.publish(publisher.value);
-      } catch (error) {
-        console.error("화상 회의 방 참가 오류: ", error);
-      }
-    };
-    
-    onMounted(joinRoom);
-    onBeforeUnmount(() => {
-      if (session.value) session.value.disconnect();
-      OV.value = null;
-      session.value = null;
-      publisher.value = null;
-      subscribers.value = [];
-    });
 
-    return {
-      mainVideoContainer,
-      paginatedSubscribers,
-      prevPage: () => { if (currentPage.value > 0) currentPage.value--; },
-      nextPage: () => { if ((currentPage.value + 1) * itemsPerPage < subscribers.value.length) currentPage.value++; },
-      leaveRoom: () => {
-        if (session.value) session.value.disconnect();
-        OV.value = null;
-        session.value = null;
-        publisher.value = null;
-        subscribers.value = [];
-      },
-      toggleVideo: () => {
-        if (publisher.value) {
-          isVideoEnabled.value = !isVideoEnabled.value;
-          publisher.value.publishVideo(isVideoEnabled.value);
+        this.publisher.once('accessAllowed', () => {
+          console.log("내 비디오 스트림 설정됨.");
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        });
+
+        this.session.publish(this.publisher);
+      } catch (error) {
+        console.error("방 참여 중 오류 발생:", error);
+      }
+    },
+
+    toggleAudio() {
+      this.isAudioEnabled = !this.isAudioEnabled;
+      this.publisher.publishAudio(this.isAudioEnabled);
+    },
+    toggleVideo() {
+      this.isVideoEnabled = !this.isVideoEnabled;
+      this.publisher.publishVideo(this.isVideoEnabled);
+    },
+    startScreenShare() {
+      const screenPublisher = this.OV.initPublisher(undefined, {
+        videoSource: 'screen',
+        publishAudio: this.isAudioEnabled,
+      });
+      this.session.unpublish(this.publisher);
+      this.publisher = screenPublisher;
+      this.session.publish(this.publisher);
+    },
+
+    async leaveRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        if (this.session) {
+          this.session.disconnect();
         }
-      },
-      toggleAudio: () => {
-        if (publisher.value) {
-          isAudioEnabled.value = !isAudioEnabled.value;
-          publisher.value.publishAudio(isAudioEnabled.value);
-        }
-      },
-      shareScreen: async () => {
-        if (!isScreenShared.value) {
-          const screenPublisher = await OV.value.initPublisherAsync(mainVideoContainer.value, {
-            videoSource: "screen",
-            publishAudio: isAudioEnabled.value,
-            publishVideo: true,
-          });
-          session.value.unpublish(publisher.value);
-          session.value.publish(screenPublisher);
-          publisher.value = screenPublisher;
-        } else {
-          session.value.unpublish(publisher.value);
-          publisher.value = OV.value.initPublisher(mainVideoContainer.value, {
-            publishAudio: isAudioEnabled.value,
-            publishVideo: isVideoEnabled.value,
-          });
-          session.value.publish(publisher.value);
-        }
-        isScreenShared.value = !isScreenShared.value;
-      },
-      changeMainStream: (subscriber) => {
-        mainVideoContainer.value.innerHTML = "";
-        subscriber.addVideoElement(mainVideoContainer.value);
-      },
-      isVideoEnabled,
-      isAudioEnabled,
-      isScreenShared,
-    };
+        await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        this.$router.push({ name: 'RoomList' });
+      } catch (error) {
+        console.error("방 나가기 중 오류 발생:", error);
+      }
+    },
+    switchToMain(video) {
+      const currentMainStream = this.$refs.mainVideo.srcObject;
+      this.$refs.mainVideo.srcObject = video.stream.getMediaStream();
+      video.stream.srcObject = currentMainStream;
+    },
   },
+
+  switchToMain(subscriber, index) {
+      const mainVideoElement = this.$refs.mainVideo;
+      const sideVideoElement = this.$refs['sideVideo' + index][0];
+
+      if (mainVideoElement && sideVideoElement) {
+        const mainStream = mainVideoElement.srcObject;
+        mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+        sideVideoElement.srcObject = mainStream;
+      }
+    },
 };
 </script>
-<style scoped>
-.main-video-container {
-  width: 100%;
+
+
+<style>
+.room-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.main-video {
+  width: 60%;
   max-width: 800px;
-  height: 600px;
-  border: 1px solid #ddd;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.main-video video {
+  width: 100%;
+  height: auto;
+}
+
+.side-videos {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 80%;
+}
+
+.side-video {
+  width: 160px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.side-video video {
+  width: 100%;
+  height: 100%;
+}
+
+.controls {
+  margin-top: 20px;
 }
 </style>
