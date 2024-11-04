@@ -119,7 +119,8 @@ export default {
   methods: {
 
     formatDate(notificationTime) {
-      return formatDistanceToNow(new Date(notificationTime), { addSuffix: true, locale: ko });
+      const dateInKST = addHours(new Date(notificationTime), 9);
+      return formatDistanceToNow(dateInKST, { addSuffix: true, locale: ko });
     },
     // SSE 연결 설정
     initSSE() {
