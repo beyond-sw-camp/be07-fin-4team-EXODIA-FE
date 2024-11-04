@@ -41,7 +41,7 @@
 
           <v-col>
             <div class="user-info">
-              <div class="user-name">{{ user.userName }}</div>
+              <div class="user-name">{{ user.name }}</div>
               <div class="user-position">{{ user.departmentName }} - {{
                 user.positionName }}</div>
               <div class="user-status">{{ user.statusData }}</div>
