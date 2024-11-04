@@ -38,10 +38,10 @@
                         <v-col cols="2"><strong>결재 상태</strong></v-col>
                     </v-row>
 
-                    <v-row v-for="(submit, index) in submitList" :key="submit.id" oulined
+                    <v-row v-for="(submit, index) in submitList" :key="submit.id" outlined
                         style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
                         @click="showDetail(submit.id)">
-                        <v-col cols="1">{{ index + 1 }}</v-col>
+                        <v-col cols="1">{{ this.totalCnt - index + 1 }}</v-col>
                         <v-col cols="5">{{ submit.submitType }}</v-col>
                         <v-col cols="4">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime)
                             }}</v-col>
@@ -89,6 +89,7 @@ export default {
             token: localStorage.getItem('token') || null,
             submitList: [],
             isMySubmitReq: true,
+            totalCnt:'',
         }
     },
     mounted() {
@@ -100,7 +101,8 @@ export default {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/submit/list/my`;
                 const response = await axios.get(url, { headers: { Authorization: `Bearer ${this.token}` } });
                 this.submitList = response.data.result;
-
+                this.totalCnt = this.submitList.totalElements;
+                console.log(this.totalCnt);
             } catch (e) {
                 console.error('결재 요청 정보를 가져오는 중 오류 발생:', e);
             }
