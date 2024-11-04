@@ -1,9 +1,9 @@
 <template>
     <v-container class="container">
+        <!-- 상단 레이아웃 및 버튼 설정 -->
         <v-row class="mb-12 mt-4" style="padding-left:30px">
             <h1>결재 요청 문서</h1>
         </v-row>
-
         <v-row no-gutters class="mb-4 justify-end">
             <v-col cols="auto">
                 <v-btn v-create @click="$router.push('/submit')">
@@ -46,9 +46,13 @@
             </v-row>
 
             <!-- 페이지네이션 -->
-            <v-row justify="center" class="my-4">
-                <v-pagination v-model="currentPage" :length="totalPages" @input="onPageChange"></v-pagination>
-            </v-row>
+            <v-pagination
+                v-model="currentPage"
+                :length="totalPages"
+                :total-visible="5" 
+                @input="onPageChange"
+            ></v-pagination>
+        
         </div>
 
         <div v-else>
@@ -58,6 +62,7 @@
         </div>
     </v-container>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -88,12 +93,15 @@ export default {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/submit/list/my`;
                 const response = await axios.get(url, {
                     headers: { Authorization: `Bearer ${this.token}` },
-                    params: { page: this.currentPage - 1, size: this.itemsPerPage }
+                    params: { 
+                        page: this.currentPage - 1, 
+                        size: this.itemsPerPage 
+                    }
                 });
 
-                this.submitList = response.data.result.content;
-                this.totalPages = response.data.result.totalPages;
-                this.totalCnt = response.data.result.totalElements;
+                this.submitList = response.data.result.content; // 페이지당 항목 수에 맞게 데이터 업데이트
+                this.totalPages = response.data.result.totalPages; // 전체 페이지 수 설정
+                this.totalCnt = response.data.result.totalElements; // 전체 요소 수 설정
             } catch (e) {
                 console.error('결재 요청 정보를 가져오는 중 오류 발생:', e);
             }
@@ -114,7 +122,6 @@ export default {
                 query: { isMySubmitReq: this.isMySubmitReq }
             });
         },
-        // 페이지 변경
         onPageChange(newPage) {
             this.currentPage = newPage;
             this.fetchMySubmits();
@@ -144,5 +151,15 @@ export default {
 
 .v-chip {
     font-weight: bold;
+}
+
+.v-pagination .v-pagination__item {
+    color: #722121; /* 페이지 번호 색상 */
+}
+
+.v-pagination .v-pagination__item--active {
+    font-weight: bold;
+    background-color: #c5e1a5;
+    color: white;
 }
 </style>
