@@ -123,26 +123,26 @@ export default {
 
   async startScreenShare() {
     if (!this.isScreenSharing) {
-      // 화면 공유 시작
       try {
         const screenPublisher = this.OV.initPublisher(undefined, {
           videoSource: 'screen',
           publishAudio: this.isAudioEnabled,
         });
 
-        // 기존 publisher의 트랙을 저장
-        this.originalPublisher = this.publisher;
-        
-        // 화면 공유 트랙으로 대체
-        await this.publisher.replaceTrack(screenPublisher.stream.getVideoTracks()[0]);
+        await this.session.unpublish(this.publisher);
+        this.mainVideo = screenPublisher;
+        await this.session.publish(screenPublisher);
         this.isScreenSharing = true;
+
+        this.screenPublisher = screenPublisher;
       } catch (error) {
         console.error("Failed to start screen share:", error);
       }
     } else {
-      // 화면 공유 중지 시 원래 카메라로 복귀
       try {
-        await this.publisher.replaceTrack(this.originalPublisher.stream.getVideoTracks()[0]);
+        await this.session.unpublish(this.screenPublisher);
+        this.mainVideo = this.publisher;
+        await this.session.publish(this.publisher); 
         this.isScreenSharing = false;
       } catch (error) {
         console.error("Failed to stop screen share:", error);
@@ -150,11 +150,11 @@ export default {
     }
   },
 
+
   switchToMain(subscriber, index) {
-    // 기존 메인 비디오를 sideVideos 배열에 추가하고 클릭한 sideVideo를 메인으로 설정
     const previousMainVideo = this.mainVideo;
     this.mainVideo = subscriber;
-    this.sideVideos.splice(index, 1, previousMainVideo); // 교체
+    this.sideVideos.splice(index, 1, previousMainVideo); 
   },
 
   async leaveRoom() {
