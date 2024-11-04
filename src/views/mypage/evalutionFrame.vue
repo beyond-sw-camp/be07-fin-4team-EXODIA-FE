@@ -70,11 +70,6 @@ export default {
   },
   computed: {
     isSaveDisabled() {
-
-      console.log(this.evalutions.some(item => item.subEvalutionContent));
-
-      console.log(this.evalutions.some(item => !item.subEvalutionContent));
-      console.log(this.evalutions.some(item => item.subEvalutionContent.trim() === ''));
       return this.evalutions.some(item => !item.subEvalutionContent || item.subEvalutionContent.trim() === '');
     },
   },
