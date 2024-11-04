@@ -24,32 +24,44 @@
         </v-btn>
       </v-col>
     </v-row>
-
     <v-row class="mb-2"
-        style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
-        <v-col class="header-cell" style="width: 40%; text-align: center;"><strong>강좌명</strong></v-col>
-        <v-col class="header-cell" style="width: 20%; text-align: center;"><strong>생성일</strong></v-col>
-        <v-col class="header-cell" style="width: 15%; text-align: center;"><strong>참여자</strong></v-col>
-        <v-col class="header-cell" style="width: 25%; text-align: center;" v-if="isHrAdmin()"><strong>관리</strong></v-col>
-    </v-row>
+    style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
+    <v-col class="header-cell" style="width: 40%; text-align: center;"><strong>강좌명</strong></v-col>
+    <v-col class="header-cell" style="width: 20%; text-align: center;"><strong>생성일</strong></v-col>
+    <v-col class="header-cell" style="width: 15%; text-align: center;"><strong>참여자</strong></v-col>
+    <v-col class="header-cell" style="width: 25%; text-align: center;" v-if="isHrAdmin()"><strong>관리</strong></v-col>
+</v-row>
 
-    <v-row v-for="(course, index) in filteredCourses" :key="index" class="course-row" outlined
-        style="border-bottom:1px solid #E7E4E4; padding:10px; font-weight:400; align-items: center; transition: background-color 0.2s ease;">
-        <v-col class="cell-content single-line" style="width: 40%; text-align: center;">{{ course.courseName }}</v-col>
-        <v-col class="cell-content" style="width: 20%; text-align: center;">{{ formatDate(course.createdAt) }}</v-col>
-        <v-col class="cell-content" style="width: 15%; text-align: center;">{{ course.currentParticipants }} / {{ course.maxParticipants }}</v-col>
-        <v-col class="cell-content" style="width: 25%; display: flex; justify-content: center;" v-if="isHrAdmin()">
-          <v-btn icon @click.stop="openEditModal(course)" class="icon-btn">
+<v-row v-for="(course, index) in filteredCourses" :key="index" class="course-row" outlined
+    style="border-bottom:1px solid #E7E4E4; padding:10px; font-weight:400; align-items: center; transition: background-color 0.2s ease;">
+    
+    <!-- 강좌명 컬럼에 긴 텍스트가 수평으로 스크롤되도록 애니메이션 추가 -->
+    <v-col class="cell-content single-line" style="width: 40%; text-align: center; position: relative; overflow: hidden;" @click="openEnrollModal(course)">
+        <span style="display: inline-block; white-space: nowrap; position: absolute; animation: scrollText 10s linear infinite;">
+            {{ course.courseName }}
+        </span>
+    </v-col>
+
+    <v-col class="cell-content" style="width: 20%; text-align: center;">
+        {{ formatDate(course.createdAt) }}
+    </v-col>
+    <v-col class="cell-content" style="width: 15%; text-align: center;">
+        {{ course.currentParticipants }} / {{ course.maxParticipants }}
+    </v-col>
+
+    <v-col class="cell-content" style="width: 25%; display: flex; justify-content: center;" v-if="isHrAdmin()">
+        <v-btn icon @click.stop="openEditModal(course)" class="icon-btn">
             <v-icon>mdi-pencil</v-icon>
-          </v-btn>
-          <v-btn icon @click.stop="deleteCourse(course.id)" class="icon-btn">
+        </v-btn>
+        <v-btn icon @click.stop="deleteCourse(course.id)" class="icon-btn">
             <v-icon>mdi-delete</v-icon>
-          </v-btn>
-          <v-btn icon @click.stop="fetchParticipants(course.id)" class="icon-btn">
+        </v-btn>
+        <v-btn icon @click.stop="fetchParticipants(course.id)" class="icon-btn">
             <v-icon>mdi-cog-outline</v-icon>
-          </v-btn>
-        </v-col>
-    </v-row>
+        </v-btn>
+    </v-col>
+</v-row>
+
 
     <!-- 신청자 정보 조회 모달 -->
     <v-dialog v-model="showParticipantsModal" max-width="600">
@@ -355,9 +367,12 @@ export default {
 
     // 강의 신청 모달 열기
     openEnrollModal(course) {
+      console.log("Clicked course:", course);
       this.selectedCourse = course;
       this.showEnrollModal = true;
     },
+
+
 
     // 강의 신청 모달 닫기
     closeEnrollModal() {
@@ -518,5 +533,14 @@ export default {
   font-weight: bold;
   font-size: 22px;
   text-align: center;
+}
+
+@keyframes scrollText {
+  0% {
+      transform: translateX(100%);
+  }
+  100% {
+      transform: translateX(-100%);
+  }
 }
 </style>

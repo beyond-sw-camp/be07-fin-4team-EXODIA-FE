@@ -7,21 +7,31 @@
 
     <!-- 게시판 상단 검색 폼 -->
     <v-row justify="center" align="center">
-      <!-- 검색 범위 선택 -->
       <v-col cols="2">
-        <v-select v-model="searchType" :items="searchOptions" variant="underlined" item-title="text" item-value="value"
-          label="검색 범위" required></v-select>
+        <v-select
+          v-model="searchType"
+          :items="searchOptions"
+          variant="underlined"
+          item-title="text"
+          item-value="value"
+          label="검색 범위"
+          required
+        ></v-select>
       </v-col>
 
-      <!-- 검색어 입력 -->
       <v-col cols="8">
-        <v-text-field v-model="searchQuery" variant="underlined" label="검색어를 입력하세요." append-icon="mdi-magnify"
-          @input="performSearch" required></v-text-field>
+        <v-text-field
+          v-model="searchQuery"
+          variant="underlined"
+          label="검색어를 입력하세요."
+          append-icon="mdi-magnify"
+          @input="performSearch"
+          required
+        ></v-text-field>
       </v-col>
     </v-row>
 
     <v-row justify="end">
-      <!-- 작성하기 버튼 -->
       <v-col cols="12" class="text-right">
         <v-btn v-create v-if="isAdmin" @click="createNewPost">
           작성하기
@@ -29,7 +39,7 @@
       </v-col>
     </v-row>
 
-    <!-- 게시글 목록 -->
+    <!-- 게시글 목록 헤더 -->
     <v-row justify="center" class="mt-4">
       <v-col cols="12">
         <v-row class="mb-2 text-center"
@@ -40,21 +50,42 @@
           <v-col cols="1"><strong>조회수</strong></v-col>
         </v-row>
 
-        <!-- 게시글 정렬 -->
+        <!-- 고정 게시글 (첫 번째 페이지에서만 표시) -->
+        <template v-if="currentPage === 1">
+          <v-row
+            v-for="item in pinnedBoardItems"
+            :key="'pinned-' + item.id"
+            class="board"
+            @click="goToDetail(item.id)"
+            style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
+          >
+            <v-col cols="1" class="text-center">📌</v-col>
+            <v-col cols="8" class="title-ellipsis text-start" style="max-width: 80%; display: inline-block;">
+              {{ itemTitle(item) }}
+            </v-col>
+            <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
+            <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
+          </v-row>
+        </template>
+
+        <!-- 일반 게시글 -->
         <v-row
-          v-for="(item, index) in sortedBoardItems"
-          :key="item.id"
-          class="board"
-          @click="goToDetail(item.id)"
-          style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
-        >
-          <v-col cols="1" class="text-center">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
-          <v-col cols="8" class="title-ellipsis text-start" style="max-width: 80%; display: inline-block;">
-            {{ itemTitle(item) }}
-          </v-col>
-          <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col> <!-- 작성일 중앙 정렬 -->
-          <v-col cols="1" class="text-center">{{ item.hits }}</v-col> <!-- 조회수 중앙 정렬 -->
-        </v-row>
+        v-for="(item, index) in sortedBoardItems"
+        :key="item.id"
+        class="board"
+        @click="goToDetail(item.id)"
+      >
+        <!-- 가장 오래된 게시물이 1번이 되고, 최신 게시물이 총 게시글 수가 되도록 설정 -->
+        <v-col cols="1" class="text-center">
+          {{ totalBoardCount - ((currentPage - 1) * itemsPerPage + index) }}
+        </v-col>
+        <v-col cols="8" class="title-ellipsis text-start">
+          {{ item.title }}
+        </v-col>
+        <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
+        <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
+      </v-row>
+      
       </v-col>
     </v-row>
 
@@ -63,15 +94,14 @@
   </v-container>
 </template>
 
-
-
 <script>
 import axios from "axios";
 
 export default {
   data() {
     return {
-      boardItems: [], // 게시글 목록 데이터
+      boardItems: [], // 일반 게시글 데이터
+      pinItems: [], // 고정된 게시글 데이터
       currentPage: 1, // 현재 페이지 번호
       totalPages: 1, // 총 페이지 수
       itemsPerPage: 10, // 페이지당 항목 수
@@ -94,16 +124,20 @@ export default {
     };
   },
   props: ["category"],
-
   computed: {
-    sortedBoardItems() {
-      const pinnedItems = this.boardItems
-        .filter(item => item.pinned)
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      const regularItems = this.boardItems.filter(item => !item.pinned);
-      return [...pinnedItems, ...regularItems];
-    }
+  sortedBoardItems() {
+    // 작성일 기준 내림차순 정렬 (최근 게시물이 먼저 표시)
+    return this.boardItems
+      .filter(item => !item.pinned)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
+  pinnedBoardItems() {
+    return this.pinItems.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  },
+},
+
+
+
 
   watch: {
     searchQuery() {
@@ -123,7 +157,8 @@ export default {
     this.currentCategory = this.category || "NOTICE";
     this.checkUserRole();
     this.setBoardTitle();
-    this.fetchBoardItems();
+    this.fetchPinItems(); // 컴포넌트가 생성될 때 고정 게시글 불러오기
+    this.fetchBoardItems(); // 일반 게시글 불러오기
     this.userNum = localStorage.getItem("userNum");
 
     // 새로고침 시 자동으로 검색 실행
@@ -144,9 +179,10 @@ export default {
       return category.toLowerCase();
     },
 
-    // 게시글 목록을 서버에서 가져옴
+    // 일반 게시글을 서버에서 가져옴
     async fetchBoardItems() {
       try {
+        // const totalBoardCount= 0;
         const params = {
           page: this.currentPage - 1,
           size: this.itemsPerPage,
@@ -154,17 +190,15 @@ export default {
           searchQuery: this.searchQuery || ""
         };
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory}/list`;
-        console.log("전송할 params:", params); // 전송한 params 확인
+        console.log("전송할 params:", params);
         const response = await axios.get(apiUrl, { params });
 
         if (response.data && response.data.result) {
           const result = response.data.result;
           this.boardItems = result.content;
+          // this.totalBoardCount = this.boardItems.length;
+          console.log(this.boardItems);
           this.totalPages = result.totalPages;
-
-          // 받아온 게시글 정보 출력
-          console.log("받아온 게시글 정보:", JSON.stringify(this.boardItems));
-
         }
       } catch (error) {
         console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
@@ -172,9 +206,20 @@ export default {
       }
     },
 
+    // 고정 게시글을 서버에서 가져옴
+    async fetchPinItems() {
+      try {
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/pinned`;
+        const response = await axios.get(apiUrl);
 
-
-
+        if (response.data && response.data.result) {
+          this.pinItems = response.data.result;
+        }
+      } catch (error) {
+        console.error("고정 게시글을 가져오는 중 오류가 발생했습니다:", error);
+        alert("고정 게시글을 불러오는 중 문제가 발생했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
+      }
+    },
 
     // 페이지 변경
     onPageChange(newPage) {
@@ -197,13 +242,13 @@ export default {
     formatDate(date) {
       return new Date(date)
         .toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })
-        .replace(/\.\s/g, ".") // 중간에 붙는 공백을 없앰
-        .replace(/\.$/, ""); // 마지막에 붙는 '.'을 없앰
+        .replace(/\.\s/g, ".")
+        .replace(/\.$/, "");
     },
 
     // 핀 고정된 글 처리
     itemTitle(item) {
-      return item.pinned ? "📌 " + item.title : item.title;
+      return item.pinned ? "" + item.title : item.title;
     },
 
     // 새 글 작성 시 처리
@@ -233,9 +278,6 @@ export default {
   },
 };
 </script>
-
-
-
 
 <style scoped>
 /* 전체 배경 및 컨테이너 스타일 */
