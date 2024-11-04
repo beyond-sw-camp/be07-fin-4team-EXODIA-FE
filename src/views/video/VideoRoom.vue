@@ -134,7 +134,7 @@ export default {
 
       await this.session.publish(screenPublisher);
       this.isScreenSharing = true;
-      this.originalPublisher = this.publisher; 
+      this.originalPublisher = this.publisher;
       this.publisher = screenPublisher;
 
       screenPublisher.once('streamDestroyed', () => {
