@@ -133,29 +133,25 @@ export default {
       this.session.publish(this.publisher);
     },
 
-    
-    switchToMain(subscriber, index) {
-  const mainVideoElement = this.$refs.mainVideo;
-  const sideVideoElement = this.$refs['sideVideo' + index][0];
 
-  if (mainVideoElement && sideVideoElement) {
-    // 현재 메인 비디오 스트림 참조를 저장
-    const mainStream = mainVideoElement.srcObject;
+  switchToMain(subscriber, index) {
+    const mainVideoElement = this.$refs.mainVideo;
+    const sideVideoElement = this.$refs['sideVideo' + index][0];
 
-    // 클릭한 sideVideo의 스트림을 메인 비디오로 설정
-    mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+    if (mainVideoElement && sideVideoElement) {
+      const mainStream = mainVideoElement.srcObject;
+      mainVideoElement.srcObject = subscriber.stream.getMediaStream();
+      sideVideoElement.srcObject = mainStream;
+      this.sideVideos.splice(index, 1, {
+        stream: {
+          getMediaStream: () => mainStream,
+        },
+        connection: {
+          data: this.publisher.stream.connection ? this.publisher.stream.connection.data : "Main Video",
+        },
+      });
+    }
 
-    // sideVideo에 기존 메인 비디오 스트림을 할당
-    sideVideoElement.srcObject = mainStream;
-
-    // 사이드 비디오 배열 업데이트
-    this.sideVideos.splice(index, 1, {
-      stream: {
-        getMediaStream: () => mainStream,
-      },
-      connection: { data: "Main Video" },
-    });
-  }
 
 
 
