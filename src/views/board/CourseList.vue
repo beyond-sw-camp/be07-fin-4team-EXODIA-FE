@@ -216,6 +216,14 @@ export default {
       return this.courses;
     },
   },
+  watch: {
+    
+    "selectedCourse.currentParticipants"(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.fetchCourses();
+      }
+    },
+  },
   methods: {
     // 강의 참가자 목록 불러오기
     fetchParticipants(courseId) {
@@ -372,6 +380,10 @@ export default {
 
     // 강의 신청
     enrollCourse() {
+      if (this.selectedCourse.currentParticipants >= this.selectedCourse.maxParticipants) {
+        alert("참가자가 최대 인원에 도달하여 더 이상 신청할 수 없습니다.");
+        return;
+      }
       axios
         .post(`/course/register/${this.selectedCourse.id}`)
         .then((response) => {
