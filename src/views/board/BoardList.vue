@@ -150,13 +150,15 @@ export default {
       this.fetchBoardItems();
     },
   },
-  created() {
+  mounted() {
     this.currentCategory = this.category || "NOTICE";
+    this.fetchPinItems().then(() => {
+      this.fetchTotalBoardCount(); // 전체 게시물 수 가져오기
+    });
     this.checkUserRole();
-    this.setBoardTitle();
-    this.fetchPinItems();
+    this.setBoardTitle(); 
     this.fetchBoardItems();
-    this.fetchTotalBoardCount(); // 전체 게시물 수 가져오기
+
     this.userNum = localStorage.getItem("userNum");
     this.performSearch();
   },
@@ -195,10 +197,8 @@ export default {
         const response = await axios.get(apiUrl);
         if (response.data && response.data.result) {
           this.pinItems = response.data.result;
-          console.log(this.pinItems)
         }
       } catch (error) {
-        console.error("고정 게시글을 가져오는 중 오류가 발생했습니다:", error);
         alert("고정 게시글을 불러오는 중 문제가 발생했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
       }
     },
@@ -271,6 +271,7 @@ export default {
   },
 };
 </script>
+
 
 
 <style scoped>
