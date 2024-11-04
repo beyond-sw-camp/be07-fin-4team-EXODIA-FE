@@ -50,7 +50,7 @@
         </v-row>
 
         <!-- 저장 버튼 -->
-        <v-row justify="end">
+        <v-row justify="end" v-if="!evaluations.some(evaluation => evaluation.saved)">
           <v-btn v-create @click="saveEvaluations">저장</v-btn>
         </v-row>
       </div>
@@ -136,6 +136,7 @@ export default {
 
       startDate: '',
       endDate: '',
+      saved: false,
     };
   },
   created() {
@@ -190,7 +191,6 @@ export default {
 
       const targetUrl = userNum
         ? `/sub-evalution/team-evaluations/${userNum}`
-        // : '/sub-evalution/list-with-categories';
         : `/sub-evalution/team-evaluations/${this.userNum}`
       console.log(targetUrl)
       try {
