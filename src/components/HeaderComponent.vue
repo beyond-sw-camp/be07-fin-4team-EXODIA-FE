@@ -86,7 +86,7 @@
 <script>
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, addHours } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 export default {
