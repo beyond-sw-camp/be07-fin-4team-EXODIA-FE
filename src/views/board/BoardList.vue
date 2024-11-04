@@ -70,21 +70,21 @@
 
         <!-- 일반 게시글 -->
         <v-row
-        v-for="(item, index) in sortedBoardItems"
-        :key="item.id"
-        class="board"
-        @click="goToDetail(item.id)"
-      >
-        <!-- 가장 오래된 게시물이 1번이 되고, 최신 게시물이 총 게시글 수가 되도록 설정 -->
-        <v-col cols="1" class="text-center">
-          {{ totalBoardCount - ((currentPage - 1) * itemsPerPage + index) }}
-        </v-col>
-        <v-col cols="8" class="title-ellipsis text-start">
-          {{ item.title }}
-        </v-col>
-        <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
-        <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
-      </v-row>
+          v-for="(item, index) in sortedBoardItems"
+          :key="item.id"
+          class="board"
+          @click="goToDetail(item.id)"
+        >
+          <!-- 가장 오래된 게시물이 1번이 되고, 최신 게시물이 총 게시글 수가 되도록 설정 -->
+          <v-col cols="1" class="text-center">
+            {{ totalBoardCount - ((currentPage - 1) * itemsPerPage + index) }}
+          </v-col>
+          <v-col cols="8" class="title-ellipsis text-start">
+            {{ item.title }}
+          </v-col>
+          <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
+          <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
+        </v-row>
       
       </v-col>
     </v-row>
@@ -105,6 +105,7 @@ export default {
       currentPage: 1, // 현재 페이지 번호
       totalPages: 1, // 총 페이지 수
       itemsPerPage: 10, // 페이지당 항목 수
+      totalBoardCount: 0, // 전체 게시글 수
       isAdmin: false, // 관리자인지 여부
       userNum: null, // 현재 로그인된 사용자의 ID
       currentCategory: "", // URL에서 카테고리 가져오기
@@ -125,19 +126,15 @@ export default {
   },
   props: ["category"],
   computed: {
-  sortedBoardItems() {
-    // 작성일 기준 내림차순 정렬 (최근 게시물이 먼저 표시)
-    return this.boardItems
-      .filter(item => !item.pinned)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    sortedBoardItems() {
+      return this.boardItems
+        .filter(item => !item.pinned)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    pinnedBoardItems() {
+      return this.pinItems.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
   },
-  pinnedBoardItems() {
-    return this.pinItems.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  },
-},
-
-
-
 
   watch: {
     searchQuery() {
@@ -157,11 +154,10 @@ export default {
     this.currentCategory = this.category || "NOTICE";
     this.checkUserRole();
     this.setBoardTitle();
-    this.fetchPinItems(); // 컴포넌트가 생성될 때 고정 게시글 불러오기
-    this.fetchBoardItems(); // 일반 게시글 불러오기
+    this.fetchPinItems();
+    this.fetchBoardItems();
+    this.fetchTotalBoardCount(); // 전체 게시물 수 가져오기
     this.userNum = localStorage.getItem("userNum");
-
-    // 새로고침 시 자동으로 검색 실행
     this.performSearch();
   },
   methods: {
@@ -171,18 +167,8 @@ export default {
       this.userNum = localStorage.getItem("userNum");
     },
 
-    // 카테고리 값을 URL에 맞게 변환
-    convertCategory(category) {
-      if (category === "FAMILY_EVENT") {
-        return "familyevent";
-      }
-      return category.toLowerCase();
-    },
-
-    // 일반 게시글을 서버에서 가져옴
     async fetchBoardItems() {
       try {
-        // const totalBoardCount= 0;
         const params = {
           page: this.currentPage - 1,
           size: this.itemsPerPage,
@@ -190,14 +176,10 @@ export default {
           searchQuery: this.searchQuery || ""
         };
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/${this.currentCategory}/list`;
-        console.log("전송할 params:", params);
         const response = await axios.get(apiUrl, { params });
-
         if (response.data && response.data.result) {
           const result = response.data.result;
           this.boardItems = result.content;
-          // this.totalBoardCount = this.boardItems.length;
-          console.log(this.boardItems);
           this.totalPages = result.totalPages;
         }
       } catch (error) {
@@ -211,13 +193,30 @@ export default {
       try {
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/pinned`;
         const response = await axios.get(apiUrl);
-
         if (response.data && response.data.result) {
           this.pinItems = response.data.result;
+          console.log(this.pinItems)
         }
       } catch (error) {
         console.error("고정 게시글을 가져오는 중 오류가 발생했습니다:", error);
         alert("고정 게시글을 불러오는 중 문제가 발생했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
+      }
+    },
+
+    // 전체 게시물 수를 서버에서 가져옴
+    async fetchTotalBoardCount() {
+      try {
+        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/board/totalCount`;
+        const response = await axios.get(apiUrl, {
+          params: { category: this.currentCategory }
+        });
+        if (response.data && response.data.result) {
+          this.totalBoardCount = response.data.result; // 전체 게시물 수 저장
+          this.totalBoardCount = response.data.result - this.pinItems.length;
+          console.log(this.pinItems.length);
+        }
+      } catch (error) {
+        console.error("전체 게시물 수를 가져오는 중 오류가 발생했습니다:", error);
       }
     },
 
@@ -227,7 +226,6 @@ export default {
       this.fetchBoardItems();
     },
 
-    // 카테고리에 맞는 게시판 제목 설정
     setBoardTitle() {
       if (this.currentCategory.toLowerCase() === "familyevent") {
         this.boardTitle = "경조사";
@@ -238,7 +236,6 @@ export default {
       }
     },
 
-    // 날짜 형식 포맷
     formatDate(date) {
       return new Date(date)
         .toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })
@@ -246,12 +243,10 @@ export default {
         .replace(/\.$/, "");
     },
 
-    // 핀 고정된 글 처리
     itemTitle(item) {
       return item.pinned ? "" + item.title : item.title;
     },
 
-    // 새 글 작성 시 처리
     createNewPost() {
       if (!this.isAdmin) {
         alert("관리자만 새 글을 작성할 수 있습니다.");
@@ -260,12 +255,10 @@ export default {
       this.$router.push({ name: "BoardCreate", params: { category: this.currentCategory } });
     },
 
-    // 게시글 상세 페이지로 이동
     goToDetail(id) {
       this.$router.push({ name: "BoardDetail", params: { id } });
     },
 
-    // 검색 실행
     performSearch() {
       try {
         this.currentPage = 1;
@@ -278,6 +271,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 /* 전체 배경 및 컨테이너 스타일 */
