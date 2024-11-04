@@ -187,9 +187,6 @@ export default {
                 if (typeof this.selectedSubmit.contents === 'string') {
                     this.selectedSubmit.contents = JSON.parse(this.selectedSubmit.contents);
                 }
-                console.log("upload: " + this.selectedSubmit.uploadBoard)
-                console.log(this.selectedSubmit.uploadBoard == 'true')
-                console.log(this.selectedSubmit);
             } catch (e) {
                 console.error('결재 상세 정보를 가져오는 중 오류 발생:', e);
             }
@@ -215,7 +212,6 @@ export default {
                 status: this.approvalStatus,
                 reason: this.approvalStatus === '반려' ? this.reason : null
             };
-            console.log(submitData);
 
             try {
                 await axios.post(url, submitData, { headers: { Authorization: `Bearer ${this.token}` } })
