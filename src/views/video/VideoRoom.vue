@@ -2,22 +2,26 @@
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
 
-    <!-- Main Video -->
-    <div class="main-video">
+    <!-- Main Video with Fullscreen Toggle -->
+    <div class="main-video" @dblclick="toggleFullscreen">
       <video ref="mainVideo" :srcObject="mainVideo ? mainVideo.stream.getMediaStream() : null" autoplay playsinline></video>
     </div>
 
-    <!-- Side Videos -->
-    <div class="side-videos">
-      <div
-        v-for="(subscriber, index) in sideVideos"
-        :key="index"
-        class="side-video"
-        @click="switchToMain(subscriber, index)"
-      >
-        <video :ref="'sideVideo' + index" :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline muted></video>
-        <p class="video-name">{{ subscriber.stream.connection ? subscriber.stream.connection.data : 'Unknown' }}</p>
+    <!-- Side Videos with Arrows for Navigation -->
+    <div class="side-videos-container">
+      <button @click="prevSideVideo" v-if="sideVideos.length > 2">←</button>
+      <div class="side-videos">
+        <div
+          v-for="(subscriber, index) in visibleSideVideos"
+          :key="index"
+          class="side-video"
+          @click="switchToMain(subscriber, index)"
+        >
+          <video :ref="'sideVideo' + index" :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline muted></video>
+          <p class="video-name">{{ subscriber.stream.connection ? subscriber.stream.connection.data : 'Unknown' }}</p>
+        </div>
       </div>
+      <button @click="nextSideVideo" v-if="sideVideos.length > 2">→</button>
     </div>
 
     <!-- Control Buttons -->
@@ -46,146 +50,164 @@ export default {
   data() {
     return {
       roomTitle: '',
-      mainVideo: null, // 메인 비디오
-      sideVideos: [], // 사이드 비디오 배열
+      mainVideo: null,
+      sideVideos: [],
+      visibleSideVideos: [],
+      currentSideIndex: 0,
       OV: null,
       session: null,
       publisher: null,
       isAudioEnabled: true,
       isVideoEnabled: true,
-      isScreenSharing: false, // 화면 공유 상태 확인
-      originalPublisher: null, // 기존 퍼블리셔를 저장
+      isScreenSharing: false,
+      originalPublisher: null,
     };
   },
   created() {
     this.initializeRoom();
   },
-  
+
   methods: {
-  async initializeRoom() {
-    const { sessionId } = this.$route.params;
-    try {
-      const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
-        params: { userNum: localStorage.getItem("userNum") },
-      });
-      const token = response.data.token;
+    async initializeRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        const token = response.data.token;
 
-      this.OV = new OpenVidu();
-      this.session = this.OV.initSession();
+        this.OV = new OpenVidu();
+        this.session = this.OV.initSession();
 
-      this.session.on('streamCreated', (event) => {
-        const subscriber = this.session.subscribe(event.stream, undefined);
-        this.sideVideos.push(subscriber);
+        this.session.on('streamCreated', (event) => {
+          const subscriber = this.session.subscribe(event.stream, undefined);
+          this.sideVideos.push(subscriber);
+          this.updateVisibleSideVideos();
+        });
 
-        setTimeout(() => {
-          const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
-          const sideVideoElement = this.$refs[videoRefName][0];
+        await this.session.connect(token, { clientData: "사용자명" });
 
-          if (sideVideoElement) {
-            sideVideoElement.srcObject = subscriber.stream.getMediaStream();
-            sideVideoElement.play().catch((error) => {
-              console.warn("Video auto-play blocked", error);
-            });
-          }
-        }, 500);
-      });
+        this.publisher = this.OV.initPublisher(undefined, {
+          videoSource: undefined,
+          audioSource: undefined,
+          publishAudio: this.isAudioEnabled,
+          publishVideo: this.isVideoEnabled,
+          mirror: true,
+        });
 
-      await this.session.connect(token, { clientData: "사용자명" });
+        this.publisher.once('accessAllowed', () => {
+          this.mainVideo = this.publisher;
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        });
 
-      // 메인 비디오를 설정하고 퍼블리시
-      this.publisher = this.OV.initPublisher(undefined, {
-        videoSource: undefined, // 카메라 비디오로 설정
-        audioSource: undefined,
-        publishAudio: this.isAudioEnabled,
-        publishVideo: this.isVideoEnabled,
-        mirror: true,
-      });
-
-      this.publisher.once('accessAllowed', () => {
-        this.mainVideo = this.publisher;
-        this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
-      });
-
-      this.session.publish(this.publisher);
-    } catch (error) {
-      console.error("Error joining the room:", error);
-    }
-  },
-
-  toggleAudio() {
-    this.isAudioEnabled = !this.isAudioEnabled;
-    this.publisher.publishAudio(this.isAudioEnabled);
-  },
-  toggleVideo() {
-    this.isVideoEnabled = !this.isVideoEnabled;
-    this.publisher.publishVideo(this.isVideoEnabled);
-  },
-
-  async startScreenShare() {
-  if (!this.isScreenSharing) {
-    try {
-      const screenPublisher = this.OV.initPublisher(undefined, {
-        videoSource: 'screen',
-        publishAudio: this.isAudioEnabled,
-      });
-
-      await this.session.unpublish(this.publisher);
-      this.mainVideo = screenPublisher;
-
-      await this.session.publish(screenPublisher);
-      this.isScreenSharing = true;
-      this.originalPublisher = this.publisher;
-      this.publisher = screenPublisher;
-
-      screenPublisher.once('streamDestroyed', () => {
-        this.stopScreenShare();
-      });
-    } catch (error) {
-      console.error("Failed to start screen share:", error);
-    }
-  } else {
-    await this.stopScreenShare();
-  }
-},
-
-async stopScreenShare() {
-  if (this.isScreenSharing && this.originalPublisher) {
-    try {
-      await this.session.unpublish(this.publisher);
-      this.mainVideo = this.originalPublisher;
-      await this.session.publish(this.originalPublisher);
-
-      this.isScreenSharing = false;
-      this.publisher = this.originalPublisher; // 원래 퍼블리셔로 되돌림
-      this.originalPublisher = null;
-    } catch (error) {
-      console.error("Failed to stop screen share:", error);
-    }
-  }
-},
-  switchToMain(subscriber, index) {
-    const previousMainVideo = this.mainVideo;
-    this.mainVideo = subscriber;
-    this.sideVideos.splice(index, 1, previousMainVideo); 
-  },
-
-  async leaveRoom() {
-    const { sessionId } = this.$route.params;
-    try {
-      if (this.session) {
-        this.session.disconnect();
+        this.session.publish(this.publisher);
+      } catch (error) {
+        console.error("Error joining the room:", error);
       }
-      await axios.post(`/api/rooms/${sessionId}/leave`, null, {
-        params: { userNum: localStorage.getItem("userNum") },
-      });
-      this.$router.push({ name: 'RoomList' });
-    } catch (error) {
-      console.error("Error leaving the room:", error);
-    }
+    },
+
+    toggleAudio() {
+      this.isAudioEnabled = !this.isAudioEnabled;
+      this.publisher.publishAudio(this.isAudioEnabled);
+    },
+    toggleVideo() {
+      this.isVideoEnabled = !this.isVideoEnabled;
+      this.publisher.publishVideo(this.isVideoEnabled);
+    },
+
+    async startScreenShare() {
+      if (!this.isScreenSharing) {
+        try {
+          const screenPublisher = this.OV.initPublisher(undefined, {
+            videoSource: 'screen',
+            publishAudio: this.isAudioEnabled,
+          });
+
+          await this.session.unpublish(this.publisher);
+          this.mainVideo = screenPublisher;
+
+          await this.session.publish(screenPublisher);
+          this.isScreenSharing = true;
+          this.originalPublisher = this.publisher;
+          this.publisher = screenPublisher;
+
+          screenPublisher.once('streamDestroyed', () => {
+            this.stopScreenShare();
+          });
+        } catch (error) {
+          console.error("Failed to start screen share:", error);
+        }
+      } else {
+        await this.stopScreenShare();
+      }
+    },
+
+    async stopScreenShare() {
+      if (this.isScreenSharing && this.originalPublisher) {
+        try {
+          await this.session.unpublish(this.publisher);
+          this.mainVideo = this.originalPublisher;
+          await this.session.publish(this.originalPublisher);
+
+          this.isScreenSharing = false;
+          this.publisher = this.originalPublisher;
+          this.originalPublisher = null;
+        } catch (error) {
+          console.error("Failed to stop screen share:", error);
+        }
+      }
+    },
+
+    switchToMain(subscriber, index) {
+      const previousMainVideo = this.mainVideo;
+      this.mainVideo = subscriber;
+      this.sideVideos.splice(index, 1, previousMainVideo);
+      this.updateVisibleSideVideos();
+    },
+
+    // Fullscreen toggle function
+    toggleFullscreen() {
+      if (this.$refs.mainVideo.requestFullscreen) {
+        this.$refs.mainVideo.requestFullscreen();
+      }
+    },
+
+    // Navigation functions for side videos
+    prevSideVideo() {
+      if (this.currentSideIndex > 0) {
+        this.currentSideIndex -= 1;
+        this.updateVisibleSideVideos();
+      }
+    },
+    nextSideVideo() {
+      if (this.currentSideIndex < this.sideVideos.length - 2) {
+        this.currentSideIndex += 1;
+        this.updateVisibleSideVideos();
+      }
+    },
+    updateVisibleSideVideos() {
+      this.visibleSideVideos = this.sideVideos.slice(this.currentSideIndex, this.currentSideIndex + 2);
+    },
+
+    async leaveRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        if (this.session) {
+          this.session.disconnect();
+        }
+        await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        this.$router.push({ name: 'RoomList' });
+      } catch (error) {
+        console.error("Error leaving the room:", error);
+      }
+    },
   },
-},
 }
 </script>
+
+
 
 <style>
 .room-view {
@@ -251,4 +273,11 @@ async stopScreenShare() {
 .controls {
   margin-top: 20px;
 }
+
+.side-videos-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 </style>
