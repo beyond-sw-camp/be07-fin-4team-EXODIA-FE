@@ -79,7 +79,9 @@
         <!-- 게시글 목록 데이터 -->
         <v-row v-for="(item, index) in boardItems" :key="item.id" class="board text-center" @click="goToDetail(item.id)"
           style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500; cursor:pointer">
-          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+          <v-col cols="1" class="text-center">
+            {{ qnaCount - ((currentPage - 1) * itemsPerPage + index) }}
+          </v-col>
           <v-col cols="7" class="title-ellipsis text-start" style="max-width: 100%; display: inline-block;">
             {{ item.title }}
           </v-col>
@@ -137,11 +139,6 @@ export default {
     currentPage() {
       this.fetchBoardItems();
     },
-    category(newCategory) {
-      this.currentCategory = newCategory;
-      this.setBoardTitle();
-      this.fetchBoardItems();
-    },
   },
   created() {
     this.currentCategory = this.category || "NOTICE";
@@ -169,6 +166,7 @@ export default {
         };
         const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/qna/list`;
         const response = await axios.get(apiUrl, { params });
+        this.qnaCount = response.data.result.totalElements;
 
         if (response.data && response.data.result) {
           const result = response.data.result;
