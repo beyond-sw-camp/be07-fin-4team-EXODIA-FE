@@ -62,6 +62,7 @@ export default {
   },
   
   methods: {
+    methods: {
   async initializeRoom() {
     const { sessionId } = this.$route.params;
     try {
@@ -69,10 +70,14 @@ export default {
         params: { userNum: localStorage.getItem("userNum") },
       });
       const token = response.data.token;
-      await this.session.connect(token, { clientData: "사용자명" });
 
       this.OV = new OpenVidu();
       this.session = this.OV.initSession();
+
+      if (!this.session) {
+        console.error("Failed to initialize OpenVidu session.");
+        return;
+      }
 
       this.session.on('streamCreated', (event) => {
         const subscriber = this.session.subscribe(event.stream, undefined);
@@ -93,14 +98,20 @@ export default {
 
       await this.session.connect(token, { clientData: "사용자명" });
 
-        this.publisher = this.OV.initPublisher(undefined, {
-        videoSource: this.isScreenSharing ? 'screen' : undefined, 
-        audioSource: this.isAudioEnabled ? undefined : false,   
+      // 메인 비디오를 설정하고 퍼블리시
+      this.publisher = this.OV.initPublisher(undefined, {
+        videoSource: undefined, // 카메라 비디오로 설정
+        audioSource: undefined,
         publishAudio: this.isAudioEnabled,
         publishVideo: this.isVideoEnabled,
-        mirror: !this.isScreenSharing, 
+        mirror: true,
       });
-      
+
+      if (!this.publisher) {
+        console.error("Failed to initialize publisher.");
+        return;
+      }
+
       this.publisher.once('accessAllowed', () => {
         this.mainVideo = this.publisher;
         this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
@@ -113,54 +124,56 @@ export default {
   },
 
   toggleAudio() {
-    this.isAudioEnabled = !this.isAudioEnabled;
-    this.publisher.publishAudio(this.isAudioEnabled);
+    if (this.publisher) {
+      this.isAudioEnabled = !this.isAudioEnabled;
+      this.publisher.publishAudio(this.isAudioEnabled);
+    } else {
+      console.error("Publisher is not initialized.");
+    }
   },
+
   toggleVideo() {
-    this.isVideoEnabled = !this.isVideoEnabled;
-    this.publisher.publishVideo(this.isVideoEnabled);
+    if (this.publisher) {
+      this.isVideoEnabled = !this.isVideoEnabled;
+      this.publisher.publishVideo(this.isVideoEnabled);
+    } else {
+      console.error("Publisher is not initialized.");
+    }
   },
 
   async startScreenShare() {
-  if (!this.isScreenSharing) {
-    try {
-      // 화면 공유 퍼블리셔를 생성합니다.
-      const screenPublisher = this.OV.initPublisher(undefined, {
-        videoSource: 'screen',
-        publishAudio: this.isAudioEnabled, 
-      });
+    if (!this.isScreenSharing) {
+      try {
+        const screenPublisher = this.OV.initPublisher(undefined, {
+          videoSource: 'screen',
+          publishAudio: this.isAudioEnabled,
+        });
 
-      // 기존 퍼블리셔를 저장해 두고, 화면 공유 퍼블리셔로 교체합니다.
-      this.originalPublisher = this.publisher;
-      await this.session.unpublish(this.publisher); 
-      this.publisher = screenPublisher;
-      this.mainVideo = this.publisher;
-      
-      // 화면 공유 퍼블리셔를 세션에 퍼블리시합니다.
-      await this.session.publish(screenPublisher);
+        if (!screenPublisher) {
+          console.error("Failed to initialize screen publisher.");
+          return;
+        }
 
-      // 화면 공유 상태를 true로 설정합니다.
-      this.isScreenSharing = true;
-    } catch (error) {
-      console.error("Failed to start screen share:", error);
+        await this.session.unpublish(this.publisher);
+        this.mainVideo = screenPublisher;
+        await this.session.publish(screenPublisher);
+        this.isScreenSharing = true;
+
+        this.screenPublisher = screenPublisher;
+      } catch (error) {
+        console.error("Failed to start screen share:", error);
+      }
+    } else {
+      try {
+        await this.session.unpublish(this.screenPublisher);
+        this.mainVideo = this.publisher;
+        await this.session.publish(this.publisher); 
+        this.isScreenSharing = false;
+      } catch (error) {
+        console.error("Failed to stop screen share:", error);
+      }
     }
-  } else {
-    // 화면 공유를 중지하고 원래 퍼블리셔로 복구합니다.
-    try {
-      await this.session.unpublish(this.publisher); 
-      this.publisher = this.originalPublisher; 
-      this.mainVideo = this.publisher;
-
-      // 원래 퍼블리셔를 다시 퍼블리시합니다.
-      await this.session.publish(this.publisher);
-      this.isScreenSharing = false;
-    } catch (error) {
-      console.error("Failed to stop screen share:", error);
-    }
-  }
-},
-
-
+  },
 
   switchToMain(subscriber, index) {
     const previousMainVideo = this.mainVideo;
@@ -183,6 +196,7 @@ export default {
     }
   },
 },
+  }
 }
 </script>
 
