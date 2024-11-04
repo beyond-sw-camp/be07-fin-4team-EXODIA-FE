@@ -30,7 +30,7 @@
                   {{ formatDate(notification.notificationTime) }}
                 </v-list-item-subtitle>
                 <v-list-item-title>
-                  <strong v-if="!notification.isRead" class="new-label">[NEW]</strong>
+                  <strong v-if="!notification.isRead" class="new-label"></strong>
                   {{ notification.message }}
                 </v-list-item-title>
               </v-list-item-content>
