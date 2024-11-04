@@ -219,7 +219,6 @@ export default {
         console.error("전체 게시물 수를 가져오는 중 오류가 발생했습니다:", error);
       }
     },
-
     // 페이지 변경
     onPageChange(newPage) {
       this.currentPage = newPage;

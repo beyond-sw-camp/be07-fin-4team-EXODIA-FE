@@ -24,10 +24,11 @@
             <div class="selected-user-row">
                 <v-row>
                     <v-chip-group v-if="selectUser.length" column multiple active-class="selected-chip">
-                        <v-chip v-for="(userInfo, index) in selectUser" :key="index" style="width: max-content; font-size: 13px; margin: 12px; margin-right: 0px; margin-bottom: 3px;"
+                        <v-chip v-for="(userInfo, index) in selectUser" :key="index"
+                            style="width: max-content; font-size: 13px; margin: 12px; margin-right: 0px; margin-bottom: 3px;"
                             @click="removeUser(index)">
                             {{ userInfo.name }}
-                            <v-icon style="font-size: 13px; padding-left: 2px;"  right>mdi-close</v-icon>
+                            <v-icon style="font-size: 13px; padding-left: 2px;" right>mdi-close</v-icon>
                         </v-chip>
                     </v-chip-group>
                 </v-row>
@@ -36,8 +37,8 @@
 
             <!-- 다음 버튼 -->
             <v-row justify="end">
-                    <v-btn v-list @click="showChatRoomNameCreate">다음</v-btn>
-                    <v-btn v-delete @click="closeCreate">취소</v-btn>
+                <v-btn v-list @click="showChatRoomNameCreate">다음</v-btn>
+                <v-btn v-delete @click="closeCreate">취소</v-btn>
             </v-row>
         </v-container>
 
@@ -114,6 +115,7 @@ export default {
             this.selectUser.splice(index, 1);
         },
         addUser(user) {
+
             for(const select of this.selectUser){
                 if(select.userNum === user.userNum){
                     alert("이미 선택한 유저입니다.");
@@ -122,6 +124,7 @@ export default {
             }
             // if (this.selectUser.indexOf(user) != -1) {
             //     alert("이미 선택한 유저입니다.");
+
             //     console.log("뭐가 들어가는거니1 torf list, one")
             //     console.log(this.selectUser.indexOf(user));
             //     console.log(this.selectUser);
@@ -215,7 +218,7 @@ export default {
 }
 
 .v-btn {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .select-line {
@@ -230,6 +233,4 @@ export default {
     width: 100%;
     margin-bottom: 10px;
 }
-
-
 </style>
