@@ -53,11 +53,14 @@ export default {
       publisher: null,
       isAudioEnabled: true,
       isVideoEnabled: true,
+      isScreenSharing: false, // 화면 공유 상태 확인
+      originalPublisher: null, // 기존 퍼블리셔를 저장
     };
   },
   created() {
     this.initializeRoom();
   },
+  
   methods: {
     async initializeRoom() {
       const { sessionId } = this.$route.params;
@@ -117,14 +120,40 @@ export default {
       this.isVideoEnabled = !this.isVideoEnabled;
       this.publisher.publishVideo(this.isVideoEnabled);
     },
+
     startScreenShare() {
-      const screenPublisher = this.OV.initPublisher(undefined, {
-        videoSource: 'screen',
-        publishAudio: this.isAudioEnabled,
-      });
-      this.session.unpublish(this.publisher);
-      this.publisher = screenPublisher;
-      this.session.publish(this.publisher);
+      if (!this.isScreenSharing) {
+        // 화면 공유 시작
+        const screenPublisher = this.OV.initPublisher(undefined, {
+          videoSource: 'screen',
+          publishAudio: this.isAudioEnabled,
+        });
+
+        // 기존 퍼블리셔 저장 및 대체
+        this.originalPublisher = this.publisher;
+        this.session.unpublish(this.publisher);
+        this.publisher = screenPublisher;
+        this.mainVideo = this.publisher;
+        
+        setTimeout(() => {
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        }, 500);
+
+        this.session.publish(this.publisher);
+        this.isScreenSharing = true;
+      } else {
+        // 화면 공유 종료 시 원래 퍼블리셔로 복구
+        this.session.unpublish(this.publisher);
+        this.publisher = this.originalPublisher; // 원래 퍼블리셔로 돌아감
+        this.mainVideo = this.publisher; // 메인 비디오도 원래 비디오로 복구
+        
+        setTimeout(() => {
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+        }, 500);
+
+        this.session.publish(this.publisher);
+        this.isScreenSharing = false;
+      }
     },
 
     switchToMain(subscriber, index) {
@@ -184,8 +213,8 @@ export default {
 }
 
 .side-video {
-  width: 180px;
-  height: 100px;
+  width: 240px;
+  height: 140px;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
