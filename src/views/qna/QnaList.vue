@@ -79,7 +79,9 @@
         <!-- 게시글 목록 데이터 -->
         <v-row v-for="(item, index) in boardItems" :key="item.id" class="board text-center" @click="goToDetail(item.id)"
           style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500; cursor:pointer">
-          <v-col cols="1">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</v-col>
+          <v-col cols="1" class="text-center">
+            {{ qnaCount - ((currentPage - 1) * itemsPerPage + index) }}
+          </v-col>
           <v-col cols="7" class="title-ellipsis text-start" style="max-width: 100%; display: inline-block;">
             {{ item.title }}
           </v-col>
@@ -95,7 +97,14 @@
     </v-row>
 
     <!-- 페이지네이션 -->
-    <v-pagination v-model="currentPage" :length="totalPages" @change="onPageChange" class="my-4"></v-pagination>
+    <v-row justify="center" class="my-4">
+      <v-pagination 
+          v-model="currentPage" 
+          :length="totalPages" 
+          :total-visible="5" 
+          @input="onPageChange"
+      ></v-pagination>
+    </v-row>
   </v-container>
 </template>
 
@@ -137,11 +146,6 @@ export default {
     currentPage() {
       this.fetchBoardItems();
     },
-    category(newCategory) {
-      this.currentCategory = newCategory;
-      this.setBoardTitle();
-      this.fetchBoardItems();
-    },
   },
   created() {
     this.currentCategory = this.category || "NOTICE";
@@ -160,36 +164,29 @@ export default {
 
     // 게시글 목록 가져오기
     async fetchBoardItems() {
-      try {
-        const params = {
-          page: this.currentPage - 1,
-          size: this.itemsPerPage,
-          searchType: this.searchType,
-          searchQuery: this.searchQuery || "",
-        };
-        const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/qna/list`;
-        const response = await axios.get(apiUrl, { params });
-
-        if (response.data && response.data.result) {
-          const result = response.data.result;
-          if (result && result.content) {
-            this.boardItems = result.content.map((item) => ({
-              ...item,
-              hasAnswer: item.answeredAt !== null,
-            }));
-            this.totalPages = result.totalPages;
-          } else {
+        try {
+            const params = {
+                page: this.currentPage - 1,
+                size: this.itemsPerPage,
+                searchType: this.searchType,
+                searchQuery: this.searchQuery || "",
+            };
+            const apiUrl = `${process.env.VUE_APP_API_BASE_URL}/qna/list`;
+            const response = await axios.get(apiUrl, { params });
+            if (response.data && response.data.result) {
+                const result = response.data.result;
+                this.boardItems = result.content || [];
+                this.totalPages = result.totalPages || 1; // 전체 페이지 수 설정
+                this.qnaCount = result.totalElements || 0; // 전체 게시물 수 설정
+            }
+        } catch (error) {
             this.boardItems = [];
             this.totalPages = 1;
-          }
+            console.error("게시글 목록을 불러오는 중 오류가 발생했습니다:", error);
+            alert("게시글 목록을 불러오는 중 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.");
         }
-      } catch (error) {
-        this.boardItems = [];
-        this.totalPages = 1;
-        console.error("게시글 목록을 불러오는 중 오류가 발생했습니다:", error);
-        alert("게시글 목록을 불러오는 중 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.");
-      }
     },
+
 
     // 유저 및 매니저 목록 가져오기
     async fetchUsersAndManagers() {
@@ -439,6 +436,16 @@ export default {
   background-color: #0056b3;
   color: #ffffff;
   margin-left: 20px;
+}
+
+.v-pagination .v-pagination__item {
+  color: #722121; /* 페이지 번호 색상 */
+}
+
+.v-pagination .v-pagination__item--active {
+  font-weight: bold;
+  background-color: #c5e1a5;
+  color: white;
 }
 
 

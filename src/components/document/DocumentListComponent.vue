@@ -61,7 +61,7 @@
                     <v-row :class="{ 'drawer-open': drawer }" v-for="(document, index) in documents" :key="document.id"
                         class="document" oulined @click="openDrawer(document.id)"
                         style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
-                        <v-col cols="1">{{ (page - 1) * pageSize + index + 1 }}</v-col>
+                        <v-col cols="1">{{ totalElements - ((page - 1) * pageSize  + index) }}</v-col>
                         <v-col cols="6" class="ellipsis-text-list" style="text-align:start;">{{ document.fileName
                             }}</v-col>
                         <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
@@ -327,19 +327,24 @@ export default {
                 } else if (this.pageTitle == '최근 수정 파일') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
                 }
+                
                 const response = await axios.get(url, {
                     params: {
                         page: newPage - 1,
                         size: this.pageSize
                     }
                 });
+                
                 this.documents = response.data.result.content;
+                console.log(response.data.result.totalElements); // 수정된 부분
+                this.totalElements = response.data.result.totalElements; // 수정된 부분
                 this.totalPages = response.data.result.totalPages;
 
             } catch (e) {
                 console.error('문서 목록을 가져오는 중 오류 발생:', e);
             }
         },
+
         async fetchComments() {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/comment/document/list/${this.selectedDocument.id}`;
