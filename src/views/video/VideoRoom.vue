@@ -122,35 +122,47 @@ export default {
   },
 
   async startScreenShare() {
-    if (!this.isScreenSharing) {
-      try {
-        const screenPublisher = this.OV.initPublisher(undefined, {
-          videoSource: 'screen',
-          publishAudio: this.isAudioEnabled,
-        });
+  if (!this.isScreenSharing) {
+    try {
+      const screenPublisher = this.OV.initPublisher(undefined, {
+        videoSource: 'screen',
+        publishAudio: this.isAudioEnabled,
+      });
 
-        await this.session.unpublish(this.publisher);
-        this.mainVideo = screenPublisher;
-        await this.session.publish(screenPublisher);
-        this.isScreenSharing = true;
+      await this.session.unpublish(this.publisher);
+      this.mainVideo = screenPublisher;
 
-        this.screenPublisher = screenPublisher;
-      } catch (error) {
-        console.error("Failed to start screen share:", error);
-      }
-    } else {
-      try {
-        await this.session.unpublish(this.screenPublisher);
-        this.mainVideo = this.publisher;
-        await this.session.publish(this.publisher); 
-        this.isScreenSharing = false;
-      } catch (error) {
-        console.error("Failed to stop screen share:", error);
-      }
+      await this.session.publish(screenPublisher);
+      this.isScreenSharing = true;
+      this.originalPublisher = this.publisher; 
+      this.publisher = screenPublisher;
+
+      screenPublisher.once('streamDestroyed', () => {
+        this.stopScreenShare();
+      });
+    } catch (error) {
+      console.error("Failed to start screen share:", error);
     }
-  },
+  } else {
+    await this.stopScreenShare();
+  }
+},
 
+async stopScreenShare() {
+  if (this.isScreenSharing && this.originalPublisher) {
+    try {
+      await this.session.unpublish(this.publisher);
+      this.mainVideo = this.originalPublisher;
+      await this.session.publish(this.originalPublisher);
 
+      this.isScreenSharing = false;
+      this.publisher = this.originalPublisher; // 원래 퍼블리셔로 되돌림
+      this.originalPublisher = null;
+    } catch (error) {
+      console.error("Failed to stop screen share:", error);
+    }
+  }
+},
   switchToMain(subscriber, index) {
     const previousMainVideo = this.mainVideo;
     this.mainVideo = subscriber;
