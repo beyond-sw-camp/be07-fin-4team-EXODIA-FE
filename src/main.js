@@ -191,3 +191,19 @@ router.beforeEach((to, from, next) => {
     next(); 
   }
 });
+
+
+// F12 키 비활성화
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+    e.preventDefault();
+    e.stopPropagation();
+    alert("개발자 도구는 사용할 수 없습니다.");
+  }
+});
+
+// 우클릭 비활성화
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  alert("우클릭은 사용할 수 없습니다.");
+});
