@@ -7,8 +7,9 @@
         <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline
           :muted="index === 0"></video>
         <p class="video-name">
-          {{ video.stream.connection ? video.stream.connection.data : 'Unknown' }}
+          {{ parseClientData(video.stream.connection.data) }}
         </p>
+
       </div>
     </div>
 
@@ -53,6 +54,16 @@ export default {
   },
 
   methods: {
+    parseClientData(data) {
+    try {
+      const parsedData = JSON.parse(data);
+      return parsedData.clientData || 'Unknown';
+    } catch (e) {
+      return data || 'Unknown';
+    }
+  },
+
+
     async initializeRoom() {
       const { sessionId } = this.$route.params;
       try {
@@ -139,8 +150,11 @@ export default {
       } else {
         try {
           await this.session.unpublish(this.screenPublisher);
+          this.screenPublisher = null;
+
           this.videos.splice(0, 1, this.publisher);
           await this.session.publish(this.publisher);
+
           this.isScreenSharing = false;
         } catch (error) {
           console.error("Failed to stop screen share:", error);
