@@ -24,13 +24,26 @@
       </div>
     </div>
 
+
     <!-- 일반 6분할 레이아웃 (화면 공유 중이 아닐 때) -->
-    <div v-else class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
+      <div v-else class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
       <div v-for="(video, index) in videos" :key="index" class="video-container" @dblclick="toggleFullscreen(index)">
         <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline :muted="index === 0"></video>
         <p class="video-name">{{ parseClientData(video.stream.connection.data) }}</p>
       </div>
     </div>
+
+    <!-- 화면 공유 권한 요청 모달 -->
+    <v-dialog v-model="showApprovalDialog" max-width="400">
+      <v-card>
+        <v-card-title>화면 공유 승인 요청</v-card-title>
+        <v-card-text>다른 사용자가 화면 공유 권한을 요청했습니다. 승인하시겠습니까?</v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="approveScreenShare">승인</v-btn>
+          <v-btn color="secondary" @click="declineScreenShare">거부</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- 컨트롤 버튼들 -->
     <v-row class="controls" justify="center">
@@ -57,7 +70,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      roomTitle: '',
+ roomTitle: '',
       videos: [], 
       OV: null,
       session: null,
@@ -67,6 +80,9 @@ export default {
       isVideoEnabled: true,
       isScreenSharing: false,
       page: 0,
+      showApprovalDialog: false,
+      pendingScreenShareRequest: null,
+      currentScreenSharer: null,
     };
   },
   computed: {
@@ -183,7 +199,7 @@ export default {
         this.page++;
       }
     },
-    
+
     previousPage() {
       if (this.page > 0) {
         this.page--;
@@ -191,45 +207,73 @@ export default {
     },
 
     async startScreenShare() {
-      if (!this.isScreenSharing) {
-        try {
-          const screenPublisher = this.OV.initPublisher(undefined, {
-            videoSource: 'screen',
-            publishAudio: this.isAudioEnabled,
-          });
-
-          await this.session.unpublish(this.publisher);
-          this.videos.splice(0, 1, screenPublisher); // 첫번째 위치에 화면공유 비디오 설정
-          await this.session.publish(screenPublisher);
-
-          this.isScreenSharing = true;
-          this.screenPublisher = screenPublisher;
-        } catch (error) {
-          console.error("Failed to start screen share:", error);
-        }
+      if (this.isScreenSharing) {
+        this.stopScreenShare();
+      } else if (this.currentScreenSharer) {
+        this.showApprovalDialog = true;
+        this.pendingScreenShareRequest = this.publisher;
       } else {
-        try {
-          await this.session.unpublish(this.screenPublisher);
-          this.screenPublisher = null;
-
-          this.publisher = this.OV.initPublisher(undefined, {
-            videoSource: undefined,  
-            audioSource: undefined,
-            publishAudio: this.isAudioEnabled,
-            publishVideo: this.isVideoEnabled,
-            mirror: true,
-          });
-          await this.session.publish(this.publisher);
-
-
-          this.videos.splice(0, 1, this.publisher);
-
-          this.isScreenSharing = false;
-        } catch (error) {
-          console.error("Failed to stop screen share:", error);
-        }
+        this.beginScreenShare();
       }
     },
+
+    async beginScreenShare() {
+      try {
+        const screenPublisher = this.OV.initPublisher(undefined, {
+          videoSource: 'screen',
+          publishAudio: this.isAudioEnabled,
+        });
+
+        await this.session.unpublish(this.publisher);
+        this.videos.splice(0, 1, screenPublisher); 
+        await this.session.publish(screenPublisher);
+
+        this.isScreenSharing = true;
+        this.screenPublisher = screenPublisher;
+        this.currentScreenSharer = this.publisher;
+      } catch (error) {
+        console.error("Failed to start screen share:", error);
+      }
+    },
+
+    async stopScreenShare() {
+      try {
+        await this.session.unpublish(this.screenPublisher);
+        this.screenPublisher = null;
+
+        this.publisher = this.OV.initPublisher(undefined, {
+          videoSource: undefined,  
+          audioSource: undefined,
+          publishAudio: this.isAudioEnabled,
+          publishVideo: this.isVideoEnabled,
+          mirror: true,
+        });
+
+        await this.session.publish(this.publisher);
+        this.videos.splice(0, 1, this.publisher);
+
+        this.isScreenSharing = false;
+        this.currentScreenSharer = null;
+      } catch (error) {
+        console.error("Failed to stop screen share:", error);
+      }
+    },
+
+
+    approveScreenShare() {
+      this.stopScreenShare();
+      this.beginScreenShare();
+      this.showApprovalDialog = false;
+      this.pendingScreenShareRequest = null;
+    },
+
+    declineScreenShare() {
+      this.showApprovalDialog = false;
+      this.pendingScreenShareRequest = null;
+    },
+
+
+
     async leaveRoom() {
       const { sessionId } = this.$route.params;
       try {
