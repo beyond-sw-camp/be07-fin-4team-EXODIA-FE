@@ -162,7 +162,13 @@ export default {
       } catch (error) {
         console.error("Error leaving the room:", error);
       }
-    },
+      await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+        params: { userNum: localStorage.getItem("userNum") },
+      });
+      this.$router.push({ name: 'RoomList' });
+    } catch (error) {
+      console.error("Error leaving the room:", error);
+    }
   },
 }
 </script>
