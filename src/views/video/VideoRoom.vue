@@ -26,8 +26,8 @@
           class="side-video"
           @click="switchToMain(index)"
         >
-          <video :ref="'sideVideo' + index" :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline muted></video>
-          <div class="video-name-overlay">{{ subscriber.stream.connection.data }}</div>
+          <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
+          <div class="video-name-overlay">{{ subscriber.stream.connection.data || 'Participant' }}</div>
         </div>
       </div>
       <v-btn icon @click="nextSideVideo" v-if="sideVideos.length > 3">
@@ -101,14 +101,27 @@ export default {
         this.OV = new OpenVidu();
         this.session = this.OV.initSession();
 
+        // 상대방 화면 표시 및 이름 가져오기
         this.session.on('streamCreated', (event) => {
           const subscriber = this.session.subscribe(event.stream, undefined);
-          this.sideVideos.push(subscriber);
+          const participantName = event.stream.connection.data; // 참가자 이름
+          this.sideVideos.push({ subscriber, participantName });
+          
+          // 비디오가 렌더링된 후 스트림을 연결
+          setTimeout(() => {
+            const videoElement = this.$refs[`sideVideo${this.sideVideos.length - 1}`][0];
+            if (videoElement) {
+              videoElement.srcObject = subscriber.stream.getMediaStream();
+            }
+          }, 500);
           this.updateVisibleSideVideos();
         });
 
+        // 상대방 화면 제거
         this.session.on('streamDestroyed', (event) => {
-          const index = this.sideVideos.findIndex(sub => sub === event.stream.streamManager);
+          const index = this.sideVideos.findIndex(
+            video => video.subscriber === event.stream.streamManager
+          );
           if (index !== -1) {
             this.sideVideos.splice(index, 1);
             this.updateVisibleSideVideos();
@@ -155,7 +168,7 @@ export default {
           });
 
           this.screenPublisher = screenPublisher;
-          this.sideVideos.push(screenPublisher);
+          this.sideVideos.push({ subscriber: screenPublisher, participantName: 'Screen Share' });
           await this.session.publish(screenPublisher);
           this.isScreenSharing = true;
 
@@ -174,7 +187,7 @@ export default {
       if (this.isScreenSharing && this.screenPublisher) {
         try {
           await this.session.unpublish(this.screenPublisher);
-          const index = this.sideVideos.indexOf(this.screenPublisher);
+          const index = this.sideVideos.findIndex(video => video.subscriber === this.screenPublisher);
           if (index !== -1) this.sideVideos.splice(index, 1);
           this.screenPublisher = null;
           this.isScreenSharing = false;
@@ -186,10 +199,14 @@ export default {
     },
 
     switchToMain(index) {
-      const temp = this.mainVideoStream;
-      this.mainVideoStream = this.sideVideos[index].stream.getMediaStream();
-      this.mainVideoName = this.sideVideos[index].stream.connection.data || "Participant";
-      this.sideVideos[index].stream.getMediaStream = () => temp;
+      const tempStream = this.mainVideoStream;
+      const tempName = this.mainVideoName;
+
+      this.mainVideoStream = this.sideVideos[index].subscriber.stream.getMediaStream();
+      this.mainVideoName = this.sideVideos[index].participantName;
+
+      this.sideVideos[index].subscriber.stream.getMediaStream = () => tempStream;
+      this.sideVideos[index].participantName = tempName;
     },
 
     toggleFullscreen() {
