@@ -203,18 +203,10 @@ export default {
       }
       return this.courses;
     },
-  },
-  watch: {
-    
-    "selectedCourse.currentParticipants"(newVal, oldVal) {
-      if (newVal !== oldVal) {
-        this.fetchCourses();
-      }
-    },
-  },
+  }, 
   methods: {
     // 강의 참가자 목록 불러오기
-    fetchParticipants(courseId) {
+    fetchParticipants(courseId) { 
       axios
         .get(`/course/${courseId}/participants`)
         .then((response) => {
@@ -437,6 +429,12 @@ export default {
     category(newCategory) {
       this.currentCategory = newCategory;
       this.fetchCourses();
+    },
+
+    "selectedCourse.currentParticipants"(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.fetchCourses();
+      }
     },
   },
 

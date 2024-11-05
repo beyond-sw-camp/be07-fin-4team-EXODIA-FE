@@ -51,7 +51,7 @@
         </v-row>
 
         <!-- 고정 게시글 (첫 번째 페이지에서만 표시) -->
-        <template v-if="currentPage === 1">
+        <template v-if="currentPage === 1 && currentCategory === 'notice'">
           <v-row
             v-for="item in pinnedBoardItems"
             :key="'pinned-' + item.id"
@@ -75,7 +75,7 @@
           class="board"
           @click="goToDetail(item.id)"
         >
-          <!-- 가장 오래된 게시물이 1번이 되고, 최신 게시물이 총 게시글 수가 되도록 설정 -->
+
           <v-col cols="1" class="text-center">
             {{ totalBoardCount - ((currentPage - 1) * itemsPerPage + index) }}
           </v-col>
@@ -85,7 +85,6 @@
           <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
           <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
         </v-row>
-      
       </v-col>
     </v-row>
 
@@ -144,12 +143,16 @@ export default {
       console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
       this.fetchBoardItems();
     },
-    category(newCategory) {
+    '$route'(to) {
+      // URL 변경 시 카테고리 추출 후 업데이트
+      const newCategory = to.params.category;
       this.currentCategory = newCategory;
-      this.setBoardTitle();
-      this.fetchBoardItems();
+      this.setBoardTitle();         // 제목 업데이트
+      this.fetchTotalBoardCount();   // 전체 게시물 수 업데이트
+      this.fetchBoardItems();        // 게시물 목록 업데이트
     },
   },
+
   mounted() {
     this.currentCategory = this.category || "NOTICE";
     this.fetchPinItems().then(() => {
@@ -211,14 +214,22 @@ export default {
           params: { category: this.currentCategory }
         });
         if (response.data && response.data.result) {
-          this.totalBoardCount = response.data.result; // 전체 게시물 수 저장
-          this.totalBoardCount = response.data.result - this.pinItems.length;
-          console.log(this.pinItems.length);
+          const currentCategoryFromUrl = window.location.pathname.split('/')[2]; // URL에서 카테고리 추출
+
+          // category가 'notice'이면 고정 게시물 수를 제외한 값 설정
+          if (currentCategoryFromUrl === 'notice') {
+            this.totalBoardCount = response.data.result - this.pinItems.length;
+          } else {
+            this.totalBoardCount = response.data.result;
+          }
+
+          console.log(`현재 카테고리: ${currentCategoryFromUrl}, 고정 게시물 수: ${this.pinItems.length}`);
         }
       } catch (error) {
         console.error("전체 게시물 수를 가져오는 중 오류가 발생했습니다:", error);
       }
     },
+
     // 페이지 변경
     onPageChange(newPage) {
       this.currentPage = newPage;
