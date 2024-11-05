@@ -225,12 +225,18 @@ export default {
         });
 
         await this.session.unpublish(this.publisher);
-        this.videos.splice(0, 1, screenPublisher); 
+        this.videos.splice(0, 1, screenPublisher);
         await this.session.publish(screenPublisher);
 
         this.isScreenSharing = true;
         this.screenPublisher = screenPublisher;
         this.currentScreenSharer = this.publisher;
+
+        // Broadcast screen sharing status
+        this.session.signal({
+          type: 'screenShare',
+          data: 'start',
+        });
       } catch (error) {
         console.error("Failed to start screen share:", error);
       }
@@ -254,6 +260,12 @@ export default {
 
         this.isScreenSharing = false;
         this.currentScreenSharer = null;
+
+        // Broadcast screen sharing status
+        this.session.signal({
+          type: 'screenShare',
+          data: 'stop',
+        });
       } catch (error) {
         console.error("Failed to stop screen share:", error);
       }
