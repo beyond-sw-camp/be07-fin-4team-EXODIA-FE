@@ -4,7 +4,7 @@ import BoardCreate from "@/views/board/BoardCreate.vue";
 import BoardUpdate from "@/views/board/BoardUpdate.vue";
 import BoardDetail from "@/views/board/BoardDetail.vue";
 import CourseList from "@/views/board/CourseList.vue";
-import MyCourseList from "@/views/board/MyCourseList.vue";
+
 
 
 
@@ -41,9 +41,4 @@ export const boardRouter = [
     name: 'CourseList',
     component: CourseList,
   },
-  {
-    path: '/board/myCourseList',
-    name: 'MyCourseList',
-    component: MyCourseList,
-  }
 ];

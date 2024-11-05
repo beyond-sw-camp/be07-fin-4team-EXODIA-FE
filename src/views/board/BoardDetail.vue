@@ -478,6 +478,7 @@ export default {
   cursor: pointer;
   font-size: 0.8rem;
   color: #555;
+  display: inline-block;
 }
 
 .action-link.delete {

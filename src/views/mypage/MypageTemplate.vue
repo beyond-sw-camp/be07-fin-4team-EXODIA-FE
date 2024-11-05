@@ -7,7 +7,6 @@
       <v-tab :to="{ path: '/mypage/evalutionList', query: { isEvaluationPeriod: isEvaluationPeriod } }">
         인사평가
       </v-tab> <v-tab :to="'/mypage/evalutionFrame'">평가리스트</v-tab>
-      <v-tab :to="'/board/myCourseList'">나의강좌</v-tab>
       <v-tab :to="'/mypage/spinWheel'">오늘의 점심</v-tab>
 
     </v-tabs>
@@ -27,9 +26,6 @@
       </v-tab-item>
       <v-tab-item :value="'/mypage/evalutionFrame'">
         <slot name="evaluation"></slot>
-      </v-tab-item>
-      <v-tab-item :value="'/board/myCourseList'">
-        <slot name="myCourseList"></slot>
       </v-tab-item>
     </v-tabs-items>
   </v-container>
