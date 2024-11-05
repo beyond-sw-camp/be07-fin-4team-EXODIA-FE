@@ -267,15 +267,21 @@ export default {
       this.redirectToNotification(notification);
     },
     redirectToNotification(notification) {
-      if (notification.type === '공지사항' && notification.targetId) {
+      if (notification.message.includes("강좌")) {
+        this.$router.push('/board/courseList/{notificaiton.targetId}')
+      }if (notification.type === '공지사항' && notification.targetId) {
         this.$router.push(`/board/detail/${notification.targetId}`);
-        console.log(notification.targetId);
       } else if (notification.type === '문의') {
-        window.location.href = '/qna/list';
+        this.$router.push(`/qna/detail/${notification.targetId}`);
       } else if (notification.type === '예약') {
-        window.location.href = '/reservation/reservationList';
-      } else if (notification.type === '결재') {
-        window.location.href = '/submit/list';
+        if (notification.status === 'RESERVED') {
+          window.location.href = '/reservation/adminCarResList';
+        } else {
+          window.location.href = '/reservation/reservationList';
+        }
+      } else if (notification.type === '결재' && notification.targetId) {
+        const isMySubmitReq = notification.status === '승인';
+        this.$router.push(`/submit/detail/${notification.targetId}?isMySubmitReq=${isMySubmitReq}`);
       } else if (notification.type === '문서') {
         window.location.href = '/document';
       }

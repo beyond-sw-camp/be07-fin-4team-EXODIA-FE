@@ -102,7 +102,6 @@ export default {
           this.totalPages = result.totalPages;
         }
 
-        console.log("boardItem: " + this.boardItems)
       } catch (error) {
         console.error("목록을 가져오는 중 오류가 발생했습니다:", error);
       }
