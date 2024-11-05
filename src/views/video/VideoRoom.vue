@@ -2,7 +2,7 @@
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
 
-    <!-- Main Video with Fullscreen Toggle -->
+    <!-- Main Video -->
     <div class="main-video">
       <video ref="mainVideo" :srcObject="mainVideo ? mainVideo.stream.getMediaStream() : null" autoplay playsinline></video>
       <v-btn icon @click="toggleFullscreen" class="fullscreen-icon">
@@ -31,7 +31,7 @@
       </v-btn>
     </div>
 
-    <!-- Control Buttons with Vuetify Icons -->
+    <!-- Control Buttons -->
     <v-row class="controls" justify="center">
       <v-btn icon @click="toggleAudio">
         <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
@@ -67,7 +67,6 @@ export default {
       isAudioEnabled: true,
       isVideoEnabled: true,
       isScreenSharing: false,
-      originalPublisher: null,
     };
   },
   created() {
@@ -78,9 +77,11 @@ export default {
     async initializeRoom() {
       const { sessionId } = this.$route.params;
       try {
+        // API로 방 정보 및 토큰 요청
         const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
           params: { userNum: localStorage.getItem("userNum") },
         });
+        this.roomTitle = response.data.roomTitle;  // 방 이름 가져오기
         const token = response.data.token;
 
         this.OV = new OpenVidu();
@@ -92,8 +93,9 @@ export default {
           this.updateVisibleSideVideos();
         });
 
-        await this.session.connect(token, { clientData: "사용자명" });
+        await this.session.connect(token, { clientData: localStorage.getItem("userNum") });
 
+        // 카메라 비디오 설정
         this.publisher = this.OV.initPublisher(undefined, {
           videoSource: undefined,
           audioSource: undefined,
@@ -125,18 +127,17 @@ export default {
     async startScreenShare() {
       if (!this.isScreenSharing) {
         try {
+          // 화면 공유 스트림 추가
           const screenPublisher = this.OV.initPublisher(undefined, {
             videoSource: 'screen',
             publishAudio: this.isAudioEnabled,
           });
 
-          await this.session.unpublish(this.publisher);
-          this.mainVideo = screenPublisher;
+          this.sideVideos.push(screenPublisher);  // 화면 공유 비디오 추가
+          this.updateVisibleSideVideos();
 
           await this.session.publish(screenPublisher);
           this.isScreenSharing = true;
-          this.originalPublisher = this.publisher;
-          this.publisher = screenPublisher;
 
           screenPublisher.once('streamDestroyed', () => {
             this.stopScreenShare();
@@ -150,15 +151,17 @@ export default {
     },
 
     async stopScreenShare() {
-      if (this.isScreenSharing && this.originalPublisher) {
+      if (this.isScreenSharing) {
         try {
-          await this.session.unpublish(this.publisher);
-          this.mainVideo = this.originalPublisher;
-          await this.session.publish(this.originalPublisher);
+          const screenPublisher = this.sideVideos.find((video) => video.videoSource === 'screen');
+          if (screenPublisher) {
+            await this.session.unpublish(screenPublisher);
+            const index = this.sideVideos.indexOf(screenPublisher);
+            if (index !== -1) this.sideVideos.splice(index, 1);
+            this.updateVisibleSideVideos();
+          }
 
           this.isScreenSharing = false;
-          this.publisher = this.originalPublisher;
-          this.originalPublisher = null;
         } catch (error) {
           console.error("Failed to stop screen share:", error);
         }
@@ -172,14 +175,12 @@ export default {
       this.updateVisibleSideVideos();
     },
 
-    // Fullscreen toggle function
     toggleFullscreen() {
       if (this.$refs.mainVideo.requestFullscreen) {
         this.$refs.mainVideo.requestFullscreen();
       }
     },
 
-    // Navigation functions for side videos
     prevSideVideo() {
       if (this.currentSideIndex > 0) {
         this.currentSideIndex -= 1;
@@ -213,6 +214,7 @@ export default {
   },
 }
 </script>
+
 
 <style>
 .room-view {
