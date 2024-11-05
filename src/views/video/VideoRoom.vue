@@ -57,23 +57,37 @@ export default {
   data() {
     return {
       roomTitle: '',
+      participants: [],
       mainVideo: null,
       sideVideos: [],
-      visibleSideVideos: [],
-      currentSideIndex: 0,
       OV: null,
       session: null,
       publisher: null,
       isAudioEnabled: true,
       isVideoEnabled: true,
       isScreenSharing: false,
+      screenPublisher: null,
     };
   },
-  created() {
-    this.initializeRoom();
+  async created() {
+    await this.fetchRoomDetails();
+    await this.initializeRoom();
   },
 
   methods: {
+
+    async fetchRoomDetails() {
+      const { sessionId } = this.$route.params;
+      try {
+        const response = await axios.get(`/api/rooms/${sessionId}`);
+        this.roomTitle = response.data.roomTitle;  // 방 제목 설정
+        this.participants = response.data.participants;  // 참가자 리스트 설정
+      } catch (error) {
+        console.error("Error fetching room details:", error);
+      }
+    },
+
+
     async initializeRoom() {
       const { sessionId } = this.$route.params;
       try {
@@ -150,23 +164,40 @@ export default {
       }
     },
 
-    async stopScreenShare() {
-      if (this.isScreenSharing) {
-        try {
-          const screenPublisher = this.sideVideos.find((video) => video.videoSource === 'screen');
-          if (screenPublisher) {
-            await this.session.unpublish(screenPublisher);
-            const index = this.sideVideos.indexOf(screenPublisher);
-            if (index !== -1) this.sideVideos.splice(index, 1);
-            this.updateVisibleSideVideos();
-          }
+    // async stopScreenShare() {
+    //   if (this.isScreenSharing) {
+    //     try {
+    //       const screenPublisher = this.sideVideos.find((video) => video.videoSource === 'screen');
+    //       if (screenPublisher) {
+    //         await this.session.unpublish(screenPublisher);
+    //         const index = this.sideVideos.indexOf(screenPublisher);
+    //         if (index !== -1) this.sideVideos.splice(index, 1);
+    //         this.updateVisibleSideVideos();
+    //       }
 
-          this.isScreenSharing = false;
-        } catch (error) {
-          console.error("Failed to stop screen share:", error);
-        }
+    //       this.isScreenSharing = false;
+    //     } catch (error) {
+    //       console.error("Failed to stop screen share:", error);
+    //     }
+    //   }
+    // },
+
+    async stopScreenShare() {
+  if (this.isScreenSharing) {
+    try {
+      if (this.screenPublisher) {
+        await this.session.unpublish(this.screenPublisher);
+        this.sideVideos = this.sideVideos.filter(video => video !== this.screenPublisher);
+        this.updateVisibleSideVideos();
       }
-    },
+      this.isScreenSharing = false;
+      this.screenPublisher = null;
+    } catch (error) {
+      console.error("Failed to stop screen share:", error);
+    }
+  }
+},
+
 
     switchToMain(subscriber, index) {
       const previousMainVideo = this.mainVideo;
