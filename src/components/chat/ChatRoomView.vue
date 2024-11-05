@@ -650,7 +650,6 @@ export default {
     border-radius: 10px;
     max-width: 60%;
     display: inline-block;
-
     white-space: pre-wrap;  /* 줄바꿈이 가능하도록 설정 */
     word-wrap: break-word;  /* 긴 단어를 줄바꿈 */
     word-break: break-all;  /* 매우 긴 문자열을 강제로 줄바꿈 */

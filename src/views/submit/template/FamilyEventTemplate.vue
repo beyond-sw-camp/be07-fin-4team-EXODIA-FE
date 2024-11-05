@@ -85,9 +85,6 @@
 
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
                                 @dragstart="onDragStart(user)" class="draggable-item">
-                                <v-divider v-if="index === 0 || user.positionId !== users[index - 1].positionId"
-                                    class="position-separator"
-                                    style="background-color: rgba(100, 50, 50, 0.5); height: 2px; margin: 8px 0;" />
                                 <v-list-item-content style="font-weight:600;">
                                     {{ user.name }}
                                 </v-list-item-content>

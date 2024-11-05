@@ -86,7 +86,7 @@
             <v-row @click="$router.push('/board/notice/list')">공지사항</v-row>
             <v-row @click="$router.push('/board/familyevent/list')">경조사</v-row>
             <v-row @click="$router.push('/qna/list')">질의 응답 (Q&A)</v-row>
-            <v-row @click="$router.push('/board/courseList')">강의리스트</v-row>
+            <v-row @click="$router.push('/board/courseList')">이벤트</v-row>
           </div>
         </div>
 
@@ -330,11 +330,20 @@ export default {
   height: 550px;
   overflow-y: auto;
   overflow-x: hidden;
+
 }
 
-/* .subsidebarscroll::-webkit-scrollbar {
-  display: none;
-} */
+.subsidebarscroll::-webkit-scrollbar {
+  width: 6px;
+}
+.subsidebarscroll::-webkit-scrollbar-thumb {
+  background-color: #888888;
+  border-radius: 10px;
+}
+.subsidebarscroll::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  border-radius: 10px;
+}
 
 .menu {
   display: flex;
