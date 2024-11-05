@@ -1,18 +1,22 @@
 <template>
   <div class="room-view">
-    <h2>화상회의 방: {{ roomTitle }}</h2>
+    <h2 class="room-title">{{ roomTitle }}</h2>
 
     <!-- Main Video -->
-    <div class="main-video">
-      <video ref="mainVideo" :srcObject="mainVideo ? mainVideo.stream.getMediaStream() : null" autoplay playsinline></video>
+    <div class="main-video-container">
+      <video ref="mainVideo" :srcObject="mainVideoStream" autoplay playsinline></video>
+      <div class="video-name-overlay">{{ mainVideoName }}</div>
       <v-btn icon @click="toggleFullscreen" class="fullscreen-icon">
         <v-icon>mdi-fullscreen</v-icon>
+      </v-btn>
+      <v-btn icon @click="togglePIP" class="pip-icon">
+        <v-icon>mdi-picture-in-picture-bottom-right</v-icon>
       </v-btn>
     </div>
 
     <!-- Side Videos with Vuetify Arrows for Navigation -->
     <div class="side-videos-container">
-      <v-btn icon @click="prevSideVideo" v-if="sideVideos.length > 2">
+      <v-btn icon @click="prevSideVideo" v-if="sideVideos.length > 3">
         <v-icon>mdi-chevron-left</v-icon>
       </v-btn>
       <div class="side-videos">
@@ -20,13 +24,13 @@
           v-for="(subscriber, index) in visibleSideVideos"
           :key="index"
           class="side-video"
-          @click="switchToMain(subscriber, index)"
+          @click="switchToMain(index)"
         >
-          <video :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline muted></video>
-          <p class="video-name">{{ subscriber.stream.connection ? subscriber.stream.connection.data : 'Unknown' }}</p>
+          <video :ref="'sideVideo' + index" :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline muted></video>
+          <div class="video-name-overlay">{{ subscriber.stream.connection.data }}</div>
         </div>
       </div>
-      <v-btn icon @click="nextSideVideo" v-if="sideVideos.length > 2">
+      <v-btn icon @click="nextSideVideo" v-if="sideVideos.length > 3">
         <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
     </div>
@@ -57,9 +61,10 @@ export default {
   data() {
     return {
       roomTitle: '',
-      participants: [],
-      mainVideo: null,
+      mainVideoStream: null,
+      mainVideoName: 'Your Video',
       sideVideos: [],
+      visibleSideVideos: [],
       OV: null,
       session: null,
       publisher: null,
@@ -67,21 +72,19 @@ export default {
       isVideoEnabled: true,
       isScreenSharing: false,
       screenPublisher: null,
+      currentSideIndex: 0,
     };
   },
   async created() {
     await this.fetchRoomDetails();
     await this.initializeRoom();
   },
-
   methods: {
-
     async fetchRoomDetails() {
       const { sessionId } = this.$route.params;
       try {
         const response = await axios.get(`/api/rooms/${sessionId}`);
-        this.roomTitle = response.data.roomTitle; // 방 제목 설정
-        this.participants = response.data.participants; // 참가자 리스트 설정
+        this.roomTitle = response.data.roomTitle;
       } catch (error) {
         console.error("Error fetching room details:", error);
       }
@@ -93,7 +96,6 @@ export default {
         const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
           params: { userNum: localStorage.getItem("userNum") },
         });
-        this.roomTitle = response.data.roomTitle;
         const token = response.data.token;
 
         this.OV = new OpenVidu();
@@ -102,17 +104,19 @@ export default {
         this.session.on('streamCreated', (event) => {
           const subscriber = this.session.subscribe(event.stream, undefined);
           this.sideVideos.push(subscriber);
-          this.$nextTick(() => {
-            const videoElement = this.$refs[`sideVideo${this.sideVideos.length - 1}`];
-            if (videoElement && videoElement[0]) {
-              videoElement[0].srcObject = subscriber.stream.getMediaStream();
-            }
-          });
+          this.updateVisibleSideVideos();
         });
 
-        await this.session.connect(token, { clientData: localStorage.getItem("userNum") });
+        this.session.on('streamDestroyed', (event) => {
+          const index = this.sideVideos.findIndex(sub => sub === event.stream.streamManager);
+          if (index !== -1) {
+            this.sideVideos.splice(index, 1);
+            this.updateVisibleSideVideos();
+          }
+        });
 
-        // 카메라 비디오 설정
+        await this.session.connect(token, { clientData: "Your Name" });
+
         this.publisher = this.OV.initPublisher(undefined, {
           videoSource: undefined,
           audioSource: undefined,
@@ -122,8 +126,8 @@ export default {
         });
 
         this.publisher.once('accessAllowed', () => {
-          this.mainVideo = this.publisher;
-          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+          this.mainVideoStream = this.publisher.stream.getMediaStream();
+          this.mainVideoName = "Your Video";
         });
 
         this.session.publish(this.publisher);
@@ -181,33 +185,45 @@ export default {
       }
     },
 
-    switchToMain(subscriber, index) {
-      const previousMainVideo = this.mainVideo;
-      this.mainVideo = subscriber;
-      this.sideVideos.splice(index, 1, previousMainVideo);
-      this.updateVisibleSideVideos();
+    switchToMain(index) {
+      const temp = this.mainVideoStream;
+      this.mainVideoStream = this.sideVideos[index].stream.getMediaStream();
+      this.mainVideoName = this.sideVideos[index].stream.connection.data || "Participant";
+      this.sideVideos[index].stream.getMediaStream = () => temp;
     },
 
     toggleFullscreen() {
-      if (this.$refs.mainVideo.requestFullscreen) {
-        this.$refs.mainVideo.requestFullscreen();
+      const video = this.$refs.mainVideo;
+      if (video.requestFullscreen) {
+        video.requestFullscreen();
+      }
+    },
+
+    togglePIP() {
+      const video = this.$refs.mainVideo;
+      if (document.pictureInPictureElement) {
+        document.exitPictureInPicture();
+      } else if (video.requestPictureInPicture) {
+        video.requestPictureInPicture();
       }
     },
 
     prevSideVideo() {
       if (this.currentSideIndex > 0) {
-        this.currentSideIndex -= 1;
+        this.currentSideIndex -= 3;
         this.updateVisibleSideVideos();
       }
     },
+
     nextSideVideo() {
-      if (this.currentSideIndex < this.sideVideos.length - 2) {
-        this.currentSideIndex += 1;
+      if (this.currentSideIndex < this.sideVideos.length - 3) {
+        this.currentSideIndex += 3;
         this.updateVisibleSideVideos();
       }
     },
+
     updateVisibleSideVideos() {
-      this.visibleSideVideos = this.sideVideos.slice(this.currentSideIndex, this.currentSideIndex + 2);
+      this.visibleSideVideos = this.sideVideos.slice(this.currentSideIndex, this.currentSideIndex + 3);
     },
 
     async leaveRoom() {
@@ -225,10 +241,8 @@ export default {
       }
     },
   },
-}
+};
 </script>
-
-
 
 <style>
 .room-view {
@@ -238,7 +252,12 @@ export default {
   padding: 20px;
 }
 
-.main-video {
+.room-title {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.main-video-container {
   position: relative;
   width: 50%;
   max-width: 700px;
@@ -249,22 +268,32 @@ export default {
   border: 4px solid #3498db;
 }
 
-.main-video video {
+.main-video-container video {
   width: 100%;
   height: auto;
 }
 
-.fullscreen-icon {
+.video-name-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 10px;
+  background: rgba(50, 50, 50, 0.8);
+  color: #fff;
+  border-radius: 5px;
+}
+
+.fullscreen-icon, .pip-icon {
   position: absolute;
   top: 10px;
   right: 10px;
+  margin-left: 10px;
 }
 
 .side-videos {
   display: flex;
   justify-content: center;
   gap: 10px;
-  flex-wrap: nowrap;
 }
 
 .side-video {
@@ -281,23 +310,5 @@ export default {
 .side-video:hover {
   transform: scale(1.05);
   border-color: #3498db;
-}
-
-.video-name {
-  text-align: center;
-  margin-top: 5px;
-  font-size: 0.9em;
-  color: #2c3e50;
-  font-weight: bold;
-}
-
-.controls {
-  margin-top: 20px;
-}
-
-.side-videos-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 </style>
