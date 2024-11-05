@@ -85,6 +85,10 @@ export default {
       videosPerPage: 6,
     };
   },
+  created() {
+    this.initializeRoom(); 
+  },
+
   computed: {
     paginatedVideos() {
       const start = (this.currentPage - 1) * this.videosPerPage;
@@ -200,7 +204,7 @@ export default {
       }
     },
 
-    
+
     async leaveRoom() {
     const { sessionId } = this.$route.params;
     try {
