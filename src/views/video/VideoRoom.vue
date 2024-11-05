@@ -4,18 +4,9 @@
 
     <!-- Dynamic Video Grid -->
     <div class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
-      <div
-        v-for="(video, index) in videos"
-        :key="index"
-        class="video-container"
-      >
-        <video
-          :ref="'video' + index"
-          :srcObject="video.stream.getMediaStream()"
-          autoplay
-          playsinline
-          :muted="index === 0" 
-        ></video>
+      <div v-for="(video, index) in videos" :key="index" class="video-container">
+        <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline
+          :muted="index === 0"></video>
         <p class="video-name">
           {{ video.stream.connection ? video.stream.connection.data : 'Unknown' }}
         </p>
@@ -61,7 +52,7 @@ export default {
   created() {
     this.initializeRoom();
   },
-  
+
   methods: {
     async initializeRoom() {
       const { sessionId } = this.$route.params;
@@ -86,7 +77,7 @@ export default {
             if (videoElement && subscriber.stream) {
               videoElement.srcObject = subscriber.stream.getMediaStream();
               videoElement.play().catch((error) => {
-                  console.warn("Video auto-play blocked", error);
+                console.warn("Video auto-play blocked", error);
               });
             }
           }, 500);
@@ -141,14 +132,13 @@ export default {
         try {
           await this.session.unpublish(this.screenPublisher);
           this.videos.splice(0, 1, this.publisher);
-          await this.session.publish(this.publisher); 
+          await this.session.publish(this.publisher);
           this.isScreenSharing = false;
         } catch (error) {
           console.error("Failed to stop screen share:", error);
         }
       }
     },
-
     async leaveRoom() {
       const { sessionId } = this.$route.params;
       try {
@@ -162,12 +152,6 @@ export default {
       } catch (error) {
         console.error("Error leaving the room:", error);
       }
-      await axios.post(`/api/rooms/${sessionId}/leave`, null, {
-        params: { userNum: localStorage.getItem("userNum") },
-      });
-      this.$router.push({ name: 'RoomList' });
-    } catch (error) {
-      console.error("Error leaving the room:", error);
     }
   },
 }
@@ -207,7 +191,8 @@ export default {
   grid-template-rows: 1fr 1fr;
 }
 
-.grid-5, .grid-6 {
+.grid-5,
+.grid-6 {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr;
 }
