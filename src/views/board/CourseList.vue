@@ -4,7 +4,7 @@
       <h1>이벤트</h1>
     </v-row>
 
-    <!-- 검색 및 강좌 생성 버튼 -->
+    <!-- 검색 및 이벤트 생성 버튼 -->
     <v-row justify="center" style="margin:0; text-align:center;">
       <v-col cols="12" sm="6">
         <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"></v-text-field>
@@ -34,7 +34,7 @@
 
     <v-row v-for="(course, index) in filteredCourses" :key="index" class="course-row" outlined
            style="border-bottom:1px solid #E7E4E4; padding:10px; font-weight:400; align-items: center; transition: background-color 0.2s ease;">
-      <!-- 강좌명 컬럼에 긴 텍스트가 수평으로 스크롤되도록 애니메이션 추가 -->
+      <!-- 이벤트명 컬럼에 긴 텍스트가 수평으로 스크롤되도록 애니메이션 추가 -->
       <v-col class="cell-content single-line" style="width: 40%; text-align: center; position: relative; overflow: hidden;" @click="openEnrollModal(course)">
         <span style="display: inline-block; white-space: nowrap; position: absolute; animation: scrollText 10s linear infinite;">
           {{ course.courseName }}
@@ -86,16 +86,16 @@
       </v-card>
     </v-dialog>
 
-    <!-- 강좌 생성 모달 -->
+    <!-- 이벤트 생성 모달 -->
     <v-dialog v-model="showModal" max-width="600">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          <span class="text-h5 font-weight-bold">강좌 생성</span>
+          <span class="text-h5 font-weight-bold">이벤트 생성</span>
         </v-card-title>
         <v-card-text class="py-6 px-10">
-          <v-text-field v-model="newCourse.courseName" label="강좌명" required outlined></v-text-field>
+          <v-text-field v-model="newCourse.courseName" label="이벤트명" required outlined></v-text-field>
           <v-textarea v-model="newCourse.content" label="내용" rows="3" outlined required></v-textarea>
-          <v-text-field v-model="newCourse.courseUrl" label="강좌URL" required outlined></v-text-field>
+          <v-text-field v-model="newCourse.courseUrl" label="이벤트 상품" required outlined></v-text-field>
           <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required outlined></v-text-field>
         </v-card-text>
         <v-card-actions class="justify-end">
@@ -105,16 +105,16 @@
       </v-card>
     </v-dialog>
 
-    <!-- 강좌 수정 모달 -->
+    <!-- 이벤트 수정 모달 -->
     <v-dialog v-model="showEditModal" max-width="600">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          <span class="text-h5 font-weight-bold">강좌 수정</span>
+          <span class="text-h5 font-weight-bold">이벤트 수정</span>
         </v-card-title>
         <v-card-text class="py-6 px-10">
-          <v-text-field v-model="editCourse.courseName" label="강좌명" required outlined></v-text-field>
+          <v-text-field v-model="editCourse.courseName" label="이벤트명" required outlined></v-text-field>
           <v-textarea v-model="editCourse.content" label="내용" rows="3" outlined required></v-textarea>
-          <v-text-field v-model="editCourse.courseUrl" label="강좌URL" required outlined></v-text-field>
+          <v-text-field v-model="editCourse.courseUrl" label="이벤트URL" required outlined></v-text-field>
           <v-text-field v-model="editCourse.maxParticipants" label="최대 참가자 수" type="number" required outlined></v-text-field>
         </v-card-text>
         <v-card-actions class="justify-end">
@@ -124,15 +124,15 @@
       </v-card>
     </v-dialog>
 
-    <!-- 강좌 신청 모달 -->
+    <!-- 이벤트 신청 모달 -->
     <v-dialog v-model="showEnrollModal" max-width="600">
       <v-card elevation="10" class="rounded-lg">
         <v-card-title class="headline grey lighten-4 py-4">
-          <span class="text-h5 font-weight-bold">강좌 신청</span>
+          <span class="text-h5 font-weight-bold">이벤트 신청</span>
         </v-card-title>
         <v-card-text class="py-8 px-12">
           <v-row class="mb-4">
-            <v-col cols="4"><strong>강좌명</strong></v-col>
+            <v-col cols="4"><strong>이벤트명</strong></v-col>
             <v-col cols="8">{{ selectedCourse.courseName }}</v-col>
           </v-row>
           <v-row class="mb-4">
@@ -140,7 +140,7 @@
             <v-col cols="8">{{ selectedCourse.content }}</v-col>
           </v-row>
           <v-row class="mb-4">
-            <v-col cols="4"><strong>URL</strong></v-col>
+            <v-col cols="4"><strong>이벤트URL</strong></v-col>
             <v-col cols="8">
               <a :href="selectedCourse.courseUrl" target="_blank" class="blue--text text--darken-2">{{ selectedCourse.courseUrl }}</a>
             </v-col>
@@ -500,7 +500,7 @@ export default {
 
 /* 각 열의 고정 너비 설정 */
 .header-cell:nth-child(1), .cell-content:nth-child(1) {
-  width: 40%; /* 강좌명 */
+  width: 40%; /* 이벤트명 */
 }
 
 .header-cell:nth-child(2), .cell-content:nth-child(2) {

@@ -217,6 +217,18 @@ v-alert {
 
 }
 
+.userAttendance::-webkit-scrollbar {
+  width: 6px;
+}
+.userAttendance::-webkit-scrollbar-thumb {
+  background-color: #888888;
+  border-radius: 10px;
+}
+.userAttendance::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  border-radius: 10px;
+}
+
 .attendance-bar {
   position: sticky;
   top: 0;
