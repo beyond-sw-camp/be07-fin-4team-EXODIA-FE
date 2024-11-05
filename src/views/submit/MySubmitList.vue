@@ -16,20 +16,64 @@
         <div v-if="submitList && submitList.length > 0">
             <v-row justify="center" style="margin:0; text-align:center;">
                 <v-col cols="12">
-                    <v-row class="mb-2" style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
-                        <v-col cols="1"><strong>번호</strong></v-col>
-                        <v-col cols="5"><strong>결재 종류</strong></v-col>
-                        <v-col cols="4"><strong>결재 신청 일시</strong></v-col>
-                        <v-col cols="2"><strong>결재 상태</strong></v-col>
+                    <v-row class="mb-2"
+                        style="background-color:rgba(122,86,86,0.2); border-radius:12px; padding:4px; color:#444444; font-weight:600;">
+                        <v-col cols="1" class="d-flex align-center justify-center"><strong>번호</strong></v-col>
+                        <v-col cols="5">
+                            <strong>결재 종류</strong>
+                            <v-menu>
+                                <template v-slot:activator="{ props }">
+                                    <v-btn icon variant="text" v-bind="props">
+                                        <v-icon>mdi-filter-menu-outline</v-icon>
+                                    </v-btn>
+                                </template>
+
+                                <v-list>
+                                    <v-list-item v-for="(item, index) in submitTypes" :key="index"
+                                        @click="setSubmitType(item)">
+                                        <v-list-item-title>
+                                            {{ item }}
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </v-col>
+                        <v-col cols="4" class="d-flex align-center justify-center"><strong>결재 신청 일시</strong></v-col>
+                        <v-col cols="2"><strong>결재 상태</strong>
+
+                            <v-menu>
+                                <template v-slot:activator="{ props }">
+                                    <v-btn icon variant="text" v-bind="props">
+                                        <v-icon>mdi-filter-menu-outline</v-icon>
+                                    </v-btn>
+                                </template>
+
+                                <v-list>
+                                    <v-list-item v-for="(item, index) in submitStatuses" :key="index"
+                                        @click="setSubmitStatus(item)">
+                                        <v-list-item-title>
+                                            <v-chip v-if="item === '반려'" color="red">
+                                                {{ item }} </v-chip>
+                                            <v-chip v-else-if="item === '승인'" color="green">
+                                                {{ item }} </v-chip>
+                                            <v-chip v-else color="gray">
+                                                {{ item }}
+                                            </v-chip>
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </v-col>
                     </v-row>
 
-                    <v-row v-for="(submit, index) in submitList" :key="submit.id" outlined
+                    <v-row v-for="(submit, index) in submitList" :key="index" outlined
                         style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500"
                         @click="showDetail(submit.id)">
                         <!-- 가장 최근의 번호가 totalElements에서 시작하도록 계산 -->
                         <v-col cols="1">{{ totalCnt - ((currentPage - 1) * itemsPerPage + index) }}</v-col>
                         <v-col cols="5">{{ submit.submitType }}</v-col>
-                        <v-col cols="4">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime) }}</v-col>
+                        <v-col cols="4">{{ formatDate(submit.submitTime) }} {{ formatLocalTime(submit.submitTime)
+                            }}</v-col>
                         <v-col cols="2" class="d-flex justify-center align-center">
                             <v-chip v-if="submit.submitStatus === '반려'" color="red">
                                 {{ submit.submitStatus }}
@@ -46,13 +90,9 @@
             </v-row>
 
             <!-- 페이지네이션 -->
-            <v-pagination
-                v-model="currentPage"
-                :length="totalPages"
-                :total-visible="5" 
-                @input="onPageChange"
-            ></v-pagination>
-        
+            <v-pagination v-model="currentPage" :length="totalPages" :total-visible="5"
+                @input="onPageChange"></v-pagination>
+
         </div>
 
         <div v-else>
@@ -77,11 +117,24 @@ export default {
             itemsPerPage: 10, // 페이지당 항목 수
             totalCnt: 0, // 전체 데이터 수
             isMySubmitReq: true, // 결재 요청 여부
+
+            submitTypes: ['법인 카드 사용 신청서', '휴가 신청서', '경조사 신청서'],
+            submitStatuses: ['대기중', '승인', '반려'],
+            submitStatus: null,
+            submitType: null,
+
         };
     },
     watch: {
-        currentPage() {
-            this.fetchMySubmits();
+        currentPage(newPage) {
+            this.currentPage = newPage;
+
+            if (this.submitStatus == null && this.submitType == null) {
+                this.fetchMySubmits();
+            } else {
+                // 필터 값이 존재하면
+                this.fetchFilteredSubmits();
+            }
         },
     },
     mounted() {
@@ -93,9 +146,9 @@ export default {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/submit/list/my`;
                 const response = await axios.get(url, {
                     headers: { Authorization: `Bearer ${this.token}` },
-                    params: { 
-                        page: this.currentPage - 1, 
-                        size: this.itemsPerPage 
+                    params: {
+                        page: this.currentPage - 1,
+                        size: this.itemsPerPage
                     }
                 });
 
@@ -122,9 +175,37 @@ export default {
                 query: { isMySubmitReq: this.isMySubmitReq }
             });
         },
-        onPageChange(newPage) {
-            this.currentPage = newPage;
-            this.fetchMySubmits();
+        setSubmitStatus(status) {
+            this.submitStatus = status;
+            this.fetchFilteredSubmits();
+        },
+        setSubmitType(type) {
+            this.submitType = type;
+            this.fetchFilteredSubmits();
+        },
+        async fetchFilteredSubmits() {
+            try {
+                const filterType = this.submitStatus ? "submitStatus" : "submitType";
+                const filterValue = this.submitStatus || this.submitType;
+
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/submit/filter`, {
+                    params: {
+                        filterType: filterType,
+                        filterValue: filterValue,
+                        page: this.currentPage - 1,
+                        size: this.itemsPerPage
+                    },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                this.submitList = response.data.result.content;
+                this.totalPages = response.data.result.totalPages;
+                this.totalCnt = response.data.result.totalElements; // 전체 요소 수 설정
+            } catch (e) {
+                console.error('필터링 요청 중 에러', e);
+            }
         },
     },
 };
@@ -154,7 +235,8 @@ export default {
 }
 
 .v-pagination .v-pagination__item {
-    color: #722121; /* 페이지 번호 색상 */
+    color: #722121;
+    /* 페이지 번호 색상 */
 }
 
 .v-pagination .v-pagination__item--active {

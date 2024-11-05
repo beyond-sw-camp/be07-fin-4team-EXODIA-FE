@@ -433,30 +433,31 @@ export default {
 }
 
 .organization-container-wrapper {
-  display: flex; 
+  display: flex;
   justify-content: flex-start;
-  gap: 20px; 
+  gap: 20px;
 }
 
 .organization-panel {
   position: fixed;
-  top: calc(100vh - 50vh);
+  top: calc(100vh - 90vh);
   left: calc(var(--sidebar-width) + 10px);
   width: 300px;
-  height: 40vh;
+  height: 70vh;
   background-color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1100;
   border-radius: 8px;
   overflow: auto;
   -ms-overflow-style: none;
-    /* 인터넷 익스플로러 */
-    scrollbar-width: none;
-    /* 파이어폭스 */
+  /* 인터넷 익스플로러 */
+  scrollbar-width: none;
+  /* 파이어폭스 */
 }
+
 /* scroll 숨김 */
 .organization-panel::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .organization-panel-wide {
@@ -474,8 +475,8 @@ export default {
 
 .user-profile-panel {
   position: fixed;
-  top: calc(100vh - 50vh);
-  left: calc(var(--sidebar-width) + 10px);
+  top: calc(100vh - 90vh);
+  left: calc(var(--sidebar-width) * 2.5);
   width: 300px;
   height: 40vh;
   background-color: white;
