@@ -22,7 +22,7 @@
         <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
       </v-btn>
       <v-btn icon @click="startScreenShare">
-        <v-icon>mdi-monitor-share</v-icon>
+        <v-icon>{{ isScreenSharing ? 'mdi-monitor-off' : 'mdi-monitor-share' }}</v-icon>
       </v-btn>
       <v-btn icon @click="leaveRoom">
         <v-icon>mdi-logout</v-icon>
