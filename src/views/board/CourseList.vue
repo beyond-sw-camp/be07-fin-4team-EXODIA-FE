@@ -24,8 +24,9 @@
         </v-btn>
       </v-col>
     </v-row>
-    
-    <v-row class="mb-2" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
+
+    <v-row class="mb-2"
+      style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
       <v-col class="header-cell" style="width: 40%; text-align: center;"><strong>이벤트명</strong></v-col>
       <v-col class="header-cell" style="width: 20%; text-align: center;"><strong>생성일</strong></v-col>
       <v-col class="header-cell" style="width: 15%; text-align: center;"><strong>참여인원</strong></v-col>
@@ -33,10 +34,12 @@
     </v-row>
 
     <v-row v-for="(course, index) in filteredCourses" :key="index" class="course-row" outlined
-           style="border-bottom:1px solid #E7E4E4; padding:10px; font-weight:400; align-items: center; transition: background-color 0.2s ease;">
-      <!-- 이벤트명 컬럼에 긴 텍스트가 수평으로 스크롤되도록 애니메이션 추가 -->
-      <v-col class="cell-content single-line" style="width: 40%; text-align: center; position: relative; overflow: hidden;" @click="openEnrollModal(course)">
-        <span style="display: inline-block; white-space: nowrap; position: absolute; animation: scrollText 10s linear infinite;">
+      style="border-bottom:1px solid #E7E4E4; padding:10px; font-weight:400; align-items: center; transition: background-color 0.2s ease;">
+      <!-- 강좌명 컬럼에 긴 텍스트가 수평으로 스크롤되도록 애니메이션 추가 -->
+      <v-col class="cell-content single-line"
+        style="width: 40%; text-align: center; position: relative; overflow: hidden;" @click="openEnrollModal(course)">
+        <span
+          style="display: inline-block; white-space: nowrap; position: absolute; animation: scrollText 10s linear infinite;">
           {{ course.courseName }}
         </span>
       </v-col>
@@ -75,7 +78,8 @@
             <v-list-item v-for="participant in participants" :key="participant.userNum" class="mb-4">
               <v-list-item-content>
                 <v-list-item-title class="font-weight-bold">{{ participant.userName }}</v-list-item-title>
-                <v-list-item-subtitle class="grey--text text--darken-1">사번: {{ participant.userNum }}</v-list-item-subtitle>
+                <v-list-item-subtitle class="grey--text text--darken-1">사번: {{ participant.userNum
+                  }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
           </v-list>
@@ -96,7 +100,8 @@
           <v-text-field v-model="newCourse.courseName" label="이벤트명" required outlined></v-text-field>
           <v-textarea v-model="newCourse.content" label="내용" rows="3" outlined required></v-textarea>
           <v-text-field v-model="newCourse.courseUrl" label="이벤트 상품" required outlined></v-text-field>
-          <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required outlined></v-text-field>
+          <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required
+            outlined></v-text-field>
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn v-create text @click="createCourse">생성</v-btn>
@@ -114,8 +119,9 @@
         <v-card-text class="py-6 px-10">
           <v-text-field v-model="editCourse.courseName" label="이벤트명" required outlined></v-text-field>
           <v-textarea v-model="editCourse.content" label="내용" rows="3" outlined required></v-textarea>
-          <v-text-field v-model="editCourse.courseUrl" label="이벤트URL" required outlined></v-text-field>
-          <v-text-field v-model="editCourse.maxParticipants" label="최대 참가자 수" type="number" required outlined></v-text-field>
+          <v-text-field v-model="editCourse.courseUrl" label="강좌URL" required outlined></v-text-field>
+          <v-text-field v-model="editCourse.maxParticipants" label="최대 참가자 수" type="number" required
+            outlined></v-text-field>
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn v-create text @click="updateCourse">수정</v-btn>
@@ -142,7 +148,8 @@
           <v-row class="mb-4">
             <v-col cols="4"><strong>이벤트URL</strong></v-col>
             <v-col cols="8">
-              <a :href="selectedCourse.courseUrl" target="_blank" class="blue--text text--darken-2">{{ selectedCourse.courseUrl }}</a>
+              <a :href="selectedCourse.courseUrl" target="_blank" class="blue--text text--darken-2">{{
+                selectedCourse.courseUrl }}</a>
             </v-col>
           </v-row>
           <v-row>
@@ -203,10 +210,10 @@ export default {
       }
       return this.courses;
     },
-  }, 
+  },
   methods: {
     // 강의 참가자 목록 불러오기
-    fetchParticipants(courseId) { 
+    fetchParticipants(courseId) {
       axios
         .get(`/course/${courseId}/participants`)
         .then((response) => {
@@ -420,7 +427,6 @@ export default {
       return new Date(date).toLocaleDateString(undefined, options);
     },
   },
-
   watch: {
     currentPage(newPage, oldPage) {
       console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
@@ -437,7 +443,6 @@ export default {
       }
     },
   },
-
   // 컴포넌트가 마운트될 때 실행되는 메소드
   mounted() {
     this.fetchUserInfo().then(() => this.fetchCourses());
@@ -459,7 +464,7 @@ export default {
   text-overflow: ellipsis;
 }
 
-.course-row > .v-col {
+.course-row>.v-col {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -479,7 +484,8 @@ export default {
 }
 
 /* 헤더 및 내용의 열 너비 고정 */
-.header-cell, .cell-content {
+.header-cell,
+.cell-content {
   text-align: center;
 }
 
@@ -499,20 +505,28 @@ export default {
 }
 
 /* 각 열의 고정 너비 설정 */
-.header-cell:nth-child(1), .cell-content:nth-child(1) {
-  width: 40%; /* 이벤트명 */
+.header-cell:nth-child(1),
+.cell-content:nth-child(1) {
+  width: 40%;
+  /* 강좌명 */
 }
 
-.header-cell:nth-child(2), .cell-content:nth-child(2) {
-  width: 20%; /* 생성일 */
+.header-cell:nth-child(2),
+.cell-content:nth-child(2) {
+  width: 20%;
+  /* 생성일 */
 }
 
-.header-cell:nth-child(3), .cell-content:nth-child(3) {
-  width: 15%; /* 참여자 */
+.header-cell:nth-child(3),
+.cell-content:nth-child(3) {
+  width: 15%;
+  /* 참여자 */
 }
 
-.header-cell:nth-child(4), .cell-content:nth-child(4) {
-  width: 25%; /* 관리 */
+.header-cell:nth-child(4),
+.cell-content:nth-child(4) {
+  width: 25%;
+  /* 관리 */
 }
 
 .single-line {
@@ -564,10 +578,11 @@ export default {
 
 @keyframes scrollText {
   0% {
-      transform: translateX(100%);
+    transform: translateX(100%);
   }
+
   100% {
-      transform: translateX(-100%);
+    transform: translateX(-100%);
   }
 }
 </style>
