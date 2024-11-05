@@ -4,7 +4,7 @@
 
     <!-- Main Video -->
     <div class="main-video-container">
-      <video ref="mainVideo" :srcObject="mainVideoStream" autoplay playsinline></video>
+      <video ref="mainVideo" :srcObject="mainVideo ? mainVideo.stream.getMediaStream() : null" autoplay playsinline></video>
       <div class="video-name-overlay">{{ mainVideoName }}</div>
       <v-btn icon @click="toggleFullscreen" class="fullscreen-icon">
         <v-icon>mdi-fullscreen</v-icon>
@@ -24,7 +24,7 @@
           v-for="(videoData, index) in visibleSideVideos"
           :key="index"
           class="side-video"
-          @click="switchToMain(index)"
+          @click="switchToMain(videoData.subscriber, index)"
         >
           <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
           <div class="video-name-overlay">{{ videoData.participantName || 'Participant' }}</div>
@@ -61,7 +61,7 @@ export default {
   data() {
     return {
       roomTitle: '',
-      mainVideoStream: null,
+      mainVideo: null,
       mainVideoName: 'Your Video',
       sideVideos: [],
       visibleSideVideos: [],
@@ -139,8 +139,9 @@ export default {
         });
 
         this.publisher.once('accessAllowed', () => {
-          this.mainVideoStream = this.publisher.stream.getMediaStream();
+          this.mainVideo = this.publisher;
           this.mainVideoName = "Your Video";
+          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
         });
 
         this.session.publish(this.publisher);
@@ -198,15 +199,11 @@ export default {
       }
     },
 
-    switchToMain(index) {
-      const tempStream = this.mainVideoStream;
-      const tempName = this.mainVideoName;
-
-      this.mainVideoStream = this.sideVideos[index].subscriber.stream.getMediaStream();
-      this.mainVideoName = this.sideVideos[index].participantName;
-
-      this.sideVideos[index].subscriber.stream.getMediaStream = () => tempStream;
-      this.sideVideos[index].participantName = tempName;
+    switchToMain(subscriber, index) {
+      const previousMainVideo = this.mainVideo;
+      this.mainVideo = subscriber;
+      this.sideVideos.splice(index, 1, previousMainVideo);
+      this.updateVisibleSideVideos();
     },
 
     toggleFullscreen() {
