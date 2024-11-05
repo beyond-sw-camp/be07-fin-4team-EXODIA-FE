@@ -158,6 +158,9 @@ export default {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/department/list`);
         let badgeColor = '#808080';
         let statusData = '';
+
+        const previousUsersStatus = this.users.map(user => user.userNum ? user.nowStatus : null) || [];
+
         this.users = response.data.result.map(user => {
           if (user.nowStatus == '출근') {
             badgeColor = '#4caf50'; // 초록
@@ -174,7 +177,13 @@ export default {
             statusData = '근태 정보가 없습니다.';
             badgeColor = '#808080'; // 회색
           }
-          return { ...user, badgeColor, statusData };
+
+          const previousStatus = previousUsersStatus.find(prev => prev.userNum === user.userNum)?.nowStatus || null;
+          if (previousStatus !== user.nowStatus) {
+            return { ...user, badgeColor, statusData };
+          }
+
+          return user;
         });
         this.users.sort((a, b) => (b.userNum === this.userNum ? 1 : 0) - (a.userNum === this.userNum ? 1 : 0));
         this.userStatus = this.users.find(user => user.userNum === this.userNum)?.nowStatus || null;
