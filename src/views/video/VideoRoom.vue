@@ -1,241 +1,262 @@
 <template>
-  <div class="room-list">
-    <h2>화상회의 목록</h2>
-    <button @click="showCreateRoomModal = true" class="create-room-btn">방 생성</button>
+  <div class="room-view">
+    <h2>화상회의 방: {{ roomTitle }}</h2>
 
-    <!-- 방 목록 -->
-    <div class="room-grid">
-    <!-- 방 목록 부분에서 클릭 이벤트 수정 -->
-    <div v-for="room in rooms" :key="room.sessionId" class="room-card" @click="enterRoom(room)">
-      <div class="room-thumbnail">
-        <h3>{{ room.title }}</h3>
-        <v-icon v-if="room.password">mdi-lock</v-icon>
+    <div class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
+      <div v-for="(video, index) in videos" :key="index" class="video-container">
+        <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline
+          :muted="index === 0"></video>
+        <p class="video-name">
+          {{ parseClientData(video.stream.connection.data) }}
+        </p>
+
       </div>
-      <p>참가자 수: {{ room.participantCount }}</p>
-</div>
-
     </div>
 
-    <!-- 방 생성 모달 -->
-    <v-dialog v-model="showCreateRoomModal" max-width="400">
-      <v-card>
-        <v-card-title>방 생성</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="newRoomTitle" label="방 제목" required></v-text-field>
-          <v-checkbox v-model="enablePassword" label="비밀번호 설정"></v-checkbox>
-          <v-text-field v-if="enablePassword" v-model="newRoomPassword" label="비밀번호" type="password"></v-text-field>
-          <v-text-field v-if="enablePassword" v-model="newRoomPasswordConfirm" label="비밀번호 확인" type="password"></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn v-create  @click="createRoom">생성</v-btn>
-          <v-btn v-delete @click="closeModal">취소</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-
-    <v-dialog v-model="showPasswordModal" max-width="400">
-      <v-card>
-        <v-card-title>비밀번호 입력</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="inputPassword" label="비밀번호" type="password" required></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn v-create  @click="verifyPassword">확인</v-btn>
-          <v-btn v-delete @click="closePasswordModal">취소</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- Control Buttons -->
+    <v-row class="controls" justify="center">
+      <v-btn icon @click="toggleAudio">
+        <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="toggleVideo">
+        <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="startScreenShare">
+        <v-icon>{{ isScreenSharing ? 'mdi-monitor-off' : 'mdi-monitor-share' }}</v-icon>
+      </v-btn>
+      <v-btn icon @click="leaveRoom">
+        <v-icon>mdi-logout</v-icon>
+      </v-btn>
+    </v-row>
   </div>
 </template>
 
 <script>
+import { OpenVidu } from 'openvidu-browser';
 import axios from 'axios';
 
 export default {
   data() {
     return {
-      rooms: [],
-      showCreateRoomModal: false,
-      newRoomTitle: '',
-      enablePassword: false,
-      newRoomPassword: '',
-      newRoomPasswordConfirm: '',
-      showPasswordModal: false,
-      inputPassword: '',
-      selectedRoom: null,
+      roomTitle: '',
+      videos: [], 
+      OV: null,
+      session: null,
+      publisher: null,
+      isAudioEnabled: true,
+      isVideoEnabled: true,
+      isScreenSharing: false,
+      originalPublisher: null,
     };
   },
   created() {
-    this.fetchRooms();
+    this.initializeRoom();
   },
+
   methods: {
-    async fetchRooms() {
+    parseClientData(data) {
       try {
-        const response = await axios.get('/api/rooms/list');
-        this.rooms = response.data;
-      } catch (error) {
-        console.error("방 목록 조회 오류:", error);
+      const parts = data.split('%/%');
+      
+      if (parts[1]) {
+        return parts[1];
       }
-    },
+      const parsedData = JSON.parse(parts[0]);
+      return parsedData.clientData || 'Unknown';
+    } catch (e) {
+      return data || 'Unknown';
+    }
+  },
 
-    async createRoom() {
-      if (this.enablePassword && this.newRoomPassword !== this.newRoomPasswordConfirm) {
-        alert("비밀번호가 일치하지 않습니다.");
-        return;
-      }
+
+    async initializeRoom() {
+      const { sessionId } = this.$route.params;
       try {
-        const response = await axios.post('/api/rooms/create', {
-          title: this.newRoomTitle,
-          userNum: localStorage.getItem("userNum"),
-          password: this.enablePassword ? this.newRoomPassword : null
+        const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
         });
-        const newRoom = response.data;
-        if (newRoom && newRoom.sessionId) {
-          this.rooms.push(newRoom);
-          this.closeModal();
-          this.enterRoom(newRoom); // 방 생성 후 입장
-        } else {
-          console.error("유효하지 않은 방 응답 데이터:", newRoom);
-        }
+        const token = response.data.token;
+
+        this.OV = new OpenVidu();
+        this.session = this.OV.initSession();
+
+        this.session.on('streamCreated', (event) => {
+          const subscriber = this.session.subscribe(event.stream, undefined);
+          this.videos.push(subscriber);
+
+          // 비디오의 srcObject를 설정
+          setTimeout(() => {
+            const videoRefName = 'video' + (this.videos.length - 1);
+            const videoElement = this.$refs[videoRefName][0];
+
+            if (videoElement && subscriber.stream) {
+              videoElement.srcObject = subscriber.stream.getMediaStream();
+              videoElement.play().catch((error) => {
+                console.warn("Video auto-play blocked", error);
+              });
+            }
+          }, 500);
+        });
+
+        this.session.on('streamDestroyed', (event) => {
+          this.removeVideo(event.stream);
+        });
+
+        await this.session.connect(token, { clientData: localStorage.getItem("userName") || "Unknown User" });
+
+        this.publisher = this.OV.initPublisher(undefined, {
+          videoSource: undefined,
+          audioSource: undefined,
+          publishAudio: this.isAudioEnabled,
+          publishVideo: this.isVideoEnabled,
+          mirror: true,
+        });
+
+        this.publisher.once('accessAllowed', () => {
+          this.videos.unshift(this.publisher);
+          this.$refs.video0.srcObject = this.publisher.stream.getMediaStream();
+        });
+
+        this.session.publish(this.publisher);
       } catch (error) {
-        console.error("방 생성 오류:", error);
+        console.error("Error joining the room:", error);
       }
     },
 
-  async enterRoom(room) {
-    if (room.password) {
-      this.selectedRoom = room;
-      this.showPasswordModal = true;
-    } else {
-      this.$router.push({ name: 'RoomView', params: { sessionId: room.sessionId } });
-    }
-  },
+    removeVideo(stream) {
+      this.videos = this.videos.filter((video) => video.stream !== stream);
+    },
 
-  async verifyPassword() {
-    try {
-      const response = await axios.post(`/api/rooms/verify-password`, {
-        sessionId: this.selectedRoom.sessionId,
-        password: this.inputPassword,
-      });
-      if (response.data.success) {
-        this.$router.push({ name: 'RoomView', params: { sessionId: this.selectedRoom.sessionId } });
-        this.closePasswordModal();
+    toggleAudio() {
+      this.isAudioEnabled = !this.isAudioEnabled;
+      this.publisher.publishAudio(this.isAudioEnabled);
+    },
+    toggleVideo() {
+      this.isVideoEnabled = !this.isVideoEnabled;
+      this.publisher.publishVideo(this.isVideoEnabled);
+    },
+
+    async startScreenShare() {
+      if (!this.isScreenSharing) {
+        try {
+          const screenPublisher = this.OV.initPublisher(undefined, {
+            videoSource: 'screen',
+            publishAudio: this.isAudioEnabled,
+          });
+
+          await this.session.unpublish(this.publisher);
+          this.videos.splice(0, 1, screenPublisher); // 첫번째 위치에 화면공유 비디오 설정
+          await this.session.publish(screenPublisher);
+
+          this.isScreenSharing = true;
+          this.screenPublisher = screenPublisher;
+        } catch (error) {
+          console.error("Failed to start screen share:", error);
+        }
       } else {
-        alert("비밀번호가 틀렸습니다.");
+        try {
+          await this.session.unpublish(this.screenPublisher);
+          this.screenPublisher = null;
+
+          this.publisher = this.OV.initPublisher(undefined, {
+            videoSource: undefined,  
+            audioSource: undefined,
+            publishAudio: this.isAudioEnabled,
+            publishVideo: this.isVideoEnabled,
+            mirror: true,
+          });
+          await this.session.publish(this.publisher);
+
+
+          this.videos.splice(0, 1, this.publisher);
+
+          this.isScreenSharing = false;
+        } catch (error) {
+          console.error("Failed to stop screen share:", error);
+        }
       }
-    } catch (error) {
-      console.error("비밀번호 확인 오류:", error);
+    },
+    async leaveRoom() {
+      const { sessionId } = this.$route.params;
+      try {
+        if (this.session) {
+          this.session.disconnect();
+        }
+        await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+          params: { userNum: localStorage.getItem("userNum") },
+        });
+        this.$router.push({ name: 'RoomList' });
+      } catch (error) {
+        console.error("Error leaving the room:", error);
+      }
     }
   },
-
-
-    closeModal() {
-      this.showCreateRoomModal = false;
-      this.newRoomTitle = '';
-      this.newRoomPassword = '';
-      this.newRoomPasswordConfirm = '';
-      this.enablePassword = false;
-    },
-
-    closePasswordModal() {
-      this.showPasswordModal = false;
-      this.inputPassword = '';
-      this.selectedRoom = null;
-    },
-  },
-};
+}
 </script>
 
 <style>
-.room-list {
+.room-view {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
 }
 
-.create-room-btn {
-  margin: 10px 0;
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.room-grid {
+.video-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  width: 100%;
-  max-width: 600px;
-}
-
-.room-card {
-  padding: 15px;
-  background: #f0f0f0;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  cursor: pointer;
-}
-
-.room-thumbnail {
-  width: 100%;
-  height: 100px;
-  background-color: black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  border-radius: 4px;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
+  gap: 10px;
+  max-width: 80vw;
+  max-height: 80vh;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 300px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.grid-1 {
+  grid-template-columns: 1fr;
 }
 
-.modal-input {
+.grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.grid-4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.grid-5,
+.grid-6 {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.video-container {
+  position: relative;
   width: 100%;
-  padding: 8px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid #3498db;
 }
 
-.modal-buttons {
-  display: flex;
-  justify-content: space-between;
+.video-container video {
+  width: 100%;
+  height: 100%;
 }
 
-.modal-btn {
-  padding: 8px 16px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.modal-btn.cancel {
-  background-color: #f44336;
+.video-name {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.8em;
 }
 </style>
