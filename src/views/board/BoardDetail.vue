@@ -478,9 +478,7 @@ export default {
   cursor: pointer;
   font-size: 0.8rem;
   color: #555;
-  display: inline-block; 
-  padding-top: 8px; /* 원하는 만큼 위쪽 여백을 추가 */
-  padding-bottom: 8px; /* 원하는 만큼 아래쪽 여백을 추가 */
+  display: inline-block;
 }
 
 .action-link.delete {
