@@ -167,12 +167,14 @@ export default {
 
 
         this.session.on('signal:screenShare', (event) => {
-          if (event.data === 'start') {
+          const data = JSON.parse(event.data);
+          if (data.action === 'start') {
             this.isScreenSharing = true;
-          } else if (event.data === 'stop') {
+          } else if (data.action === 'stop') {
             this.isScreenSharing = false;
           }
         });
+
 
         await this.session.connect(token, { clientData: localStorage.getItem("userName") || "Unknown User" });
 
@@ -244,15 +246,15 @@ export default {
     },
 
     async startScreenShare() {
-      if (this.isScreenSharing) {
-        this.stopScreenShare();
-      } else if (this.currentScreenSharer) {
-        this.showApprovalDialog = true;
-        this.pendingScreenShareRequest = this.publisher;
-      } else {
-        this.beginScreenShare();
-      }
-    },
+  if (this.isScreenSharing) {
+    this.stopScreenShare();
+  } else if (this.currentScreenSharer) {
+    this.showApprovalDialog = true;
+    this.pendingScreenShareRequest = this.publisher;
+  } else {
+    this.beginScreenShare();
+  }
+},
 
     async beginScreenShare() {
       try {
@@ -272,7 +274,7 @@ export default {
         // Broadcast screen sharing status
         this.session.signal({
           type: 'screenShare',
-          data: 'start',
+          data: JSON.stringify({ action: 'start' }), // 변경된 부분
         });
       } catch (error) {
         console.error("Failed to start screen share:", error);
@@ -299,10 +301,10 @@ export default {
         this.currentScreenSharer = null;
 
         // Broadcast screen sharing status
-        this.session.signal({
-          type: 'screenShare',
-          data: 'stop',
-        });
+      this.session.signal({
+        type: 'screenShare',
+        data: JSON.stringify({ action: 'stop' }), 
+      });
       } catch (error) {
         console.error("Failed to stop screen share:", error);
       }
