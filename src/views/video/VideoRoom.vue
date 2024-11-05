@@ -22,7 +22,7 @@
         <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
       </v-btn>
       <v-btn icon @click="startScreenShare">
-        <v-icon>mdi-monitor-share</v-icon>
+        <v-icon>{{ isScreenSharing ? 'mdi-monitor-off' : 'mdi-monitor-share' }}</v-icon>
       </v-btn>
       <v-btn icon @click="leaveRoom">
         <v-icon>mdi-logout</v-icon>
@@ -147,6 +147,7 @@ export default {
           await this.session.unpublish(this.publisher);
           this.videos.splice(0, 1, screenPublisher); // 첫번째 위치에 화면공유 비디오 설정
           await this.session.publish(screenPublisher);
+
           this.isScreenSharing = true;
           this.screenPublisher = screenPublisher;
         } catch (error) {
@@ -157,8 +158,17 @@ export default {
           await this.session.unpublish(this.screenPublisher);
           this.screenPublisher = null;
 
-          this.videos.splice(0, 1, this.publisher);
+          this.publisher = this.OV.initPublisher(undefined, {
+            videoSource: undefined,  
+            audioSource: undefined,
+            publishAudio: this.isAudioEnabled,
+            publishVideo: this.isVideoEnabled,
+            mirror: true,
+          });
           await this.session.publish(this.publisher);
+
+
+          this.videos.splice(0, 1, this.publisher);
 
           this.isScreenSharing = false;
         } catch (error) {
