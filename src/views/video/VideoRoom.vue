@@ -3,13 +3,18 @@
     <h2>화상회의 방: {{ roomTitle }}</h2>
 
     <!-- Main Video with Fullscreen Toggle -->
-    <div class="main-video" @dblclick="toggleFullscreen">
+    <div class="main-video">
       <video ref="mainVideo" :srcObject="mainVideo ? mainVideo.stream.getMediaStream() : null" autoplay playsinline></video>
+      <v-btn icon @click="toggleFullscreen" class="fullscreen-icon">
+        <v-icon>mdi-fullscreen</v-icon>
+      </v-btn>
     </div>
 
-    <!-- Side Videos with Arrows for Navigation -->
+    <!-- Side Videos with Vuetify Arrows for Navigation -->
     <div class="side-videos-container">
-      <button @click="prevSideVideo" v-if="sideVideos.length > 2">←</button>
+      <v-btn icon @click="prevSideVideo" v-if="sideVideos.length > 2">
+        <v-icon>mdi-chevron-left</v-icon>
+      </v-btn>
       <div class="side-videos">
         <div
           v-for="(subscriber, index) in visibleSideVideos"
@@ -17,14 +22,16 @@
           class="side-video"
           @click="switchToMain(subscriber, index)"
         >
-          <video :ref="'sideVideo' + index" :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline muted></video>
+          <video :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline muted></video>
           <p class="video-name">{{ subscriber.stream.connection ? subscriber.stream.connection.data : 'Unknown' }}</p>
         </div>
       </div>
-      <button @click="nextSideVideo" v-if="sideVideos.length > 2">→</button>
+      <v-btn icon @click="nextSideVideo" v-if="sideVideos.length > 2">
+        <v-icon>mdi-chevron-right</v-icon>
+      </v-btn>
     </div>
 
-    <!-- Control Buttons -->
+    <!-- Control Buttons with Vuetify Icons -->
     <v-row class="controls" justify="center">
       <v-btn icon @click="toggleAudio">
         <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
@@ -216,6 +223,7 @@ export default {
 }
 
 .main-video {
+  position: relative;
   width: 50%;
   max-width: 700px;
   margin-bottom: 20px;
@@ -230,12 +238,17 @@ export default {
   height: auto;
 }
 
+.fullscreen-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
 .side-videos {
   display: flex;
   justify-content: center;
   gap: 10px;
-  flex-wrap: wrap;
-  max-width: 80%;
+  flex-wrap: nowrap;
 }
 
 .side-video {
@@ -252,12 +265,6 @@ export default {
 .side-video:hover {
   transform: scale(1.05);
   border-color: #3498db;
-}
-
-.side-video video {
-  width: 100%;
-  height: 100%;
-  transform: scaleX(-1);
 }
 
 .video-name {
@@ -277,5 +284,4 @@ export default {
   align-items: center;
   gap: 10px;
 }
-
 </style>
