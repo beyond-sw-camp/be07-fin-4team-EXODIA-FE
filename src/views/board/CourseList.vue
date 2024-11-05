@@ -1,7 +1,7 @@
 <template>
   <v-container class="container">
     <v-row class="mb-12" style="padding-left:30px">
-      <h1>강좌 목록</h1>
+      <h1>이벤트</h1>
     </v-row>
 
     <!-- 검색 및 강좌 생성 버튼 -->
@@ -26,9 +26,9 @@
     </v-row>
     
     <v-row class="mb-2" style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
-      <v-col class="header-cell" style="width: 40%; text-align: center;"><strong>강좌명</strong></v-col>
+      <v-col class="header-cell" style="width: 40%; text-align: center;"><strong>이벤트명</strong></v-col>
       <v-col class="header-cell" style="width: 20%; text-align: center;"><strong>생성일</strong></v-col>
-      <v-col class="header-cell" style="width: 15%; text-align: center;"><strong>참여자</strong></v-col>
+      <v-col class="header-cell" style="width: 15%; text-align: center;"><strong>참여인원</strong></v-col>
       <v-col class="header-cell" style="width: 25%; text-align: center;" v-if="isHrAdmin()"><strong>관리</strong></v-col>
     </v-row>
 

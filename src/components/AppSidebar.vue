@@ -86,7 +86,7 @@
             <v-row @click="$router.push('/board/notice/list')">공지사항</v-row>
             <v-row @click="$router.push('/board/familyevent/list')">경조사</v-row>
             <v-row @click="$router.push('/qna/list')">질의 응답 (Q&A)</v-row>
-            <v-row @click="$router.push('/board/courseList')">강의리스트</v-row>
+            <v-row @click="$router.push('/board/courseList')">이벤트</v-row>
           </div>
         </div>
 
