@@ -1,10 +1,10 @@
 <template>
   <v-container class="container">
     <v-row class="mb-12" style="padding-left:30px">
-      <h1>강좌 목록</h1>
+      <h1>이벤트</h1>
     </v-row>
 
-    <!-- 검색 및 강좌 생성 버튼 -->
+    <!-- 검색 및 이벤트 생성 버튼 -->
     <v-row justify="center" style="margin:0; text-align:center;">
       <v-col cols="12" sm="6">
         <v-text-field v-model="searchQuery" variant="underlined" placeholder="검색어를 입력하세요"></v-text-field>
@@ -27,9 +27,9 @@
 
     <v-row class="mb-2"
       style="background-color:rgba(122, 86, 86, 0.2); border-radius:15px; padding:10px; color:#444444; font-weight:600;">
-      <v-col class="header-cell" style="width: 40%; text-align: center;"><strong>강좌명</strong></v-col>
+      <v-col class="header-cell" style="width: 40%; text-align: center;"><strong>이벤트명</strong></v-col>
       <v-col class="header-cell" style="width: 20%; text-align: center;"><strong>생성일</strong></v-col>
-      <v-col class="header-cell" style="width: 15%; text-align: center;"><strong>참여자</strong></v-col>
+      <v-col class="header-cell" style="width: 15%; text-align: center;"><strong>참여인원</strong></v-col>
       <v-col class="header-cell" style="width: 25%; text-align: center;" v-if="isHrAdmin()"><strong>관리</strong></v-col>
     </v-row>
 
@@ -90,16 +90,16 @@
       </v-card>
     </v-dialog>
 
-    <!-- 강좌 생성 모달 -->
+    <!-- 이벤트 생성 모달 -->
     <v-dialog v-model="showModal" max-width="600">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          <span class="text-h5 font-weight-bold">강좌 생성</span>
+          <span class="text-h5 font-weight-bold">이벤트 생성</span>
         </v-card-title>
         <v-card-text class="py-6 px-10">
-          <v-text-field v-model="newCourse.courseName" label="강좌명" required outlined></v-text-field>
+          <v-text-field v-model="newCourse.courseName" label="이벤트명" required outlined></v-text-field>
           <v-textarea v-model="newCourse.content" label="내용" rows="3" outlined required></v-textarea>
-          <v-text-field v-model="newCourse.courseUrl" label="강좌URL" required outlined></v-text-field>
+          <v-text-field v-model="newCourse.courseUrl" label="이벤트 상품" required outlined></v-text-field>
           <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required
             outlined></v-text-field>
         </v-card-text>
@@ -110,14 +110,14 @@
       </v-card>
     </v-dialog>
 
-    <!-- 강좌 수정 모달 -->
+    <!-- 이벤트 수정 모달 -->
     <v-dialog v-model="showEditModal" max-width="600">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          <span class="text-h5 font-weight-bold">강좌 수정</span>
+          <span class="text-h5 font-weight-bold">이벤트 수정</span>
         </v-card-title>
         <v-card-text class="py-6 px-10">
-          <v-text-field v-model="editCourse.courseName" label="강좌명" required outlined></v-text-field>
+          <v-text-field v-model="editCourse.courseName" label="이벤트명" required outlined></v-text-field>
           <v-textarea v-model="editCourse.content" label="내용" rows="3" outlined required></v-textarea>
           <v-text-field v-model="editCourse.courseUrl" label="강좌URL" required outlined></v-text-field>
           <v-text-field v-model="editCourse.maxParticipants" label="최대 참가자 수" type="number" required
@@ -130,15 +130,15 @@
       </v-card>
     </v-dialog>
 
-    <!-- 강좌 신청 모달 -->
+    <!-- 이벤트 신청 모달 -->
     <v-dialog v-model="showEnrollModal" max-width="600">
       <v-card elevation="10" class="rounded-lg">
         <v-card-title class="headline grey lighten-4 py-4">
-          <span class="text-h5 font-weight-bold">강좌 신청</span>
+          <span class="text-h5 font-weight-bold">이벤트 신청</span>
         </v-card-title>
         <v-card-text class="py-8 px-12">
           <v-row class="mb-4">
-            <v-col cols="4"><strong>강좌명</strong></v-col>
+            <v-col cols="4"><strong>이벤트명</strong></v-col>
             <v-col cols="8">{{ selectedCourse.courseName }}</v-col>
           </v-row>
           <v-row class="mb-4">
@@ -146,7 +146,7 @@
             <v-col cols="8">{{ selectedCourse.content }}</v-col>
           </v-row>
           <v-row class="mb-4">
-            <v-col cols="4"><strong>URL</strong></v-col>
+            <v-col cols="4"><strong>이벤트URL</strong></v-col>
             <v-col cols="8">
               <a :href="selectedCourse.courseUrl" target="_blank" class="blue--text text--darken-2">{{
                 selectedCourse.courseUrl }}</a>
@@ -209,14 +209,6 @@ export default {
         );
       }
       return this.courses;
-    },
-  },
-  watch: {
-
-    "selectedCourse.currentParticipants"(newVal, oldVal) {
-      if (newVal !== oldVal) {
-        this.fetchCourses();
-      }
     },
   },
   methods: {
@@ -435,18 +427,22 @@ export default {
       return new Date(date).toLocaleDateString(undefined, options);
     },
   },
+  watch: {
+    currentPage(newPage, oldPage) {
+      console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
+      this.fetchCourses();
+    },
+    category(newCategory) {
+      this.currentCategory = newCategory;
+      this.fetchCourses();
+    },
 
-  // watch: {
-  //   currentPage(newPage, oldPage) {
-  //     console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
-  //     this.fetchCourses();
-  //   },
-  //   category(newCategory) {
-  //     this.currentCategory = newCategory;
-  //     this.fetchCourses();
-  //   },
-  // },
-
+    "selectedCourse.currentParticipants"(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.fetchCourses();
+      }
+    },
+  },
   // 컴포넌트가 마운트될 때 실행되는 메소드
   mounted() {
     this.fetchUserInfo().then(() => this.fetchCourses());

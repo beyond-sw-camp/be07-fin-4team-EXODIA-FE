@@ -86,7 +86,7 @@
 <script>
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, addHours } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 export default {
@@ -119,7 +119,8 @@ export default {
   methods: {
 
     formatDate(notificationTime) {
-      return formatDistanceToNow(new Date(notificationTime), { addSuffix: true, locale: ko });
+      const dateInKST = addHours(new Date(notificationTime), 9);
+      return formatDistanceToNow(dateInKST, { addSuffix: true, locale: ko });
     },
     // SSE 연결 설정
     initSSE() {
