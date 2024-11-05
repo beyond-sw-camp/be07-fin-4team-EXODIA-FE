@@ -2,49 +2,25 @@
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
 
-    <!-- Video Grid -->
-    <div v-if="!isScreenSharing" class="video-grid">
+    <!-- Dynamic Video Grid -->
+    <div class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
       <div
-        v-for="(subscriber, index) in paginatedVideos"
+        v-for="(video, index) in videos"
         :key="index"
         class="video-container"
       >
-        <div class="user-label">{{ subscriber.stream.connection?.data || 'Unknown' }}</div>
-        <video :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline></video>
+        <video
+          :ref="'video' + index"
+          :srcObject="video.stream.getMediaStream()"
+          autoplay
+          playsinline
+          :muted="index === 0" 
+        ></video>
+        <p class="video-name">
+          {{ video.stream.connection ? video.stream.connection.data : 'Unknown' }}
+        </p>
       </div>
     </div>
-
-    <!-- Screen Sharing Layout -->
-    <div v-else class="screen-sharing-layout">
-      <!-- Main Screen Sharing Video -->
-      <div class="main-screen">
-        <div class="user-label">{{ mainVideo?.stream.connection?.data || 'Unknown' }}</div>
-        <video ref="mainVideo" :srcObject="mainVideo?.stream.getMediaStream()" autoplay playsinline></video>
-      </div>
-
-      <!-- Other Videos in Side Column -->
-      <div class="side-videos-column">
-        <div
-          v-for="(subscriber, index) in paginatedVideos"
-          :key="index"
-          class="side-video"
-        >
-          <div class="user-label">{{ subscriber.stream.connection?.data || 'Unknown' }}</div>
-          <video :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline></video>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pagination Controls -->
-    <v-row class="pagination-controls" justify="center" v-if="pages > 1">
-      <v-btn icon @click="prevPage" :disabled="currentPage === 1">
-        <v-icon>mdi-chevron-left</v-icon>
-      </v-btn>
-      <span>Page {{ currentPage }} / {{ pages }}</span>
-      <v-btn icon @click="nextPage" :disabled="currentPage === pages">
-        <v-icon>mdi-chevron-right</v-icon>
-      </v-btn>
-    </v-row>
 
     <!-- Control Buttons -->
     <v-row class="controls" justify="center">
@@ -72,8 +48,7 @@ export default {
   data() {
     return {
       roomTitle: '',
-      mainVideo: null, 
-      sideVideos: [],
+      videos: [], // 참가자 비디오 배열
       OV: null,
       session: null,
       publisher: null,
@@ -81,23 +56,12 @@ export default {
       isVideoEnabled: true,
       isScreenSharing: false,
       originalPublisher: null,
-      currentPage: 1,
-      videosPerPage: 6,
     };
-  },
-  computed: {
-    paginatedVideos() {
-      const start = (this.currentPage - 1) * this.videosPerPage;
-      const end = start + this.videosPerPage;
-      return this.sideVideos.slice(start, end);
-    },
-    pages() {
-      return Math.ceil(this.sideVideos.length / this.videosPerPage);
-    }
   },
   created() {
     this.initializeRoom();
   },
+  
   methods: {
     async initializeRoom() {
       const { sessionId } = this.$route.params;
@@ -112,22 +76,23 @@ export default {
 
         this.session.on('streamCreated', (event) => {
           const subscriber = this.session.subscribe(event.stream, undefined);
-          this.sideVideos.push(subscriber);
+          this.videos.push(subscriber);
 
+          // 비디오의 srcObject를 설정
           setTimeout(() => {
-            const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
-            const sideVideoElement = this.$refs[videoRefName];
+            const videoRefName = 'video' + (this.videos.length - 1);
+            const videoElement = this.$refs[videoRefName][0];
 
-            if (sideVideoElement) {
-              sideVideoElement.srcObject = subscriber.stream.getMediaStream();
-              sideVideoElement.play().catch((error) => {
+            if (videoElement) {
+              videoElement.srcObject = subscriber.stream.getMediaStream();
+              videoElement.play().catch((error) => {
                 console.warn("Video auto-play blocked", error);
               });
             }
           }, 500);
         });
 
-        await this.session.connect(token, { clientData: this.$store.state.user.name });
+        await this.session.connect(token, { clientData: "사용자명" });
 
         this.publisher = this.OV.initPublisher(undefined, {
           videoSource: undefined,
@@ -138,8 +103,8 @@ export default {
         });
 
         this.publisher.once('accessAllowed', () => {
-          this.mainVideo = this.publisher;
-          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+          this.videos.unshift(this.publisher);
+          this.$refs.video0.srcObject = this.publisher.stream.getMediaStream();
         });
 
         this.session.publish(this.publisher);
@@ -166,34 +131,21 @@ export default {
           });
 
           await this.session.unpublish(this.publisher);
-          this.mainVideo = screenPublisher;
+          this.videos.splice(0, 1, screenPublisher); // 첫번째 위치에 화면공유 비디오 설정
           await this.session.publish(screenPublisher);
           this.isScreenSharing = true;
-
-          this.screenPublisher = screenPublisher;
         } catch (error) {
           console.error("Failed to start screen share:", error);
         }
       } else {
         try {
           await this.session.unpublish(this.screenPublisher);
-          this.mainVideo = this.publisher;
+          this.videos.splice(0, 1, this.publisher);
           await this.session.publish(this.publisher); 
           this.isScreenSharing = false;
         } catch (error) {
           console.error("Failed to stop screen share:", error);
         }
-      }
-    },
-
-    nextPage() {
-      if (this.currentPage < this.pages) {
-        this.currentPage++;
-      }
-    },
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
       }
     },
 
@@ -211,10 +163,9 @@ export default {
         console.error("Error leaving the room:", error);
       }
     },
-  }
-};
+  },
+}
 </script>
-
 
 <style>
 .room-view {
@@ -226,89 +177,58 @@ export default {
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  width: 80%;
-  max-width: 1000px;
+  max-width: 80vw;
+  max-height: 80vh;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-1 {
+  grid-template-columns: 1fr;
+}
+
+.grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.grid-4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.grid-5, .grid-6 {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
 }
 
 .video-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 100%;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-  background-color: #000;
+  border: 2px solid #3498db;
 }
 
 .video-container video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
-.user-label {
+.video-name {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  background-color: rgba(128, 128, 128, 0.7);
+  bottom: 5px;
+  left: 5px;
+  background-color: rgba(0, 0, 0, 0.6);
   color: #fff;
   padding: 2px 5px;
-  font-size: 0.8em;
   border-radius: 3px;
-}
-
-.screen-sharing-layout {
-  display: flex;
-  width: 100%;
-  max-width: 1200px;
-}
-
-.main-screen {
-  width: 66.66%; /* 페이지 2/3 차지 */
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.main-screen video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.side-videos-column {
-  width: 33.33%; /* 페이지 1/3 차지 */
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  overflow-y: auto;
-}
-
-.side-video {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16/9;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  background-color: #000;
-}
-
-.side-video video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.pagination-controls {
-  margin-top: 10px;
-}
-
-.controls {
-  margin-top: 20px;
+  font-size: 0.8em;
 }
 </style>
