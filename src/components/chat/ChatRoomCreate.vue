@@ -209,10 +209,6 @@ export default {
     /* 파이어폭스 */
 }
 
-.chat-user-list::-webkit-scrollbar {
-    display: none;
-}
-
 .select-divider {
     height: 50px;
 }
@@ -232,5 +228,19 @@ export default {
     overflow-x: hidden;
     width: 100%;
     margin-bottom: 10px;
+}
+
+.chat-user-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-user-list::-webkit-scrollbar-thumb {
+    background-color: #888888;
+    border-radius: 10px;
+}
+
+.chat-user-list::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 10px;
 }
 </style>

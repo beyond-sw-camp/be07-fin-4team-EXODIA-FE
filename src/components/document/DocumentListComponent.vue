@@ -61,7 +61,7 @@
                     <v-row :class="{ 'drawer-open': drawer }" v-for="(document, index) in documents" :key="document.id"
                         class="document" oulined @click="openDrawer(document.id)"
                         style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
-                        <v-col cols="1">{{ totalElements - ((page - 1) * pageSize  + index) }}</v-col>
+                        <v-col cols="1">{{ (page - 1) * pageSize + index + 1 }}</v-col>
                         <v-col cols="6" class="ellipsis-text-list" style="text-align:start;">{{ document.fileName
                             }}</v-col>
                         <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
@@ -185,46 +185,71 @@
                             <span class="headline">댓글</span>
                             <v-icon class="icon" @click="toggleCommentsVisibility"> {{ showComments ? 'mdi-chevron-up' :
                                 'mdi-chevron-down' }}</v-icon>
+                        </v-card-title>
+
+
+                        <div v-if="showComments" class="comment-section">
                             <v-row class="mt-4">
-                                <v-col cols="9">
+                                <v-col cols="10">
                                     <v-text-field density="compact" label="댓글을 입력하세요." variant="outlined"
                                         v-model="comment"></v-text-field>
                                 </v-col>
-                                <v-col cols="3">
+                                <v-col cols="2">
                                     <v-btn v-create @click="submitComments(this.selectedDocument.id)">등록</v-btn>
                                 </v-col>
                             </v-row>
-                        </v-card-title>
-
-                        <div v-if="showComments" class="comments">
-                            <v-row v-if="this.comments.length > 0">
-                                <v-col cols="12" v-for="(comment, index) in this.comments" :key="index">
-                                    <v-row class="comments-item">
-                                        <v-col cols=1>
-                                            <v-avatar class="icon" size="28">
-                                                <v-img :src="comment?.userProfileImage || defaultProfileImage"
-                                                    aspect-ratio="1"></v-img>
+                            <v-list>
+                                <v-list-item v-for="(comment, index) in this.comments" :key="comment.id || index"
+                                    class="comment-item">
+                                    <div class="comment-content">
+                                        <!-- 프로필, 작성자 이름, 작성일, 수정/삭제 버튼을 배치 -->
+                                        <div class="comment-header">
+                                            <v-avatar class="icon">
+                                                <v-img :src="comment.userProfileImage || defaultProfileImage"
+                                                    alt="프로필 이미지" />
                                             </v-avatar>
-                                        </v-col>
-                                        <v-col cols="5">{{ comment.userName }}</v-col>
-                                    </v-row>
-                                    <v-row cols="12" style="padding-left:50px" class="comment-content">
-                                        {{ comment.contents }}
-                                    </v-row>
-                                    <v-row style="font-size:14px; padding-right:13px; color:gray" class="justify-end">
-                                        {{ formatDate(comment.createdAt) }} {{
-                                            formatLocalTime(comment.createdAt) }}
-                                    </v-row>
-                                    <v-divider></v-divider>
-                                </v-col>
-                            </v-row>
+                                            <div class="user-info">
+                                                <span class="user-name">{{ comment.userName }}</span>
+                                                <small class="comment-date">
+                                                    {{
+                                                        formatDate(comment.createdAt) }} {{
+                                                        formatLocalTime(comment.createdAt) }}</small>
+                                            </div>
 
-                            <v-row v-else>
-                                <v-col cols=" 12">
-                                    <p>댓글이 없습니다.</p>
-                                </v-col>
-                            </v-row>
+
+                                            <div v-if="comment.userNum === this.userNum" class="action-links">
+                                                <!-- 수정 중인지에 따라 버튼 표시 변경 -->
+                                                <span v-if="editingCommentId === comment.id"
+                                                    @click="saveCommentEdit(comment.id)" class="action-link">완료</span>
+                                                <span v-if="editingCommentId === comment.id" @click="cancelCommentEdit"
+                                                    class="action-link delete">취소</span>
+                                                <span v-if="editingCommentId !== comment.id"
+                                                    @click="editComment(comment)" class="action-link">수정</span>
+                                                <span v-if="editingCommentId !== comment.id"
+                                                    @click="deleteComment(comment.id)"
+                                                    class="action-link delete">삭제</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- 댓글 내용 -->
+                                        <div v-if="editingCommentId === comment.id">
+                                            <v-textarea v-model="editingCommentContent" placeholder="댓글을 수정하세요"
+                                                auto-grow density="compact" rows="1" hide-details flat></v-textarea>
+                                        </div>
+                                        <p v-else class="comment-text">{{ comment.contents }}</p>
+                                    </div>
+                                    <v-divider style="margin-top:30px"></v-divider>
+
+                                </v-list-item>
+                            </v-list>
                         </div>
+
+                        <div v-if="this.comments.length == 0">
+                            <v-col cols="12" class="text-center">
+                                <p>댓글이 없습니다.</p>
+                            </v-col>
+                        </div>
+
 
                         <v-card-actions>
                             <v-spacer></v-spacer>
@@ -302,6 +327,8 @@ export default {
                 { text: "사용자", value: "userName" },
             ],
             searchType: 'title + description',
+            editingCommentId: null,
+            editingCommentContent: '',
         }
     },
     mounted() {
@@ -327,24 +354,19 @@ export default {
                 } else if (this.pageTitle == '최근 수정 파일') {
                     url = `${process.env.VUE_APP_API_BASE_URL}/document/list/updated`;
                 }
-                
                 const response = await axios.get(url, {
                     params: {
                         page: newPage - 1,
                         size: this.pageSize
                     }
                 });
-                
                 this.documents = response.data.result.content;
-                console.log(response.data.result.totalElements); // 수정된 부분
-                this.totalElements = response.data.result.totalElements; // 수정된 부분
                 this.totalPages = response.data.result.totalPages;
 
             } catch (e) {
                 console.error('문서 목록을 가져오는 중 오류 발생:', e);
             }
         },
-
         async fetchComments() {
             try {
                 const url = `${process.env.VUE_APP_API_BASE_URL}/comment/document/list/${this.selectedDocument.id}`;
@@ -506,7 +528,57 @@ export default {
         toggleCommentsVisibility() {
             this.showComments = !this.showComments;
         },
+        async saveCommentEdit(commentId) {
+            // 댓글 수정 -> 완료버튼
+            // if (!this.editingCommentContent.trim()) {
+            //     alert("댓글 내용을 입력하세요.");
+            //     return;
+            // }
+            console.log("들어오긴하니?")
+
+            try {
+                await axios.put(`/comment/document/update/${commentId}`, {
+                    contents: this.editingCommentContent,
+                    userNum: this.userNum,
+                    commentId: commentId
+                })
+                alert("댓글을 성공적으로 수정하였습니다.");
+                location.reload();
+            } catch (e) {
+                console.log("댓글 수정 실패", e);
+                alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
+            }
+
+        },
+        editComment(comment) {
+            // 수정버튼
+            this.editingCommentId = comment.id;
+            this.editingCommentContent = comment.contents;
+
+            console.log(comment)
+            console.log(this.editingCommentContent);
+            console.log(this.editingCommentId);
+        },
+        cancelCommentEdit() {
+            // 취소버튼
+            this.editingCommentId = null; // 수정 취소
+        },
+
+        async deleteComment(commentId) {
+            // 삭제 버튼
+            if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
+                try {
+                    await axios.delete(`/comment/document/delete/${commentId}`);
+                    alert("댓글이 성공적으로 삭제되었습니다.");
+                    location.reload();
+                } catch (error) {
+                    console.error("댓글 삭제에 실패했습니다:", error);
+                    alert(`댓글 삭제에 실패했습니다. 오류 메시지: ${error.message}`);
+                }
+            }
+        },
     },
+
 }
 </script>
 
@@ -612,16 +684,95 @@ v-card-title,
     font-size: 14px;
 }
 
-.comment-content {
-    display: inline-block;
-    max-width: 700px;
+.comment-section {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
     width: 100%;
-    font-size: 16px;
+    max-width: 900px;
 }
+
+.comment-item {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+
+.comment-content {
+    display: flex;
+    flex-direction: column;
+}
+
 
 .history-item {
     border-radius: 8px;
     height: max-content;
     border: 2px solid #b9b9b9;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.comment-date {
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 0.5px;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #333;
+    text-align: left;
+}
+
+.icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.action-links {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.action-link {
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #555;
+    display: inline-block;
+}
+
+.action-link.delete {
+    color: red;
+}
+
+.action-link:hover {
+    color: #333;
 }
 </style>

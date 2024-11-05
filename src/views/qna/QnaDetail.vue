@@ -107,26 +107,40 @@
       <v-list>
         <v-list-item v-for="(comment, index) in comments" :key="comment.id || index" class="comment-item">
           <div class="comment-content">
-            <!-- 프로필, 작성자 이름, 작성일, 수정/삭제 버튼을 배치 -->
+            <!-- 수정 중인지 확인 -->
             <div class="comment-header">
               <v-avatar class="icon">
                 <v-img :src="comment.profileImage || defaultProfileImage" alt="프로필 이미지" />
               </v-avatar>
               <div class="user-info">
                 <span class="user-name">{{ comment.name }}</span>
-                <small class="comment-date">{{ formatDate(comment.createdAt) }}</small>
+                <small class="comment-date">
+                  {{ formatDate(comment.createdAt) }}
+                  <span v-if="comment.isEdited" class="edited-mark">(수정됨)</span>
+                </small>
               </div>
+
               <div v-if="comment.userNum === userProfile.userNum" class="action-links">
-                <span @click="editComment(comment)" class="action-link">수정</span>
-                <span @click="deleteComment(comment.id)" class="action-link delete">삭제</span>
+                <!-- 수정 중인지에 따라 버튼 표시 변경 -->
+                <span v-if="editingCommentId === comment.id" @click="saveCommentEdit(comment.id)" class="action-link">완료</span>
+                <span v-if="editingCommentId === comment.id" @click="cancelCommentEdit" class="action-link delete">취소</span>
+                <span v-if="editingCommentId !== comment.id" @click="editComment(comment)" class="action-link">수정</span>
+                <span v-if="editingCommentId !== comment.id" @click="deleteComment(comment.id)" class="action-link delete">삭제</span>
               </div>
             </div>
-            
-            <!-- 댓글 내용 -->
-            <p class="comment-text">{{ comment.content }}</p>
-          </div>
 
-          <v-divider style=margin-top:10px></v-divider>
+            <!-- 댓글 내용 -->
+            <div v-if="editingCommentId === comment.id">
+              <v-text-field
+                v-model="editingCommentContent"
+                label="댓글 수정"
+                variant="outlined"
+                density="compact"
+              ></v-text-field>
+            </div>
+            <p v-else class="comment-text">{{ comment.content }}</p>
+          </div>
+          <v-divider style="margin-top:10px;"></v-divider>
         </v-list-item>
       </v-list>
     </div>
@@ -152,6 +166,9 @@ export default {
         name: '',
         profileImage: ''
       },
+
+      editingCommentId: null, // 수정 중인 댓글 ID
+      editingCommentContent: '', // 수정 중인 댓글 내용
     };
   },
   async mounted() {
@@ -269,6 +286,32 @@ export default {
         alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
       }
     },
+
+    async saveCommentEdit(commentId) {
+      if (!this.editingCommentContent.trim()) {
+        alert("댓글 내용을 입력하세요.");
+        return;
+      }
+
+      const userNum = this.userProfile.userNum;
+      try {
+        const response = await axios.put(`/comment/update/${commentId}`, {
+          content: this.editingCommentContent,
+          userNum,
+          isEdited: true
+        });
+        console.log("댓글 수정 응답:", response.data);
+        const updatedCommentIndex = this.comments.findIndex(c => c.id === commentId);
+        if (updatedCommentIndex !== -1) {
+          this.comments[updatedCommentIndex].content = this.editingCommentContent;
+          this.comments[updatedCommentIndex].isEdited = true;
+        }
+        this.editingCommentId = null; // 수정 완료 후 초기화
+      } catch (error) {
+        console.error("댓글 수정에 실패했습니다:", error);
+        alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
+      }
+    },
     async deleteComment(commentId) {
       if (confirm("이 댓글을 삭제하시겠습니까?")) {
         try {
@@ -283,26 +326,10 @@ export default {
       }
     },
     editComment(comment) {
-      const updatedContent = prompt("댓글을 수정하세요:", comment.content);
-      if (updatedContent && updatedContent !== comment.content) {
-        axios.put(`${process.env.VUE_APP_API_BASE_URL}/comment/update/${comment.id}`, {
-          content: updatedContent,
-          userNum: this.userNum,
-          isEdited: true,
-        })
-          .then(() => {
-            const updatedCommentIndex = this.comments.findIndex(c => c.id === comment.id);
-            if (updatedCommentIndex !== -1) {
-              this.comments[updatedCommentIndex].content = updatedContent;
-              this.comments[updatedCommentIndex].isEdited = true;
-            }
-            alert('댓글이 성공적으로 수정되었습니다.');
-          })
-          .catch(() => {
-            alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
-          });
-      }
+      this.editingCommentId = comment.id;          // 수정 중인 댓글 ID 설정
+      this.editingCommentContent = comment.content; // 수정 중인 댓글 내용 초기화
     },
+
     formatDate(date) {
       return new Date(date)
         .toLocaleString('ko-KR', { 
