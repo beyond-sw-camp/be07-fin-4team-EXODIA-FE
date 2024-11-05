@@ -406,9 +406,8 @@ export default {
 
                 this.selectedDocument = response.data.result;
                 this.drawer = true;
-                console.log("tags: " + this.selectedDocument.tags)
-
                 this.fetchComments();
+                this.fetchHistory(id);
             } catch (e) {
                 console.error('문서 상세 정보를 가져오는 중 오류 발생:', e);
             }
@@ -554,10 +553,6 @@ export default {
             // 수정버튼
             this.editingCommentId = comment.id;
             this.editingCommentContent = comment.contents;
-
-            console.log(comment)
-            console.log(this.editingCommentContent);
-            console.log(this.editingCommentId);
         },
         cancelCommentEdit() {
             // 취소버튼
