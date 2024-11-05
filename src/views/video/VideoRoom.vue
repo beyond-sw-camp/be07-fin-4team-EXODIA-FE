@@ -80,22 +80,20 @@ export default {
       const { sessionId } = this.$route.params;
       try {
         const response = await axios.get(`/api/rooms/${sessionId}`);
-        this.roomTitle = response.data.roomTitle;  // 방 제목 설정
-        this.participants = response.data.participants;  // 참가자 리스트 설정
+        this.roomTitle = response.data.roomTitle; // 방 제목 설정
+        this.participants = response.data.participants; // 참가자 리스트 설정
       } catch (error) {
         console.error("Error fetching room details:", error);
       }
     },
 
-
     async initializeRoom() {
       const { sessionId } = this.$route.params;
       try {
-        // API로 방 정보 및 토큰 요청
         const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
           params: { userNum: localStorage.getItem("userNum") },
         });
-        this.roomTitle = response.data.roomTitle;  // 방 이름 가져오기
+        this.roomTitle = response.data.roomTitle;
         const token = response.data.token;
 
         this.OV = new OpenVidu();
@@ -104,7 +102,12 @@ export default {
         this.session.on('streamCreated', (event) => {
           const subscriber = this.session.subscribe(event.stream, undefined);
           this.sideVideos.push(subscriber);
-          this.updateVisibleSideVideos();
+          this.$nextTick(() => {
+            const videoElement = this.$refs[`sideVideo${this.sideVideos.length - 1}`];
+            if (videoElement && videoElement[0]) {
+              videoElement[0].srcObject = subscriber.stream.getMediaStream();
+            }
+          });
         });
 
         await this.session.connect(token, { clientData: localStorage.getItem("userNum") });
@@ -133,6 +136,7 @@ export default {
       this.isAudioEnabled = !this.isAudioEnabled;
       this.publisher.publishAudio(this.isAudioEnabled);
     },
+
     toggleVideo() {
       this.isVideoEnabled = !this.isVideoEnabled;
       this.publisher.publishVideo(this.isVideoEnabled);
@@ -141,15 +145,13 @@ export default {
     async startScreenShare() {
       if (!this.isScreenSharing) {
         try {
-          // 화면 공유 스트림 추가
           const screenPublisher = this.OV.initPublisher(undefined, {
             videoSource: 'screen',
             publishAudio: this.isAudioEnabled,
           });
 
-          this.sideVideos.push(screenPublisher);  // 화면 공유 비디오 추가
-          this.updateVisibleSideVideos();
-
+          this.screenPublisher = screenPublisher;
+          this.sideVideos.push(screenPublisher);
           await this.session.publish(screenPublisher);
           this.isScreenSharing = true;
 
@@ -164,40 +166,20 @@ export default {
       }
     },
 
-    // async stopScreenShare() {
-    //   if (this.isScreenSharing) {
-    //     try {
-    //       const screenPublisher = this.sideVideos.find((video) => video.videoSource === 'screen');
-    //       if (screenPublisher) {
-    //         await this.session.unpublish(screenPublisher);
-    //         const index = this.sideVideos.indexOf(screenPublisher);
-    //         if (index !== -1) this.sideVideos.splice(index, 1);
-    //         this.updateVisibleSideVideos();
-    //       }
-
-    //       this.isScreenSharing = false;
-    //     } catch (error) {
-    //       console.error("Failed to stop screen share:", error);
-    //     }
-    //   }
-    // },
-
     async stopScreenShare() {
-  if (this.isScreenSharing) {
-    try {
-      if (this.screenPublisher) {
-        await this.session.unpublish(this.screenPublisher);
-        this.sideVideos = this.sideVideos.filter(video => video !== this.screenPublisher);
-        this.updateVisibleSideVideos();
+      if (this.isScreenSharing && this.screenPublisher) {
+        try {
+          await this.session.unpublish(this.screenPublisher);
+          const index = this.sideVideos.indexOf(this.screenPublisher);
+          if (index !== -1) this.sideVideos.splice(index, 1);
+          this.screenPublisher = null;
+          this.isScreenSharing = false;
+          this.updateVisibleSideVideos();
+        } catch (error) {
+          console.error("Failed to stop screen share:", error);
+        }
       }
-      this.isScreenSharing = false;
-      this.screenPublisher = null;
-    } catch (error) {
-      console.error("Failed to stop screen share:", error);
-    }
-  }
-},
-
+    },
 
     switchToMain(subscriber, index) {
       const previousMainVideo = this.mainVideo;
@@ -245,6 +227,7 @@ export default {
   },
 }
 </script>
+
 
 
 <style>
