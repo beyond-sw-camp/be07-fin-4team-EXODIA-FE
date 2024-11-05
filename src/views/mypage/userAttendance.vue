@@ -54,6 +54,9 @@
         </v-row>
       </v-col>
     </v-row>
+
+    <v-intersect @enter="loadMoreUsers"></v-intersect>
+
   </div>
 </template>
 
@@ -75,6 +78,9 @@ export default {
 
       users: [],
       userStatus: '',
+      currentPage: 1,
+      itemsPerPage: 6,
+      totalPages: null,
 
     };
   },
@@ -155,38 +161,37 @@ export default {
     },
     async fetchUsers() {
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/department/list`);
-        let badgeColor = '#808080';
-        let statusData = '';
-
-        const previousUsersStatus = this.users.map(user => user.userNum ? user.nowStatus : null) || [];
-
-        this.users = response.data.result.map(user => {
-          if (user.nowStatus == '출근') {
-            badgeColor = '#4caf50'; // 초록
-            statusData = '근무중'
-          } else if (user.nowStatus == '퇴근') {
-            badgeColor = '#f44336'; // 빨강
-            statusData = user.nowStatus;
-          } else if (user.nowStatus == '자리비움') {
-            user.inTime = '';
-            user.outTime = '';
-            statusData = '자리비움 상태입니다.';  // 파랑
-            badgeColor = '#1867c0';
-          } else if (user.nowStatus == '근무전') {
-            statusData = '근태 정보가 없습니다.';
-            badgeColor = '#808080'; // 회색
-          }
-
-          const previousStatus = previousUsersStatus.find(prev => prev.userNum === user.userNum)?.nowStatus || null;
-          if (previousStatus !== user.nowStatus) {
-            return { ...user, badgeColor, statusData };
-          }
-
-          return user;
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/department/list`, {
+          params: {
+            page: this.currentPage,
+            size: 6,
+          },
         });
+
+
+        const statusMap = {
+          출근: { color: '#4caf50', status: '근무중' },
+          퇴근: { color: '#f44336', status: '퇴근' },
+          자리비움: { color: '#1867c0', status: '자리비움 상태입니다.', inTime: '', outTime: '' },
+          근무전: { color: '#808080', status: '근태 정보가 없습니다.' }
+        };
+
+        this.users = response.data.result.content.map(user => {
+          const statusInfo = statusMap[user.nowStatus] || { color: '#808080', status: 'Unknown' };
+          return {
+            ...user,
+            badgeColor: statusInfo.color,
+            statusData: statusInfo.status,
+            inTime: statusInfo.inTime || user.inTime,
+            outTime: statusInfo.outTime || user.outTime
+          };
+        });
+
         this.users.sort((a, b) => (b.userNum === this.userNum ? 1 : 0) - (a.userNum === this.userNum ? 1 : 0));
         this.userStatus = this.users.find(user => user.userNum === this.userNum)?.nowStatus || null;
+
+        console.log("users " + this.users);
+
       } catch (e) {
         console.log(e);
       }
@@ -194,6 +199,12 @@ export default {
     formatLocalTime(date) {
       if (!date) return '';
       return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    },
+    loadMoreUsers() {
+      if (this.isLoading || this.currentPage >= this.totalPages - 1) return;
+
+      this.currentPage += 1;
+      this.fetchUsers();
     },
   },
 
