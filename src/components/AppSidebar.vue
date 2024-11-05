@@ -329,11 +329,12 @@ export default {
 .subsidebarscroll{
   height: 550px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.subsidebarscroll::-webkit-scrollbar {
+/* .subsidebarscroll::-webkit-scrollbar {
   display: none;
-}
+} */
 
 .menu {
   display: flex;
