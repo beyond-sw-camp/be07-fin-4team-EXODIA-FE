@@ -112,6 +112,7 @@ export default {
         return {
             token: localStorage.getItem('token') || null,
             submitList: [], // 결재 요청 목록
+
             currentPage: 1, // 현재 페이지
             totalPages: 1, // 총 페이지 수
             itemsPerPage: 10, // 페이지당 항목 수
@@ -188,7 +189,7 @@ export default {
                 const filterType = this.submitStatus ? "submitStatus" : "submitType";
                 const filterValue = this.submitStatus || this.submitType;
 
-                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/submit/filter`, {
+                const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/submit/filter/my`, {
                     params: {
                         filterType: filterType,
                         filterValue: filterValue,
