@@ -21,13 +21,13 @@
       </v-btn>
       <div class="side-videos">
         <div
-          v-for="(subscriber, index) in visibleSideVideos"
+          v-for="(videoData, index) in visibleSideVideos"
           :key="index"
           class="side-video"
           @click="switchToMain(index)"
         >
           <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
-          <div class="video-name-overlay">{{ subscriber.stream.connection.data || 'Participant' }}</div>
+          <div class="video-name-overlay">{{ videoData.participantName || 'Participant' }}</div>
         </div>
       </div>
       <v-btn icon @click="nextSideVideo" v-if="sideVideos.length > 3">
@@ -109,9 +109,9 @@ export default {
           
           // 비디오가 렌더링된 후 스트림을 연결
           setTimeout(() => {
-            const videoElement = this.$refs[`sideVideo${this.sideVideos.length - 1}`][0];
-            if (videoElement) {
-              videoElement.srcObject = subscriber.stream.getMediaStream();
+            const videoElement = this.$refs[`sideVideo${this.sideVideos.length - 1}`];
+            if (videoElement && videoElement[0]) {
+              videoElement[0].srcObject = subscriber.stream.getMediaStream();
             }
           }, 500);
           this.updateVisibleSideVideos();
@@ -260,6 +260,7 @@ export default {
   },
 };
 </script>
+
 
 <style>
 .room-view {
