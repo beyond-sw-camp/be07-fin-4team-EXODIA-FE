@@ -3,13 +3,13 @@
     <v-tabs v-model="activeTab" background-color="green lighten-5" centered class="header-tabs">
       <v-tab :to="'/mypage/vacation'">전사/근태 통계</v-tab>
       <v-tab :to="'/mypage/userProfile'">프로필</v-tab>
-      
-      <!-- 평가기간 체크를 위한 코드 -->
-      <v-tab :to="'/mypage/evalutionList'" :disabled="!isEvaluationPeriod" @click.prevent="checkEvaluationPeriod">인사평가</v-tab>
 
-      <v-tab :to="'/mypage/spinWheel'">오늘의 점심</v-tab>
-      <v-tab :to="'/mypage/evalutionFrame'">평가리스트</v-tab>
+      <v-tab :to="{ path: '/mypage/evalutionList', query: { isEvaluationPeriod: isEvaluationPeriod } }">
+        인사평가
+      </v-tab> <v-tab :to="'/mypage/evalutionFrame'">평가리스트</v-tab>
       <v-tab :to="'/board/myCourseList'">나의강좌</v-tab>
+      <v-tab :to="'/mypage/spinWheel'">오늘의 점심</v-tab>
+
     </v-tabs>
 
     <v-tabs-items v-model="activeTab">
@@ -42,13 +42,15 @@ export default {
   data() {
     return {
       activeTab: this.$route.path,
-      isEvaluationPeriod: false,
     };
   },
   watch: {
     '$route.path'(newPath) {
       this.activeTab = newPath;
     }
+  },
+  mounted() {
+    this.fetchEvaluationPeriod();
   },
   methods: {
     async fetchEvaluationPeriod() {

@@ -160,8 +160,13 @@ export default {
 
         if (this.board.comments) {
           this.comments = this.board.comments.filter(comment => !comment.delYn);
+          
         } else {
           this.comments = [];
+        }
+        // 태그 데이터 확인
+        if (this.board.tags) {
+          this.tags = [...this.board.tags]; // 태그 데이터가 있으면 태그를 복사하여 사용
         }
 
         console.log("댓글 데이터:", JSON.stringify(this.comments));

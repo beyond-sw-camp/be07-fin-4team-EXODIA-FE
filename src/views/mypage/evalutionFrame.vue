@@ -5,14 +5,14 @@
         <v-col>
           <br>
           <div class="mb-6"><strong>* 인사평가를 위한 자신의 리스트를 작성하세요</strong></div>
-          <v-simple-table dense>
+          <v-table dense>
             <thead>
-              <tr style="background-color:rgba(122,86,86,0.2);">
-                <th style="padding:10px;  border: 1px solid #f5f5f5">대분류</th>
-                <th style="padding:10px;  border: 1px solid #f5f5f5">중분류</th>
-                <th style="padding:10px;">소분류</th>
+              <tr style="background-color:rgba(122,86,86,0.2);font-weight:800">
+                <th style="padding:10px;  border: 1px solid #f5f5f5; text-align: center;font-weight:800">대분류</th>
+                <th style="padding:10px;  border: 1px solid #f5f5f5; text-align: center; font-weight:800">중분류</th>
+                <th style="padding:10px; text-align: center; font-weight:800">소분류</th>
                 <th style="padding:10px;"></th>
-                <th style="padding:10px;  border: 1px solid #f5f5f5">평가</th>
+                <th style="padding:10px;  border: 1px solid #f5f5f5; text-align: center; font-weight:800">평가</th>
               </tr>
             </thead>
             <tbody>
@@ -24,9 +24,9 @@
                 <td style="width: 200px; text-align: center; border: 1px solid #e0e0e0;">
                   {{ item.midCategoryName }}
                 </td>
-                <td style="border: 1px solid #e0e0e0;" width="700">
+                <td style="border: 1px solid #e0e0e0;padding:0" width="700">
                   <v-text-field v-model="item.subEvalutionContent" :label="item.subEvalutionContent ? '' : '소분류 입력'"
-                    outlined hide-details dense :disabled="item.saved && !item.editable" />
+                    outlined hide-details dense :disabled="item.saved && !item.editable" s />
                 </td>
                 <td style="padding:0 10px;">
                   <v-btn icon @click="changeStatus(item)"
@@ -41,13 +41,14 @@
                 </td>
               </tr>
             </tbody>
-          </v-simple-table>
+          </v-table>
 
           <v-row justify="end" style="margin-top: 20px;">
-            <v-btn v-create @click="saveAllSubEvalutions" :disabled="isSaveDisabled">
+            <v-btn v-create @click="saveAllSubEvalutions" :disabled="isSaved">
               전체 저장
             </v-btn>
           </v-row>
+
         </v-col>
       </v-row>
     </template>
@@ -65,12 +66,16 @@ export default {
   data() {
     return {
       evalutions: [], // 대/중/소분류 데이터
+      isEvaluationPeriod: '',
     };
   },
   computed: {
     isSaveDisabled() {
       return this.evalutions.some(item => !item.subEvalutionContent || item.subEvalutionContent.trim() === '');
     },
+    isSaved() {
+      return this.evalutions.every(item => item.saved && item.subEvalutionContent.trim() !== '');
+    }
   },
   created() {
     this.fetchSubEvalutions();
@@ -150,8 +155,14 @@ export default {
           subEvalutionId: item.subEvalutionId,
         }));
 
+
       if (payload.length === 0) {
         alert('저장할 소분류가 없습니다.');
+        return;
+      }
+
+      if (this.isSaveDisabled) {
+        alert('모든 항목을 작성해주세요.');
         return;
       }
 

@@ -1,7 +1,7 @@
 <template>
   <MypageTemplate>
     <template #attendance>
-      <v-row class="leave-info-table" style="margin-top: 10px;">
+      <v-row style="margin-top: 10px;">
         <v-col cols="12">
           <v-row>
             <v-card-text>

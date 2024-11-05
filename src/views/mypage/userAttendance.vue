@@ -41,7 +41,7 @@
 
           <v-col>
             <div class="user-info">
-              <div class="user-name">{{ user.userName }}</div>
+              <div class="user-name">{{ user.name }}</div>
               <div class="user-position">{{ user.departmentName }} - {{
                 user.positionName }}</div>
               <div class="user-status">{{ user.statusData }}</div>
@@ -125,6 +125,10 @@ export default {
       // 자리비움
       try {
         await axios.get(`${process.env.VUE_APP_API_BASE_URL}/attendance/meeting-in`);
+        if (this.userStatus == '퇴근') {
+          alert("퇴근 후에는 자리비움이 불가능합니다.");
+          return;
+        }
         location.reload();
       } catch (e) {
         console.log(e);
