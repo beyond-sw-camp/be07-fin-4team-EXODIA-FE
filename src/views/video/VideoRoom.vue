@@ -55,8 +55,13 @@ export default {
 
   methods: {
     parseClientData(data) {
-    try {
-      const parsedData = JSON.parse(data);
+      try {
+      const parts = data.split('%/%');
+      
+      if (parts[1]) {
+        return parts[1];
+      }
+      const parsedData = JSON.parse(parts[0]);
       return parsedData.clientData || 'Unknown';
     } catch (e) {
       return data || 'Unknown';
