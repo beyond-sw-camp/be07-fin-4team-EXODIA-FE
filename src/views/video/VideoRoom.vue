@@ -2,7 +2,6 @@
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
 
-    <!-- Dynamic Video Grid -->
     <div class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
       <div v-for="(video, index) in videos" :key="index" class="video-container">
         <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline
@@ -39,7 +38,7 @@ export default {
   data() {
     return {
       roomTitle: '',
-      videos: [], // 참가자 비디오 배열
+      videos: [], 
       OV: null,
       session: null,
       publisher: null,
@@ -83,7 +82,11 @@ export default {
           }, 500);
         });
 
-        await this.session.connect(token, { clientData: "사용자명" });
+        this.session.on('streamDestroyed', (event) => {
+          this.removeVideo(event.stream);
+        });
+
+        await this.session.connect(token, { clientData: localStorage.getItem("userName") || "Unknown User" });
 
         this.publisher = this.OV.initPublisher(undefined, {
           videoSource: undefined,
@@ -102,6 +105,10 @@ export default {
       } catch (error) {
         console.error("Error joining the room:", error);
       }
+    },
+
+    removeVideo(stream) {
+      this.videos = this.videos.filter((video) => video.stream !== stream);
     },
 
     toggleAudio() {
@@ -125,6 +132,7 @@ export default {
           this.videos.splice(0, 1, screenPublisher); // 첫번째 위치에 화면공유 비디오 설정
           await this.session.publish(screenPublisher);
           this.isScreenSharing = true;
+          this.screenPublisher = screenPublisher;
         } catch (error) {
           console.error("Failed to start screen share:", error);
         }
