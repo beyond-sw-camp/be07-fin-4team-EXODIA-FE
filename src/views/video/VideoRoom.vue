@@ -11,9 +11,16 @@
 
       <!-- 오른쪽 1/3 세로 나열 비디오 -->
       <div class="vertical-videos">
-        <div v-for="(video, index) in paginatedVideos" :key="index" class="video-container" @dblclick="toggleFullscreen(index)">
+        <div v-for="(video, index) in paginatedVideos" :key="index" class="video-container" @mouseover="showFullscreenIcon(index)" @mouseleave="hideFullscreenIcon(index)">
           <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline></video>
           <p class="video-name">{{ parseClientData(video.stream.connection.data) }}</p>
+          <v-icon
+            v-if="video.showFullscreenIcon"
+            class="fullscreen-icon"
+            @click="toggleFullscreen(index)"
+          >
+            mdi-fullscreen
+          </v-icon>
         </div>
 
         <!-- 페이징 컨트롤 -->
@@ -26,12 +33,20 @@
 
 
     <!-- 일반 6분할 레이아웃 (화면 공유 중이 아닐 때) -->
-      <div v-else class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
-      <div v-for="(video, index) in videos" :key="index" class="video-container" @dblclick="toggleFullscreen(index)">
+    <div v-else class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
+      <div v-for="(video, index) in videos" :key="index" class="video-container" @mouseover="showFullscreenIcon(index)" @mouseleave="hideFullscreenIcon(index)">
         <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline :muted="index === 0"></video>
         <p class="video-name">{{ parseClientData(video.stream.connection.data) }}</p>
+        <v-icon
+          v-if="video.showFullscreenIcon"
+          class="fullscreen-icon"
+          @click="toggleFullscreen(index)"
+        >
+          mdi-fullscreen
+        </v-icon>
       </div>
     </div>
+
 
     <!-- 화면 공유 권한 요청 모달 -->
     <v-dialog v-model="showApprovalDialog" max-width="400">
@@ -44,6 +59,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+
 
     <!-- 컨트롤 버튼들 -->
     <v-row class="controls" justify="center">
@@ -127,6 +144,7 @@ export default {
 
         this.session.on('streamCreated', (event) => {
           const subscriber = this.session.subscribe(event.stream, undefined);
+          subscriber.showFullscreenIcon = false; 
           this.videos.push(subscriber);
 
           // 비디오의 srcObject를 설정
@@ -145,6 +163,15 @@ export default {
 
         this.session.on('streamDestroyed', (event) => {
           this.removeVideo(event.stream);
+        });
+
+
+        this.session.on('signal:screenShare', (event) => {
+          if (event.data === 'start') {
+            this.isScreenSharing = true;
+          } else if (event.data === 'stop') {
+            this.isScreenSharing = false;
+          }
         });
 
         await this.session.connect(token, { clientData: localStorage.getItem("userName") || "Unknown User" });
@@ -193,6 +220,16 @@ export default {
       videoElement.msRequestFullscreen();
     }
   },
+
+
+
+  showFullscreenIcon(index) {
+      this.videos[index].showFullscreenIcon = true;
+    },
+  hideFullscreenIcon(index) {
+      this.videos[index].showFullscreenIcon = false;
+    },
+
 
   nextPage() {
       if (this.hasNextPage) {
@@ -304,6 +341,7 @@ export default {
 }
 </script>
 
+
 <style>
 .room-view {
   display: flex;
@@ -370,6 +408,13 @@ export default {
   font-size: 0.8em;
 }
 
+.fullscreen-icon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: #fff;
+  cursor: pointer;
+}
 
 .screen-share-layout {
   display: flex;
@@ -406,6 +451,4 @@ export default {
   width: 100%;
   margin-top: 10px;
 }
-
-
 </style>
