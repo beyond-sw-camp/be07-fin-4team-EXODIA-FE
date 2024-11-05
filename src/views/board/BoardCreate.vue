@@ -293,7 +293,8 @@ export default {
       formData.append('isPinned', this.isPinned ? 'true' : 'false');
       formData.append('tagIds', this.selectedTags);
 
-      const currentTimeKST = new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" });
+      const currentDate = new Date();
+      const currentTimeKST = new Date(currentDate.getTime() + 9 * 60 * 60 * 1000).toISOString();
       formData.append('createdTime', currentTimeKST);
 
       if (this.files && this.files.length > 0) {

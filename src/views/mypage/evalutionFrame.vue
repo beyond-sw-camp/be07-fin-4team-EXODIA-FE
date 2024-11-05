@@ -183,7 +183,6 @@ export default {
         location.reload();
       } catch (error) {
         console.error('Failed to save sub-evaluations', error);
-        alert('모든 소분류가 성공적으로 저장되었습니다.');
       }
     },
   },
