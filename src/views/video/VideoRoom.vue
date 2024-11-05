@@ -4,32 +4,27 @@
 
     <!-- 화면 공유 중일 때 레이아웃 -->
     <div v-if="isScreenSharing" class="screen-share-layout">
-      <!-- 왼쪽 2/3 화면 공유 비디오 -->
       <div class="screen-share-video">
-        <video :srcObject="screenPublisher.stream.getMediaStream()" autoplay playsinline></video>
+        <!-- Adjust to use `screenPublisher` in the layout -->
+        <video :srcObject="screenPublisher ? screenPublisher.stream.getMediaStream() : null" autoplay playsinline></video>
       </div>
-
-      <!-- 오른쪽 1/3 세로 나열 비디오 -->
+    
       <div class="vertical-videos">
         <div v-for="(video, index) in paginatedVideos" :key="index" class="video-container" @mouseover="showFullscreenIcon(index)" @mouseleave="hideFullscreenIcon(index)">
           <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline></video>
           <p class="video-name">{{ parseClientData(video.stream.connection.data) }}</p>
-          <v-icon
-            v-if="video.showFullscreenIcon"
-            class="fullscreen-icon"
-            @click="toggleFullscreen(index)"
-          >
+          <v-icon v-if="video.showFullscreenIcon" class="fullscreen-icon" @click="toggleFullscreen(index)">
             mdi-fullscreen
           </v-icon>
         </div>
-
-        <!-- 페이징 컨트롤 -->
+    
         <div class="pagination-controls">
           <button @click="previousPage" :disabled="page === 0">Previous</button>
           <button @click="nextPage" :disabled="!hasNextPage">Next</button>
         </div>
       </div>
     </div>
+    
 
 
     <!-- 일반 6분할 레이아웃 (화면 공유 중이 아닐 때) -->
@@ -167,13 +162,21 @@ export default {
 
 
         this.session.on('signal:screenShare', (event) => {
-          const data = JSON.parse(event.data);
-          if (data.action === 'start') {
-            this.isScreenSharing = true;
-          } else if (data.action === 'stop') {
-            this.isScreenSharing = false;
+        const data = JSON.parse(event.data);
+        if (data.action === 'start') {
+          this.isScreenSharing = true;
+          
+          const screenStream = this.videos.find(video => video.stream && video.stream.hasVideo('screen'));
+          if (screenStream) {
+            this.screenPublisher = screenStream;
           }
-        });
+
+        } else if (data.action === 'stop') {
+          this.isScreenSharing = false;
+          this.screenPublisher = null;
+        }
+      });
+
 
 
         await this.session.connect(token, { clientData: localStorage.getItem("userName") || "Unknown User" });
@@ -274,7 +277,7 @@ export default {
         // Broadcast screen sharing status
         this.session.signal({
           type: 'screenShare',
-          data: JSON.stringify({ action: 'start' }), // 변경된 부분
+          data: JSON.stringify({ action: 'start' }),
         });
       } catch (error) {
         console.error("Failed to start screen share:", error);
