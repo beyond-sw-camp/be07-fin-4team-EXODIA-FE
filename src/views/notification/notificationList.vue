@@ -174,27 +174,36 @@ export default {
         console.error("알림 읽음 처리 중 오류 발생:", error);
       }
     },
-
     async handleNotificationClick(notification) {
       if (!notification.isRead) {
-        await this.markAsRead(notification.id);
-        notification.isRead = true;
-        if (this.unreadCount > 0) this.unreadCount -= 1;
-        this.fetchNotifications();
+        try {
+          await this.markAsRead(notification.id); // 서버에서 읽음 처리
+          notification.isRead = true; // 읽음 상태 업데이트
+          if (this.unreadCount > 0) this.unreadCount -= 1; // 카운트 감소
+        } catch (error) {
+          console.error("알림 읽음 처리 중 오류 발생:", error);
+        }
       }
-      this.redirectToNotification(notification);
+      this.redirectToNotification(notification); // 알림 클릭 시 이동
     },
 
     redirectToNotification(notification) {
-      const routeMap = {
-        공지사항: "/board/notice/list",
-        문의: "/qna/list",
-        예약: "/reservation/reservationList",
-        결재: "/submit/list",
-        문서: "/document",
-      };
-      const route = routeMap[notification.type] || "/";
-      window.location.href = route;
+      if (notification.type === '공지사항' && notification.targetId) {
+        this.$router.push(`/board/detail/${notification.targetId}`);
+      } else if (notification.type === '문의') {
+        this.$router.push(`/qna/detail/${notification.targetId}`);
+      } else if (notification.type === '예약') {
+        if (notification.status === 'RESERVED') {
+          window.location.href = '/reservation/adminCarResList';
+        } else {
+          window.location.href = '/reservation/reservationList';
+        }
+      } else if (notification.type === '결재' && notification.targetId) {
+        const isMySubmitReq = notification.status === '승인';
+        this.$router.push(`/submit/detail/${notification.targetId}?isMySubmitReq=${isMySubmitReq}`);
+      } else if (notification.type === '문서') {
+        window.location.href = '/document';
+      }
     },
 
     getAuthHeaders() {
@@ -247,19 +256,20 @@ export default {
   border-radius: 10px !important;
   background-color: #f9f9f9 !important;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1) !important;
-  padding: 15px;
+  padding: 20px;
 }
 
 .notification-item.unread {
   background-color: #e8f5e9;
   color: black;
   font-weight: bold;
-  padding: 15px;
+  padding: 20px;
 }
 
 .notification-item.read {
   color: gray;
   background-color: #e0e0e0;
+  padding: 20px;
 }
 
 .new-label {
