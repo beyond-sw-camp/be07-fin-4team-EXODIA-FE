@@ -2,18 +2,37 @@
   <div class="room-view">
     <h2>화상회의 방: {{ roomTitle }}</h2>
 
-    <div class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
-      <div v-for="(video, index) in videos" :key="index" class="video-container">
-        <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline
-          :muted="index === 0"></video>
-        <p class="video-name">
-          {{ parseClientData(video.stream.connection.data) }}
-        </p>
+    <!-- 화면 공유 중일 때 레이아웃 -->
+    <div v-if="isScreenSharing" class="screen-share-layout">
+      <!-- 왼쪽 2/3 화면 공유 비디오 -->
+      <div class="screen-share-video">
+        <video :srcObject="screenPublisher.stream.getMediaStream()" autoplay playsinline></video>
+      </div>
 
+      <!-- 오른쪽 1/3 세로 나열 비디오 -->
+      <div class="vertical-videos">
+        <div v-for="(video, index) in paginatedVideos" :key="index" class="video-container" @dblclick="toggleFullscreen(index)">
+          <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline></video>
+          <p class="video-name">{{ parseClientData(video.stream.connection.data) }}</p>
+        </div>
+
+        <!-- 페이징 컨트롤 -->
+        <div class="pagination-controls">
+          <button @click="previousPage" :disabled="page === 0">Previous</button>
+          <button @click="nextPage" :disabled="!hasNextPage">Next</button>
+        </div>
       </div>
     </div>
 
-    <!-- Control Buttons -->
+    <!-- 일반 6분할 레이아웃 (화면 공유 중이 아닐 때) -->
+    <div v-else class="video-grid" :class="'grid-' + Math.min(videos.length, 6)">
+      <div v-for="(video, index) in videos" :key="index" class="video-container" @dblclick="toggleFullscreen(index)">
+        <video :ref="'video' + index" :srcObject="video.stream.getMediaStream()" autoplay playsinline :muted="index === 0"></video>
+        <p class="video-name">{{ parseClientData(video.stream.connection.data) }}</p>
+      </div>
+    </div>
+
+    <!-- 컨트롤 버튼들 -->
     <v-row class="controls" justify="center">
       <v-btn icon @click="toggleAudio">
         <v-icon>{{ isAudioEnabled ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
@@ -43,11 +62,21 @@ export default {
       OV: null,
       session: null,
       publisher: null,
+      screenPublisher: null,
       isAudioEnabled: true,
       isVideoEnabled: true,
       isScreenSharing: false,
-      originalPublisher: null,
+      page: 0,
     };
+  },
+  computed: {
+    paginatedVideos() {
+      const start = this.page * 3;
+      return this.videos.slice(start, start + 3);
+    },
+    hasNextPage() {
+      return (this.page + 1) * 3 < this.videos.length;
+    }
   },
   created() {
     this.initializeRoom();
@@ -134,6 +163,31 @@ export default {
     toggleVideo() {
       this.isVideoEnabled = !this.isVideoEnabled;
       this.publisher.publishVideo(this.isVideoEnabled);
+    },
+
+    toggleFullscreen(index) {
+    const videoElement = this.$refs[`video${index}`][0];
+    if (videoElement.requestFullscreen) {
+      videoElement.requestFullscreen();
+    } else if (videoElement.mozRequestFullScreen) {
+      videoElement.mozRequestFullScreen();
+    } else if (videoElement.webkitRequestFullscreen) { 
+      videoElement.webkitRequestFullscreen();
+    } else if (videoElement.msRequestFullscreen) { 
+      videoElement.msRequestFullscreen();
+    }
+  },
+
+  nextPage() {
+      if (this.hasNextPage) {
+        this.page++;
+      }
+    },
+    
+    previousPage() {
+      if (this.page > 0) {
+        this.page--;
+      }
     },
 
     async startScreenShare() {
@@ -259,4 +313,43 @@ export default {
   border-radius: 3px;
   font-size: 0.8em;
 }
+
+
+.screen-share-layout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+.screen-share-video {
+  width: 66.66%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.screen-share-video video {
+  width: 100%;
+  height: 100%;
+}
+
+.vertical-videos {
+  width: 33.33%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+}
+
+
 </style>
