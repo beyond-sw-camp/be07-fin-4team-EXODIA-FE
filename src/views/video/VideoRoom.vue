@@ -83,10 +83,10 @@ export default {
             const videoRefName = 'video' + (this.videos.length - 1);
             const videoElement = this.$refs[videoRefName][0];
 
-            if (videoElement) {
+            if (videoElement && subscriber.stream) {
               videoElement.srcObject = subscriber.stream.getMediaStream();
               videoElement.play().catch((error) => {
-                console.warn("Video auto-play blocked", error);
+                  console.warn("Video auto-play blocked", error);
               });
             }
           }, 500);
