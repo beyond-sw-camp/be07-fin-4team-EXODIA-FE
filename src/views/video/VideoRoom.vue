@@ -1,39 +1,50 @@
 <template>
   <div class="room-view">
-    <h2 class="room-title">{{ roomTitle }}</h2>
+    <h2>화상회의 방: {{ roomTitle }}</h2>
 
-    <!-- Main Video -->
-    <div class="main-video-container">
-      <video ref="mainVideo" :srcObject="mainVideo ? mainVideo.stream.getMediaStream() : null" autoplay playsinline></video>
-      <div class="video-name-overlay">{{ mainVideoName }}</div>
-      <v-btn icon @click="toggleFullscreen" class="fullscreen-icon">
-        <v-icon>mdi-fullscreen</v-icon>
-      </v-btn>
-      <v-btn icon @click="togglePIP" class="pip-icon">
-        <v-icon>mdi-picture-in-picture-bottom-right</v-icon>
-      </v-btn>
+    <!-- Video Grid -->
+    <div v-if="!isScreenSharing" class="video-grid">
+      <div
+        v-for="(subscriber, index) in paginatedVideos"
+        :key="index"
+        class="video-container"
+      >
+        <div class="user-label">{{ subscriber.stream.connection?.data || 'Unknown' }}</div>
+        <video :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline></video>
+      </div>
     </div>
 
-    <!-- Side Videos with Vuetify Arrows for Navigation -->
-    <div class="side-videos-container">
-      <v-btn icon @click="prevSideVideo" v-if="sideVideos.length > 3">
-        <v-icon>mdi-chevron-left</v-icon>
-      </v-btn>
-      <div class="side-videos">
+    <!-- Screen Sharing Layout -->
+    <div v-else class="screen-sharing-layout">
+      <!-- Main Screen Sharing Video -->
+      <div class="main-screen">
+        <div class="user-label">{{ mainVideo?.stream.connection?.data || 'Unknown' }}</div>
+        <video ref="mainVideo" :srcObject="mainVideo?.stream.getMediaStream()" autoplay playsinline></video>
+      </div>
+
+      <!-- Other Videos in Side Column -->
+      <div class="side-videos-column">
         <div
-          v-for="(videoData, index) in visibleSideVideos"
+          v-for="(subscriber, index) in paginatedVideos"
           :key="index"
           class="side-video"
-          @click="switchToMain(videoData.subscriber, index)"
         >
-          <video :ref="'sideVideo' + index" autoplay playsinline muted></video>
-          <div class="video-name-overlay">{{ videoData.participantName || 'Participant' }}</div>
+          <div class="user-label">{{ subscriber.stream.connection?.data || 'Unknown' }}</div>
+          <video :srcObject="subscriber.stream.getMediaStream()" autoplay playsinline></video>
         </div>
       </div>
-      <v-btn icon @click="nextSideVideo" v-if="sideVideos.length > 3">
+    </div>
+
+    <!-- Pagination Controls -->
+    <v-row class="pagination-controls" justify="center" v-if="pages > 1">
+      <v-btn icon @click="prevPage" :disabled="currentPage === 1">
+        <v-icon>mdi-chevron-left</v-icon>
+      </v-btn>
+      <span>Page {{ currentPage }} / {{ pages }}</span>
+      <v-btn icon @click="nextPage" :disabled="currentPage === pages">
         <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
-    </div>
+    </v-row>
 
     <!-- Control Buttons -->
     <v-row class="controls" justify="center">
@@ -61,200 +72,150 @@ export default {
   data() {
     return {
       roomTitle: '',
-      mainVideo: null,
-      mainVideoName: 'Your Video',
+      mainVideo: null, 
       sideVideos: [],
-      visibleSideVideos: [],
       OV: null,
       session: null,
       publisher: null,
       isAudioEnabled: true,
       isVideoEnabled: true,
       isScreenSharing: false,
-      screenPublisher: null,
-      currentSideIndex: 0,
+      originalPublisher: null,
+      currentPage: 1, // 현재 페이지 번호
+      videosPerPage: 6,
     };
   },
-  async created() {
-    await this.fetchRoomDetails();
-    await this.initializeRoom();
+  computed: {
+    paginatedVideos() {
+      const start = (this.currentPage - 1) * this.videosPerPage;
+      const end = start + this.videosPerPage;
+      return this.sideVideos.slice(start, end);
+    },
+    pages() {
+      return Math.ceil(this.sideVideos.length / this.videosPerPage);
+    }
   },
   methods: {
-    async fetchRoomDetails() {
-      const { sessionId } = this.$route.params;
-      try {
-        const response = await axios.get(`/api/rooms/${sessionId}`);
-        this.roomTitle = response.data.roomTitle;
-      } catch (error) {
-        console.error("Error fetching room details:", error);
-      }
-    },
-
     async initializeRoom() {
-      const { sessionId } = this.$route.params;
-      try {
-        const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
-          params: { userNum: localStorage.getItem("userNum") },
-        });
-        const token = response.data.token;
+    const { sessionId } = this.$route.params;
+    try {
+      const response = await axios.post(`/api/rooms/${sessionId}/join`, null, {
+        params: { userNum: localStorage.getItem("userNum") },
+      });
+      const token = response.data.token;
 
-        this.OV = new OpenVidu();
-        this.session = this.OV.initSession();
+      this.OV = new OpenVidu();
+      this.session = this.OV.initSession();
 
-        // 상대방 화면 표시 및 이름 가져오기
-        this.session.on('streamCreated', (event) => {
-          const subscriber = this.session.subscribe(event.stream, undefined);
-          const participantName = event.stream.connection.data; // 참가자 이름
-          this.sideVideos.push({ subscriber, participantName });
-          
-          // 비디오가 렌더링된 후 스트림을 연결
-          setTimeout(() => {
-            const videoElement = this.$refs[`sideVideo${this.sideVideos.length - 1}`];
-            if (videoElement && videoElement[0]) {
-              videoElement[0].srcObject = subscriber.stream.getMediaStream();
-            }
-          }, 500);
-          this.updateVisibleSideVideos();
-        });
+      this.session.on('streamCreated', (event) => {
+        const subscriber = this.session.subscribe(event.stream, undefined);
+        this.sideVideos.push(subscriber);
 
-        // 상대방 화면 제거
-        this.session.on('streamDestroyed', (event) => {
-          const index = this.sideVideos.findIndex(
-            video => video.subscriber === event.stream.streamManager
-          );
-          if (index !== -1) {
-            this.sideVideos.splice(index, 1);
-            this.updateVisibleSideVideos();
+        setTimeout(() => {
+          const videoRefName = 'sideVideo' + (this.sideVideos.length - 1);
+          const sideVideoElement = this.$refs[videoRefName][0];
+
+          if (sideVideoElement) {
+            sideVideoElement.srcObject = subscriber.stream.getMediaStream();
+            sideVideoElement.play().catch((error) => {
+              console.warn("Video auto-play blocked", error);
+            });
           }
-        });
+        }, 500);
+      });
 
-        await this.session.connect(token, { clientData: "Your Name" });
+      await this.session.connect(token, { clientData: "사용자명" });
 
-        this.publisher = this.OV.initPublisher(undefined, {
-          videoSource: undefined,
-          audioSource: undefined,
-          publishAudio: this.isAudioEnabled,
-          publishVideo: this.isVideoEnabled,
-          mirror: true,
-        });
+      // 메인 비디오를 설정하고 퍼블리시
+      this.publisher = this.OV.initPublisher(undefined, {
+        videoSource: undefined, // 카메라 비디오로 설정
+        audioSource: undefined,
+        publishAudio: this.isAudioEnabled,
+        publishVideo: this.isVideoEnabled,
+        mirror: true,
+      });
 
-        this.publisher.once('accessAllowed', () => {
-          this.mainVideo = this.publisher;
-          this.mainVideoName = "Your Video";
-          this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
-        });
+      this.publisher.once('accessAllowed', () => {
+        this.mainVideo = this.publisher;
+        this.$refs.mainVideo.srcObject = this.publisher.stream.getMediaStream();
+      });
 
-        this.session.publish(this.publisher);
-      } catch (error) {
-        console.error("Error joining the room:", error);
-      }
-    },
-
-    toggleAudio() {
-      this.isAudioEnabled = !this.isAudioEnabled;
-      this.publisher.publishAudio(this.isAudioEnabled);
-    },
-
-    toggleVideo() {
-      this.isVideoEnabled = !this.isVideoEnabled;
-      this.publisher.publishVideo(this.isVideoEnabled);
-    },
-
-    async startScreenShare() {
-      if (!this.isScreenSharing) {
-        try {
-          const screenPublisher = this.OV.initPublisher(undefined, {
-            videoSource: 'screen',
-            publishAudio: this.isAudioEnabled,
-          });
-
-          this.screenPublisher = screenPublisher;
-          this.sideVideos.push({ subscriber: screenPublisher, participantName: 'Screen Share' });
-          await this.session.publish(screenPublisher);
-          this.isScreenSharing = true;
-
-          screenPublisher.once('streamDestroyed', () => {
-            this.stopScreenShare();
-          });
-        } catch (error) {
-          console.error("Failed to start screen share:", error);
-        }
-      } else {
-        await this.stopScreenShare();
-      }
-    },
-
-    async stopScreenShare() {
-      if (this.isScreenSharing && this.screenPublisher) {
-        try {
-          await this.session.unpublish(this.screenPublisher);
-          const index = this.sideVideos.findIndex(video => video.subscriber === this.screenPublisher);
-          if (index !== -1) this.sideVideos.splice(index, 1);
-          this.screenPublisher = null;
-          this.isScreenSharing = false;
-          this.updateVisibleSideVideos();
-        } catch (error) {
-          console.error("Failed to stop screen share:", error);
-        }
-      }
-    },
-
-    switchToMain(subscriber, index) {
-      const previousMainVideo = this.mainVideo;
-      this.mainVideo = subscriber;
-      this.sideVideos.splice(index, 1, previousMainVideo);
-      this.updateVisibleSideVideos();
-    },
-
-    toggleFullscreen() {
-      const video = this.$refs.mainVideo;
-      if (video.requestFullscreen) {
-        video.requestFullscreen();
-      }
-    },
-
-    togglePIP() {
-      const video = this.$refs.mainVideo;
-      if (document.pictureInPictureElement) {
-        document.exitPictureInPicture();
-      } else if (video.requestPictureInPicture) {
-        video.requestPictureInPicture();
-      }
-    },
-
-    prevSideVideo() {
-      if (this.currentSideIndex > 0) {
-        this.currentSideIndex -= 3;
-        this.updateVisibleSideVideos();
-      }
-    },
-
-    nextSideVideo() {
-      if (this.currentSideIndex < this.sideVideos.length - 3) {
-        this.currentSideIndex += 3;
-        this.updateVisibleSideVideos();
-      }
-    },
-
-    updateVisibleSideVideos() {
-      this.visibleSideVideos = this.sideVideos.slice(this.currentSideIndex, this.currentSideIndex + 3);
-    },
-
-    async leaveRoom() {
-      const { sessionId } = this.$route.params;
-      try {
-        if (this.session) {
-          this.session.disconnect();
-        }
-        await axios.post(`/api/rooms/${sessionId}/leave`, null, {
-          params: { userNum: localStorage.getItem("userNum") },
-        });
-        this.$router.push({ name: 'RoomList' });
-      } catch (error) {
-        console.error("Error leaving the room:", error);
-      }
-    },
+      this.session.publish(this.publisher);
+    } catch (error) {
+      console.error("Error joining the room:", error);
+    }
   },
+  toggleAudio() {
+    this.isAudioEnabled = !this.isAudioEnabled;
+    this.publisher.publishAudio(this.isAudioEnabled);
+  },
+  toggleVideo() {
+    this.isVideoEnabled = !this.isVideoEnabled;
+    this.publisher.publishVideo(this.isVideoEnabled);
+  },
+
+  async startScreenShare() {
+    if (!this.isScreenSharing) {
+      try {
+        const screenPublisher = this.OV.initPublisher(undefined, {
+          videoSource: 'screen',
+          publishAudio: this.isAudioEnabled,
+        });
+
+        await this.session.unpublish(this.publisher);
+        this.mainVideo = screenPublisher;
+        await this.session.publish(screenPublisher);
+        this.isScreenSharing = true;
+
+        this.screenPublisher = screenPublisher;
+      } catch (error) {
+        console.error("Failed to start screen share:", error);
+      }
+    } else {
+      try {
+        await this.session.unpublish(this.screenPublisher);
+        this.mainVideo = this.publisher;
+        await this.session.publish(this.publisher); 
+        this.isScreenSharing = false;
+      } catch (error) {
+        console.error("Failed to stop screen share:", error);
+      }
+    }
+  },
+
+  switchToMain(subscriber, index) {
+    const previousMainVideo = this.mainVideo;
+    this.mainVideo = subscriber;
+    this.sideVideos.splice(index, 1, previousMainVideo); 
+  },
+
+    nextPage() {
+      if (this.currentPage < this.pages) {
+        this.currentPage++;
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+
+    
+    async leaveRoom() {
+    const { sessionId } = this.$route.params;
+    try {
+      if (this.session) {
+        this.session.disconnect();
+      }
+      await axios.post(`/api/rooms/${sessionId}/leave`, null, {
+        params: { userNum: localStorage.getItem("userNum") },
+      });
+      this.$router.push({ name: 'RoomList' });
+    } catch (error) {
+      console.error("Error leaving the room:", error);
+    }
+  },
+  }
 };
 </script>
 
@@ -266,63 +227,91 @@ export default {
   padding: 20px;
 }
 
-.main-video-container {
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 80%;
+  max-width: 1000px;
+}
+
+.video-container {
   position: relative;
-  width: 50%;
-  max-width: 700px;
-  margin-bottom: 20px;
+  width: 100%;
+  aspect-ratio: 16/9;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-  border: 4px solid #3498db;
+  background-color: #000;
 }
 
-.main-video-container video {
+.video-container video {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
 }
 
-.fullscreen-icon, .pip-icon {
+.user-label {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  margin-left: 5px;
-}
-
-.video-name-overlay {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
+  top: 8px;
+  left: 8px;
+  background-color: rgba(128, 128, 128, 0.7);
+  color: #fff;
   padding: 2px 5px;
+  font-size: 0.8em;
   border-radius: 3px;
 }
 
-.side-videos-container {
+.screen-sharing-layout {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  width: 100%;
+  max-width: 1200px;
 }
 
-.side-videos {
+.main-screen {
+  width: 66.66%; /* 페이지 2/3 차지 */
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.main-screen video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.side-videos-column {
+  width: 33.33%; /* 페이지 1/3 차지 */
   display: flex;
+  flex-direction: column;
   gap: 10px;
+  padding: 10px;
+  overflow-y: auto;
 }
 
 .side-video {
   position: relative;
-  width: 240px;
-  height: 140px;
+  width: 100%;
+  aspect-ratio: 16/9;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  border: 2px solid #bdc3c7;
+  background-color: #000;
 }
 
-.side-video:hover {
-  transform: scale(1.05);
-  border-color: #3498db;
+.side-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pagination-controls {
+  margin-top: 10px;
+}
+
+.controls {
+  margin-top: 20px;
 }
 </style>
