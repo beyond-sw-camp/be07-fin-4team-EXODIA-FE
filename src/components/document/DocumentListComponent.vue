@@ -52,8 +52,8 @@
                 <v-col cols="12">
                     <v-row class="mb-2" :class="{ 'drawer-open': drawer }"
                         style="background-color:rgba(122, 86, 86, 0.2);border-radius:15px ; padding:4px; color:#444444; font-weight:600;">
-                        <v-col cols="1"><strong>번호</strong></v-col>
-                        <v-col cols="6"><strong>파일 이름</strong></v-col>
+                        <v-col cols="2"><strong>번호</strong></v-col>
+                        <v-col cols="5"><strong>파일 이름</strong></v-col>
                         <v-col cols="3"><strong>등록일</strong></v-col>
                         <v-col cols="2"><strong>작성자</strong></v-col>
                     </v-row>
@@ -61,8 +61,8 @@
                     <v-row :class="{ 'drawer-open': drawer }" v-for="(document, index) in documents" :key="document.id"
                         class="document" oulined @click="openDrawer(document.id)"
                         style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500">
-                        <v-col cols="1">{{ (page - 1) * pageSize + index + 1 }}</v-col>
-                        <v-col cols="6" class="ellipsis-text-list" style="text-align:start;">{{ document.fileName
+                        <v-col cols="2">{{ (page - 1) * pageSize + index + 1 }}</v-col>
+                        <v-col cols="5" class="ellipsis-text-list" style="text-align:start;">{{ document.fileName
                             }}</v-col>
                         <v-col cols="3">{{ formatDate(document.createdAt) }}</v-col>
                         <v-col cols="2">{{ document.userName }}</v-col>
