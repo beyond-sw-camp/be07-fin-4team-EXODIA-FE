@@ -149,7 +149,7 @@
 
                     <v-row class="submit-btn">
                         <v-btn v-create class="mt-8" @click="createSubmit">
-                            결재라인 등록
+                            결재 등록
                         </v-btn>
                     </v-row>
                 </v-col>
