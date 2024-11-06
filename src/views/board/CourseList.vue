@@ -425,8 +425,8 @@ export default {
 
     // 날짜 포맷팅
     formatDate(date) {
-      const options = { year: "numeric", month: "short", day: "numeric" };
-      return new Date(date).toLocaleDateString(undefined, options);
+      const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+      return new Date(date).toLocaleDateString("ko-KR", options);
     },
   },
   watch: {
