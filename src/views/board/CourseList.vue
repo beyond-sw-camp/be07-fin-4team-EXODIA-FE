@@ -102,7 +102,21 @@
           <v-text-field v-model="newCourse.courseUrl" label="이벤트 상품" required outlined></v-text-field>
           <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required
             outlined></v-text-field>
-          <v-text-field v-model="newCourse.startTime" label="시작 시간" type="datetime-local" required outlined></v-text-field>
+            <v-text-field
+              v-model="formattedStartTime"
+              label="시작 시간"
+              placeholder="YYYY-MM-DD HH:MM"
+              required
+              outlined
+              @click="openDateTimePicker"
+              readonly
+            ></v-text-field>
+            <input
+              ref="dateTimePicker"
+              type="datetime-local"
+              style="display: none"
+              @input="updateStartTime"
+            />
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn v-create text @click="createCourse">생성</v-btn>
@@ -174,6 +188,8 @@ import axios from "axios";
 export default {
   data() {
     return {
+      formattedStartTime: "",
+
       courses: [], // 강의 목록
       participants: [], // 신청자 목록
       showParticipantsModal: false, // 신청자 모달 상태
@@ -213,6 +229,18 @@ export default {
     },
   },
   methods: {
+    openDateTimePicker() {
+      this.$refs.dateTimePicker.click();
+    },
+    updateStartTime(event) {
+      const dateTimeValue = event.target.value;
+      this.newCourse.startTime = dateTimeValue;
+
+      // 선택한 날짜와 시간을 원하는 포맷으로 변환
+      const [date, time] = dateTimeValue.split("T");
+      this.formattedStartTime = `${date} ${time}`;
+    },
+
     // 강의 참가자 목록 불러오기
     fetchParticipants(courseId) {
       axios
@@ -313,11 +341,31 @@ export default {
     },
 
     // 강의 생성
+    // createCourse() {
+    //   if (this.newCourse.maxParticipants < 1) {
+    //     alert("최대 참가자 수는 1명 이상이어야 합니다.");
+    //     return;
+    //   }
+    //   axios
+    //     .post("/course/create", this.newCourse)
+    //     .then((response) => {
+    //       this.courses.push(response.data);
+    //       this.closeModal();
+    //       alert("강의가 성공적으로 생성되었습니다.");
+    //       this.fetchCourses(); // 목록 새로고침
+    //     })
+    //     .catch((error) => {
+    //       console.error("강의 생성 실패:", error);
+    //       alert("강의 생성 중 문제가 발생했습니다. 다시 시도해주세요.");
+    //     });
+    // },
+
     createCourse() {
-      if (this.newCourse.maxParticipants < 1) {
-        alert("최대 참가자 수는 1명 이상이어야 합니다.");
+      if (!this.newCourse.startTime) {
+        alert("시작 시간을 입력해 주세요.");
         return;
       }
+
       axios
         .post("/course/create", this.newCourse)
         .then((response) => {
@@ -331,7 +379,6 @@ export default {
           alert("강의 생성 중 문제가 발생했습니다. 다시 시도해주세요.");
         });
     },
-
     // 강의 수정 모달 열기
     openEditModal(course) {
       this.editCourse = { ...course };
