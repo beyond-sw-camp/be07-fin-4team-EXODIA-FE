@@ -102,6 +102,7 @@
           <v-text-field v-model="newCourse.courseUrl" label="이벤트 상품" required outlined></v-text-field>
           <v-text-field v-model="newCourse.maxParticipants" label="최대 참가자 수" type="number" required
             outlined></v-text-field>
+          <v-text-field v-model="newCourse.startTime" label="시작 시간" type="datetime-local" required outlined></v-text-field>
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn v-create text @click="createCourse">생성</v-btn>
@@ -307,6 +308,7 @@ export default {
         content: "",
         courseUrl: "",
         maxParticipants: 0,
+        startTime: null,
       };
     },
 

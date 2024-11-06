@@ -91,7 +91,7 @@ export default {
     this.fetchMyRegistrations();
   },
 };
-</script>
+</script> 
 
 <style scoped>
 .header-row {
