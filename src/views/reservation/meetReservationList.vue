@@ -244,77 +244,7 @@ meetReservation
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="inviteDialog" max-width="500px">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon color="" class="mr-2">mdi-account-multiple-plus</v-icon>
-          <span class="text-h6 font-weight-bold">유저 초대</span>
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-text>
-          <!-- 검색 옵션 및 검색 입력 필드 -->
-          <v-row class="d-flex align-center">
-            <v-col cols="4">
-              <v-select v-model="searchType" :items="searchOptions" item-title="text" item-value="value" label="검색 유형"
-                outlined dense></v-select>
-            </v-col>
-            <v-col cols="8">
-              <v-text-field v-model="searchQuery" label="검색" placeholder="유저 검색" @input="searchUsers"
-                append-icon="mdi-magnify" outlined dense></v-text-field>
-            </v-col>
-
-          </v-row>
-
-          <!-- 유저 리스트 -->
-          <v-list dense>
-            <v-list-item v-for="user in filteredUsers" :key="user.userNum" class="d-flex align-center">
-              <v-row class="align-center" style="width: 100%">
-                <!-- 프로필 이미지 -->
-                <v-col cols="2">
-                  <v-avatar size="36">
-                    <v-img :src="user.profileImage || defaultProfileImage" alt="프로필 이미지"></v-img>
-                  </v-avatar>
-                </v-col>
-                <!-- 이름, 부서명, 직급 -->
-                <v-col cols="7">
-                  <div class="text-subtitle-2 font-weight-medium">{{ user.name }}</div>
-                  <div class="grey--text text-caption">{{ user.departmentName }} • {{ user.positionName }}</div>
-                </v-col>
-                <!-- 선택 버튼 -->
-                <v-col cols="3" class="text-right">
-                  <v-btn icon @click="toggleUserSelection(user.userNum)"
-                    :color="selectedUsers.includes(user.userNum) ? 'primary' : ''"
-                    style="min-width: 36px; height: 36px; border-radius: 50%; box-shadow: none">
-                    <v-icon>{{ selectedUsers.includes(user.userNum) ? 'mdi-check-circle' : 'mdi-plus-circle-outline'
-                      }}</v-icon>
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-list-item>
-          </v-list>
-
-          <!-- 선택된 유저 목록 -->
-          <v-divider class="my-3"></v-divider>
-          <div class="mb-2">
-            <h3 class="text-subtitle-1 font-weight-bold">선택된 유저</h3>
-            <v-chip-group v-if="selectedUsers.length" column multiple active-class="selected-chip">
-              <v-chip v-for="userNum in selectedUsers" :key="userNum" color="" class="ma-1"
-                @click="removeUserFromInviteList(userNum)">
-                {{ getUserNameById(userNum) }}
-                <v-icon small right>mdi-close</v-icon>
-              </v-chip>
-            </v-chip-group>
-            <p v-else class="grey--text">아직 유저가 선택되지 않았습니다.</p>
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn v-invite @click="inviteUsers" :disabled="!selectedUsers.length">초대하기</v-btn>
-          <v-btn v-cancel @click="inviteDialog = false">취소</v-btn>
-
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!--  -->
 
 
   </v-container>
@@ -374,18 +304,18 @@ export default {
   // },
   methods: {
 
-    toggleUserSelection(userNum) {
-      if (this.selectedUsers.includes(userNum)) {
-        this.removeUserFromInviteList(userNum);
-      } else {
-        this.addUserToInviteList(userNum);
-      }
-    },
-    async openInviteDialog(reservation) {
-      this.selectedReservation = reservation;
-      await this.fetchUserList();
-      this.inviteDialog = true;
-    },
+    // toggleUserSelection(userNum) {
+    //   if (this.selectedUsers.includes(userNum)) {
+    //     this.removeUserFromInviteList(userNum);
+    //   } else {
+    //     this.addUserToInviteList(userNum);
+    //   }
+    // },
+    // async openInviteDialog(reservation) {
+    //   this.selectedReservation = reservation;
+    //   await this.fetchUserList();
+    //   this.inviteDialog = true;
+    // },
     async fetchUserList() {
       try {
         const token = localStorage.getItem("token");
@@ -659,7 +589,7 @@ export default {
             Authorization: `Bearer ${token}`,
           },
         });
-
+        alert("예약이 성공적으로 완료되었습니다!");
         // 예약이 성공적으로 완료된 후 필드를 초기화
         this.resetFormFields(); // 필드 초기화 함수 호출
         this.dialog = false;
