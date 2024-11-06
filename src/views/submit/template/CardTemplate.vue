@@ -100,7 +100,7 @@
                                 'mdi-chevron-down' }}</v-icon>
                         </v-card-title>
 
-                        <v-list v-if="isOpenSubmitLine"
+                        <v-list v-if="isOpenSubmitLine" class="submitline-user"
                             style="background-color: rgba(123, 86, 86, 0.3);max-height: 300px; overflow-y: auto;">
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
                                 @dragstart="onDragStart(user)" class="draggable-item">
@@ -121,7 +121,7 @@
                     <!-- 부사장까지 차까지 존재 -->
                     <v-card v-if="this.positionId >= 7" @dragover.prevent @drop="onDrop(3)" class="drop-zone">
                         <v-card-title>3차 결재자</v-card-title>
-                        <v-card-text v-if="thirdApprovers.length === 0">팀장 직급에서 선택하시오.</v-card-text>
+                        <v-card-text v-if="thirdApprovers.length === 0">본부장 직급에서 선택하시오.</v-card-text>
                         <v-list class="drop-user">
                             <v-list-item v-if="thirdApprovers.length != 0">
                                 <v-avatar class="icon" size="36">
@@ -159,9 +159,9 @@
 
                     <v-card @dragover.prevent @drop="onDrop(1)" class="drop-zone">
                         <v-card-title>1차 결재자</v-card-title>
-                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId >= 7">사장 직급에서
+                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId >= 7">팀장 직급에서
                             선택하시오.</v-card-text>
-                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId == 6">사장 직급에서
+                        <v-card-text v-if="firstApprovers.length === 0 && this.positionId == 6">본부장 직급에서
                             선택하시오.</v-card-text>
                         <v-card-text v-if="firstApprovers.length === 0 && this.positionId <= 5">사장 직급에서
                             선택하시오.</v-card-text>
@@ -427,5 +427,20 @@ export default {
 
 .drop-user {
     padding: 5px;
+}
+
+
+.submitline-user::-webkit-scrollbar {
+    width: 6px;
+}
+
+.submitline-user::-webkit-scrollbar-thumb {
+    background-color: #888888;
+    border-radius: 10px;
+}
+
+.submitline-user::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 10px;
 }
 </style>
