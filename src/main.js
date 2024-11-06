@@ -179,3 +179,30 @@ app.directive('reject', {
     }
   }
 });
+
+
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token'); 
+  
+  if (!token && to.path !== '/login') { 
+    next('/login');  
+  } else {
+    next(); 
+  }
+});
+
+
+// F12 키 비활성화
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+});
+
+// 우클릭 비활성화
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+});
+

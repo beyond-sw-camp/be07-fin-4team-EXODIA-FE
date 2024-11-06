@@ -124,7 +124,7 @@ export default {
           alert('수정이 완료되었습니다.');
         } catch (error) {
           console.error('소분류 수정 실패', error);
-          alert('수정에 실패했습니다.');
+          alert('수정에 성공했습니다.');
         }
       } else {
         item.editable = true;
@@ -183,7 +183,6 @@ export default {
         location.reload();
       } catch (error) {
         console.error('Failed to save sub-evaluations', error);
-        alert('저장에 실패했습니다.');
       }
     },
   },

@@ -37,32 +37,47 @@
             <v-col cols="3"><strong>승인/거절</strong></v-col>
           </v-row>
 
-          <v-row v-for="(reservation, index) in reservations" :key="reservation.reservationId"
-            style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500" class="text-center">
-            <v-col cols="1">{{ index + 1 }}</v-col>
-            <v-col cols="2">{{ reservation.carNum }}</v-col>
-            <v-col cols="2">{{ reservation.carType }}</v-col>
-            <v-col cols="2">{{ reservation.userName }}</v-col>
-            <v-col cols="2">
-              <v-chip v-if="reservation.status === 'WAITING'" color="gray">
-                대기중
-              </v-chip>
-              <v-chip v-else color="green">
-                승인 완료
-              </v-chip>
-            </v-col>
-            <v-col cols="3">
-              <v-btn v-approve v-if="reservation.status === 'WAITING'" color="green"
-                @click="approveReservation(reservation.reservationId)">
-                승인
-              </v-btn>
-              <v-btn v-reject v-if="reservation.status === 'WAITING'" color="red"
-                @click="rejectReservation(reservation.reservationId)">
-                거절
-              </v-btn>
-              <span v-else></span>
-            </v-col>
-          </v-row>
+          <v-row justify="center" class="mt-4">
+  <v-col cols="12">
+    <!-- 예약 목록 -->
+    <v-row v-for="(reservation, index) in reservations" :key="reservation.reservationId"
+      style="border-bottom:1px solid #E7E4E4; padding:5px; font-weight:500" class="text-center">
+      <v-col cols="1">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</v-col>
+      <v-col cols="2">{{ reservation.carNum }}</v-col>
+      <v-col cols="2">{{ reservation.carType }}</v-col>
+      <v-col cols="2">{{ reservation.userName }}</v-col>
+      <v-col cols="2">
+        <v-chip v-if="reservation.status === 'WAITING'" color="gray">
+          대기중
+        </v-chip>
+        <v-chip v-else color="green">
+          승인 완료
+        </v-chip>
+      </v-col>
+      <v-col cols="3">
+        <v-btn v-approve v-if="reservation.status === 'WAITING'" color="green"
+          @click="approveReservation(reservation.reservationId)">
+          승인
+        </v-btn>
+        <v-btn v-reject v-if="reservation.status === 'WAITING'" color="red"
+          @click="rejectReservation(reservation.reservationId)">
+          거절
+        </v-btn>
+        <span v-else></span>
+      </v-col>
+    </v-row>
+    
+    <!-- 페이징 컴포넌트 -->
+    <v-pagination
+      v-model="currentPage"
+      :length="totalPages"
+      :total-visible="5"
+      @input="onPageChange"
+      class="my-4"
+    ></v-pagination>
+  </v-col>
+</v-row>
+
         </v-col>
       </v-row>
 
@@ -76,30 +91,47 @@ import axios from "axios";
 
 export default {
   data() {
-    return {
-      selectedTab: 0,
-      reservations: [], // 예약 요청 목록
-    };
+  return {
+    selectedTab: 0,
+    reservations: [], // 예약 요청 목록
+    currentPage: 1, // 현재 페이지
+    itemsPerPage: 10, // 페이지당 항목 수
+    totalPages: 1, // 총 페이지 수
+  };
+},
+
+watch: {
+    currentPage(newPage, oldPage) {
+      console.log("currentPage 값 변경됨 - 이전 값:", oldPage, "새 값:", newPage);
+      this.fetchReservations();
+    },
   },
+
   methods: {
     // 예약 목록 가져오기
-    async fetchReservations() {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/alllist`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        this.reservations = response.data;
-      } catch (error) {
-        console.error("예약 목록을 가져오는 중 오류 발생:", error);
-        if (error.response?.status === 401) {
-          alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
-          this.$router.push("/login");
-        }
+async fetchReservations() {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/reservation/car/alllist`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        page: this.currentPage - 1, // 페이지 번호 (0부터 시작)
+        size: this.itemsPerPage // 페이지당 항목 수
       }
-    },
+    });
+    this.reservations = response.data.content; // 페이징된 예약 목록
+    this.totalPages = response.data.totalPages; // 전체 페이지 수 업데이트
+  } catch (error) {
+    console.error("예약 목록을 가져오는 중 오류 발생:", error);
+    if (error.response?.status === 401) {
+      alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
+      this.$router.push("/login");
+    }
+  }
+},
+
 
     // 예약 승인
     async approveReservation(reservationId) {
@@ -140,6 +172,12 @@ export default {
     goToVehicleReservation() {
       this.$router.push("/reservation/reservationList");
     },
+
+    onPageChange(page) {
+  this.currentPage = page;
+  this.fetchReservations();
+},
+
   },
 
   mounted() {

@@ -73,7 +73,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn v-delete class="red--text" @click="confirmDelete">삭제</v-btn>
+          <v-btn v-delete @click="confirmDelete">삭제</v-btn>
           <v-btn v-cancel class="green--text" @click="closeDeleteDialog">취소</v-btn>
         </v-card-actions>
       </v-card>
