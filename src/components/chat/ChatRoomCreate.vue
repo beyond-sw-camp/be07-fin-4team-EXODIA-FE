@@ -243,4 +243,18 @@ export default {
     background-color: #f1f1f1;
     border-radius: 10px;
 }
+
+.selected-user-row::-webkit-scrollbar {
+    width: 6px;
+}
+
+.selected-user-row::-webkit-scrollbar-thumb {
+    background-color: #888888;
+    border-radius: 10px;
+}
+
+.selected-user-row::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 10px;
+}
 </style>

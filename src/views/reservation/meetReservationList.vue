@@ -17,9 +17,6 @@ meetReservation
     <!-- 날짜 선택 버튼들 -->
     <v-row style="margin-top:20px; margin-right: 70px;" align="center" justify="center" display="flex">
         <!-- 날짜 선택 아이콘 -->
-        <v-btn icon @click="openDatePicker" style="box-shadow: none" align="center">
-          <v-icon>mdi-calendar</v-icon>
-        </v-btn>
         <v-btn @click="setToday" style="box-shadow: none; font-weight: bold; letter-spacing: -0.5px;" align="center">
           Today
         </v-btn>
