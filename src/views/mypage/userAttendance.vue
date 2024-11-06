@@ -45,9 +45,9 @@
               <div class="user-position">{{ user.departmentName }} - {{
                 user.positionName }}</div>
               <div class="user-status">{{ user.statusData }}</div>
-              <div class="user-time">{{ formatLocalTime(user.inTime) || ' ' }}
+              <div class="user-time">{{ formatDate(user.inTime) || ' ' }}
                 <span v-if="user.nowStatus == '출근' || user.nowStatus == '퇴근'">-</span>
-                {{ formatLocalTime(user.outTime) || ' ' }}
+                {{ formatDate(user.outTime) || ' ' }}
               </div>
             </div>
           </v-col>
@@ -62,7 +62,7 @@
 
 <script>
 import axios from "axios";
-
+import { format, addHours } from 'date-fns';
 export default {
   name: "UserAttendance",
   data() {
@@ -85,6 +85,12 @@ export default {
     };
   },
   methods: {
+    formatDate(date) {
+      if (!date) return ''; // 유효하지 않은 날짜일 경우 빈 문자열 반환
+      const dateInKST = addHours(new Date(date), 9); // KST 시간으로 변환
+      return format(dateInKST, 'HH:mm'); // 원하는 시간 형식으로 반환
+    },
+
     async workIn() {
       try {
         const kstDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
