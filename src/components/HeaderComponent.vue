@@ -120,7 +120,9 @@ export default {
 
     formatDate(notificationTime) {
       const dateInKST = addHours(new Date(notificationTime), 9);
+
       return formatDistanceToNow(dateInKST, { addSuffix: true, locale: ko });
+      
     },
     // SSE 연결 설정
     initSSE() {
@@ -267,23 +269,46 @@ export default {
       this.redirectToNotification(notification);
     },
     redirectToNotification(notification) {
-      if (notification.message.includes("강좌")) {
-        this.$router.push('/board/courseList/{notificaiton.targetId}')
-      }if (notification.type === '공지사항' && notification.targetId) {
+      const message = notification.message;
+
+      // [ 이벤트 ]나 [ EVENT ]가 포함된 경우 라우팅을 무시
+      if (message.includes("[ 이벤트 ]") || message.includes("[ EVENT ]")) {
+        console.log("이벤트 알림이므로 라우팅을 건너뜁니다.");
+        return; // 라우팅을 수행하지 않고 종료
+      }
+      if (message.includes("인사평가 기간입니다")) {
+        console.log("인사평가 알림이므로 라우팅을 건너뜁니다.");
+        return; // 라우팅을 수행하지 않고 종료
+      }
+      // 공지사항 (게시판) 알림인 경우
+      if (notification.type === '공지사항' && notification.targetId) {
         this.$router.push(`/board/detail/${notification.targetId}`);
-      } else if (notification.type === '문의') {
+      } 
+      // 문의 알림인 경우
+      else if (notification.type === '문의') {
         this.$router.push(`/qna/detail/${notification.targetId}`);
-      } else if (notification.type === '예약') {
+      } 
+      // 예약 알림인 경우
+      else if (notification.type === '예약') {
         if (notification.status === 'RESERVED') {
           window.location.href = '/reservation/adminCarResList';
         } else {
           window.location.href = '/reservation/reservationList';
         }
-      } else if (notification.type === '결재' && notification.targetId) {
+      } 
+      // 결재 알림인 경우
+      else if (notification.type === '결재' && notification.targetId) {
         const isMySubmitReq = notification.status === '승인';
         this.$router.push(`/submit/detail/${notification.targetId}?isMySubmitReq=${isMySubmitReq}`);
-      } else if (notification.type === '문서') {
+      } 
+      // 문서 알림인 경우
+      else if (notification.type === '문서') {
         window.location.href = '/document';
+      } 
+      // 기타 알림 처리
+      else {
+        console.warn("처리되지 않은 알림 유형:", notification.type);
+        
       }
     },
 
