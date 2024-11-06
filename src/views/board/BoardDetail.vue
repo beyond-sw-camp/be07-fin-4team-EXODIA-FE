@@ -478,7 +478,7 @@ export default {
   cursor: pointer;
   font-size: 0.8rem;
   color: #555;
-  display: inline-block;
+  display: block; /* 클릭 범위를 넓히기 위해 block으로 설정 */
 }
 
 .action-link.delete {

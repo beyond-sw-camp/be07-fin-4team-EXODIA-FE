@@ -37,7 +37,7 @@
         <v-row v-for="(salary, index) in salaries" :key="salary.userNum" class="table-row"
           @click="viewSalaryDetails(salary.userNum)"
           style="border-bottom: 1px solid #ddd; padding: 5px; font-weight:500;">
-          <v-col cols="1">{{ index + 1 }}</v-col>
+          <v-col cols="1">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</v-col>
           <v-col cols="2">{{ salary.userNum }}</v-col>
           <v-col cols="1">{{ salary.userName }}</v-col>
           <v-col cols="2">{{ salary.departmentName }}</v-col>

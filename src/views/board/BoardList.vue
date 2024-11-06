@@ -74,8 +74,8 @@
           :key="item.id"
           class="board"
           @click="goToDetail(item.id)"
+          style="padding:5px; font-weight:500; border-bottom:1px solid #E7E4E4;"
         >
-
           <v-col cols="1" class="text-center">
             {{ totalBoardCount - ((currentPage - 1) * itemsPerPage + index) }}
           </v-col>
@@ -85,6 +85,8 @@
           <v-col cols="2" class="text-center">{{ formatDate(item.createdAt) }}</v-col>
           <v-col cols="1" class="text-center">{{ item.hits }}</v-col>
         </v-row>
+        <v-divider v-if="index < sortedBoardItems.length - 1"></v-divider>
+
       </v-col>
     </v-row>
 

@@ -176,6 +176,20 @@ export default {
     /* 인터넷 익스플로러 */
     scrollbar-width: none;
     /* 파이어폭스 */
+}   
+
+.chat-user-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-user-list::-webkit-scrollbar-thumb {
+    background-color: #888888;
+    border-radius: 10px;
+}
+
+.chat-user-list::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 10px;
 }
 
 .select-divider {

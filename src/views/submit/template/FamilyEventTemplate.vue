@@ -80,7 +80,7 @@
                                 'mdi-chevron-up' :
                                 'mdi-chevron-down' }}</v-icon>
                         </v-card-title>
-                        <v-list v-if="isOpenSubmitLine"
+                        <v-list v-if="isOpenSubmitLine" class="submitline-user"
                             style="background-color: rgba(123, 86, 86, 0.3);max-height: 300px; overflow-y: auto;">
 
                             <v-list-item v-for="user in users" :key="user.id" draggable="true"
@@ -397,5 +397,19 @@ export default {
 
 .drop-user {
     padding: 5px;
+}
+
+.submitline-user::-webkit-scrollbar {
+    width: 6px;
+}
+
+.submitline-user::-webkit-scrollbar-thumb {
+    background-color: #888888;
+    border-radius: 10px;
+}
+
+.submitline-user::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 10px;
 }
 </style>
