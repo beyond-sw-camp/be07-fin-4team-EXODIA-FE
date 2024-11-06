@@ -176,7 +176,7 @@ export default {
           근무전: { color: '#808080', status: '근태 정보가 없습니다.' }
         };
 
-        this.users = response.data.result.content.map(user => {
+        this.users = response.data.result.map(user => {
           const statusInfo = statusMap[user.nowStatus] || { color: '#808080', status: 'Unknown' };
           return {
             ...user,
