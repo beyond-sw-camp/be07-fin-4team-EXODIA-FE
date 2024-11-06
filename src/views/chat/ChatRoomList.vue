@@ -67,7 +67,8 @@
 import axios from 'axios';
 import ChatRoomCreate from '@/components/chat/ChatRoomCreate.vue';
 import ChatRoomView from '@/components/chat/ChatRoomView.vue';
-
+import { formatDistanceToNow, addHours } from 'date-fns';
+import { ko } from 'date-fns/locale';
 export default {
     components: {
         ChatRoomCreate,
@@ -202,7 +203,10 @@ export default {
                 day.getMonth() !== today.getMonth() ||
                 day.getDate() !== today.getDate();
         },
-
+        formatDate(notificationTime) {
+            const dateInKST = addHours(new Date(notificationTime), 9);
+            return formatDistanceToNow(dateInKST, { addSuffix: true, locale: ko });
+        },
         // 날짜 감별 후 표시
         getRecentChatTime(createdAt) {
             if (createdAt == "") {
@@ -212,7 +216,7 @@ export default {
                 const createdTime = new Date(createdAt);
                 return `${createdTime.getFullYear()}년 ${createdTime.getMonth() + 1}월 ${createdTime.getDate()}일`;
             }
-            return this.getTime(createdAt);
+            return this.formatDate(createdAt);
         },
 
         enterToChatRoom(id) { // 채팅방 입장

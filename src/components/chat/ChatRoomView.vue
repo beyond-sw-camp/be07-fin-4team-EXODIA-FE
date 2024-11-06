@@ -114,14 +114,14 @@
 
                     <v-row v-if="chat.senderNum === chatSenderNum" class="message-row my-row">
                         <v-col class="message" v-if="chat.messageType == 'TALK'">
-                            <span class="my-message-time-test">{{ getTime(chat.createAt) }}</span>
+                            <span class="my-message-time-test">{{ formatDate(chat.createAt) }}</span>
                             <div class="my-message-text">{{ chat.message }}</div>
                         </v-col>
                         <v-col class="message" v-if="chat.messageType == 'FILE'">
 
                             <ChatFileBox :chatFilesProp="chat.files" :isMyMessage="chat.senderNum === chatSenderNum">
                             </ChatFileBox>
-                            <span class="my-message-time-test">{{ getTime(chat.createAt) }}</span>
+                            <span class="my-message-time-test">{{ formatDate(chat.createAt) }}</span>
                             <div v-if="chat.message.length != 0" class="my-message-text">{{ chat.message }}</div>
                         </v-col>
                     </v-row>
@@ -166,7 +166,8 @@ import ChatFileBox from '@/components/chat/ChatFileBox.vue'
 import InviteChatUserModal from './InviteChatUserModal.vue';
 import ChatRoomNameChangeModal from './ChatRoomNameChangeModal.vue';
 import ExitChatRoomModal from './ExitChatRoomModal.vue';
-
+import { formatDistanceToNow, addHours } from 'date-fns';
+import { ko } from 'date-fns/locale';
 export default {
     props: [
         'chatRoomIdProp',
@@ -226,6 +227,10 @@ export default {
         window.removeEventListener('beforeunload', this.leave)
     },
     methods: {
+        formatDate(date) {
+            const dateInKST = addHours(new Date(date), 9);  // KST 시간으로 변환
+            return formatDistanceToNow(dateInKST, { addSuffix: true, locale: ko });
+        },
         async leave() {
             if (this.stompClient && this.stompClient.connected) {
                 this.stompClient.disconnect(() => {
