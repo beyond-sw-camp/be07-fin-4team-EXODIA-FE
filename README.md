@@ -483,11 +483,11 @@
 
 <details>
   
-<summary>결재 + 게시판</summary>
+<summary>결재, 게시판</summary>
 
 ### 결재 승인 후 게시판 업로드 및 문자 전송
 
-<img src="./img/배포테스트/[배포]결재+게시판.gif"/>
+<img src="./img/배포테스트/[배포]결재게시판.gif"/>
 <img src="./img/배포테스트/결재문자.png"/>
 
 
