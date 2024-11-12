@@ -440,12 +440,10 @@
 <summary>파일 등록</summary>
 
 ### 파일 버전 업데이트 및 해당 파일에 대한 댓글 작성
-
-<img src="./img/depl테스트/[배포]파일등록.gif"/>
-
+<img src="./img/Deployment Test/file_registration.gif"/>
 
 ### 파일 버전 되돌리기
-<img src="./img/depl테스트/[배포]파일등록-1.gif"/>
+<img src="./img/Deployment Test/file_registration_1.gif"/>
 
 </details>
 
@@ -454,8 +452,7 @@
 <summary>일정 등록</summary>
 
 ### 급여일, 인사평가에 대한 일정 공용 캘린더에 등록
-
-<img src="./img/depl테스트/[배포]일정등록.gif"/>
+<img src="./img/Deployment Test/schedule_registration.gif"/>
 
 </details>
 
@@ -464,10 +461,9 @@
 <summary>채팅</summary>
 
 ### 실시간 채팅
+<img src="./img/Deployment Test/chat.gif"/>
 
-<img src="./img/depl테스트/[배포]채팅.gif"/>
-
-<img src="./img/depl테스트/[배포]채팅_1.gif"/>
+<img src="./img/Deployment Test/chat_1.gif"/>
 
 </details>
 
@@ -477,19 +473,18 @@
 
 <br/>
 
-<img src="./img/depl테스트/[배포]화상회의.gif"/>
+<img src="./img/Deployment Test/video_conference.gif"/>
 
 </details>
 
-
 <details>
   
-<summary>결재, 게시판</summary>
+<summary>결재 + 게시판</summary>
 
 ### 결재 승인 후 게시판 업로드 및 문자 전송
+<img src="./img/Deployment Test/approval_and_board.gif"/>
 
-<img src="./img/depl테스트/[배포]결재게시판.gif"/>
-<img src="./img/depl테스트/결재문자.png"/>
-
+### 결재문자
+<img src="./img/Deployment Test/approval_sms.png"/>
 
 </details>
